@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录页面</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 300px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .links a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .password-requirements {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .error-message {
+            color: #ff0000;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>用户登录</h2>
+        <form class="form" id="loginForm">
+            <div class="form-group">
+                <label for="username">用户名:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">密码:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="remember-me">
+                <input type="checkbox" id="rememberMe" name="rememberMe">
+                <label for="rememberMe">记住密码</label>
+            </div>
+            <button type="submit">登录</button>
+            <div class="loading">登录中...</div>
+            <div class="error-message" id="errorMessage"></div>
+        </form>
+        <div class="links">
+            <a href="register.html">还没有账号？立即注册</a>
+        </div>
+    </div>
+
+    <script>
+        // 安全配置
+        const CONFIG = {
+            SECRET_KEY: 'your-secret-key-2024',
+            TOKEN_EXPIRY_DAYS: 7,
+            MAX_LOGIN_ATTEMPTS: 3,
+            LOCKOUT_TIME: 15 * 60 * 1000, // 15分钟
+        };
+
+        // 工具��数
+        const utils = {
+            encrypt: (text) => {
+                return CryptoJS.AES.encrypt(text, CONFIG.SECRET_KEY).toString();
+            },
+            
+            decrypt: (ciphertext) => {
+                const bytes = CryptoJS.AES.decrypt(ciphertext, CONFIG.SECRET_KEY);
+                return bytes.toString(CryptoJS.enc.Utf8);
+            },
+            
+            generateToken: () => {
+                return CryptoJS.lib.WordArray.random(32).toString();
+            },
+            
+            showError: (message) => {
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 3000);
+            },
+            
+            setLoading: (isLoading) => {
+                const loadingElement = document.querySelector('.loading');
+                const submitButton = document.querySelector('button[type="submit"]');
+                loadingElement.style.display = isLoading ? 'block' : 'none';
+                submitButton.disabled = isLoading;
+            }
+        };
+
+        // 登录相关功能
+        const auth = {
+            loginAttempts: 0,
+            lockoutTime: null,
+
+            async login(username, password) {
+                // 检查是否被锁定
+                if (this.isLockedOut()) {
+                    throw new Error('账号已被锁定，请稍后再试');
+                }
+
+                try {
+                    utils.setLoading(true);
+                    const response = await this.loginAPI(username, password);
+                    
+                    if (response.success) {
+                        this.loginAttempts = 0;
+                        return response;
+                    } else {
+                        this.handleFailedLogin();
+                        throw new Error('用户名或密码错误');
+                    }
+                } finally {
+                    utils.setLoading(false);
+                }
+            },
+
+            async loginAPI(username, password) {
+                // 模拟API调用
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({
+                            success: true,
+                            token: utils.generateToken(),
+                            refreshToken: utils.generateToken()
+                        });
+                    }, 1000);
+                });
+            },
+
+            handleFailedLogin() {
+                this.loginAttempts++;
+                if (this.loginAttempts >= CONFIG.MAX_LOGIN_ATTEMPTS) {
+                    this.lockoutTime = Date.now() + CONFIG.LOCKOUT_TIME;
+                    localStorage.setItem('lockoutTime', this.lockoutTime);
+                }
+            },
+
+            isLockedOut() {
+                const storedLockoutTime = localStorage.getItem('lockoutTime');
+                if (storedLockoutTime && Date.now() < storedLockoutTime) {
+                    const remainingTime = Math.ceil((storedLockoutTime - Date.now()) / 1000 / 60);
+                    utils.showError(`账号已被锁定，请${remainingTime}分钟后重试`);
+                    return true;
+                }
+                return false;
+            },
+
+            saveLoginData(username, password, token, refreshToken) {
+                const tokenExpiry = new Date();
+                tokenExpiry.setDate(tokenExpiry.getDate() + CONFIG.TOKEN_EXPIRY_DAYS);
+
+                const loginData = {
+                    username,
+                    password,
+                    token,
+                    refreshToken,
+                    tokenExpiry: tokenExpiry.toISOString()
+                };
+
+                const encryptedData = utils.encrypt(JSON.stringify(loginData));
+                localStorage.setItem('loginData', encryptedData);
+            },
+
+            clearLoginData() {
+                localStorage.removeItem('loginData');
+                localStorage.removeItem('rememberMe');
+            }
+        };
+
+        // 页面加载时检查登录状态
+        window.onload = async function() {
+            const encryptedData = localStorage.getItem('loginData');
+            const rememberMe = localStorage.getItem('rememberMe');
+
+            if (rememberMe === 'true' && encryptedData) {
+                try {
+                    const decryptedData = JSON.parse(utils.decrypt(encryptedData));
+                    
+                    if (decryptedData.tokenExpiry && new Date(decryptedData.tokenExpiry) > new Date()) {
+                        document.getElementById('username').value = decryptedData.username;
+                        document.getElementById('password').value = decryptedData.password;
+                        document.getElementById('rememberMe').checked = true;
+                    } else {
+                        auth.clearLoginData();
+                    }
+                } catch (error) {
+                    console.error('解密数据失败:', error);
+                    auth.clearLoginData();
+                }
+            }
+        };
+
+        // 处理表单提交
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            try {
+                const response = await auth.login(username, password);
+                
+                if (rememberMe) {
+                    auth.saveLoginData(username, password, response.token, response.refreshToken);
+                    localStorage.setItem('rememberMe', 'true');
+                } else {
+                    auth.clearLoginData();
+                }
+
+                // 登录成功后跳转
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                utils.showError(error.message);
+            }
+        });
+
+        // 检查登录状态
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                const encryptedData = localStorage.getItem('loginData');
+                if (encryptedData) {
+                    try {
+                        const decryptedData = JSON.parse(utils.decrypt(encryptedData));
+                        if (new Date(decryptedData.tokenExpiry) <= new Date()) {
+                            auth.clearLoginData();
+                            utils.showError('登录已过期，请重新登录');
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        console.error('检查登录状态失败:', error);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

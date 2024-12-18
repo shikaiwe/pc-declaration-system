@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册页面</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+            margin-top: 1rem;
+        }
+
+        .error-message {
+            display: none;
+            color: #f44336;
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .links a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .password-requirements {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>用户注册</h2>
+        <form class="form" id="registerForm">
+            <div class="form-group">
+                <label for="username">用户名:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">手机号码:</label>
+                <input type="tel" id="phone" name="phone" pattern="^1[3-9]\d{9}$" required>
+            </div>
+            <div class="form-group">
+                <label for="password">密码:</label>
+                <input type="password" id="password" name="password" required>
+                <div class="password-requirements">
+                    密码至少包含8个字符，需包含字母和数字
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">确认密码:</label>
+                <input type="password" id="confirm-password" name="confirm-password" required>
+            </div>
+            <button type="submit">注册</button>
+            <div class="loading">注册中...</div>
+            <div class="error-message" id="errorMessage"></div>
+        </form>
+        <div class="links">
+            <a href="login.html">已有账号？返回登录</a>
+        </div>
+    </div>
+
+    <script>
+        const utils = {
+            showError: (message) => {
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 3000);
+            },
+            
+            setLoading: (isLoading) => {
+                const loadingElement = document.querySelector('.loading');
+                const submitButton = document.querySelector('button[type="submit"]');
+                loadingElement.style.display = isLoading ? 'block' : 'none';
+                submitButton.disabled = isLoading;
+            },
+
+            validatePassword: (password) => {
+                const minLength = 8;
+                const hasLetter = /[a-zA-Z]/.test(password);
+                const hasNumber = /[0-9]/.test(password);
+                return password.length >= minLength && hasLetter && hasNumber;
+            },
+
+            validatePhone: (phone) => {
+                const phoneRegex = /^1[3-9]\d{9}$/;
+                return phoneRegex.test(phone);
+            }
+        };
+
+        // 处理注册表单提交
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            try {
+                // 验证手机号码
+                if (!utils.validatePhone(phone)) {
+                    throw new Error('请输入有效的手机号码');
+                }
+
+                // 验证密码
+                if (!utils.validatePassword(password)) {
+                    throw new Error('密码必须至少包含8个字符，且包含字母和数字');
+                }
+
+                // 验证密码确认
+                if (password !== confirmPassword) {
+                    throw new Error('两次输入的密码不一致');
+                }
+
+                utils.setLoading(true);
+
+                // 模拟注册API调用
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // 注册成功后跳转到登录页
+                window.location.href = 'login.html';
+            } catch (error) {
+                utils.showError(error.message);
+            } finally {
+                utils.setLoading(false);
+            }
+        });
+    </script>
+</body>
+</html> 
