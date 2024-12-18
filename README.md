@@ -3,35 +3,37 @@
 #### 介绍
 简单的报单系统
 
-#### 软件架构
-软件架构说明
+1. **安全特性**：
+   - 密码加密存储
+   - 登录尝试次数限制
+   - 账号锁定机制
+   - Token 认证
+   - 自动登出
 
+2. **用户体验**：
+   - 加载状态显示
+   - 错误信息提示
+   - 表单验证
+   - 密码强度要求
 
-#### 安装教程
+3. **功能完整性**：
+   - 登录页面
+   - 注册页面
+   - 记住密码功能
+   - 页面间导航
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+4. **代码组织**：
+   - 模块化的代码结构
+   - 清晰的错误处理
+   - 统一的样式设计
 
-#### 使用说明
+使用方法：
+1. 将这两个文件保存在同一目录下
+2. 确保有网络连接（需要加载 crypto-js 库）
+3. 在浏览器中打开 login.html 或 register.html
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+注意事项：
+1. 这是前端实现，实际项目中需要配合后端API
+2. 密码和敏感信息的处理应该在服务器端完成
+3. 建议使用 HTTPS 协议确保传输安全
+4. 可以根据需要调整锁定时间和尝试次数等参数
