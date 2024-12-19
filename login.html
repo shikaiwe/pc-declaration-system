@@ -88,12 +88,6 @@
             margin: 0;
         }
 
-        .password-requirements {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-
         .error-message {
             color: #ff0000;
             font-size: 14px;
@@ -143,7 +137,7 @@
             LOCKOUT_TIME: 15 * 60 * 1000, // 15分钟
         };
 
-        // 工具��数
+        // 工具函数
         const utils = {
             encrypt: (text) => {
                 return CryptoJS.AES.encrypt(text, CONFIG.SECRET_KEY).toString();
@@ -206,10 +200,12 @@
                 // 模拟API调用
                 return new Promise((resolve) => {
                     setTimeout(() => {
+                        // 这里模拟登录成功的情况
                         resolve({
                             success: true,
                             token: utils.generateToken(),
-                            refreshToken: utils.generateToken()
+                            refreshToken: utils.generateToken(),
+                            username: username // 添加用户名到响应中
                         });
                     }, 1000);
                 });
@@ -255,6 +251,24 @@
             }
         };
 
+        // 登录成功处理函数
+        function handleLoginSuccess(response) {
+            // 加密并保存登录数据
+            const encryptedData = utils.encrypt(JSON.stringify({
+                username: response.username,
+                token: response.token
+            }));
+            localStorage.setItem('loginData', encryptedData);
+            
+            // 如果选择了"记住我"，保存相关信息
+            if (document.getElementById('rememberMe').checked) {
+                localStorage.setItem('rememberMe', 'true');
+            }
+
+            // 跳转到控制面板
+            window.location.href = 'dashboard.html';
+        }
+
         // 页面加载时检查登录状态
         window.onload = async function() {
             const encryptedData = localStorage.getItem('loginData');
@@ -296,8 +310,8 @@
                     auth.clearLoginData();
                 }
 
-                // 登录成功后跳转
-                window.location.href = 'dashboard.html';
+                // 调用登录成功处理函数
+                handleLoginSuccess(response);
             } catch (error) {
                 utils.showError(error.message);
             }

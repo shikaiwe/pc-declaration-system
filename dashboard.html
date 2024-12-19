@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控制面板</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+        }
+
+        /* 左侧导航栏样式 */
+        .sidebar {
+            width: 250px;
+            background-color: #333;
+            color: white;
+            height: 100vh;
+            padding-top: 20px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar-menu li:hover {
+            background-color: #444;
+        }
+
+        .sidebar-menu i {
+            margin-right: 10px;
+        }
+
+        /* 主内容区域样式 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部导航栏样式 */
+        .top-nav {
+            background-color: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .user-profile {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            min-width: 200px;
+            display: none;
+        }
+
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 内容区域样式 */
+        .content {
+            padding: 20px;
+            background-color: #f4f4f4;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- 左侧导航栏 -->
+    <div class="sidebar">
+        <ul class="sidebar-menu">
+            <li><i>📊</i>仪表盘</li>
+            <li><i>📝</i>任务管理</li>
+            <li><i>📅</i>日程安排</li>
+            <li><i>📊</i>数据统计</li>
+            <li><i>⚙️</i>系统设置</li>
+        </ul>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        <!-- 顶部导航栏 -->
+        <div class="top-nav">
+            <div class="user-profile" id="userProfile">
+                <div class="user-info">
+                    <span class="username" id="displayUsername">用户名</span>
+                    <div class="avatar" id="userAvatar">U</div>
+                </div>
+                <div class="dropdown-menu" id="userMenu">
+                    <a href="#" id="profileLink">个人信息</a>
+                    <a href="#" id="settingsLink">账户设置</a>
+                    <a href="#" id="logoutLink">退出登录</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content">
+            <h1>欢迎回来！</h1>
+            <!-- 这里可以添加其他内容 -->
+        </div>
+    </div>
+
+    <script>
+        // 获取登录数据
+        function getLoginData() {
+            const encryptedData = localStorage.getItem('loginData');
+            if (encryptedData) {
+                try {
+                    const decryptedData = JSON.parse(utils.decrypt(encryptedData));
+                    return decryptedData;
+                } catch (error) {
+                    console.error('获取登录数据失败:', error);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        // 用户菜单切换
+        const userProfile = document.getElementById('userProfile');
+        const userMenu = document.getElementById('userMenu');
+        
+        userProfile.addEventListener('click', () => {
+            userMenu.classList.toggle('active');
+        });
+
+        // 点击其他地方关闭菜单
+        document.addEventListener('click', (e) => {
+            if (!userProfile.contains(e.target)) {
+                userMenu.classList.remove('active');
+            }
+        });
+
+        // 退出登录
+        document.getElementById('logoutLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('loginData');
+            localStorage.removeItem('rememberMe');
+            window.location.href = 'login.html';
+        });
+
+        // 页面加载时检查登录状态
+        window.onload = function() {
+            const loginData = getLoginData();
+            if (!loginData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // 显示用户名
+            const displayUsername = document.getElementById('displayUsername');
+            const userAvatar = document.getElementById('userAvatar');
+            displayUsername.textContent = loginData.username;
+            userAvatar.textContent = loginData.username.charAt(0).toUpperCase();
+        };
+    </script>
+</body>
+</html> 
