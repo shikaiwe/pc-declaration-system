@@ -14,10 +14,18 @@
         /* 左侧导航栏样式 */
         .sidebar {
             width: 250px;
-            background-color: #333;
+            background: linear-gradient(180deg, #333, #555);
             color: white;
             height: 100vh;
             padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            position: fixed; /* 固定在页面左侧 */
+            top: 0;
+            left: 0;
+            z-index: 1001; /* 确保在顶部导航栏之上 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 确保天气信息在底部 */
         }
 
         .sidebar-menu {
@@ -29,15 +37,21 @@
         .sidebar-menu li {
             padding: 15px 25px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.3s;
         }
 
         .sidebar-menu li:hover {
-            background-color: #444;
+            background-color: #007BFF; /* 蓝色高亮 */
+            transform: translateX(10px);
         }
 
         .sidebar-menu i {
             margin-right: 10px;
+        }
+
+        .sidebar-menu li.active {
+            background-color: #007BFF; /* 蓝色高亮 */
+            color: white;
         }
 
         /* 主内容区域样式 */
@@ -45,16 +59,27 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin-top: 60px; /* 为顶部导航栏留出空间 */
+            margin-left: 250px; /* 留出左侧导航栏的宽度 */
         }
 
         /* 顶部导航栏样式 */
         .top-nav {
-            background-color: white;
-            padding: 15px 30px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: fixed; /* 固定在页面顶部 */
+            top: 0;
+            left: 250px; /* 留出左侧导航栏的宽度 */
+            right: 0;
+            background-color: #ffffff;
+            padding: 10px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between; /* 在两端对齐 */
             align-items: center;
+            border-bottom: 1px solid #eee;
+            z-index: 1000; /* 确保在其他元素之上 */
         }
 
         .user-profile {
@@ -77,17 +102,23 @@
             align-items: center;
             justify-content: center;
             color: white;
+            transition: background-color 0.3s;
+        }
+
+        .avatar:hover {
+            background-color: #45a049;
         }
 
         .dropdown-menu {
             position: absolute;
             top: 100%;
             right: 0;
+            width: 200px;
             background-color: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             border-radius: 4px;
-            min-width: 200px;
             display: none;
+            z-index: 1000;
         }
 
         .dropdown-menu.active {
@@ -96,13 +127,16 @@
 
         .dropdown-menu a {
             display: block;
-            padding: 10px 20px;
+            padding: 15px 20px;
             text-decoration: none;
             color: #333;
+            transition: background-color 0.3s, color 0.3s; /* 添加过渡效果 */
         }
 
         .dropdown-menu a:hover {
-            background-color: #f5f5f5;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 4px;
         }
 
         /* 内容区域样式 */
@@ -110,6 +144,128 @@
             padding: 20px;
             background-color: #f4f4f4;
             flex: 1;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+            margin: 20px;
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 账号管理界面样式 */
+        .tabs {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .tab-button.active {
+            background-color: #007BFF;
+            color: white;
+        }
+        
+        .tab-content {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content form div {
+            margin-bottom: 15px;
+        }
+        
+        .tab-content label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .tab-content input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .tab-content button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .tab-content button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 账号管理界面样式 */
+        #accountSettings {
+            width: calc(100% - 250px); /* 占据整个可用宽度，减去左侧导航栏 */
+            max-width: none; /* 取消最大宽度限制 */
+            display: none; /* 默认隐藏 */
+            position: absolute; /* 绝对定位以覆盖主界面 */
+            top: 60px; /* 确保在导航栏下方 */
+            left: 250px; /* 留出左侧导航栏的宽度 */
+            right: 0;
+            bottom: 0;
+            background-color: #f4f4f4; /* 与主内容背景一致 */
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 当前时间样式 */
+        .current-time {
+            font-size: 18px;
+            color: #007BFF;
+            font-weight: bold;
+            background-color: #f0f8ff;
+            padding: 5px 10px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* 退出登录按钮样式 */
+        .dropdown-menu a {
+            display: block;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s; /* 添加过渡效果 */
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #007BFF;
+            color: white;
+            border-radius: 4px;
+        }
+
+        /* 天气信息样式 */
+        .weather-info {
+            margin-top: auto; /* 将天气信息推到导航栏底部 */
+            background-color: #007BFF; /* 蓝色背景 */
+            color: white; /* 白色文字 */
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
     </style>
 </head>
@@ -117,91 +273,219 @@
     <!-- 左侧导航栏 -->
     <div class="sidebar">
         <ul class="sidebar-menu">
-            <li><i>📊</i>仪表盘</li>
+            <li id="homeLink"><i>🏠</i>回到首页</li>
             <li><i>📝</i>任务管理</li>
             <li><i>📅</i>日程安排</li>
             <li><i>📊</i>数据统计</li>
-            <li><i>⚙️</i>系统设置</li>
+            <li id="accountManagement"><i>👤</i>账号管理</li>
         </ul>
+        <!-- 天气信息 -->
+        <div class="weather-info" id="weatherInfo">
+            <p>天气信息加载中...</p>
+        </div>
     </div>
 
     <!-- 主内容区域 -->
     <div class="main-content">
         <!-- 顶部导航栏 -->
         <div class="top-nav">
+            <div class="current-time" id="currentTime">00:00:00</div>
             <div class="user-profile" id="userProfile">
                 <div class="user-info">
-                    <span class="username" id="displayUsername">用户名</span>
+                    <span id="displayUsername">用户</span>
                     <div class="avatar" id="userAvatar">U</div>
                 </div>
                 <div class="dropdown-menu" id="userMenu">
-                    <a href="#" id="profileLink">个人信息</a>
-                    <a href="#" id="settingsLink">账户设置</a>
                     <a href="#" id="logoutLink">退出登录</a>
                 </div>
             </div>
         </div>
 
         <!-- 内容区域 -->
-        <div class="content">
+        <div class="content" id="contentArea">
             <h1>欢迎回来！</h1>
             <!-- 这里可以添加其他内容 -->
         </div>
     </div>
 
+    <!-- 账号修改界面 -->
+    <div class="content" id="accountSettings" style="display: none;">
+        <h2>账号管理</h2>
+        <div class="tabs">
+            <button class="tab-button active" data-tab="info">账号信息</button>
+            <button class="tab-button" data-tab="password">更改密码</button>
+        </div>
+        <div class="tab-content" id="info" style="display: block;">
+            <form id="infoForm">
+                <div>
+                    <label for="username">用户名:</label>
+                    <input type="text" id="username" name="username" autocomplete="username" required>
+                </div>
+                <div>
+                    <label for="phone">手机号码:</label>
+                    <input type="tel" id="phone" name="phone" autocomplete="tel" required pattern="[0-9]{11}" placeholder="请输入11位手机号码">
+                </div>
+                <button type="submit">保存更改</button>
+            </form>
+        </div>
+        <div class="tab-content" id="password" style="display: none;">
+            <form id="passwordForm">
+                <div>
+                    <label for="currentPassword">原密码:</label>
+                    <input type="password" id="currentPassword" name="currentPassword" required>
+                </div>
+                <div>
+                    <label for="newPassword">新密码:</label>
+                    <input type="password" id="newPassword" name="newPassword" required>
+                </div>
+                <div>
+                    <label for="confirmPassword">确认密码:</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                <button type="submit">保存更改</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        // 获取登录数据
-        function getLoginData() {
-            const encryptedData = localStorage.getItem('loginData');
-            if (encryptedData) {
-                try {
-                    const decryptedData = JSON.parse(utils.decrypt(encryptedData));
-                    return decryptedData;
-                } catch (error) {
-                    console.error('获取登录数据失败:', error);
-                    return null;
+        document.addEventListener('DOMContentLoaded', () => {
+            // 使用 ipinfo.io 获取IP和地理位置信息
+            function fetchLocation() {
+                return fetch('https://ipinfo.io/json?token=c5b584edfaff58')
+                    .then(response => response.json())
+                    .then(data => {
+                        const city = data.city.replace('市', '');
+                        const province = data.region.replace('省', '');
+                        return { city, province };
+                    })
+                    .catch(error => {
+                        console.error('Error fetching location:', error);
+                        return { city: '北京', province: '北京' }; // 默认值
+                    });
+            }
+
+            // 获取天气信息
+            function fetchWeather(province, city) {
+                $.ajax({
+                    type: 'GET',
+                    url: `https://cn.apihz.cn/api/tianqi/tqyb.php?id=10001601&key=0beb3b0df3c315409b48eb24e8213d05&sheng=${province}&place=${city}`,
+                    success: function (data) {
+                        if (data.code === 200) {
+                            const precipitation = data.precipitation;
+                            const temperature = data.temperature;
+                            const humidity = data.humidity;
+                            const windDirection = data.windDirection;
+                            const windDirectionDegree = data.windDirectionDegree;
+                            const windSpeed = data.windSpeed;
+                            const windScale = data.windScale;
+                            const place = data.place;
+
+                            weatherInfoElement.innerHTML = `
+                                <p>地点：${place}</p>
+                                <p>温度：${temperature}°C</p>
+                                <p>湿度：${humidity}%</p>
+                                <p>降水量：${precipitation}mm</p>
+                                <p>风向：${windDirection} (${windDirectionDegree}°)</p>
+                                <p>风速：${windSpeed} m/s (${windScale})</p>
+                            `;
+                        } else {
+                            weatherInfoElement.innerHTML = `<p>无法获取天气信息: ${data.msg}</p>`;
+                        }
+                    },
+                    error: function () {
+                        weatherInfoElement.innerHTML = '<p>无法获取天气信息</p>';
+                    }
+                });
+            }
+
+            // 获取必要的DOM元素
+            const userProfile = document.getElementById('userProfile');
+            const contentArea = document.getElementById('contentArea');
+            const accountSettings = document.getElementById('accountSettings');
+            const menuItems = document.querySelectorAll('.sidebar-menu li');
+            const currentTimeElement = document.getElementById('currentTime');
+            const weatherInfoElement = document.getElementById('weatherInfo');
+
+            // 更新当前时间
+            function updateTime() {
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const seconds = now.getSeconds();
+                const timeString = `现在是${hours}时${minutes}分${seconds}秒`;
+                currentTimeElement.textContent = timeString;
+            }
+
+            updateTime(); // 面加载时立即更新一次时间
+            setInterval(updateTime, 500); // 每0.5秒更新一次时间
+
+            // 菜单项点击处理
+            menuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+
+                    // 显示相应的内容
+                    if (item.id === 'accountManagement') {
+                        contentArea.style.display = 'none';
+                        accountSettings.style.display = 'block';
+                        userProfile.style.display = 'none'; // 隐藏用户头像
+                    } else {
+                        accountSettings.style.display = 'none';
+                        contentArea.style.display = 'block';
+                        userProfile.style.display = 'flex'; // 显示用户头像
+                    }
+                });
+            });
+
+            // 首页链接
+            document.getElementById('homeLink').addEventListener('click', () => {
+                menuItems.forEach(i => i.classList.remove('active'));
+                document.getElementById('homeLink').classList.add('active');
+                accountSettings.style.display = 'none';
+                contentArea.style.display = 'block';
+                userProfile.style.display = 'flex'; // 显示用户头像
+            });
+
+            
+            // 点击用户头像显示/隐藏下拉菜单
+            const userMenu = document.getElementById('userMenu');
+            userProfile.addEventListener('click', () => {
+                userMenu.classList.toggle('active');
+            });
+
+            // 点击页面其他地方隐藏下拉菜单
+            document.addEventListener('click', (event) => {
+                if (!userProfile.contains(event.target)) {
+                    userMenu.classList.remove('active');
                 }
-            }
-            return null;
-        }
+            });
 
-        // 用户菜单切换
-        const userProfile = document.getElementById('userProfile');
-        const userMenu = document.getElementById('userMenu');
-        
-        userProfile.addEventListener('click', () => {
-            userMenu.classList.toggle('active');
+            // 选项卡切换功能
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // 移除所有钮的active类
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    // 隐藏所有内容
+                    tabContents.forEach(content => content.style.display = 'none');
+
+                    // 为当前按钮添加active类
+                    button.classList.add('active');
+                    // 显示对应的内容
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).style.display = 'block';
+                });
+            });
+
+            // 先获取IP地址，然后获取地理位置信息，再获取天气信息
+            fetchLocation().then(location => {
+                fetchWeather(location.province, location.city);
+            });
         });
-
-        // 点击其他地方关闭菜单
-        document.addEventListener('click', (e) => {
-            if (!userProfile.contains(e.target)) {
-                userMenu.classList.remove('active');
-            }
-        });
-
-        // 退出登录
-        document.getElementById('logoutLink').addEventListener('click', (e) => {
-            e.preventDefault();
-            localStorage.removeItem('loginData');
-            localStorage.removeItem('rememberMe');
-            window.location.href = 'login.html';
-        });
-
-        // 页面加载时检查登录状态
-        window.onload = function() {
-            const loginData = getLoginData();
-            if (!loginData) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // 显示用户名
-            const displayUsername = document.getElementById('displayUsername');
-            const userAvatar = document.getElementById('userAvatar');
-            displayUsername.textContent = loginData.username;
-            userAvatar.textContent = loginData.username.charAt(0).toUpperCase();
-        };
     </script>
 </body>
 </html> 
