@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动仪表板</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .header {
+            background-color: #2196F3;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+        .card {
+            background-color: white;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #2196F3;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+        .navbar a {
+            flex: 1;
+            color: white;
+            text-align: center;
+            padding: 14px 0;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .navbar a:hover {
+            background-color: #1976D2;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>仪表板</h1>
+    </div>
+
+    <div class="card">
+        <h2>卡片1</h2>
+        <p>一些信息...</p>
+    </div>
+
+    <div class="card">
+        <h2>卡片2</h2>
+        <p>更多信息...</p>
+    </div>
+
+    <div class="card">
+        <h2>卡片3</h2>
+        <p>其他信息...</p>
+    </div>
+
+    <div class="navbar">
+        <a href="#home">回到首页</a>
+        <a href="#orders">我的订单</a>
+        <a href="#account">账户管理</a>
+    </div>
+
+</body>
+</html>

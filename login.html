@@ -297,8 +297,14 @@
                 localStorage.setItem('rememberMe', 'true');
             }
 
-            // 跳转到控制面板
-            window.location.href = 'dashboard.html';
+            // 检查设备类型并跳转
+            if (/Mobi|Android/i.test(navigator.userAgent)) {
+                // 移动设备
+                window.location.href = 'mobile_dashboard.html';
+            } else {
+                // 桌面设备
+                window.location.href = 'dashboard.html';
+            }
         }
 
         // 页面加载时检查登录状态
