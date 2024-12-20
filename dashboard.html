@@ -212,7 +212,7 @@
             display: none;
             position: absolute;
             top: 60px;
-            left: 250px;
+            left: 200px;
             right: 0;
             bottom: 0;
             background-color: #f4f4f4;
@@ -343,35 +343,47 @@
                     const province = data.region.replace('省', '');
                     return { city, province };
                 } catch (error) {
-                    console.error('Error fetching location:', error);
+                    console.error('获取位置时出错:', error);
                     return { city: '北京', province: '北京' };
                 }
             }
 
             // 获取天气信息
-            function fetchWeather(province, city) {
-                $.ajax({
-                    type: 'GET',
-                    url: `https://cn.apihz.cn/api/tianqi/tqyb.php?id=10001601&key=0beb3b0df3c315409b48eb24e8213d05&sheng=${province}&place=${city}`,
-                    success: function (data) {
-                        if (data.code === 200) {
-                            const { precipitation, temperature, humidity, windDirection, windDirectionDegree, windSpeed, windScale, place } = data;
+            async function fetchWeather() {
+                const apiKey = '7be7dff3729983328f5bbc4815cd5022'; // 确保替换为您的实际API Key
+
+                try {
+                    // 第一步：获取IP地址和位置
+                    const ipResponse = await fetch(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
+                    const ipData = await ipResponse.json();
+
+                    if (ipData.status === '1') {
+                        const cityAdcode = ipData.adcode;
+
+                        // 第二步：使用adcode获取天气信息
+                        const weatherResponse = await fetch(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
+                        const weatherData = await weatherResponse.json();
+
+                        if (weatherData.status === '1') {
+                            const live = weatherData.lives[0];
+                            const { weather, temperature, humidity, winddirection, windpower, city } = live;
                             weatherInfoElement.innerHTML = `
-                                <p>地点：${place}</p>
+                                <p>地点：${city}</p>
+                                <p>天气：${weather}</p>
                                 <p>温度：${temperature}°C</p>
                                 <p>湿度：${humidity}%</p>
-                                <p>降水量：${precipitation}mm</p>
-                                <p>风向：${windDirection} (${windDirectionDegree}°)</p>
-                                <p>风速：${windSpeed} m/s (${windScale})</p>
+                                <p>风向：${winddirection}</p>
+                                <p>风力：${windpower}级</p>
                             `;
                         } else {
-                            weatherInfoElement.innerHTML = `<p>无法获取天气信息: ${data.msg}</p>`;
+                            weatherInfoElement.innerHTML = `<p>无法获取天气信息: ${weatherData.info}</p>`;
                         }
-                    },
-                    error: function () {
-                        weatherInfoElement.innerHTML = '<p>无法获取天气信息</p>';
+                    } else {
+                        weatherInfoElement.innerHTML = `<p>无法获取IP信息: ${ipData.info}</p>`;
                     }
-                });
+                } catch (error) {
+                    weatherInfoElement.innerHTML = '<p>无法获取信息</p>';
+                }
             }
 
             // 更新当前时间
@@ -447,7 +459,7 @@
 
             // 获取并显示天气信息
             fetchLocation().then(location => {
-                fetchWeather(location.province, location.city);
+                fetchWeather(location.city);
             });
         });
     </script>
