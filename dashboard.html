@@ -233,7 +233,7 @@
             margin: 0 auto; /* 居中对齐 */
             display: flex;
             flex-direction: column;
-            align-items: center; /* ��中中对齐子元素 */
+            align-items: center; /* 居中对齐子元素 */
         }
 
         .tab-content form div {
@@ -384,52 +384,61 @@
                 return null;
             }
 
-            // 获取天气和位置信息
-            // async function fetchWeatherAndLocation() {
-            //     const apiKey = '7be7dff3729983328f5bbc4815cd5022'; // 确保替换为您实际API Key
+            //获取天气和位置信息
+            async function fetchWeatherAndLocation() {
+                try {
+                    const apiKey = await getApiKeyFromServer(); // 从服务端获取API Key
 
-            //     try {
-            //         // 获取IP地址和位置
-            //         const ipResponse = await fetch(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
-            //         if (!ipResponse.ok) {
-            //             throw new Error(`IP请求失败: ${ipResponse.statusText}`);
-            //         }
-            //         const ipData = await ipResponse.json();
+                    const ipData = await fetchData(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
+                    if (ipData.status !== '1') {
+                        throw new Error(`无法获取IP信息: ${ipData.info}`);
+                    }
 
-            //         if (ipData.status === '1') { // 检查API请求是否成功
-            //             const cityAdcode = ipData.adcode; // 获取城市的行政区划代码
-            //             const city = ipData.city.replace('市', ''); // 获取城市名称
-            //             const province = ipData.province.replace('省', ''); // 获取省份名称
+                    const cityAdcode = ipData.adcode; // 获取城市的行政区划代码
+                    const city = ipData.city.replace('市', ''); // 获取城市名称
 
-            //             // 使用adcode获取天气信息
-            //             const weatherResponse = await fetch(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
-            //             if (!weatherResponse.ok) {
-            //                 throw new Error(`天气请求失败: ${weatherResponse.statusText}`);
-            //             }
-            //             const weatherData = await weatherResponse.json();
+                    const weatherData = await fetchData(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
+                    if (weatherData.status !== '1') {
+                        throw new Error(`无法获取天气信息: ${weatherData.info}`);
+                    }
 
-            //             if (weatherData.status === '1') { // 检查天气信息请求是否成功
-            //                 const live = weatherData.lives[0]; // 获取实时天气信息
-            //                 const { weather, temperature, humidity, winddirection, windpower } = live; // 解构天气信息
-            //                 weatherInfoElement.innerHTML = `
-            //                     <p>地点：${city}</p>
-            //                     <p>天气：${weather}</p>
-            //                     <p>温度：${temperature}°C</p>
-            //                     <p>湿度：${humidity}%</p>
-            //                     <p>风向：${winddirection}</p>
-            //                     <p>风力：${windpower}级</p>
-            //                 `; // 显示天气信息
-            //             } else {
-            //                 weatherInfoElement.innerHTML = `<p>无法获取天气信息: ${weatherData.info}</p>`; // 显示错误信息
-            //             }
-            //         } else {
-            //             weatherInfoElement.innerHTML = `<p>无法获取IP信息: ${ipData.info}</p>`; // 显示错误信息
-            //         }
-            //     } catch (error) {
-            //         console.error('获取天气信息时出错:', error);
-            //         weatherInfoElement.innerHTML = '<p>无法获取信息</p>'; // 捕获并显示请求错误
-            //     }
-            // }
+                    const live = weatherData.lives[0]; // 获取实时天气信息
+                    weatherInfoElement.innerHTML = `
+                        <p>地点：${city}</p>
+                        <p>天气：${live.weather}</p>
+                        <p>温度：${live.temperature}°C</p>
+                        <p>湿度：${live.humidity}%</p>
+                        <p>风向：${live.windDirection}</p>
+                        <p>风力：${live.windPower}级</p>
+                    `; // 显示天气信息
+
+                } catch (error) {
+                    console.error('获取天气信息时出错:', error);
+                    weatherInfoElement.innerHTML = '<p>无法获取信息</p>'; // 捕获并显示请求错误
+                }
+            }
+
+            async function getApiKeyFromServer() {
+                try {
+                    const response = await fetch('/api/getWeatherApiKey'); // 假设你的API路径是这个
+                    if (!response.ok) {
+                        throw new Error('无法获取API Key');
+                    }
+                    const data = await response.json();
+                    return data.apiKey;
+                } catch (error) {
+                    console.error('获取API Key时出错:', error);
+                    throw error;
+                }
+            }
+
+            async function fetchData(url) {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`请求失败: ${response.statusText}`);
+                }
+                return response.json();
+            }
 
             // 更新当前时间
             function updateTime() {
@@ -503,7 +512,7 @@
             });
 
             document.getElementById('logoutLink').addEventListener('click', (event) => {
-                event.preventDefault(); // 阻止默认链接行为
+                event.preventDefault(); // 阻止默链接行为
                 const confirmLogout = confirm('您确定要退出登录吗？'); // 弹出确认框
                 if (confirmLogout) {
                     // 清除本地存储中的登录数据

@@ -298,7 +298,7 @@
             }
 
             // 检查设备类型并跳转
-            if (/Mobi|Android/i.test(navigator.userAgent)) {
+            if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
                 // 移动设备
                 window.location.href = 'mobile_dashboard.html';
             } else {
