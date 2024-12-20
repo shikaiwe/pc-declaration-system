@@ -19,10 +19,15 @@
         }
         .card {
             background-color: white;
-            margin: 10px;
+            margin: 20px;
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
         }
         .navbar {
             position: fixed;
@@ -31,7 +36,7 @@
             background-color: #2196F3;
             display: flex;
             justify-content: space-around;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
         }
         .navbar a {
             flex: 1;
@@ -45,21 +50,59 @@
             background-color: #1976D2;
             color: white;
         }
+        .submenu {
+            visibility: hidden;
+            position: absolute;
+            bottom: 50px;
+            right: 0;
+            width: 33.3%;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+        }
+        .submenu.show {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .submenu a {
+            display: block;
+            text-align: center;
+            padding: 10px 0;
+            text-decoration: none;
+            color: white;
+            margin: 0;
+        }
+        .submenu a#edit-info {
+            background-color: green;
+        }
+        .submenu a#edit-info:hover {
+            background-color: darkgreen;
+        }
+        .submenu a#logout {
+            background-color: orange;
+        }
+        .submenu a#logout:hover {
+            background-color: darkorange;
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>仪表板</h1>
+        <h1>首页</h1>
     </div>
 
     <div class="card">
-        <h2>卡片1</h2>
-        <p>一些信息...</p>
+        <h2>今日天气</h2>
+        <div id="weather-info">
+            <!-- 天气信息将显示在这里 -->
+        </div>
     </div>
 
     <div class="card">
-        <h2>卡片2</h2>
+        <h2>订单状态</h2>
         <p>更多信息...</p>
     </div>
 
@@ -71,8 +114,59 @@
     <div class="navbar">
         <a href="#home">回到首页</a>
         <a href="#orders">我的订单</a>
-        <a href="#account">账户管理</a>
+        <a href="#account" onclick="toggleSubmenu()">账户管理</a>
     </div>
+    <div id="submenu" class="submenu">
+        <a id="edit-info" href="#edit-info">信息修改</a>
+        <a id="logout" href="#logout">退出登录</a>
+    </div>
+    <script>
+        function toggleSubmenu() {
+            var submenu = document.getElementById('submenu');
+            submenu.classList.toggle('show');
+        }
+
+        async function getApiKeyFromServer() {
+            // 返回一个固定的API Key
+            return 'your-api-key-here'; // 请替换为实际的API Key
+        }
+
+        async function fetchWeatherAndLocation() {
+            try {
+                const apiKey = await getApiKeyFromServer(); // 从服务端获取API Key
+
+                const ipData = await fetchData(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
+                if (ipData.status !== '1') {
+                    throw new Error(`无法获取IP信息: ${ipData.info}`);
+                }
+
+                const cityAdcode = ipData.adcode; // 获取城市的行政区划代码
+                const city = ipData.city.replace('市', ''); // 获取城市名称
+
+                const weatherData = await fetchData(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
+                if (weatherData.status !== '1') {
+                    throw new Error(`无法获取天气信息: ${weatherData.info}`);
+                }
+
+                const live = weatherData.lives[0]; // 获取实时天气信息
+                document.getElementById('weather-info').innerHTML = `
+                    <p>地点：${city}</p>
+                    <p>天气：${live.weather}</p>
+                    <p>温度：${live.temperature}°C</p>
+                    <p>湿度：${live.humidity}%</p>
+                    <p>风向：${live.windDirection}</p>
+                    <p>风力：${live.windPower}级</p>
+                `; // 显示天气信息
+
+            } catch (error) {
+                console.error('获取天气信息时出错:', error);
+                document.getElementById('weather-info').innerHTML = '<p>无法获取信息</p>'; // 捕获并显示请求错误
+            }
+        }
+
+        // 调用获取天气信息的函数
+        fetchWeatherAndLocation();
+    </script>
 
 </body>
 </html>

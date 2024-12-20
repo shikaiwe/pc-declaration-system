@@ -233,7 +233,7 @@
             margin: 0 auto; /* 居中对齐 */
             display: flex;
             flex-direction: column;
-            align-items: center; /* 居中对齐子元素 */
+            align-items: center; /* ��中对齐子元素 */
         }
 
         .tab-content form div {
@@ -297,7 +297,7 @@
     <div class="sidebar">
         <ul class="sidebar-menu">
             <li id="homeLink"><i>🏠</i>回到首页</li>
-            <li><i>📝</i>任务管理</li>
+            <li><i>📝</i>订单管理</li>
             <li><i>📅</i>日程安排</li>
             <li><i>📊</i>数据统计</li>
             <li id="accountManagement"><i>👤</i>账号管理</li>
@@ -418,6 +418,12 @@
                 }
             }
 
+
+
+
+
+
+
             async function getApiKeyFromServer() {
                 try {
                     const response = await fetch('/api/getWeatherApiKey'); // 假设你的API路径是这个
@@ -443,8 +449,9 @@
             // 更新当前时间
             function updateTime() {
                 const now = new Date();
-                const timeString = `现在是${now.getHours()}时${now.getMinutes()}分${now.getSeconds()}秒`;
-                currentTimeElement.textContent = timeString;
+                const dateString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+                const timeString = `${now.getHours()}时${now.getMinutes()}分${now.getSeconds()}秒`;
+                currentTimeElement.textContent = `${dateString} ${timeString}`;
             }
 
             // 初始化时间更新
