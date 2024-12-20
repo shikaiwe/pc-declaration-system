@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录页面</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
+        /* 页面样式 */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -129,29 +131,35 @@
     </div>
 
     <script>
+        const ip = 'localhost:8000';
+        var url = `http://${ip}/api/users/login/`;
         // 安全配置
         const CONFIG = {
-            SECRET_KEY: 'your-secret-key-2024',
-            TOKEN_EXPIRY_DAYS: 7,
-            MAX_LOGIN_ATTEMPTS: 3,
-            LOCKOUT_TIME: 15 * 60 * 1000, // 15分钟
+            SECRET_KEY: 'your-secret-key-2024', // 加密密钥
+            TOKEN_EXPIRY_DAYS: 7, // Token有效期
+            MAX_LOGIN_ATTEMPTS: 3, // 最大登录尝试次数
+            LOCKOUT_TIME: 15 * 60 * 1000, // 锁定时间（毫秒）
         };
 
         // 工具函数
         const utils = {
+            // 加密文本
             encrypt: (text) => {
                 return CryptoJS.AES.encrypt(text, CONFIG.SECRET_KEY).toString();
             },
             
+            // 解密文本
             decrypt: (ciphertext) => {
                 const bytes = CryptoJS.AES.decrypt(ciphertext, CONFIG.SECRET_KEY);
                 return bytes.toString(CryptoJS.enc.Utf8);
             },
             
+            // 生成随机Token
             generateToken: () => {
                 return CryptoJS.lib.WordArray.random(32).toString();
             },
             
+            // 显示错误信息
             showError: (message) => {
                 const errorElement = document.getElementById('errorMessage');
                 errorElement.textContent = message;
@@ -161,6 +169,7 @@
                 }, 3000);
             },
             
+            // 设置加载状态
             setLoading: (isLoading) => {
                 const loadingElement = document.querySelector('.loading');
                 const submitButton = document.querySelector('button[type="submit"]');
@@ -171,9 +180,10 @@
 
         // 登录相关功能
         const auth = {
-            loginAttempts: 0,
-            lockoutTime: null,
+            loginAttempts: 0, // 登录尝试计数
+            lockoutTime: null, // 锁定时间
 
+            // 登录函数
             async login(username, password) {
                 // 检查是否被锁定
                 if (this.isLockedOut()) {
@@ -185,7 +195,7 @@
                     const response = await this.loginAPI(username, password);
                     
                     if (response.success) {
-                        this.loginAttempts = 0;
+                        this.loginAttempts = 0; // 重置登录尝试计数
                         return response;
                     } else {
                         this.handleFailedLogin();
@@ -196,21 +206,40 @@
                 }
             },
 
+            // 调用API进行登录
             async loginAPI(username, password) {
-                // 模拟API调用
-                return new Promise((resolve) => {
-                    setTimeout(() => {
-                        // 这里模拟登录成功的情况
-                        resolve({
-                            success: true,
-                            token: utils.generateToken(),
-                            refreshToken: utils.generateToken(),
-                            username: username // 添加用户名到响应中
-                        });
-                    }, 1000);
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        // contentType: 'application/json',
+                        data: JSON.stringify({
+                            name: username,
+                            password: password
+                        }),
+                        success: function(data) {
+                            if (data.message === 'Success') {
+                                resolve({
+                                    success: true,
+                                    token: utils.generateToken(), // 假设后端没有返回token，前端生成一个
+                                    refreshToken: utils.generateToken(),
+                                    username: username
+                                });
+                            } else {
+                                resolve({
+                                    success: false,
+                                    message: data.message
+                                });
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            reject(new Error('API请求失败: ' + textStatus));
+                        }
+                    });
                 });
             },
 
+            // 处理登录失败
             handleFailedLogin() {
                 this.loginAttempts++;
                 if (this.loginAttempts >= CONFIG.MAX_LOGIN_ATTEMPTS) {
@@ -219,6 +248,7 @@
                 }
             },
 
+            // 检查是否被锁定
             isLockedOut() {
                 const storedLockoutTime = localStorage.getItem('lockoutTime');
                 if (storedLockoutTime && Date.now() < storedLockoutTime) {
@@ -229,6 +259,7 @@
                 return false;
             },
 
+            // 保存登录数据
             saveLoginData(username, password, token, refreshToken) {
                 const tokenExpiry = new Date();
                 tokenExpiry.setDate(tokenExpiry.getDate() + CONFIG.TOKEN_EXPIRY_DAYS);
@@ -245,6 +276,7 @@
                 localStorage.setItem('loginData', encryptedData);
             },
 
+            // 清除登录数据
             clearLoginData() {
                 localStorage.removeItem('loginData');
                 localStorage.removeItem('rememberMe');
