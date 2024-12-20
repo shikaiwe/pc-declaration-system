@@ -268,6 +268,14 @@
             return 'your-api-key-here'; // 请替换为实际的API Key
         }
 
+        async function fetchData(url) {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        }
+
         async function fetchWeatherAndLocation() {
             try {
                 const apiKey = await getApiKeyFromServer(); // 从服务端获取API Key
