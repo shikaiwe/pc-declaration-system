@@ -56,7 +56,9 @@
             bottom: 50px;
             right: 0;
             width: 33.3%;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             opacity: 0;
             transform: translateY(10px);
             transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
@@ -71,7 +73,7 @@
             text-align: center;
             padding: 10px 0;
             text-decoration: none;
-            color: white;
+            color: black;
             margin: 0;
         }
         .submenu a#edit-info {
@@ -85,6 +87,92 @@
         }
         .submenu a#logout:hover {
             background-color: darkorange;
+        }
+        .modal {
+            display: none; /* 默认隐藏 */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 10px;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .tab-menu {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab-link {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .tab-link.active {
+            background-color: #0056b3;
+        }
+        .tab-content form {
+            max-width: 600px; /* 设置表单最大宽度 */
+            margin: 0 auto; /* 居中对齐 */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 居中对齐子元素 */
+        }
+        .tab-content form div {
+            width: 100%; /* 确保输入框占满可用宽度 */
+            margin-bottom: 15px; /* 增加输入框之间的间距 */
+        }
+        .tab-content label {
+            display: block;
+            margin-bottom: 5px; /* 标签与输入框之间的间距 */
+        }
+        .tab-content input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* 确保内边距和边框包含在总宽度内 */
+        }
+        .tab-content button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px; /* 按钮与上方输入框的间距 */
+            align-self: center; /* 居中对齐按钮 */
+        }
+        .tab-content button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
@@ -114,17 +202,66 @@
     <div class="navbar">
         <a href="#home">回到首页</a>
         <a href="#orders">我的订单</a>
-        <a href="#account" onclick="toggleSubmenu()">账户管理</a>
+        <a href="#account" onclick="toggleSubmenu(event)">账户管理</a>
     </div>
     <div id="submenu" class="submenu">
-        <a id="edit-info" href="#edit-info">信息修改</a>
+        <a id="edit-info" href="edit_info.html">信息修改</a>
         <a id="logout" href="#logout">退出登录</a>
     </div>
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>账户管理</h2>
+            <div class="tab-menu">
+                <button class="tab-link active" onclick="openTab(event, 'info')">信息修改</button>
+                <button class="tab-link" onclick="openTab(event, 'password')">修改密码</button>
+            </div>
+            <div class="tab-content" id="info" style="display: block;">
+                <form id="infoForm">
+                    <div>
+                        <label for="username">用户名:</label>
+                        <input type="text" id="username" name="username" autocomplete="username" required>
+                    </div>
+                    <div>
+                        <label for="phone">手机号码:</label>
+                        <input type="tel" id="phone" name="phone" autocomplete="tel" required pattern="[0-9]{11}" placeholder="请输入11位手机号码">
+                    </div>
+                    <button type="submit">保存更改</button>
+                </form>
+            </div>
+            <div class="tab-content" id="password" style="display: none;">
+                <form id="passwordForm">
+                    <div>
+                        <label for="current-password">当前密码:</label>
+                        <input type="password" id="current-password" name="current-password" required>
+                    </div>
+                    <div>
+                        <label for="new-password">新密码:</label>
+                        <input type="password" id="new-password" name="new-password" required>
+                    </div>
+                    <div>
+                        <label for="confirm-password">确认新密码:</label>
+                        <input type="password" id="confirm-password" name="confirm-password" required>
+                    </div>
+                    <button type="submit">修改密码</button>
+                </form>
+            </div>
+        </div>
+    </div>
     <script>
-        function toggleSubmenu() {
+        function toggleSubmenu(event) {
+            event.stopPropagation(); // 阻止事件冒泡
             var submenu = document.getElementById('submenu');
             submenu.classList.toggle('show');
         }
+
+        // 点击页面其他地方时关闭二级菜单
+        document.addEventListener('click', function() {
+            var submenu = document.getElementById('submenu');
+            if (submenu.classList.contains('show')) {
+                submenu.classList.remove('show');
+            }
+        });
 
         async function getApiKeyFromServer() {
             // 返回一个固定的API Key
@@ -166,6 +303,47 @@
 
         // 调用获取天气信息的函数
         fetchWeatherAndLocation();
+
+        document.getElementById('logout').addEventListener('click', function(event) {
+            event.preventDefault(); // 阻止默认链接跳转行为
+            var confirmLogout = confirm('确定要退出登录吗？');
+            if (confirmLogout) {
+                // 重定向到登录页面
+                window.location.href = 'login.html'; // 请根据实际的登录页面URL进行修改
+            }
+        });
+
+        document.getElementById('edit-info').addEventListener('click', function(event) {
+            event.preventDefault(); // 阻止默认链接跳转行为
+            var modal = document.getElementById('editModal');
+            modal.style.display = "block";
+        });
+
+        document.querySelector('.close-button').addEventListener('click', function() {
+            var modal = document.getElementById('editModal');
+            modal.style.display = "none";
+        });
+
+        window.addEventListener('click', function(event) {
+            var modal = document.getElementById('editModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
+
+        function openTab(event, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab-link");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.className += " active";
+        }
     </script>
 
 </body>
