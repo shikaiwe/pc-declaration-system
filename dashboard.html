@@ -560,6 +560,8 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        const ip = 'localhost:80';
+        var url = `http://${ip}/api/dashboard/call_report/`;
         document.addEventListener('DOMContentLoaded', () => {
             // 检查设备类型并跳转
             if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -788,7 +790,7 @@
             // 定义调用报告API的函数
             function callReportAPI(userPhoneNumber, address) {
                 return $.ajax({
-                    url: 'http://localtion:8000/api/dashboard/call_report/',
+                    url: url,
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
@@ -811,8 +813,6 @@
                 });
             }
 
-            // 示例调用
-            callReportAPI('12345678901', 'tokyo');
         });
     </script>
 </body>
