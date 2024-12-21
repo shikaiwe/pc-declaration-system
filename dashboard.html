@@ -398,7 +398,7 @@
         }
 
         .submenu li:hover {
-            background-color: #007BFF; /* 与主菜单项一致的悬停背景颜色 */
+            background-color: #007BFF; /* 与主菜单项致的悬停背景颜色 */
             transform: translateX(5px); /* 减少悬停时的位移 */
             color: white;
         }
@@ -438,7 +438,7 @@
         }
 
         .order-submenu li {
-            height: 60px; /* 每个按钮占一半的高度 */
+            height: 60px; /* 每个按钮占一半的高 */
             cursor: pointer;
             transition: transform 0.2s ease-out, background-color 0.2s ease-out;
             color: white; /* 与主菜单项一致的体颜色 */
@@ -466,7 +466,7 @@
         #orderContent {
             background-color: #f4f4f4; /* 与其他内容区域一致的背景色 */
             border-radius: 8px; /* 圆角 */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 阴影 */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 影 */
             padding: 20px; /* 内边距 */
             max-width: 800px; /* 最大宽度 */
             width: 100%; /* 占满可用宽度 */
@@ -592,13 +592,15 @@
             transform: none; /* 无缩放效果 */
         }
     </style>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
 </head>
 <body>
     <div class="sidebar">
         <ul class="sidebar-menu">
             <li id="homeLink"><i>🏠</i>首页</li>
             <li id="orderManagement"><i>📝</i>订单管理</li>
-            <li id="scheduleManagement"><i>📅</i>日程安排</li>
+            <li id="scheduleManagement"><i>📅</i>日程管理</li>
             <li id="dataStatistics"><i>📊</i>数据统计</li>
             <li id="accountManagement"><i>👤</i>账号管理</li>
         </ul>
@@ -669,11 +671,6 @@
             </div>
         </div>
 
-        <div class="content" id="scheduleContent" style="display: none;">
-            <h2>日程安排</h2>
-            <p>日程安排功能即将推出。</p>
-        </div>
-
         <div class="content" id="dataStatisticsContent" style="display: none;">
             <h2>数据统计</h2>
             <p>数据统计功能即将推出。</p>
@@ -725,6 +722,11 @@
             </div>
         </div>
 
+        <div class="content" id="scheduleContent" style="display: none;">
+            <h2>日程管理</h2>
+            <div id="calendar"></div>
+        </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         const ip = 'localhost:80';
@@ -734,7 +736,7 @@
             if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
                 // 移动设备
                 window.location.href = 'mobile_dashboard.html';
-                return; // 确保不执行后续码
+                return; // 确保不执行续码
             }
 
             const currentTimeElement = document.getElementById('currentTime');
@@ -747,7 +749,7 @@
                         const decryptedData = JSON.parse(utils.decrypt(encryptedData));
                         return decryptedData;
                     } catch (error) {
-                        console.error('获取登录数据失败:', error);
+                        console.error('取登录数据失败:', error);
                         return null;
                     }
                 }
@@ -781,15 +783,15 @@
                         <p>湿度：${live.humidity}%</p>
                         <p>风向：${live.winddirection}</p>
                         <p>风力：${live.windpower}级</p>
-                    `; // 显示天气信息
+                    `; // 示天气信息
 
                 } catch (error) {
-                    console.error('获取天气信息时出错:', error);
+                    console.error('获取天气信���时出错:', error);
                     weatherInfoElement.innerHTML = '<p>无法获取信息</p>'; // 显示错误信息
                 }
             }
 
-            // 使用 jQuery 获取 API Key
+            // 使用 jQuery 获 API Key
             function getApiKeyFromServer() {
                 return $.ajax({
                     url: '/api/dashboard/getWeatherApiKey/',
@@ -811,12 +813,12 @@
                 console.warn('Session error:', message);
                 // 根据不同的错误信息进行处理
                 if (message === 'Session has expired' || message === 'Invalid session' || message === 'No sessionid cookie') {
-                    alert('会话已过期或无效，请重新登录。');
+                    alert('会话已过期，无效，请重新登录。');
                     window.location.href = 'login.html'; // 重定向到登录页面
                 }
             }
 
-            // 使用 jQuery 获取数据
+            // 使用 jQuery 获��数据
             function fetchData(url) {
                 return $.ajax({
                     url: url,
@@ -858,12 +860,31 @@
                     item.classList.add('active');
 
                     // 隐藏所有内容
-                    Object.values(contentSections).forEach(section => section.style.display = 'none');
+                    Object.values(contentSections).forEach(section => {
+                        if (section) {
+                            section.style.display = 'none';
+                        }
+                    });
 
                     // 显示对应的内容
                     const sectionToShow = contentSections[item.id];
                     if (sectionToShow) {
                         sectionToShow.style.display = 'block';
+                    }
+
+                    // 如果点击的是日程管理，初始化并显示日历
+                    if (item.id === 'scheduleManagement') {
+                        var calendarEl = document.getElementById('calendar');
+                        var calendar = new FullCalendar.Calendar(calendarEl, {
+                            initialView: 'dayGridMonth',
+                            locale: 'zh-cn', // 设置语言为中文
+                            events: [
+                                // 在这里添加事件
+                                { title: '事件1', start: '2023-10-01' },
+                                { title: '事件2', start: '2023-10-05', end: '2023-10-07' }
+                            ]
+                        });
+                        calendar.render();
                     }
                 });
             });
@@ -927,14 +948,14 @@
 
             window.addEventListener('click', (event) => {
                 if (event.target === logoutModal) {
-                    logoutModal.style.display = 'none'; // 点击���态框外部隐藏模态框
+                    logoutModal.style.display = 'none'; // 点击态框外部隐藏模态框
                 }
             });
 
             // 获天气和位置信息
-            fetchWeatherAndLocation(); // 确保调用 fetchWeatherAndLocation 函数
+            fetchWeatherAndLocation(); // 确保调 fetchWeatherAndLocation 函数
 
-            // 定义调用报告API的函数
+            // 定义用报告API的函数
             function callReportAPI(name, userPhoneNumber, address, issue, preferredTime) {
                 return $.ajax({
                     url: url,
@@ -1039,7 +1060,7 @@
 
                 setPreferredTimeRange();
 
-                // 检查选择的时间是否在允许范围内
+                // 查选择的时间是否在允许范围内
                 preferredTimeInput.addEventListener('change', () => {
                     const selectedTime = new Date(preferredTimeInput.value);
                     const selectedHour = selectedTime.getHours();
