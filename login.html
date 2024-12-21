@@ -301,6 +301,7 @@
             }));
             localStorage.setItem('loginData', encryptedData);
             
+           
             // 如果选择了"记住我"，保存相关信息
             if (document.getElementById('rememberMe').checked) {
                 localStorage.setItem('rememberMe', 'true');
@@ -331,9 +332,8 @@
                         },
                         success: function(data) {
                             if (data.isValid) {
-                                // 如果session有效，获取username并跳转到dashboard
-                                const username = encodeURIComponent(data.username);
-                                window.location.href = `dashboard.html?username=${username}`;
+                                // 如果session有效，直接跳转到dashboard
+                                window.location.href = 'dashboard.html';
                             } else {
                                 auth.clearLoginData();
                             }
