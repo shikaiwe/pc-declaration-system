@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>控制面板</title>
+    <!-- CDN 链接 -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         /* 基本样式设置 */
         body {
@@ -571,8 +575,6 @@
             transform: none;
         }
     </style>
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
 </head>
 <body>
     <div class="sidebar">
@@ -705,14 +707,18 @@
             <div id="calendar"></div>
         </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        // 定义所有的URL
         const ip = 'localhost:80';
-        var url = `http://${ip}/api/dashboard/call_report/`;
+        const reportApiUrl = `http://${ip}/api/dashboard/call_report/`;
+        const weatherApiKeyUrl = '/api/dashboard/getWeatherApiKey/';
+        const mobileDashboardUrl = 'mobile_dashboard.html';
+        const loginUrl = 'login.html';
+
         document.addEventListener('DOMContentLoaded', () => {
             // 检查设备类型并跳转
             if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                window.location.href = 'mobile_dashboard.html';
+                window.location.href = mobileDashboardUrl;
                 return;
             }
 
@@ -771,7 +777,7 @@
             // 使用 jQuery 获取 API Key
             function getApiKeyFromServer() {
                 return $.ajax({
-                    url: '/api/dashboard/getWeatherApiKey/',
+                    url: weatherApiKeyUrl,
                     method: 'GET',
                     dataType: 'json',
                 }).then(data => {
@@ -790,7 +796,7 @@
                 console.warn('Session error:', message);
                 if (message === 'Session has expired' || message === 'Invalid session' || message === 'No sessionid cookie') {
                     alert('会话已过期或无效，请重新登录。');
-                    window.location.href = 'login.html';
+                    window.location.href = loginUrl;
                 }
             }
 
@@ -914,7 +920,7 @@
 
             confirmLogoutButton.addEventListener('click', () => {
                 localStorage.removeItem('loginData');
-                window.location.href = 'login.html';
+                window.location.href = loginUrl;
             });
 
             cancelLogoutButton.addEventListener('click', () => {
@@ -933,7 +939,7 @@
             // 调用报告API的函数
             function callReportAPI(name, userPhoneNumber, address, issue, preferredTime) {
                 return $.ajax({
-                    url: url,
+                    url: reportApiUrl,
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
