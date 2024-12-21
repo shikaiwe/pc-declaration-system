@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>移动仪表板</title>
     <style>
+        /* 全局样式 */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -29,6 +30,10 @@
             transform: translateY(-10px);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
         }
+        .card.no-hover:hover {
+            transform: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
         .navbar {
             position: fixed;
             bottom: 0;
@@ -48,7 +53,6 @@
         }
         .navbar a:hover {
             background-color: #1976D2;
-            color: white;
         }
         .submenu {
             visibility: hidden;
@@ -89,7 +93,7 @@
             background-color: darkorange;
         }
         .modal {
-            display: none; /* 默认隐藏 */
+            display: none;
             position: fixed;
             z-index: 1;
             left: 0;
@@ -97,16 +101,17 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgb(0,0,0);
             background-color: rgba(0,0,0,0.4);
         }
         .modal-content {
             background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
+            margin: 10% auto;
+            padding: 30px;
             border: 1px solid #888;
             width: 80%;
+            max-width: 600px;
             border-radius: 10px;
+            text-align: center;
         }
         .close-button {
             color: #aaa;
@@ -126,53 +131,103 @@
             margin-bottom: 20px;
         }
         .tab-link {
-            padding: 10px 20px;
-            margin: 0 5px;
+            padding: 12px 24px;
+            margin: 0 10px;
             background-color: #007BFF;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
+            font-size: 1.1em;
         }
         .tab-link.active {
             background-color: #0056b3;
         }
         .tab-content form {
-            max-width: 600px; /* 设置表单最大宽度 */
-            margin: 0 auto; /* 居中对齐 */
+            max-width: 500px;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            align-items: center; /* 居中对齐子元素 */
+            align-items: center;
         }
         .tab-content form div {
-            width: 100%; /* 确保输入框占满可用宽度 */
-            margin-bottom: 15px; /* 增加输入框之间的间距 */
+            width: 100%;
+            margin-bottom: 20px;
         }
         .tab-content label {
             display: block;
-            margin-bottom: 5px; /* 标签与输入框之间的间距 */
+            margin-bottom: 8px;
+            font-size: 1.1em;
         }
         .tab-content input {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            box-sizing: border-box; /* 确保内边距和边框包含在总宽度内 */
+            box-sizing: border-box;
+            font-size: 1em;
         }
         .tab-content button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             background-color: #007BFF;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
-            margin-top: 10px; /* 按钮与上方输入框的间距 */
-            align-self: center; /* 居中对齐按钮 */
+            margin-top: 15px;
+            font-size: 1em;
         }
         .tab-content button:hover {
             background-color: #0056b3;
+        }
+        .logout-modal {
+            display: none;
+            position: fixed;
+            z-index: 2;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s ease-out;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        .logout-modal p {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .logout-modal button {
+            margin-top: 15px;
+            padding: 15px 30px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            display: inline-block;
+            font-size: 1em;
+        }
+        .logout-modal button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        .logout-modal button#confirmLogout {
+            background-color: orange;
+        }
+        .logout-modal button#confirmLogout:hover {
+            background-color: darkorange;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
         }
     </style>
 </head>
@@ -189,7 +244,7 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="card no-hover">
         <h2>订单状态</h2>
         <p>更多信息...</p>
     </div>
@@ -248,44 +303,57 @@
             </div>
         </div>
     </div>
+    <div id="logoutModal" class="logout-modal">
+        <p>确定要退出登录吗？</p>
+        <button id="confirmLogout">确认</button>
+        <button id="cancelLogout">取消</button>
+    </div>
     <script>
-        function toggleSubmenu(event) {
-            event.stopPropagation(); // 阻止事件冒泡
-            var submenu = document.getElementById('submenu');
-            submenu.classList.toggle('show');
+        async function getApiKeyFromServer() {
+            try {
+                const response = await fetch('/api/getApiKey'); //服务端API的URL
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data.apiKey; // 返回的数据中包含apiKey字段
+            } catch (error) {
+                console.error('获取API Key时出错:', error);
+                throw error; // 继续抛出错误以便调用者处理
+            }
         }
 
-        // 点击页面其他地方时关闭二级菜单
-        document.addEventListener('click', function() {
-            var submenu = document.getElementById('submenu');
-            if (submenu.classList.contains('show')) {
-                submenu.classList.remove('show');
+        async function fetchData(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('获取数据时出错:', error);
+                throw error;
             }
-        });
-
-        async function getApiKeyFromServer() {
-            // 返回一个固定的API Key
-            return 'your-api-key-here'; // 请替换为实际的API Key
         }
 
         async function fetchWeatherAndLocation() {
             try {
-                const apiKey = await getApiKeyFromServer(); // 从服务端获取API Key
+                const apiKey = await getApiKeyFromServer();
 
                 const ipData = await fetchData(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
                 if (ipData.status !== '1') {
                     throw new Error(`无法获取IP信息: ${ipData.info}`);
                 }
 
-                const cityAdcode = ipData.adcode; // 获取城市的行政区划代码
-                const city = ipData.city.replace('市', ''); // 获取城市名称
+                const cityAdcode = ipData.adcode;
+                const city = ipData.city.replace('市', '');
 
                 const weatherData = await fetchData(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
                 if (weatherData.status !== '1') {
                     throw new Error(`无法获取天气信息: ${weatherData.info}`);
                 }
 
-                const live = weatherData.lives[0]; // 获取实时天气信息
+                const live = weatherData.lives[0];
                 document.getElementById('weather-info').innerHTML = `
                     <p>地点：${city}</p>
                     <p>天气：${live.weather}</p>
@@ -293,57 +361,94 @@
                     <p>湿度：${live.humidity}%</p>
                     <p>风向：${live.windDirection}</p>
                     <p>风力：${live.windPower}级</p>
-                `; // 显示天气信息
+                `;
 
             } catch (error) {
                 console.error('获取天气信息时出错:', error);
-                document.getElementById('weather-info').innerHTML = '<p>无法获取信息</p>'; // 捕获并显示请求错误
+                document.getElementById('weather-info').innerHTML = '<p>无法获取信息</p>';
             }
         }
 
-        // 调用获取天气信息的函数
-        fetchWeatherAndLocation();
+// 文档加载后获取天气和位置信息
+document.addEventListener('DOMContentLoaded', (event) => {
+    fetchWeatherAndLocation();
+});
 
-        document.getElementById('logout').addEventListener('click', function(event) {
-            event.preventDefault(); // 阻止默认链接跳转行为
-            var confirmLogout = confirm('确定要退出登录吗？');
-            if (confirmLogout) {
-                // 重定向到登录页面
-                window.location.href = 'login.html'; // 请根据实际的登录页面URL进行修改
-            }
-        });
+// 切换子菜单显示
+function toggleSubmenu(event) {
+    event.stopPropagation();
+    const submenu = document.getElementById('submenu');
+    submenu.classList.toggle('show');
+}
 
-        document.getElementById('edit-info').addEventListener('click', function(event) {
-            event.preventDefault(); // 阻止默认链接跳转行为
-            var modal = document.getElementById('editModal');
-            modal.style.display = "block";
-        });
+// 点击文档隐藏子菜单
+document.addEventListener('click', function() {
+    const submenu = document.getElementById('submenu');
+    if (submenu.classList.contains('show')) {
+        submenu.classList.remove('show');
+    }
+});
 
-        document.querySelector('.close-button').addEventListener('click', function() {
-            var modal = document.getElementById('editModal');
-            modal.style.display = "none";
-        });
+// 显示退出确认模态框
+document.getElementById('logout').addEventListener('click', function(event) {
+    event.preventDefault();
+    const modal = document.getElementById('logoutModal');
+    modal.style.display = "block";
+});
 
-        window.addEventListener('click', function(event) {
-            var modal = document.getElementById('editModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        });
+// 确认退出跳转登录页面
+document.getElementById('confirmLogout').addEventListener('click', function() {
+    window.location.href = 'login.html';
+});
 
-        function openTab(event, tabName) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tab-link");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            event.currentTarget.className += " active";
-        }
+// 取消退出隐藏模态框
+document.getElementById('cancelLogout').addEventListener('click', function() {
+    const modal = document.getElementById('logoutModal');
+    modal.style.display = "none";
+});
+
+// 点击模态框外部隐藏模态框
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('logoutModal');
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+});
+
+// 显示信息修改模态框
+document.getElementById('edit-info').addEventListener('click', function(event) {
+    event.preventDefault();
+    const modal = document.getElementById('editModal');
+    modal.style.display = "block";
+});
+
+// 关闭信息修改模态框
+document.querySelector('.close-button').addEventListener('click', function() {
+    const modal = document.getElementById('editModal');
+    modal.style.display = "none";
+});
+
+// 点击模态框外部隐藏信息修改模态框
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('editModal');
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+});
+
+// 切换选项卡内容
+function openTab(event, tabName) {
+    const tabcontent = document.getElementsByClassName("tab-content");
+    for (let i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    const tablinks = document.getElementsByClassName("tab-link");
+    for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    event.currentTarget.className += " active";
+}
     </script>
 
 </body>
