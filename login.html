@@ -331,8 +331,9 @@
                         },
                         success: function(data) {
                             if (data.isValid) {
-                                // 如果session有效，跳转到dashboard
-                                window.location.href = 'dashboard.html';
+                                // 如果session有效，获取username并跳转到dashboard
+                                const username = encodeURIComponent(data.username);
+                                window.location.href = `dashboard.html?username=${username}`;
                             } else {
                                 auth.clearLoginData();
                             }
