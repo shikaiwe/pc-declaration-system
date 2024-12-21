@@ -429,13 +429,26 @@
                 return $.ajax({
                     url: '/api/dashboard/getWeatherApiKey/',
                     method: 'GET',
-                    dataType: 'json'
+                    dataType: 'json',
                 }).then(data => {
-                    return data.apiKey;
+                    if (data.message === 'Success') {
+                        return data.apiKey;
+                    } else {
+                        handleSessionError(data.message);
+                    }
                 }).catch(error => {
                     console.error('获取API Key时出错:', error);
                     throw error;
                 });
+            }
+
+            function handleSessionError(message) {
+                console.warn('Session error:', message);
+                // 根据不同的错误信息进行处理
+                if (message === 'Session has expired' || message === 'Invalid session' || message === 'No sessionid cookie') {
+                    alert('会话已过期或无效，请重新登录。');
+                    window.location.href = 'login.html'; // 重定向到登录页面
+                }
             }
 
             // 使用 jQuery 获取数据
@@ -527,7 +540,7 @@
                 event.preventDefault(); // 阻止默链接行为
                 const confirmLogout = confirm('您确定要退出登录吗？'); // 弹出确认框
                 if (confirmLogout) {
-                    // 清除本地存储中的登录数据
+                    // 清除本��存储中的登录数据
                     localStorage.removeItem('loginData');
                     // 重定向到 login.html 页面
                     window.location.href = 'login.html'; // 确保路径正确
