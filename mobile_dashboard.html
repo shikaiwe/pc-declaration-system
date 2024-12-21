@@ -313,7 +313,7 @@
         // 使用 jQuery 获取 API Key
         function getApiKeyFromServer() {
             return $.ajax({
-                url: '/api/getWeatherApiKey',
+                url: '/api/dashboard/getWeatherApiKey/',
                 method: 'GET',
                 dataType: 'json'
             }).then(data => {
