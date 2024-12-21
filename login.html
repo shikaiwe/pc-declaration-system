@@ -319,9 +319,6 @@
 
         // 页面加载时检查登录状态
         window.onload = async function() {
-            const rememberMe = localStorage.getItem('rememberMe');
-
-            if (rememberMe === 'true') {
                 try {
                     // 向后端发送请求以验证sessionid
                     $.ajax({
@@ -347,7 +344,6 @@
                     console.error('请求失败:', error);
                     auth.clearLoginData();
                 }
-            }
         };
 
         // 处理表单提交
