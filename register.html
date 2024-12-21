@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注册页面</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
         body {
             font-family: 'Microsoft YaHei', sans-serif;
@@ -145,10 +145,8 @@
     </div>
 
     <script>
-        // 此处设置api的ip以及端口号
-        // const ip = '192.168.50.146:8000';
         const ip = 'localhost:8000';
-        var url = `http://${ip}/api/users/register/`
+        const url = `http://${ip}/api/users/register/`;
 
         const utils = {
             showError: (message) => {
@@ -175,7 +173,6 @@
             },
         };
 
-        // 处理注册表单提交
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -185,19 +182,16 @@
 
             try {
 
-                // 验证密码
                 if (!utils.validatePassword(password)) {
                     throw new Error('密码必须至少包含8个字符，且包含字母和数字');
                 }
 
-                // 验证密码确认
                 if (password !== confirmPassword) {
                     throw new Error('两次输入的密码不一致');
                 }
 
                 utils.setLoading(true);
 
-                // api
                 $.ajax({
                     url: url,
                     type: "POST",
@@ -208,7 +202,6 @@
                     success: function(data){
                         if (data['message'] === 'Success'){
                             alert("注册成功！将自动前往登陆界面！");
-                            // 注册成功后跳转到登录页
                             window.location.href = 'login.html';
                         }
                         else if (data['message'] === 'Existed'){
