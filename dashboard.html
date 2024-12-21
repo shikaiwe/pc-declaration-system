@@ -398,7 +398,7 @@
         }
 
         .submenu li:hover {
-            background-color: #007BFF; /* 与���菜单项一致的悬停背景颜色 */
+            background-color: #007BFF; /* 与主菜单项一致的悬停背景颜色 */
             transform: translateX(5px); /* 减少悬停时的位移 */
             color: white;
         }
@@ -414,7 +414,7 @@
 
         .order-submenu {
             display: none; /* 初始隐藏 */
-            background-color: #222; /* 设置背景色为略深于导航栏的颜�� */
+            background-color: #222; /* 设置背景色为略深于导航栏的颜 */
             width: 90%; /* 设置宽度为90%，以确保在导航栏内完整显示 */
             border-radius: 4px; /* 添加圆角 */
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 减少阴影以优化边缘 */
@@ -438,7 +438,7 @@
         }
 
         .order-submenu li {
-            height: 60px; /* 每个按钮占据一半的高度 */
+            height: 60px; /* 每个按钮占一半的高度 */
             cursor: pointer;
             transition: transform 0.2s ease-out, background-color 0.2s ease-out;
             color: white; /* 与主菜单项一致的体颜色 */
@@ -654,8 +654,11 @@
                         <label for="preferredTime">期望上门时间:</label>
                         <input type="datetime-local" id="preferredTime" name="preferredTime" required>
                     </div>
+                    <div id="timeWarning" style="display: none; color: red; margin-top: 10px;">
+                        该时间非上门时段。正确的时间段为18:00-21:00
+
+                    </div>
                     <button type="submit">提交</button>
-                    <button type="button" id="cancelReportOrder">取消</button>
                 </form>
                 <div id="reportOrderInfo">
                     <!-- 这里将显示报单信息 -->
@@ -770,7 +773,7 @@
                         throw new Error(`无法获取天气信息: ${weatherData.info}`);
                     }
 
-                    const live = weatherData.lives[0]; // 获取实时天气息
+                    const live = weatherData.lives[0]; // 获取实时天气信息
                     weatherInfoElement.innerHTML = `
                         <p>地点：${city}</p>
                         <p>天气：${live.weather}</p>
@@ -782,7 +785,7 @@
 
                 } catch (error) {
                     console.error('获取天气信息时出错:', error);
-                    weatherInfoElement.innerHTML = '<p>无法获取信息</p>'; // 显示错误���息
+                    weatherInfoElement.innerHTML = '<p>无法获取信息</p>'; // 显示错误信息
                 }
             }
 
@@ -822,7 +825,7 @@
                 }).then(response => {
                     return response;
                 }).catch(error => {
-                    throw new Error(`求败: ${error.statusText}`);
+                    throw new Error(`请求失败: ${error.statusText}`);
                 });
             }
 
@@ -929,7 +932,7 @@
             });
 
             // 获天气和位置信息
-            fetchWeatherAndLocation(); // 保调用 fetchWeatherAndLocation 函数
+            fetchWeatherAndLocation(); // 确保调用 fetchWeatherAndLocation 函数
 
             // 定义调用报告API的函数
             function callReportAPI(name, userPhoneNumber, address, issue, preferredTime) {
@@ -963,7 +966,6 @@
             const reportOrderButton = document.querySelector('.tab-button[data-tab="reportOrder"]');
             const reportOrderForm = document.getElementById('reportOrderForm');
             const reportOrderInfo = document.getElementById('reportOrderInfo');
-            const cancelReportOrderButton = document.getElementById('cancelReportOrder');
 
             // 显示报单表单
             reportOrderButton.addEventListener('click', () => {
@@ -991,15 +993,6 @@
 
                 document.getElementById('reportOrder').style.display = 'none'; // 提交后隐藏表单
             });
-
-            // 取消按钮隐藏表单
-            if (cancelReportOrderButton) {
-                cancelReportOrderButton.addEventListener('click', () => {
-                    document.getElementById('reportOrder').style.display = 'none';
-                });
-            } else {
-                console.error('找不到取消报单按钮');
-            }
 
             const issueTextarea = document.getElementById('issue');
 
@@ -1045,10 +1038,13 @@
                 preferredTimeInput.addEventListener('change', () => {
                     const selectedTime = new Date(preferredTimeInput.value);
                     const selectedHour = selectedTime.getHours();
+                    const timeWarning = document.getElementById('timeWarning');
 
                     if (selectedHour < 18 || selectedHour >= 21) {
-                        alert('该时间非上门时段，请选择18:00-21:00之间的时间');
-                        preferredTimeInput.value = ''; // 清空不符合条件的输��
+                        timeWarning.style.display = 'block'; // 显示警告信息
+                        preferredTimeInput.value = ''; // 清空不符合条件的输入框
+                    } else {
+                        timeWarning.style.display = 'none'; // 隐藏警告信息
                     }
                 });
             } else {
