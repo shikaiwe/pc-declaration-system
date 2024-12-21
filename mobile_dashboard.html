@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>移动仪表板</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         /* 全局样式 */
         body {
@@ -238,7 +239,7 @@
     </div>
 
     <div class="card">
-        <h2>今日天气</h2>
+        <h2>��日天气</h2>
         <div id="weather-info">
             <!-- 天气信息将显示在这里 -->
         </div>
@@ -309,51 +310,52 @@
         <button id="cancelLogout">取消</button>
     </div>
     <script>
-        async function getApiKeyFromServer() {
-            try {
-                const response = await fetch('/api/getApiKey'); //服务端API的URL
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                return data.apiKey; // 返回的数据中包含apiKey字段
-            } catch (error) {
+        // 使用 jQuery 获取 API Key
+        function getApiKeyFromServer() {
+            return $.ajax({
+                url: '/api/getWeatherApiKey',
+                method: 'GET',
+                dataType: 'json'
+            }).then(data => {
+                return data.apiKey;
+            }).catch(error => {
                 console.error('获取API Key时出错:', error);
-                throw error; // 继续抛出错误以便调用者处理
-            }
-        }
-
-        async function fetchData(url) {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return await response.json();
-            } catch (error) {
-                console.error('获取数据时出错:', error);
                 throw error;
-            }
+            });
         }
 
+        // 使用 jQuery 获取数据
+        function fetchData(url) {
+            return $.ajax({
+                url: url,
+                method: 'GET',
+                dataType: 'json'
+            }).then(response => {
+                return response;
+            }).catch(error => {
+                throw new Error(`请求失败: ${error.statusText}`);
+            });
+        }
+
+        // 获取天气和位置信息
         async function fetchWeatherAndLocation() {
             try {
-                const apiKey = await getApiKeyFromServer();
+                const apiKey = await getApiKeyFromServer(); // 从服务端获取API Key
 
                 const ipData = await fetchData(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
                 if (ipData.status !== '1') {
                     throw new Error(`无法获取IP信息: ${ipData.info}`);
                 }
 
-                const cityAdcode = ipData.adcode;
-                const city = ipData.city.replace('市', '');
+                const cityAdcode = ipData.adcode; // 获取城市的行政区划代码
+                const city = ipData.city.replace('市', ''); // 获取城市名称
 
                 const weatherData = await fetchData(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
                 if (weatherData.status !== '1') {
                     throw new Error(`无法获取天气信息: ${weatherData.info}`);
                 }
 
-                const live = weatherData.lives[0];
+                const live = weatherData.lives[0]; // 获取实时天气信息
                 document.getElementById('weather-info').innerHTML = `
                     <p>地点：${city}</p>
                     <p>天气：${live.weather}</p>
@@ -361,94 +363,94 @@
                     <p>湿度：${live.humidity}%</p>
                     <p>风向：${live.windDirection}</p>
                     <p>风力：${live.windPower}级</p>
-                `;
+                `; // 显示天气信息
 
             } catch (error) {
                 console.error('获取天气信息时出错:', error);
-                document.getElementById('weather-info').innerHTML = '<p>无法获取信息</p>';
+                document.getElementById('weather-info').innerHTML = '<p>无法获取信息</p>'; // 捕获并显示请求错误
             }
         }
 
-// 文档加载后获取天气和位置信息
-document.addEventListener('DOMContentLoaded', (event) => {
-    fetchWeatherAndLocation();
-});
+        // 文档加载后获取天气和位置信息
+        document.addEventListener('DOMContentLoaded', (event) => {
+            fetchWeatherAndLocation();
+        });
 
-// 切换子菜单显示
-function toggleSubmenu(event) {
-    event.stopPropagation();
-    const submenu = document.getElementById('submenu');
-    submenu.classList.toggle('show');
-}
+        // 切换子菜单显示
+        function toggleSubmenu(event) {
+            event.stopPropagation();
+            const submenu = document.getElementById('submenu');
+            submenu.classList.toggle('show');
+        }
 
-// 点击文档隐藏子菜单
-document.addEventListener('click', function() {
-    const submenu = document.getElementById('submenu');
-    if (submenu.classList.contains('show')) {
-        submenu.classList.remove('show');
-    }
-});
+        // 点击文档隐藏子菜单
+        document.addEventListener('click', function() {
+            const submenu = document.getElementById('submenu');
+            if (submenu.classList.contains('show')) {
+                submenu.classList.remove('show');
+            }
+        });
 
-// 显示退出确认模态框
-document.getElementById('logout').addEventListener('click', function(event) {
-    event.preventDefault();
-    const modal = document.getElementById('logoutModal');
-    modal.style.display = "block";
-});
+        // 显示退出确认模态框
+        document.getElementById('logout').addEventListener('click', function(event) {
+            event.preventDefault();
+            const modal = document.getElementById('logoutModal');
+            modal.style.display = "block";
+        });
 
-// 确认退出跳转登录页面
-document.getElementById('confirmLogout').addEventListener('click', function() {
-    window.location.href = 'login.html';
-});
+        // 确认退出跳转登录页面
+        document.getElementById('confirmLogout').addEventListener('click', function() {
+            window.location.href = 'login.html';
+        });
 
-// 取消退出隐藏模态框
-document.getElementById('cancelLogout').addEventListener('click', function() {
-    const modal = document.getElementById('logoutModal');
-    modal.style.display = "none";
-});
+        // 取消退出隐藏模态框
+        document.getElementById('cancelLogout').addEventListener('click', function() {
+            const modal = document.getElementById('logoutModal');
+            modal.style.display = "none";
+        });
 
-// 点击模态框外部隐藏模态框
-window.addEventListener('click', function(event) {
-    const modal = document.getElementById('logoutModal');
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-});
+        // 点击模态框外部隐藏模态框
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('logoutModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
 
-// 显示信息修改模态框
-document.getElementById('edit-info').addEventListener('click', function(event) {
-    event.preventDefault();
-    const modal = document.getElementById('editModal');
-    modal.style.display = "block";
-});
+        // 显示信息修改模态框
+        document.getElementById('edit-info').addEventListener('click', function(event) {
+            event.preventDefault();
+            const modal = document.getElementById('editModal');
+            modal.style.display = "block";
+        });
 
-// 关闭信息修改模态框
-document.querySelector('.close-button').addEventListener('click', function() {
-    const modal = document.getElementById('editModal');
-    modal.style.display = "none";
-});
+        // 关闭信息修改模态框
+        document.querySelector('.close-button').addEventListener('click', function() {
+            const modal = document.getElementById('editModal');
+            modal.style.display = "none";
+        });
 
-// 点击模态框外部隐藏信息修改模态框
-window.addEventListener('click', function(event) {
-    const modal = document.getElementById('editModal');
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-});
+        // 点击模态框外部隐藏信息修改模态框
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
 
-// 切换选项卡内容
-function openTab(event, tabName) {
-    const tabcontent = document.getElementsByClassName("tab-content");
-    for (let i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
-    const tablinks = document.getElementsByClassName("tab-link");
-    for (let i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-    document.getElementById(tabName).style.display = "block";
-    event.currentTarget.className += " active";
-}
+        // 切换选项卡内容
+        function openTab(event, tabName) {
+            const tabcontent = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            const tablinks = document.getElementsByClassName("tab-link");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.className += " active";
+        }
     </script>
 
 </body>
