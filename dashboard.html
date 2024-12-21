@@ -109,7 +109,7 @@
             transform: scale(1.1);
         }
 
-        /* 下拉���单样式 */
+        /* 下拉菜单样式 */
         .dropdown-menu {
             position: absolute;
             top: 100%;
@@ -373,7 +373,7 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 减少阴影以优化边缘 */
             z-index: 1001; /* 确保在其他内容之上 */
             transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* 添加过渡效果 */
-            transform: scaleY(0); /* 初始缩放为0 */
+            transform: scaleY(0); /* 初始缩放���0 */
             transform-origin: top; /* 从顶部开始缩放 */
             opacity: 0; /* 初始透明度为0 */
         }
@@ -784,6 +784,35 @@
 
             // 获取天气和位置信息
             fetchWeatherAndLocation(); // 保调用 fetchWeatherAndLocation 函数
+
+            // 定义调用报告API的函数
+            function callReportAPI(userPhoneNumber, address) {
+                return $.ajax({
+                    url: 'http://localtion:8000/api/dashboard/call_report/',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        userPhoneNumber: userPhoneNumber,
+                        address: address
+                    }),
+                    dataType: 'json',
+                    xhrFields: {
+                        withCredentials: true // 确保请求携带cookies
+                    }
+                }).then(response => {
+                    if (response.message === 'Success') {
+                        // console.log('API调用成功:', response);
+                        alert('订单提交成功，请留意推送');
+                    } else {
+                        handleSessionError(response.message);
+                    }
+                }).catch(error => {
+                    console.error('API调用失败:', error);
+                });
+            }
+
+            // 示例调用
+            callReportAPI('12345678901', 'tokyo');
         });
     </script>
 </body>
