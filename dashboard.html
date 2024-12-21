@@ -177,7 +177,7 @@
         }
         
         .tab-button.active {
-            background-color: #0056b3; /* 激活状态的颜色 */
+            background-color: #0056b3; /* 深蓝色 */
         }
         
         .tab-content {
@@ -927,7 +927,7 @@
 
             window.addEventListener('click', (event) => {
                 if (event.target === logoutModal) {
-                    logoutModal.style.display = 'none'; // 点击模态框外部隐藏模态框
+                    logoutModal.style.display = 'none'; // 点击���态框外部隐藏模态框
                 }
             });
 
@@ -1007,6 +1007,11 @@
             // 确保元素存在
             if (preferredTimeInput) {
                 // 设置期望上门时间的范围
+                document.getElementById('preferredTime').addEventListener('click', function(event) {
+            this.showPicker(); // 触发日期选择器
+                    event.preventDefault(); // 阻止默认的文本选择行为
+                });
+                
                 function setPreferredTimeRange() {
                     const now = new Date();
                     const dayOfWeek = now.getDay();
