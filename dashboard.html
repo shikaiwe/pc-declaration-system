@@ -367,6 +367,13 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // 检查设备类型并跳转
+            if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                // 移动设备
+                window.location.href = 'mobile_dashboard.html';
+                return; // 确保不执行后续代码
+            }
+
             const currentTimeElement = document.getElementById('currentTime');
 
             // 获取登录数据
@@ -464,7 +471,7 @@
                 });
             }
 
-            // 更新当前时间
+            // 更新当��时间
             function updateTime() {
                 const now = new Date();
                 const dateString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
@@ -540,7 +547,7 @@
                 event.preventDefault(); // 阻止默链接行为
                 const confirmLogout = confirm('您确定要退出登录吗？'); // 弹出确认框
                 if (confirmLogout) {
-                    // 清除本��存储中的登录数据
+                    // 清除本存储中的登录数据
                     localStorage.removeItem('loginData');
                     // 重定向到 login.html 页面
                     window.location.href = 'login.html'; // 确保路径正确
