@@ -33,6 +33,7 @@
             list-style: none;
             padding: 0;
             margin: 0;
+            position: relative;
         }
 
         .sidebar-menu li {
@@ -57,6 +58,9 @@
             padding: 20px;
             margin-top: 60px;
             margin-left: 250px;
+            width: calc(100% - 250px);
+            box-sizing: border-box;
+            text-align: center;
         }
 
         /* 顶部导航栏样式 */
@@ -105,7 +109,7 @@
             transform: scale(1.1);
         }
 
-        /* 下拉菜单样式 */
+        /* 下拉���单样式 */
         .dropdown-menu {
             position: absolute;
             top: 100%;
@@ -146,6 +150,7 @@
             max-width: 800px;
             width: 100%;
             margin: 20px;
+            text-align: center;
         }
 
         /* 标签页样式 */
@@ -228,7 +233,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             z-index: 1002; /* 确保在其他内容之上 */
             border-radius: 8px; /* 圆角 */
-            height: calc(100vh - 60px); /* 延伸到页面底部，减去顶部导航栏的高度 */
+            height: calc(100vh - 60px); /* 延 */
             overflow-y: auto; /* 如果内容超出，允许滚动 */
         }
 
@@ -268,7 +273,7 @@
             cursor: pointer;
             transition: background-color 0.2s ease-out, transform 0.2s ease-out;
             will-change: background-color, transform;
-            margin-top: 10px; /* 按钮与上方输入框的间距 */
+            margin-top: 10px; /* 与方入间距 */
             align-self: center; /* 居中对齐按钮 */
         }
 
@@ -355,13 +360,116 @@
             background-color: #FF8C00;
             transform: scale(1.05);
         }
+
+        .submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: none; /* 初始隐藏 */
+            background-color: #161616; /* 与主菜单一致的背景色 */
+            position: relative; /* 相对定位 */
+            width: 250px; /* 设置宽度250px */
+            border-radius: 4px; /* 添加圆角 */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 减少阴影以优化边缘 */
+            z-index: 1001; /* 确保在其他内容之上 */
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* 添加过渡效果 */
+            transform: scaleY(0); /* 初始缩放为0 */
+            transform-origin: top; /* 从顶部开始缩放 */
+            opacity: 0; /* 初始透明度为0 */
+        }
+
+        .submenu.active {
+            display: block; /* 确保激活时显示 */
+            transform: scaleY(1); /* 展开时缩放为1 */
+            opacity: 1; /* 展开时的透明度 */
+        }
+
+        .submenu li {
+            padding: 10px 20px; /* 调整内边距以减少突出 */
+            height: 49px; /* 设置高度为51px */
+            cursor: pointer;
+            transition: transform 0.2s ease-out, background-color 0.2s ease-out;
+            border-bottom: 1px solid #444; /* 调整分隔线颜色以减少对比 */
+            color: white; /* 与主菜单项一致的字体颜色 */
+            display: flex; /* 使用flex布局 */
+            align-items: center; /* 垂直居中 */
+        }
+
+        .submenu li:last-child {
+            border-bottom: none; /* 去掉最后一个子项的分隔线 */
+        }
+
+        .submenu li:hover {
+            background-color: #007BFF; /* 与主菜单项一致的悬停背景颜色 */
+            transform: translateX(5px); /* 减少悬停时的位移 */
+            color: white;
+        }
+
+        .sidebar-menu li {
+            transition: background-color 0.3s ease-out; /* 添加背景色过渡效果 */
+        }
+
+        .sidebar-menu li.active {
+            background-color: #007BFF; /* 激活时的背景颜色 */
+            color: white; /* 激活时的文字颜色 */
+        }
+
+        .order-submenu {
+            display: none; /* 初始隐藏 */
+            background-color: #222; /* 设置背景色为略深于导航栏的颜色 */
+            width: 90%; /* 设置宽度为90%，以确保在导航栏内完整显示 */
+            border-radius: 4px; /* 添加圆角 */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 减少阴影以优化边缘 */
+            z-index: 1001; /* 确保在其他内容之上 */
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out; /* 添加过渡效果 */
+            max-height: 0; /* 初始最大高度为0 */
+            overflow: hidden; /* 隐藏溢出内容 */
+            opacity: 0; /* 初始透明度为0 */
+        }
+
+        .order-submenu.active {
+            display: block; /* 确保激活时显示 */
+            max-height: 120px; /* 展开时的最大高度，调整为两个按钮的总高度 */
+            opacity: 1; /* 展开时的透明度 */
+        }
+
+        .order-submenu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .order-submenu li {
+            height: 60px; /* 每个按钮占据一半的高度 */
+            cursor: pointer;
+            transition: transform 0.2s ease-out, background-color 0.2s ease-out;
+            color: white; /* 与主菜单项一致的字体颜色 */
+            display: flex; /* 使用flex布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+        }
+
+        .order-submenu li:hover {
+            background-color: #007BFF; /* 与主菜单项一致的悬停背景颜色 */
+            transform: translateX(5px); /* 减少悬停时的位移 */
+            color: white;
+        }
+
+        .sidebar-menu li {
+            transition: background-color 0.3s ease-out; /* 添加背景颜色过渡效果 */
+        }
+
+        .sidebar-menu li.active {
+            background-color: #007BFF; /* 激活时的背景颜色 */
+            color: white; /* 激活时的文字颜色 */
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <ul class="sidebar-menu">
             <li id="homeLink"><i>🏠</i>回到首页</li>
-            <li><i>📝</i>订单管理</li>
+            <li id="orderManagement"><i>📝</i>订单管理</li>
             <li><i>📅</i>日程安排</li>
             <li><i>📊</i>数据统计</li>
             <li id="accountManagement"><i>👤</i>账号管理</li>
@@ -388,13 +496,27 @@
         <div class="content" id="contentArea">
             <h1>欢迎回来！</h1>
         </div>
+
+        <div class="content" id="orderContent" style="display: none;">
+            <h2>订单管理</h2>
+            <div class="tabs">
+                <button class="tab-button active" data-tab="reportOrder">我要报单</button>
+                <button class="tab-button" data-tab="orderHistory">历史订单</button>
+            </div>
+            <div class="tab-content" id="reportOrder" style="display: block;">
+                <p>报单内容...</p>
+            </div>
+            <div class="tab-content" id="orderHistory" style="display: none;">
+                <p>历史订单内容...</p>
+            </div>
+        </div>
     </div>
 
     <div class="content" id="accountSettings" style="display: none;">
         <h2>账号管理</h2>
         <div class="tabs">
             <button class="tab-button active" data-tab="info">账号信息</button>
-            <button class="tab-button" data-tab="password">更改密码</button>
+            <button class="tab-button" data-tab="password">改密码</button>
         </div>
         <div class="tab-content" id="info" style="display: block;">
             <form id="infoForm">
@@ -404,7 +526,7 @@
                 </div>
                 <div>
                     <label for="phone">手机号码:</label>
-                    <input type="tel" id="phone" name="phone" autocomplete="tel" required pattern="[0-9]{11}" placeholder="请输入11位手机号码">
+                    <input type="tel" id="phone" name="phone" autocomplete="tel" required pattern="[0-9]{11}" placeholder="请输11手机号码">
                 </div>
                 <button type="submit">保存更改</button>
             </form>
@@ -443,7 +565,7 @@
             if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
                 // 移动设备
                 window.location.href = 'mobile_dashboard.html';
-                return; // 确保不执行后续代码
+                return; // 确保不执行后续码
             }
 
             const currentTimeElement = document.getElementById('currentTime');
@@ -463,7 +585,7 @@
                 return null;
             }
 
-            //获取天气和位置信息
+            //获取天气位置信息
             async function fetchWeatherAndLocation() {
                 try {
                     const apiKey = await getApiKeyFromServer(); // 从服务端获取API Key
@@ -473,15 +595,15 @@
                         throw new Error(`无法获取IP信息: ${ipData.info}`);
                     }
 
-                    const cityAdcode = ipData.adcode; // 获取城市的行政区划代码
-                    const city = ipData.city.replace('市', ''); // 获取城市名称
+                    const cityAdcode = ipData.adcode; // 获取城市的行政划码
+                    const city = ipData.city.replace('市', ''); // 获取城市名
 
                     const weatherData = await fetchData(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
                     if (weatherData.status !== '1') {
                         throw new Error(`无法获取天气信息: ${weatherData.info}`);
                     }
 
-                    const live = weatherData.lives[0]; // 获取实时天气信息
+                    const live = weatherData.lives[0]; // 获取实时天气息
                     weatherInfoElement.innerHTML = `
                         <p>地点：${city}</p>
                         <p>天气：${live.weather}</p>
@@ -493,7 +615,7 @@
 
                 } catch (error) {
                     console.error('获取天气信息时出错:', error);
-                    weatherInfoElement.innerHTML = '<p>无法获取信息</p>'; // 捕获并显示请求错误
+                    weatherInfoElement.innerHTML = '<p>无法获取信息</p>'; // 获并显示求错误
                 }
             }
 
@@ -539,7 +661,7 @@
                 }).then(response => {
                     return response;
                 }).catch(error => {
-                    throw new Error(`请求失败: ${error.statusText}`);
+                    throw new Error(`求失败: ${error.statusText}`);
                 });
             }
 
@@ -557,25 +679,46 @@
 
             // 侧边栏菜单点击事件
             const menuItems = document.querySelectorAll('.sidebar-menu li');
+            const orderManagement = document.getElementById('orderManagement');
             const contentArea = document.getElementById('contentArea');
             const accountSettings = document.getElementById('accountSettings');
+            const orderContent = document.getElementById('orderContent');
             const userProfile = document.getElementById('userProfile');
             const weatherInfoElement = document.getElementById('weatherInfo');
 
             menuItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    menuItems.forEach(i => i.classList.remove('active'));
+                item.addEventListener('click', (event) => {
+                    event.stopPropagation(); // 阻止事件冒泡
+                    menuItems.forEach(i => {
+                        i.classList.remove('active');
+                        i.style.backgroundColor = ''; // 重置背景颜色
+                    });
                     item.classList.add('active');
 
-                    if (item.id === 'accountManagement') {
+                    if (item.id === 'orderManagement') {
                         contentArea.style.display = 'none';
+                        accountSettings.style.display = 'none';
+                        orderContent.style.display = 'block';
+                        userProfile.style.display = 'none';
+                    } else if (item.id === 'accountManagement') {
+                        contentArea.style.display = 'none';
+                        orderContent.style.display = 'none';
                         accountSettings.style.display = 'block';
                         userProfile.style.display = 'none';
                     } else {
                         accountSettings.style.display = 'none';
+                        orderContent.style.display = 'none';
                         contentArea.style.display = 'block';
                         userProfile.style.display = 'flex';
                     }
+                });
+            });
+
+            // 点击页面其他地方隐藏订单子菜单
+            document.addEventListener('click', (event) => {
+                orderSubmenu.classList.remove('active');
+                menuItems.forEach(item => {
+                    item.style.backgroundColor = ''; // 重置背景颜色
                 });
             });
 
@@ -640,7 +783,7 @@
             });
 
             // 获取天气和位置信息
-            fetchWeatherAndLocation(); // 确保调用 fetchWeatherAndLocation 函数
+            fetchWeatherAndLocation(); // 保调用 fetchWeatherAndLocation 函数
         });
     </script>
 </body>
