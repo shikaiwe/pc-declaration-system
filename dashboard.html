@@ -233,7 +233,7 @@
             margin: 0 auto; /* 居中对齐 */
             display: flex;
             flex-direction: column;
-            align-items: center; /* ��中对齐子元素 */
+            align-items: center; /*居中对齐子元素 */
         }
 
         .tab-content form div {
@@ -424,26 +424,31 @@
 
 
 
-            async function getApiKeyFromServer() {
-                try {
-                    const response = await fetch('/api/getWeatherApiKey'); // 假设你的API路径是这个
-                    if (!response.ok) {
-                        throw new Error('无法获取API Key');
-                    }
-                    const data = await response.json();
+            // 使用 jQuery 获取 API Key
+            function getApiKeyFromServer() {
+                return $.ajax({
+                    url: '/api/getWeatherApiKey',
+                    method: 'GET',
+                    dataType: 'json'
+                }).then(data => {
                     return data.apiKey;
-                } catch (error) {
+                }).catch(error => {
                     console.error('获取API Key时出错:', error);
                     throw error;
-                }
+                });
             }
 
-            async function fetchData(url) {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`请求失败: ${response.statusText}`);
-                }
-                return response.json();
+            // 使用 jQuery 获取数据
+            function fetchData(url) {
+                return $.ajax({
+                    url: url,
+                    method: 'GET',
+                    dataType: 'json'
+                }).then(response => {
+                    return response;
+                }).catch(error => {
+                    throw new Error(`请求失败: ${error.statusText}`);
+                });
             }
 
             // 更新当前时间
