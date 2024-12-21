@@ -669,15 +669,11 @@
         if (preferredTimeInput) {
             function setPreferredTimeRange() {
                 const now = new Date();
-                const dayOfWeek = now.getDay();
-                const startOfWeek = new Date(now);
-                const endOfWeek = new Date(now);
+                const startOfDay = new Date(now);
+                const endOfDay = new Date(now);
 
-                startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
-                endOfWeek.setDate(now.getDate() + (7 - dayOfWeek));
-
-                startOfWeek.setHours(18, 0, 0, 0);
-                endOfWeek.setHours(21, 0, 0, 0);
+                startOfDay.setHours(18, 0, 0, 0);
+                endOfDay.setHours(21, 0, 0, 0);
 
                 const formatDateTime = (date) => {
                     const year = date.getFullYear();
@@ -688,8 +684,8 @@
                     return `${year}-${month}-${day}T${hours}:${minutes}`;
                 };
 
-                preferredTimeInput.min = formatDateTime(startOfWeek);
-                preferredTimeInput.max = formatDateTime(endOfWeek);
+                preferredTimeInput.min = formatDateTime(startOfDay);
+                preferredTimeInput.max = formatDateTime(endOfDay);
             }
 
             setPreferredTimeRange();
@@ -732,6 +728,11 @@
         }
 
         checkUserPhoneNumber();
+
+        document.getElementById('preferredTime').addEventListener('click', function(event) {
+            this.showPicker(); // 触发日期选择器
+            event.preventDefault(); // 阻止默认的文本选择行为
+        });
     </script>
 
 </body>
