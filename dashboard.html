@@ -164,16 +164,20 @@
             padding: 10px 20px;
             margin-right: 10px;
             border: none;
-            background-color: #f0f0f0;
+            background-color: #007BFF; /* 蓝色 */
+            color: white;
             cursor: pointer;
             border-radius: 4px;
-            transition: background-color 0.2s ease-out, transform 0.2s ease-out;
-            will-change: background-color, transform;
+            transition: transform 0.2s ease-out; /* 仅保留缩放动画 */
+            will-change: transform;
+        }
+        
+        .tab-button:hover {
+            transform: scale(1.05); /* 仅在悬停时放大 */
         }
         
         .tab-button.active {
-            background-color: #007BFF;
-            color: white;
+            background-color: #0056b3; /* 激活状态的颜色 */
         }
         
         .tab-content {
@@ -261,7 +265,7 @@
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            box-sizing: border-box; /* 确保内边距和边框包含在总宽度内 */
+            box-sizing: border-box; /* 确保内边距和边框包含在总宽度 */
         }
 
         .tab-content button {
@@ -443,7 +447,7 @@
             height: 60px; /* 每个按钮占据一半的高度 */
             cursor: pointer;
             transition: transform 0.2s ease-out, background-color 0.2s ease-out;
-            color: white; /* 与主菜单项一致的字体颜色 */
+            color: white; /* 与主菜单项一致的体颜色 */
             display: flex; /* 使用flex布局 */
             align-items: center; /* 垂直居中 */
             justify-content: center; /* 水平居中 */
@@ -507,6 +511,92 @@
             flex-direction: column;
             justify-content: space-between;
         }
+
+        /* 表单样式 */
+        .styled-form {
+            max-width: 800px; /* 扩大表单的最大宽度 */
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+            padding: 30px; /* 增加内边距 */
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .styled-form div {
+            width: 100%;
+            margin-bottom: 20px; /* 增加输入框之间的间距 */
+        }
+
+        .styled-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .styled-form input,
+        .styled-form textarea {
+            width: 100%;
+            padding: 12px; /* 增加输入框的内边距 */
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .styled-form button {
+            padding: 12px 24px; /* 增加按钮内边距 */
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-out, transform 0.2s ease-out;
+            will-change: background-color, transform;
+            margin-top: 15px; /* 增加按钮与输入框之间的间距 */
+            align-self: center;
+        }
+
+        .styled-form button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        /* 手机号码输入框和一键填充按钮 */
+        .fill-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-out, transform 0.2s ease-out;
+            will-change: background-color, transform;
+        }
+
+        .fill-button:disabled {
+            background-color: #ccc; /* 灰色 */
+            color: #666;
+            cursor: not-allowed;
+            transition: none; /* 禁用动画 */
+        }
+
+        .fill-button:not(:disabled) {
+            background-color: #007BFF; /* 蓝色 */
+            color: white;
+        }
+
+        .fill-button:not(:disabled):hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        /* 确保禁用状态下无悬停效果 */
+        .fill-button:disabled:hover {
+            background-color: #ccc; /* 保持灰色 */
+            transform: none; /* 无缩放效果 */
+        }
     </style>
 </head>
 <body>
@@ -544,11 +634,37 @@
         <div class="content" id="orderContent" style="display: none;">
             <h2>订单管理</h2>
             <div class="tabs">
-                <button class="tab-button active" data-tab="reportOrder">我要报单</button>
+                <button class="tab-button" data-tab="reportOrder">我要报单</button>
                 <button class="tab-button" data-tab="orderHistory">历史订单</button>
             </div>
             <div class="tab-content" id="reportOrder" style="display: block;">
-                <p>报单内容...</p>
+                <form id="reportOrderForm" class="styled-form">
+                    <div>
+                        <label for="name">姓名:</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div>
+                        <label for="userPhoneNumber">手机号码:</label>
+                        <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}" placeholder="请输入11位手机号码">
+                        <button type="button" id="fillPhoneNumberButton" class="fill-button" disabled>一键填充</button>
+                    </div>
+                    <div>
+                        <label for="address">地址:</label>
+                        <input type="text" id="address" name="address" required placeholder="请输入地址">
+                    </div>
+                    <div>
+                        <label for="issue">问题:</label>
+                        <textarea id="issue" name="issue" required rows="1" style="resize: none; overflow: hidden;"></textarea>
+                    </div>
+                    <div>
+                        <label for="preferredTime">期望上门时间:</label>
+                        <input type="datetime-local" id="preferredTime" name="preferredTime" required>
+                    </div>
+                    <button type="submit">提交</button>
+                </form>
+                <div id="reportOrderInfo">
+                    <!-- 这里将显示报单信息 -->
+                </div>
             </div>
             <div class="tab-content" id="orderHistory" style="display: none;">
                 <p>历史订单内容...</p>
@@ -568,8 +684,8 @@
         <div class="content" id="accountSettings" style="display: none;">
             <h2>账号管理</h2>
             <div class="tabs">
-                <button class="tab-button active" data-tab="info">账号信息</button>
-                <button class="tab-button" data-tab="password">改密码</button>
+                <button class="tab-button" data-tab="info">账号信息</button>
+                <button class="tab-button" data-tab="password">修改密码</button>
             </div>
             <div class="tab-content" id="info" style="display: block;">
                 <form id="infoForm">
@@ -625,7 +741,7 @@
 
             const currentTimeElement = document.getElementById('currentTime');
 
-            // 获取登录数据
+            // 获登录数据
             function getLoginData() {
                 const encryptedData = localStorage.getItem('loginData');
                 if (encryptedData) {
@@ -667,11 +783,11 @@
                         <p>湿度：${live.humidity}%</p>
                         <p>风向：${live.windDirection}</p>
                         <p>风力：${live.windPower}级</p>
-                    `; // 显示天��信息
+                    `; // 显示天气信息
 
                 } catch (error) {
                     console.error('获取天气信息时出错:', error);
-                    weatherInfoElement.innerHTML = '<p>无法获取信息</p>'; // 显示错误信息
+                    weatherInfoElement.innerHTML = '<p>无法获取信息</p>'; // 显��错误信息
                 }
             }
 
@@ -737,7 +853,7 @@
 
             menuItems.forEach(item => {
                 item.addEventListener('click', (event) => {
-                    event.stopPropagation(); // 阻止事件冒泡
+                    event.stopPropagation(); // 止事件冒泡
                     menuItems.forEach(i => {
                         i.classList.remove('active');
                         if (i.style) {
@@ -777,14 +893,6 @@
                         dataStatisticsContent.style.display = 'none';
                         contentArea.style.display = 'block';
                     }
-                });
-            });
-
-            // 点击页面其他地方隐藏订单子菜单
-            document.addEventListener('click', (event) => {
-                orderSubmenu.classList.remove('active');
-                menuItems.forEach(item => {
-                    item.style.backgroundColor = ''; // 重置背景颜色
                 });
             });
 
@@ -848,18 +956,21 @@
                 }
             });
 
-            // 获取天气和位置信息
+            // 获天气和位置信息
             fetchWeatherAndLocation(); // 保调用 fetchWeatherAndLocation 函数
 
             // 定义调用报告API的函数
-            function callReportAPI(userPhoneNumber, address) {
+            function callReportAPI(name, userPhoneNumber, address, issue, preferredTime) {
                 return $.ajax({
                     url: url,
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
+                        name: name,
                         userPhoneNumber: userPhoneNumber,
-                        address: address
+                        address: address,
+                        issue: issue,
+                        preferredTime: preferredTime
                     }),
                     dataType: 'json',
                     xhrFields: {
@@ -867,8 +978,8 @@
                     }
                 }).then(response => {
                     if (response.message === 'Success') {
-                        // console.log('API调用成功:', response);
                         alert('订单提交成功，请留意推送');
+                        return response;
                     } else {
                         handleSessionError(response.message);
                     }
@@ -876,6 +987,129 @@
                     console.error('API调用失败:', error);
                 });
             }
+
+            const reportOrderButton = document.querySelector('.tab-button[data-tab="reportOrder"]');
+            const reportOrderModal = document.getElementById('reportOrderModal');
+            const reportOrderForm = document.getElementById('reportOrderForm');
+            const cancelReportOrderButton = document.getElementById('cancelReportOrder');
+            const reportOrderInfo = document.getElementById('reportOrderInfo');
+
+            // 显示模态框
+            reportOrderButton.addEventListener('click', () => {
+                reportOrderModal.style.display = 'block';
+            });
+
+            // 提交表单并调用API
+            reportOrderForm.addEventListener('submit', (event) => {
+                event.preventDefault(); // 阻止表单默认提交行为
+
+                const name = document.getElementById('name').value;
+                const userPhoneNumber = document.getElementById('userPhoneNumber').value;
+                const address = document.getElementById('address').value;
+                const issue = document.getElementById('issue').value;
+                const preferredTime = document.getElementById('preferredTime').value;
+
+                callReportAPI(name, userPhoneNumber, address, issue, preferredTime).then(data => {
+                    reportOrderInfo.innerHTML = `
+                        <p>报单信息: ${data.orderDetails}</p>
+                    `;
+                }).catch(error => {
+                    reportOrderInfo.innerHTML = '<p>无法获取报单信息</p>';
+                });
+
+                reportOrderModal.style.display = 'none'; // 提交后隐藏模态框
+            });
+
+            // 取消按钮隐藏模态框
+            cancelReportOrderButton.addEventListener('click', () => {
+                reportOrderModal.style.display = 'none';
+            });
+
+            // 点击模态框外部隐藏模态框
+            window.addEventListener('click', (event) => {
+                if (event.target === reportOrderModal) {
+                    reportOrderModal.style.display = 'none';
+                }
+            });
+
+            const issueTextarea = document.getElementById('issue');
+
+            // 自动调整textarea高度
+            issueTextarea.addEventListener('input', function() {
+                this.style.height = 'auto'; // 重置高度
+                this.style.height = (this.scrollHeight) + 'px'; // 设置为内容高度
+            });
+
+            const preferredTimeInput = document.getElementById('preferredTime');
+
+            // 确保元素存在
+            if (preferredTimeInput) {
+                // 设置期望上门时间的范围
+                function setPreferredTimeRange() {
+                    const now = new Date();
+                    const dayOfWeek = now.getDay();
+                    const startOfWeek = new Date(now);
+                    const endOfWeek = new Date(now);
+
+                    startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
+                    endOfWeek.setDate(now.getDate() + (7 - dayOfWeek));
+
+                    startOfWeek.setHours(18, 0, 0, 0);
+                    endOfWeek.setHours(21, 0, 0, 0);
+
+                    const formatDateTime = (date) => {
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const hours = String(date.getHours()).padStart(2, '0');
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                        return `${year}-${month}-${day}T${hours}:${minutes}`;
+                    };
+
+                    preferredTimeInput.min = formatDateTime(startOfWeek);
+                    preferredTimeInput.max = formatDateTime(endOfWeek);
+                }
+
+                setPreferredTimeRange();
+
+                // 检查选择的时间是否在允许范围内
+                preferredTimeInput.addEventListener('change', () => {
+                    const selectedTime = new Date(preferredTimeInput.value);
+                    const selectedHour = selectedTime.getHours();
+
+                    if (selectedHour < 18 || selectedHour >= 21) {
+                        alert('该时间非上门时段，请选择18:00-21:00之间的时间');
+                        preferredTimeInput.value = ''; // 清空不符合条件的输入
+                    }
+                });
+            } else {
+                console.error('找不到期望上门时间的输入框');
+            }
+
+            const userPhoneNumberInput = document.getElementById('userPhoneNumber');
+            const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
+
+            // 模拟获取用户信息的函数
+            function getUserInfo() {
+                // 假设从本地存储或其他来源获取用户信息
+                const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+                return userInfo;
+            }
+
+            // 检查用户信息并设置按钮状态
+            function checkUserPhoneNumber() {
+                const userInfo = getUserInfo();
+                if (userInfo.phoneNumber) {
+                    fillPhoneNumberButton.disabled = false;
+                    fillPhoneNumberButton.addEventListener('click', () => {
+                        userPhoneNumberInput.value = userInfo.phoneNumber;
+                    });
+                } else {
+                    fillPhoneNumberButton.disabled = true;
+                }
+            }
+
+            checkUserPhoneNumber();
 
         });
     </script>
