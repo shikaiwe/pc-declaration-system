@@ -25,7 +25,8 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+            will-change: transform, box-shadow;
         }
         .card:hover {
             transform: translateY(-10px);
@@ -50,7 +51,7 @@
             text-align: center;
             padding: 14px 0;
             text-decoration: none;
-            transition: background-color 0.3s;
+            transition: background-color 0.4s ease-in-out;
         }
         .navbar a:hover {
             background-color: #1976D2;
@@ -66,7 +67,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             opacity: 0;
             transform: translateY(10px);
-            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out, visibility 0.4s;
         }
         .submenu.show {
             visibility: visible;
@@ -139,7 +140,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.4s ease-in-out;
             font-size: 1.1em;
         }
         .tab-link.active {
@@ -176,7 +177,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.4s ease-in-out;
             margin-top: 15px;
             font-size: 1em;
         }
@@ -191,12 +192,12 @@
             top: 50%;
             transform: translate(-50%, -50%);
             background-color: #fff;
-            padding: 40px;
-            border-radius: 12px;
+            padding: 20px;
+            border-radius: 20px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
             animation: fadeIn 0.3s ease-out;
-            width: 90%;
-            max-width: 450px;
+            width: 80%;
+            max-width: 400px;
             text-align: center;
             font-size: 1.2em;
         }
@@ -210,9 +211,9 @@
             background-color: #007BFF;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
+            transition: background-color 0.4s ease-in-out, transform 0.3s ease-in-out;
             display: inline-block;
             font-size: 1em;
         }
@@ -245,8 +246,8 @@
         </div>
     </div>
 
-    <div class="card no-hover">
-        <h2>订单状态</h2>
+    <div class="card no-hover" id="order-management">
+        <h2>订单管理</h2>
         <p>更多信息...</p>
     </div>
 
@@ -309,6 +310,27 @@
         <button id="confirmLogout">确认</button>
         <button id="cancelLogout">取消</button>
     </div>
+
+    <!-- 更新后的订单管理模态框 -->
+    <div id="orderManagementModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>订单管理</h2>
+            <div class="tab-menu">
+                <button class="tab-link active" onclick="openOrderTab(event, 'newOrder')">我要报单</button>
+                <button class="tab-link" onclick="openOrderTab(event, 'orderHistory')">历史订单</button>
+            </div>
+            <div class="tab-content" id="newOrder" style="display: block;">
+                <p>这里是我要报单的内容。</p>
+                <!-- 你可以在这里添加表单或其他内容 -->
+            </div>
+            <div class="tab-content" id="orderHistory" style="display: none;">
+                <p>这里是历史订单的内容。</p>
+                <!-- 你可以在这里添加订单列表或其他内容 -->
+            </div>
+        </div>
+    </div>
+
     <script>
         // 使用 jQuery 获取 API Key
         function getApiKeyFromServer() {
@@ -324,7 +346,7 @@
             });
         }
 
-        // 使用 jQuery 获取数据
+        // 使用 jQuery 获取���据
         function fetchData(url) {
             return $.ajax({
                 url: url,
@@ -451,6 +473,38 @@
             document.getElementById(tabName).style.display = "block";
             event.currentTarget.className += " active";
         }
+
+        // 显示订单管理模态框
+        document.getElementById('order-management').addEventListener('click', function() {
+            const modal = document.getElementById('orderManagementModal');
+            modal.style.display = "block";
+        });
+
+        // 关闭订单管理模态框
+        document.querySelector('#orderManagementModal .close-button').addEventListener('click', function() {
+            const modal = document.getElementById('orderManagementModal');
+            modal.style.display = "none";
+        });
+
+        // 切换订单管理选项卡内容
+        function openOrderTab(event, tabName) {
+            const tabcontent = document.querySelectorAll("#orderManagementModal .tab-content");
+            tabcontent.forEach(content => content.style.display = "none");
+
+            const tablinks = document.querySelectorAll("#orderManagementModal .tab-link");
+            tablinks.forEach(link => link.className = link.className.replace(" active", ""));
+
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.className += " active";
+        }
+
+        // 点击模态框外部隐藏订单管理模态框
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('orderManagementModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
     </script>
 
 </body>
