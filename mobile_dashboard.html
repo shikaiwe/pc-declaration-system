@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>移动仪表板</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
@@ -12,6 +12,7 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f9;
+            overflow: hidden;
         }
         .header {
             background-color: #2196F3;
@@ -61,7 +62,7 @@
             position: absolute;
             bottom: 50px;
             right: 0;
-            width: 33.3%;
+            width: 50%;
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -83,7 +84,7 @@
             margin: 0;
         }
         .submenu a#edit-info {
-            background-color: green;
+            background-color: lightgreen;
         }
         .submenu a#edit-info:hover {
             background-color: darkgreen;
@@ -231,6 +232,80 @@
             from { opacity: 0; transform: translate(-50%, -60%); }
             to { opacity: 1; transform: translate(-50%, -50%); }
         }
+        .styled-form {
+            max-width: 100%; /* 确保表单在移动设备上占满宽度 */
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 20px; /* 减少内边距以适应小屏幕 */
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .styled-form div {
+            width: 100%;
+            margin-bottom: 15px; /* 减少输入框之间的间距 */
+        }
+        .styled-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .styled-form input,
+        .styled-form textarea {
+            width: 100%;
+            padding: 10px; /* 减少输入框的内边距 */
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .styled-form button {
+            padding: 10px 20px; /* 减少按钮内边距 */
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-out, transform 0.2s ease-out;
+            will-change: background-color, transform;
+            margin-top: 10px; /* 减少按钮与输入框之间的间距 */
+            align-self: center;
+        }
+        .styled-form button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        /* 手机号码输入框和一键填充按钮 */
+        .fill-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-out, transform 0.2s ease-out;
+            will-change: background-color, transform;
+        }
+        .fill-button:disabled {
+            background-color: #ccc; /* 灰色 */
+            color: #666;
+            cursor: not-allowed;
+            transition: none; /* 禁用动画 */
+        }
+        .fill-button:not(:disabled) {
+            background-color: #007BFF; /* 蓝色 */
+            color: white;
+        }
+        .fill-button:not(:disabled):hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        /* 确保禁用状态下无悬停效果 */
+        .fill-button:disabled:hover {
+            background-color: #ccc; /* 保持灰色 */
+            transform: none; /* 无缩放效果 */
+        }
     </style>
 </head>
 <body>
@@ -258,7 +333,6 @@
 
     <div class="navbar">
         <a href="#home">回到首页</a>
-        <a href="#orders">我的订单</a>
         <a href="#account" onclick="toggleSubmenu(event)">账户管理</a>
     </div>
     <div id="submenu" class="submenu">
@@ -289,7 +363,7 @@
             <div class="tab-content" id="password" style="display: none;">
                 <form id="passwordForm">
                     <div>
-                        <label for="current-password">当前密码:</label>
+                        <label for="current-password">原密码:</label>
                         <input type="password" id="current-password" name="current-password" required>
                     </div>
                     <div>
@@ -321,8 +395,34 @@
                 <button class="tab-link" onclick="openOrderTab(event, 'orderHistory')">历史订单</button>
             </div>
             <div class="tab-content" id="newOrder" style="display: block;">
-                <p>这里是我要报单的内容。</p>
-                <!-- 你可以在这里添加表单或其他内容 -->
+                <form id="newOrderForm" class="styled-form">
+                    <div>
+                        <label for="name">姓名:</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div>
+                        <label for="userPhoneNumber">手机号码:</label>
+                        <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}" placeholder="请输入11位手机号">
+                        <button type="button" id="fillPhoneNumberButton" class="fill-button" disabled>一键填充</button>
+                    </div>
+                    <div>
+                        <label for="address">地址:</label>
+                        <input type="text" id="address" name="address" required placeholder="请输入地址">
+                    </div>
+                    <div>
+                        <label for="issue">问题:</label>
+                        <textarea id="issue" name="issue" required rows="1" style="resize: none; overflow: hidden;"></textarea>
+                    </div>
+                    <div>
+                        <label for="preferredTime">期望上门时间:</label>
+                        <input type="datetime-local" id="preferredTime" name="preferredTime" required>
+                        <p id="timeWarning" style="color: red; display: none;">该时间非上门时段。上门时间段为18:00-21:00</p>
+                    </div>
+                    <button type="submit">提交</button>
+                </form>
+                <div id="reportOrderInfo">
+                    <!-- 这里将显示报单信息 -->
+                </div>
             </div>
             <div class="tab-content" id="orderHistory" style="display: none;">
                 <p>这里是历史订单的内容。</p>
@@ -346,7 +446,7 @@
             });
         }
 
-        // 使用 jQuery 获取���据
+        // 使用 jQuery 获取数据
         function fetchData(url) {
             return $.ajax({
                 url: url,
@@ -505,6 +605,133 @@
                 modal.style.display = "none";
             }
         });
+
+        // 定义调用报告API的函数
+        function callReportAPI(name, userPhoneNumber, address, issue, preferredTime) {
+            return $.ajax({
+                url: '/api/dashboard/call_report/',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    name: name,
+                    userPhoneNumber: userPhoneNumber,
+                    address: address,
+                    issue: issue,
+                    preferredTime: preferredTime
+                }),
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true // 确保请求携带cookies
+                }
+            }).then(response => {
+                if (response.message === 'Success') {
+                    alert('订单提交成功，请留意推送');
+                    return response;
+                } else {
+                    handleSessionError(response.message);
+                }
+            }).catch(error => {
+                console.error('API调用失败:', error);
+            });
+        }
+
+        // 提交表单并调用API
+        document.getElementById('newOrderForm').addEventListener('submit', (event) => {
+            event.preventDefault(); // 阻止表单默认提交行为
+
+            const name = document.getElementById('name').value;
+            const userPhoneNumber = document.getElementById('userPhoneNumber').value;
+            const address = document.getElementById('address').value;
+            const issue = document.getElementById('issue').value;
+            const preferredTime = document.getElementById('preferredTime').value;
+
+            callReportAPI(name, userPhoneNumber, address, issue, preferredTime).then(data => {
+                document.getElementById('reportOrderInfo').innerHTML = `
+                    <p>报单信息: ${data.orderDetails}</p>
+                `;
+            }).catch(error => {
+                document.getElementById('reportOrderInfo').innerHTML = '<p>无法获取报单信息</p>';
+            });
+
+            document.getElementById('newOrderForm').reset(); // 提交后重置表单
+        });
+
+        // 自动调整textarea高度
+        document.getElementById('issue').addEventListener('input', function() {
+            this.style.height = 'auto'; // 重置高度
+            this.style.height = (this.scrollHeight) + 'px'; // 设置为内容高度
+        });
+
+        // 设置期望上门时间的范围
+        const preferredTimeInput = document.getElementById('preferredTime');
+        const timeWarning = document.getElementById('timeWarning');
+
+        if (preferredTimeInput) {
+            function setPreferredTimeRange() {
+                const now = new Date();
+                const dayOfWeek = now.getDay();
+                const startOfWeek = new Date(now);
+                const endOfWeek = new Date(now);
+
+                startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
+                endOfWeek.setDate(now.getDate() + (7 - dayOfWeek));
+
+                startOfWeek.setHours(18, 0, 0, 0);
+                endOfWeek.setHours(21, 0, 0, 0);
+
+                const formatDateTime = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    return `${year}-${month}-${day}T${hours}:${minutes}`;
+                };
+
+                preferredTimeInput.min = formatDateTime(startOfWeek);
+                preferredTimeInput.max = formatDateTime(endOfWeek);
+            }
+
+            setPreferredTimeRange();
+
+            // 检查选择的时间是否在允许范围内
+            preferredTimeInput.addEventListener('change', () => {
+                const selectedTime = new Date(preferredTimeInput.value);
+                const selectedHour = selectedTime.getHours();
+
+                if (selectedHour < 18 || selectedHour >= 21) {
+                    timeWarning.style.display = 'block'; // 显示提示信息
+                    preferredTimeInput.value = ''; // 清空不符合条件的输入
+                } else {
+                    timeWarning.style.display = 'none'; // 隐藏提示信息
+                }
+            });
+        }
+
+        // 模拟获取用户信息的函数
+        function getUserInfo() {
+            // 假设从本地存储或其他来源获取用户信息
+            const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+            return userInfo;
+        }
+
+        // 检查用户信息并设置按钮状态
+        const userPhoneNumberInput = document.getElementById('userPhoneNumber');
+        const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
+
+        function checkUserPhoneNumber() {
+            const userInfo = getUserInfo();
+            if (userInfo.phoneNumber) {
+                fillPhoneNumberButton.disabled = false;
+                fillPhoneNumberButton.addEventListener('click', () => {
+                    userPhoneNumberInput.value = userInfo.phoneNumber;
+                });
+            } else {
+                fillPhoneNumberButton.disabled = true;
+            }
+        }
+
+        checkUserPhoneNumber();
     </script>
 
 </body>
