@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>移动仪表板</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js' defer></script>
     <style>
         /* 全局样式 */
         body {
@@ -98,18 +100,18 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0, 0, 0, 0.5);
         }
         .modal-content {
             background-color: #fefefe;
-            margin: 10% auto;
-            padding: 30px;
+            margin: 15% auto;
+            padding: 20px;
             border: 1px solid #888;
             width: 80%;
             max-width: 600px;
@@ -306,6 +308,10 @@
             background-color: #ccc; /* 保持灰色 */
             transform: none; /* 无缩放效果 */
         }
+        #mobileCalendar {
+            max-width: 100%;
+            height: 400px; /* 确保有足够的高度 */
+        }
     </style>
 </head>
 <body>
@@ -326,9 +332,9 @@
         <p>更多信息...</p>
     </div>
 
-    <div class="card">
-        <h2>卡片3</h2>
-        <p>其他信息...</p>
+    <div class="card" id="schedule-management">
+        <h2>日程管理</h2>
+        <p>打开日历</p>
     </div>
 
     <div class="navbar">
@@ -371,7 +377,7 @@
                         <input type="password" id="new-password" name="new-password" required>
                     </div>
                     <div>
-                        <label for="confirm-password">确认新密码:</label>
+                        <label for="confirm-password">确认密码:</label>
                         <input type="password" id="confirm-password" name="confirm-password" required>
                     </div>
                     <button type="submit">修改密码</button>
@@ -431,6 +437,14 @@
         </div>
     </div>
 
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>日程管理</h2>
+            <div id="mobileCalendar" style="max-width: 100%; height: 400px;"></div>
+        </div>
+    </div>
+
     <script>
         // 使用 jQuery 获取 API Key
         function getApiKeyFromServer() {
@@ -459,7 +473,7 @@
             });
         }
 
-        // 获取天气和位置信息
+        // 获取天气和位置息
         async function fetchWeatherAndLocation() {
             try {
                 const apiKey = await getApiKeyFromServer(); // 从服务端获取API Key
@@ -625,7 +639,7 @@
                 }
             }).then(response => {
                 if (response.message === 'Success') {
-                    alert('订单提交成功，请留意推送');
+                    alert('订单提交成功，留意推送');
                     return response;
                 } else {
                     handleSessionError(response.message);
@@ -732,6 +746,45 @@
         document.getElementById('preferredTime').addEventListener('click', function(event) {
             this.showPicker(); // 触发日期选择器
             event.preventDefault(); // 阻止默认的文本选择行为
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const scheduleManagementButton = document.getElementById('schedule-management');
+            if (scheduleManagementButton) {
+                scheduleManagementButton.addEventListener('click', function() {
+                    const modal = document.getElementById('scheduleModal');
+                    modal.style.display = "block";
+
+                    // 初始化并显示日历
+                    var calendarEl = document.getElementById('mobileCalendar');
+                    if (calendarEl) {
+                        var calendar = new FullCalendar.Calendar(calendarEl, {
+                            initialView: 'dayGridMonth',
+                            locale: 'zh-cn', // 设置语言为中文
+                            events: [
+                                // 在这里添加事件
+                                { title: '事件1', start: '2023-10-01' },
+                                { title: '事件2', start: '2023-10-05', end: '2023-10-07' }
+                            ]
+                        });
+                        calendar.render();
+                    }
+                });
+            }
+
+            // 关闭日程管理模态框
+            document.querySelector('#scheduleModal .close-button').addEventListener('click', function() {
+                const modal = document.getElementById('scheduleModal');
+                modal.style.display = "none";
+            });
+
+            // 点击模态框外部隐藏日程管理模态框
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('scheduleModal');
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            });
         });
     </script>
 
