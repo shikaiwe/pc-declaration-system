@@ -318,22 +318,32 @@
 
         // 页面加载时检查登录状态
         window.onload = async function() {
-            const encryptedData = localStorage.getItem('loginData');
             const rememberMe = localStorage.getItem('rememberMe');
 
-            if (rememberMe === 'true' && encryptedData) {
+            if (rememberMe === 'true') {
                 try {
-                    const decryptedData = JSON.parse(utils.decrypt(encryptedData));
-                    
-                    if (decryptedData.tokenExpiry && new Date(decryptedData.tokenExpiry) > new Date()) {
-                        document.getElementById('username').value = decryptedData.username;
-                        document.getElementById('password').value = decryptedData.password;
-                        document.getElementById('rememberMe').checked = true;
-                    } else {
-                        auth.clearLoginData();
-                    }
+                    // 向后端发送请求以验证sessionid
+                    $.ajax({
+                        url: 'http://localhost:80/api/users/validate-session/',
+                        type: 'GET',
+                        xhrFields: {
+                            withCredentials: true // 允许跨域请求发送cookie
+                        },
+                        success: function(data) {
+                            if (data.isValid) {
+                                // 如果session有效，跳转到dashboard
+                                window.location.href = 'dashboard.html';
+                            } else {
+                                auth.clearLoginData();
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.error('验证session失败:', textStatus);
+                            auth.clearLoginData();
+                        }
+                    });
                 } catch (error) {
-                    console.error('解密数据失败:', error);
+                    console.error('请求失败:', error);
                     auth.clearLoginData();
                 }
             }
