@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气���息样式 */
+        /* 天气信息样式 */
         .weather-info {
             margin-top: auto;
             background-color: #007BFF;
@@ -971,10 +971,100 @@
                         var calendar = new FullCalendar.Calendar(calendarEl, {
                             initialView: 'dayGridMonth',
                             locale: 'zh-cn',
-                            events: [
-                                { title: '事件1', start: '2023-10-01' },
-                                { title: '事件2', start: '2023-10-05', end: '2023-10-07' }
-                            ]
+                            height: 'auto',
+                            headerToolbar: {
+                                left: 'prev,next today',
+                                center: 'title',
+                                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                            },
+                            views: {
+                                timeGridWeek: {
+                                    slotMinTime: '18:00:00',
+                                    slotMaxTime: '22:00:00',
+                                    slotDuration: '00:30:00', // 每个时间槽30分钟
+                                    titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
+                                },
+                                timeGridDay: {
+                                    slotMinTime: '18:00:00',
+                                    slotMaxTime: '22:00:00',
+                                    slotDuration: '00:30:00', // 每个时间槽30分钟
+                                    titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
+                                },
+                                dayGridMonth: {
+                                    titleFormat: { year: 'numeric', month: 'short' }
+                                }
+                            },
+                            slotLabelFormat: {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false
+                            },
+                            buttonText: {
+                                today: '今天',
+                                month: '月',
+                                week: '周',
+                                day: '日'
+                            },
+                            dayHeaderFormat: { weekday: 'short' },
+                            allDayText: '全天',
+                            noEventsText: '暂无事件',
+                            eventTimeFormat: {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false
+                            },
+                            events: function(info, successCallback, failureCallback) {
+                                // 单独获取日历事件的订单数据
+                                $.ajax({
+                                    url: getHistoryCallUrl,
+                                    method: 'GET',
+                                    xhrFields: {
+                                        withCredentials: true
+                                    }
+                                }).then(response => {
+                                    if (response.message === 'Success') {
+                                        // 将订单数据转换为日历事件格式
+                                        const events = response.report_info.map(order => ({
+                                            title: `维修订单: ${order.issue}`,
+                                            start: new Date(order.date),
+                                            backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
+                                            borderColor: order.allocationState ? '#27ae60' : '#f39c12',
+                                            extendedProps: {
+                                                address: order.address,
+                                                phoneNumber: order.userPhoneNumber,
+                                                status: order.allocationState ? '已分配' : '待分配'
+                                            }
+                                        }));
+                                        successCallback(events);
+                                    } else if (response.message === 'No history report') {
+                                        successCallback([]); // 如果没有订单，显示空日历
+                                    } else {
+                                        failureCallback(new Error(response.message));
+                                    }
+                                }).catch(error => {
+                                    console.error('获取日历订单数据失败:', error);
+                                    failureCallback(error);
+                                });
+                            },
+                            eventClick: function(info) {
+                                // 点击事件时显示详细信息
+                                alert(`
+                                    订单详情:
+                                    问题: ${info.event.title}
+                                    时间: ${info.event.start.toLocaleString()}
+                                    地址: ${info.event.extendedProps.address}
+                                    电话: ${info.event.extendedProps.phoneNumber}
+                                    状态: ${info.event.extendedProps.status}
+                                `.trim());
+                            },
+                            eventDidMount: function(info) {
+                                // 添加鼠标悬停提示
+                                info.el.title = `
+                                    ${info.event.title}
+                                    地址: ${info.event.extendedProps.address}
+                                    状态: ${info.event.extendedProps.status}
+                                `.trim();
+                            }
                         });
                         calendar.render();
                     }

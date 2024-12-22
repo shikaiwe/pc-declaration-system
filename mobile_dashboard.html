@@ -111,19 +111,24 @@
         }
         .modal-content {
             background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
+            margin: 5% auto;
+            padding: 15px;
             border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
+            width: 90%;
+            max-width: 800px;
             border-radius: 10px;
-            text-align: center;
+            height: auto;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .close-button {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
+            position: absolute;
+            right: 15px;
+            top: 10px;
         }
         .close-button:hover,
         .close-button:focus {
@@ -309,7 +314,9 @@
         }
         #mobileCalendar {
             max-width: 100%;
-            height: 400px;
+            height: auto !important;
+            min-height: 500px;
+            margin: 10px 0;
         }
         .order-card {
             background-color: white;
@@ -444,6 +451,40 @@
             border-radius: 12px;
             margin: 20px;
             border: 1px solid #ffebee;
+        }
+
+        /* 日历容器样式优化 */
+        #mobileCalendar {
+            max-width: 100%;
+            height: auto !important;
+            min-height: 500px;
+            margin: 10px 0;
+        }
+
+        /* 确保日历在模态框中正确显示 */
+        .fc {
+            height: 100%;
+            background-color: white;
+        }
+
+        /* 优化模态框中的标题样式 */
+        .modal-content h2 {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* 响应式调整 */
+        @media screen and (max-width: 768px) {
+            .modal-content {
+                margin: 2% auto;
+                width: 95%;
+                padding: 10px;
+            }
+
+            #mobileCalendar {
+                min-height: 400px;
+            }
         }
     </style>
 </head>
@@ -678,7 +719,7 @@
             document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
         });
 
-        // 切换选项卡内容
+        // 切换项卡内容
         function openTab(event, tabName) {
             const tabcontent = document.getElementsByClassName("tab-content");
             for (let i = 0; i < tabcontent.length; i++) {
@@ -878,11 +919,101 @@
                     if (calendarEl) {
                         var calendar = new FullCalendar.Calendar(calendarEl, {
                             initialView: 'dayGridMonth',
-                            locale: 'zh-cn', // 设置语言为中文
-                            events: [
-                                { title: '事件1', start: '2023-10-01' },
-                                { title: '事件2', start: '2023-10-05', end: '2023-10-07' }
-                            ]
+                            locale: 'zh-cn',
+                            height: 'auto',
+                            headerToolbar: {
+                                left: 'prev,next today',
+                                center: 'title',
+                                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                            },
+                            views: {
+                                timeGridWeek: {
+                                    slotMinTime: '18:00:00',
+                                    slotMaxTime: '22:00:00',
+                                    slotDuration: '00:30:00', // 每个时间槽30分钟
+                                    titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
+                                },
+                                timeGridDay: {
+                                    slotMinTime: '18:00:00',
+                                    slotMaxTime: '22:00:00',
+                                    slotDuration: '00:30:00', // 每个时间槽30分钟
+                                    titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
+                                },
+                                dayGridMonth: {
+                                    titleFormat: { year: 'numeric', month: 'short' }
+                                }
+                            },
+                            slotLabelFormat: {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false
+                            },
+                            buttonText: {
+                                today: '今天',
+                                month: '月',
+                                week: '周',
+                                day: '日'
+                            },
+                            dayHeaderFormat: { weekday: 'short' },
+                            allDayText: '全天',
+                            noEventsText: '暂无事件',
+                            eventTimeFormat: {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false
+                            },
+                            events: function(info, successCallback, failureCallback) {
+                                // 获取历史订单数据
+                                $.ajax({
+                                    url: getHistoryCallUrl,
+                                    method: 'GET',
+                                    xhrFields: {
+                                        withCredentials: true
+                                    }
+                                }).then(response => {
+                                    if (response.message === 'Success') {
+                                        // 将订单数据转换为日历事件格式
+                                        const events = response.report_info.map(order => ({
+                                            title: `维修订单: ${order.issue}`,
+                                            start: new Date(order.date),
+                                            backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
+                                            borderColor: order.allocationState ? '#27ae60' : '#f39c12',
+                                            extendedProps: {
+                                                address: order.address,
+                                                phoneNumber: order.userPhoneNumber,
+                                                status: order.allocationState ? '已分配' : '待分配'
+                                            }
+                                        }));
+                                        successCallback(events);
+                                    } else if (response.message === 'No history report') {
+                                        successCallback([]); // 如果没有订单，显示空日历
+                                    } else {
+                                        failureCallback(new Error(response.message));
+                                    }
+                                }).catch(error => {
+                                    console.error('获取日历订单数据失败:', error);
+                                    failureCallback(error);
+                                });
+                            },
+                            eventClick: function(info) {
+                                // 点击事件时显示详细信息
+                                alert(`
+                                    订单详情:
+                                    问题: ${info.event.title}
+                                    时间: ${info.event.start.toLocaleString()}
+                                    地址: ${info.event.extendedProps.address}
+                                    电话: ${info.event.extendedProps.phoneNumber}
+                                    状态: ${info.event.extendedProps.status}
+                                `.trim());
+                            },
+                            eventDidMount: function(info) {
+                                // 添加鼠标悬停提示
+                                info.el.title = `
+                                    ${info.event.title}
+                                    地址: ${info.event.extendedProps.address}
+                                    状态: ${info.event.extendedProps.status}
+                                `.trim();
+                            }
                         });
                         calendar.render();
                     }
@@ -1011,7 +1142,7 @@
             document.getElementById('orderHistory').innerHTML = `
                 <div class="error-message">
                     <i>❌</i>
-                    <p>获取历���订单失败，请稍后重试</p>
+                    <p>获取历史订单失败，请稍后重试</p>
                 </div>
             `;
         }
