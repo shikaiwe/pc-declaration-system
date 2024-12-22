@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气信息样式 */
+        /* 天气���息样式 */
         .weather-info {
             margin-top: auto;
             background-color: #007BFF;
@@ -577,47 +577,96 @@
 
         /* 历史订单样式 */
         .orders-container {
-            padding: 20px;
+            padding: 15px;
             max-width: 800px;
             margin: 0 auto;
         }
 
         .order-card {
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             padding: 20px;
             margin-bottom: 20px;
-            transition: transform 0.2s ease-out;
+            transition: all 0.3s ease;
+            border-left: 4px solid #2196F3;
         }
 
         .order-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        .order-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .order-info p {
-            margin: 10px 0;
+            margin: 0;
             line-height: 1.5;
+            display: flex;
+            align-items: baseline;
+            font-size: 15px;
+            color: #444;
         }
 
         .order-info strong {
             color: #333;
-            margin-right: 10px;
+            min-width: 80px;
+            font-size: 14px;
+            position: relative;
+            margin-right: 12px;
         }
 
+        /* 订单状态样式 */
+        .order-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        .status-allocated {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-pending {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+
+        /* 空状态和错误状态样式 */
         .no-orders {
             text-align: center;
-            padding: 40px;
+            padding: 40px 20px;
             color: #666;
-            font-size: 16px;
+            font-size: 15px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            margin: 20px;
+        }
+
+        .no-orders i {
+            display: block;
+            font-size: 40px;
+            margin-bottom: 10px;
+            color: #999;
         }
 
         .error-message {
             text-align: center;
             padding: 20px;
             color: #dc3545;
-            font-size: 16px;
+            font-size: 15px;
+            background-color: #fff5f5;
+            border-radius: 12px;
+            margin: 20px;
+            border: 1px solid #ffebee;
         }
     </style>
 </head>
@@ -1023,21 +1072,13 @@
                     if (response.message === 'Success') {
                         displayHistoryOrders(response.report_info);
                     } else if (response.message === 'No history report') {
-                        orderHistoryContent.innerHTML = `
-                            <div class="no-orders">
-                                <p>暂无历史订单</p>
-                            </div>
-                        `;
+                        showNoOrders();
                     } else {
-                        handleSessionError(response.message);
+                        showError();
                     }
                 }).catch(error => {
                     console.error('获取历史订单失败:', error);
-                    orderHistoryContent.innerHTML = `
-                        <div class="error-message">
-                            <p>获取历史订单失败，请稍后重试</p>
-                        </div>
-                    `;
+                    showError();
                 });
             }
 
@@ -1047,16 +1088,30 @@
                 const ordersHTML = ordersList.map(order => `
                     <div class="order-card">
                         <div class="order-info">
-                            <p><strong>手机号码：</strong>${order.userPhoneNumber}</p>
-                            <p><strong>地址：</strong>${order.address}</p>
-                            <p><strong>问题描述：</strong>${order.issue}</p>
-                            <p><strong>预约时间：</strong>${formatDate(order.date)}</p>
-                            <p><strong>状态：</strong>${order.allocationState ? '已分配' : '待分配'}</p>
+                            <p>
+                                <strong>手机号码</strong>
+                                ${order.userPhoneNumber}
+                                <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
+                                    ${order.allocationState ? '已分配' : '待分配'}
+                                </span>
+                            </p>
+                            <p>
+                                <strong>地址</strong>
+                                ${order.address}
+                            </p>
+                            <p>
+                                <strong>问题描述</strong>
+                                ${order.issue}
+                            </p>
+                            <p>
+                                <strong>预约时间</strong>
+                                ${formatDate(order.date)}
+                            </p>
                         </div>
                     </div>
                 `).join('');
 
-                orderHistoryContent.innerHTML = `
+                document.getElementById('orderHistory').innerHTML = `
                     <div class="orders-container">
                         ${ordersHTML}
                     </div>
@@ -1066,6 +1121,26 @@
             function formatDate(dateString) {
                 const date = new Date(dateString);
                 return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+            }
+
+            // 更新空状态显示
+            function showNoOrders() {
+                document.getElementById('orderHistory').innerHTML = `
+                    <div class="no-orders">
+                        <i>📝</i>
+                        <p>暂无历史订单</p>
+                    </div>
+                `;
+            }
+
+            // 更新错误状态显示
+            function showError() {
+                document.getElementById('orderHistory').innerHTML = `
+                    <div class="error-message">
+                        <i>❌</i>
+                        <p>获取历史订单失败，请稍后重试</p>
+                    </div>
+                `;
             }
 
             // 调用报告API的函数
