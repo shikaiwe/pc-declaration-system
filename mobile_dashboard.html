@@ -702,7 +702,7 @@
         const ip = '8.134.178.71';
         var logoutUrl = `https://${ip}/api/dashboard/logout/`;
         var getHistoryCallUrl = `https://${ip}/api/dashboard/user_get_history_report/`;
-        var weatherApiKeyUrl = `https://${ip}/api/dashboard/get_weather_api_key/`;
+        var weatherApiKeyUrl = `https://${ip}/api/dashboard/getWeatherApiKey/`;
         var reportApiUrl = `https://${ip}/api/dashboard/call_report/`;
         // 获取天气和位置信息
         async function fetchWeatherAndLocation() {
@@ -736,7 +736,7 @@
 
                 const weatherData = await fetchData(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
                 if (weatherData.status !== '1') {
-                    throw new Error(`无法获取天气信���: ${weatherData.info}`);
+                    throw new Error(`无法获取天气信息: ${weatherData.info}`);
                 }
 
                 const live = weatherData.lives[0]; // 获取实时天气信息
@@ -797,7 +797,7 @@
             document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
         });
 
-        // 切换项卡内容
+        // 切换项���内容
         function openTab(event, tabName) {
             const tabcontent = document.getElementsByClassName("tab-content");
             for (let i = 0; i < tabcontent.length; i++) {
@@ -979,7 +979,7 @@
         checkUserPhoneNumber();
 
         document.getElementById('preferredTime').addEventListener('click', function(event) {
-            this.showPicker(); // 触发日期选择器
+            this.showPicker(); // 触��日期选择器
             event.preventDefault(); // 阻止默认的文本选择行为
         });
 
