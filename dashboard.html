@@ -960,7 +960,7 @@
             fetchWeatherAndLocation(); // 保调用 fetchWeatherAndLocation 函数
 
             // 定义调用报告API的函数
-            function callReportAPI(name, userPhoneNumber, address, issue, preferredTime) {
+            function callReportAPI(name, userPhoneNumber, address, issue, date) {
                 return $.ajax({
                     url: url,
                     method: 'POST',
@@ -970,7 +970,7 @@
                         userPhoneNumber: userPhoneNumber,
                         address: address,
                         issue: issue,
-                        preferredTime: preferredTime
+                        date: date
                     }),
                     dataType: 'json',
                     xhrFields: {
@@ -1007,9 +1007,9 @@
                 const userPhoneNumber = document.getElementById('userPhoneNumber').value;
                 const address = document.getElementById('address').value;
                 const issue = document.getElementById('issue').value;
-                const preferredTime = document.getElementById('preferredTime').value;
+                const date = document.getElementById('preferredTime').value;
 
-                callReportAPI(name, userPhoneNumber, address, issue, preferredTime).then(data => {
+                callReportAPI(name, userPhoneNumber, address, issue, date).then(data => {
                     reportOrderInfo.innerHTML = `
                         <p>报单信息: ${data.orderDetails}</p>
                     `;
