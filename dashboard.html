@@ -803,11 +803,15 @@
 
     <script>
         // 定义所有的URL
-        const ip = 'localhost:80';
-        const reportApiUrl = `http://${ip}/api/dashboard/call_report/`;
+        // const ip = 'localhost:80';
+        const ip = '8.134.178.71'
+        // const reportApiUrl = `http://${ip}/api/dashboard/call_report/`;
+        const reportApiUrl = `https://${ip}/api/dashboard/call_report/`;
         const weatherApiKeyUrl = '/api/dashboard/getWeatherApiKey/';
+        const logoutUrl = `https://${ip}/api/dashboard/logout/`;
         const mobileDashboardUrl = 'mobile_dashboard.html';
         const loginUrl = 'login.html';
+        const getHistoryCallUrl = `https://${ip}/api/dashboard/user_get_history_report/`
 
         document.addEventListener('DOMContentLoaded', () => {
             // 获取天气信息顺带验证登录
@@ -1029,7 +1033,7 @@
 
             confirmLogoutButton.addEventListener('click', () => {
                 $.ajax({
-                    url: 'http://localhost:80/api/dashboard/logout/',
+                    url: logoutUrl,
                     method: 'GET',
                     xhrFields: {
                         withCredentials: true
@@ -1065,7 +1069,7 @@
 
             function fetchHistoryOrders() {
                 $.ajax({
-                    url: 'http://localhost:80/api/dashboard/user_get_history_report/',
+                    url: getHistoryCallUrl,
                     method: 'GET',
                     xhrFields: {
                         withCredentials: true

@@ -580,8 +580,28 @@
     <div id="overlay" class="overlay"></div>
 
     <script>
+        const ip = '8.134.178.71';
+        var logoutUrl = `https://${ip}/api/dashboard/logout/`;
+        var getHistoryCallUrl = `https://${ip}/api/dashboard/user_get_history_report/`;
         // 获取天气和位置信息
         async function fetchWeatherAndLocation() {
+            // 使用 jQuery 获取 API Key
+            function getApiKeyFromServer() {
+                return $.ajax({
+                    url: weatherApiKeyUrl,
+                    method: 'GET',
+                    dataType: 'json',
+                }).then(data => {
+                    if (data.message === 'Success') {
+                        return data.apiKey;
+                    } else {
+                        handleSessionError(data.message);
+                    }
+                }).catch(error => {
+                    console.error('获取API Key时出错:', error);
+                    throw error;
+                });
+            }
             try {
                 const apiKey = await getApiKeyFromServer(); // 从服务端获取API Key
 
@@ -853,7 +873,7 @@
         // 退出登录功能
         document.getElementById('confirmLogout').addEventListener('click', () => {
             $.ajax({
-                url: 'http://localhost:80/api/dashboard/logout/',
+                url: logoutUrl,
                 method: 'GET',
                 xhrFields: {
                     withCredentials: true
@@ -874,7 +894,7 @@
         // 历史订单功能
         function fetchHistoryOrders() {
             $.ajax({
-                url: 'http://localhost:80/api/dashboard/user_get_history_report/',
+                url: getHistoryCallUrl,
                 method: 'GET',
                 xhrFields: {
                     withCredentials: true
