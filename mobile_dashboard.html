@@ -1156,7 +1156,76 @@
             });
         });
 
-        // 历史订单功能
+        // 日期格式化函数
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
+        }
+
+        // 显示历史订单
+        function displayHistoryOrders(orders) {
+            const ordersList = Array.isArray(orders) ? orders : [orders];
+            
+            const ordersHTML = ordersList.map(order => `
+                <div class="order-card">
+                    <div class="order-info">
+                        <p>
+                            <strong>手机号码</strong>
+                            ${order.userPhoneNumber}
+                            <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
+                                ${order.allocationState ? '已分配' : '待分配'}
+                            </span>
+                        </p>
+                        <p>
+                            <strong>地址</strong>
+                            ${order.address}
+                        </p>
+                        <p>
+                            <strong>问题描述</strong>
+                            ${order.issue}
+                        </p>
+                        <p>
+                            <strong>预约时间</strong>
+                            ${formatDate(order.date)}
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('orderHistory').innerHTML = `
+                <div class="orders-container">
+                    ${ordersHTML}
+                </div>
+            `;
+        }
+
+        // 显示空状态
+        function showNoOrders() {
+            document.getElementById('orderHistory').innerHTML = `
+                <div class="no-orders">
+                    <i>📝</i>
+                    <p>暂无历史订单</p>
+                </div>
+            `;
+        }
+
+        // 显示错误状态
+        function showError() {
+            document.getElementById('orderHistory').innerHTML = `
+                <div class="error-message">
+                    <i>❌</i>
+                    <p>获取历史订单失败，请稍后重试</p>
+                </div>
+            `;
+        }
+
+        // 获取历史订单
         function fetchHistoryOrders() {
             $.ajax({
                 url: getHistoryCallUrl,
@@ -1177,82 +1246,6 @@
                 showError();
             });
         }
-
-        // 将 formatDate 函数移到文件前面，在其他函数定义之前
-        document.addEventListener('DOMContentLoaded', function() {
-            // 日期格式化函数
-            function formatDate(dateString) {
-                const date = new Date(dateString);
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                
-                return `${year}-${month}-${day} ${hours}:${minutes}`;
-            }
-
-            // 历史订单功能
-            function displayHistoryOrders(orders) {
-                const ordersList = Array.isArray(orders) ? orders : [orders];
-                
-                const ordersHTML = ordersList.map(order => `
-                    <div class="order-card">
-                        <div class="order-info">
-                            <p>
-                                <strong>手机号码</strong>
-                                ${order.userPhoneNumber}
-                                <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
-                                    ${order.allocationState ? '已分配' : '待分配'}
-                                </span>
-                            </p>
-                            <p>
-                                <strong>地址</strong>
-                                ${order.address}
-                            </p>
-                            <p>
-                                <strong>问题描述</strong>
-                                ${order.issue}
-                            </p>
-                            <p>
-                                <strong>预约时间</strong>
-                                ${formatDate(order.date)}
-                            </p>
-                        </div>
-                    </div>
-                `).join('');
-
-                document.getElementById('orderHistory').innerHTML = `
-                    <div class="orders-container">
-                        ${ordersHTML}
-                    </div>
-                `;
-            }
-
-            // 更新空状态显示
-            function showNoOrders() {
-                document.getElementById('orderHistory').innerHTML = `
-                    <div class="no-orders">
-                        <i>📝</i>
-                        <p>暂无历史订单</p>
-                    </div>
-                `;
-            }
-
-            // 更新错误状态显示
-            function showError() {
-                document.getElementById('orderHistory').innerHTML = `
-                    <div class="error-message">
-                        <i>❌</i>
-                        <p>获取历史订单失败，请稍后重试</p>
-                    </div>
-                `;
-            }
-
-            // 在订单历史标签页点击时获取数据
-            document.querySelector('.tab-link[onclick="openOrderTab(event, \'orderHistory\')"]')
-                .addEventListener('click', fetchHistoryOrders);
-        });
     </script>
 
 </body>
