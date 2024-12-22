@@ -28,6 +28,10 @@
 - 提供用户菜单，包括个人信息、账户设置和退出登录选项。
 - 实现了用户登录状态的检查和过期处理。
 
+### 移动仪表板页面 (`mobile_dashboard.html`)
+- 提供适合移动设备的用户界面。
+- 包含天气信息、订单管理和日程管理功能。
+
 ## 使用说明
 1. 打开 `register.html` 页面进行用户注册。
 2. 注册成功后，使用注册的用户名和密码在 `login.html` 页面进行登录。
@@ -43,6 +47,7 @@
 ## 依赖
 - [CryptoJS](https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js): 用于加密和解密用户数据。
 - [jQuery](https://code.jquery.com/jquery-3.6.0.min.js): 用于简化HTML文档遍历和操作。
+- [FullCalendar](https://fullcalendar.io/): 用于日程管理功能。
 
 ## 注意事项
 - 确保在生产环境中使用安全的密钥和配置。

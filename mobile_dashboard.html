@@ -2,9 +2,11 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>移动仪表板</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js' defer></script>
     <style>
         /* 全局样式 */
         body {
@@ -12,6 +14,7 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f9;
+            overflow: hidden;
         }
         .header {
             background-color: #2196F3;
@@ -36,6 +39,10 @@
             transform: none;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+        .card.active {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
         .navbar {
             position: fixed;
             bottom: 0;
@@ -53,15 +60,24 @@
             text-decoration: none;
             transition: background-color 0.4s ease-in-out;
         }
-        .navbar a:hover {
-            background-color: #1976D2;
+        .navbar a#info-link {
+            background-color: lightgreen;
+        }
+        .navbar a#info-link:hover {
+            background-color: darkgreen;
+        }
+        .navbar a#logout {
+            background-color: orange;
+        }
+        .navbar a#logout:hover {
+            background-color: darkorange;
         }
         .submenu {
             visibility: hidden;
             position: absolute;
             bottom: 50px;
             right: 0;
-            width: 33.3%;
+            width: 50%;
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -82,33 +98,21 @@
             color: black;
             margin: 0;
         }
-        .submenu a#edit-info {
-            background-color: green;
-        }
-        .submenu a#edit-info:hover {
-            background-color: darkgreen;
-        }
-        .submenu a#logout {
-            background-color: orange;
-        }
-        .submenu a#logout:hover {
-            background-color: darkorange;
-        }
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0, 0, 0, 0.5);
         }
         .modal-content {
             background-color: #fefefe;
-            margin: 10% auto;
-            padding: 30px;
+            margin: 15% auto;
+            padding: 20px;
             border: 1px solid #888;
             width: 80%;
             max-width: 600px;
@@ -231,12 +235,88 @@
             from { opacity: 0; transform: translate(-50%, -60%); }
             to { opacity: 1; transform: translate(-50%, -50%); }
         }
+        .styled-form {
+            max-width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .styled-form div {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .styled-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .styled-form input,
+        .styled-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .styled-form button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-out, transform 0.2s ease-out;
+            will-change: background-color, transform;
+            margin-top: 10px;
+            align-self: center;
+        }
+        .styled-form button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        .fill-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-out, transform 0.2s ease-out;
+            will-change: background-color, transform;
+        }
+        .fill-button:disabled {
+            background-color: #ccc;
+            color: #666;
+            cursor: not-allowed;
+            transition: none;
+        }
+        .fill-button:not(:disabled) {
+            background-color: #007BFF;
+            color: white;
+        }
+        .fill-button:not(:disabled):hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        .fill-button:disabled:hover {
+            background-color: #ccc;
+            transform: none;
+        }
+        #mobileCalendar {
+            max-width: 100%;
+            height: 400px;
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>首页</h1>
+        <h1>PC志愿者服务队</h1>
     </div>
 
     <div class="card">
@@ -246,24 +326,23 @@
         </div>
     </div>
 
-    <div class="card no-hover" id="order-management">
+    <div class="card hover" id="order-management">
         <h2>订单管理</h2>
         <p>更多信息...</p>
     </div>
 
-    <div class="card">
-        <h2>卡片3</h2>
-        <p>其他信息...</p>
+    <div class="card" id="schedule-management">
+        <h2>日程管理</h2>
+        <p>打开日历</p>
     </div>
 
     <div class="navbar">
-        <a href="#home">回到首页</a>
-        <a href="#orders">我的订单</a>
-        <a href="#account" onclick="toggleSubmenu(event)">账户管理</a>
+        <a href="#info" id="info-link">信息修改</a>
+        <a href="#logout" id="logout">退出登录</a>
     </div>
     <div id="submenu" class="submenu">
-        <a id="edit-info" href="edit_info.html">信息修改</a>
-        <a id="logout" href="#logout">退出登录</a>
+        <a id="home" href="home.html">返回首页</a>
+        <a id="account" href="#account">账户管理</a>
     </div>
     <div id="editModal" class="modal">
         <div class="modal-content">
@@ -283,13 +362,13 @@
                         <label for="phone">手机号码:</label>
                         <input type="tel" id="phone" name="phone" autocomplete="tel" required pattern="[0-9]{11}" placeholder="请输入11位手机号码">
                     </div>
-                    <button type="submit">保存更改</button>
+                    <button type="submit">保存修改</button>
                 </form>
             </div>
             <div class="tab-content" id="password" style="display: none;">
                 <form id="passwordForm">
                     <div>
-                        <label for="current-password">当前密码:</label>
+                        <label for="current-password">原密码:</label>
                         <input type="password" id="current-password" name="current-password" required>
                     </div>
                     <div>
@@ -297,7 +376,7 @@
                         <input type="password" id="new-password" name="new-password" required>
                     </div>
                     <div>
-                        <label for="confirm-password">确认新密码:</label>
+                        <label for="confirm-password">确认密码:</label>
                         <input type="password" id="confirm-password" name="confirm-password" required>
                     </div>
                     <button type="submit">修改密码</button>
@@ -311,7 +390,6 @@
         <button id="cancelLogout">取消</button>
     </div>
 
-    <!-- 更新后的订单管理模态框 -->
     <div id="orderManagementModal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -321,8 +399,34 @@
                 <button class="tab-link" onclick="openOrderTab(event, 'orderHistory')">历史订单</button>
             </div>
             <div class="tab-content" id="newOrder" style="display: block;">
-                <p>这里是我要报单的内容。</p>
-                <!-- 你可以在这里添加表单或其他内容 -->
+                <form id="newOrderForm" class="styled-form">
+                    <div>
+                        <label for="name">姓名:</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div>
+                        <label for="userPhoneNumber">手机号码:</label>
+                        <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}" placeholder="请输入11位手机号">
+                        <button type="button" id="fillPhoneNumberButton" class="fill-button" disabled>一键填充</button>
+                    </div>
+                    <div>
+                        <label for="address">地址:</label>
+                        <input type="text" id="address" name="address" required placeholder="请输入地址">
+                    </div>
+                    <div>
+                        <label for="issue">问题:</label>
+                        <textarea id="issue" name="issue" required rows="1" style="resize: none; overflow: hidden;"></textarea>
+                    </div>
+                    <div>
+                        <label for="preferredTime">期望上门时间:</label>
+                        <input type="datetime-local" id="preferredTime" name="preferredTime" required>
+                        <p id="timeWarning" style="color: red; display: none;">该时间非上门时段。上门时段为18:00-21:00</p>
+                    </div>
+                    <button type="submit">提交</button>
+                </form>
+                <div id="reportOrderInfo">
+                    <!-- 这里将显示报单信息 -->
+                </div>
             </div>
             <div class="tab-content" id="orderHistory" style="display: none;">
                 <p>这里是历史订单的内容。</p>
@@ -331,34 +435,17 @@
         </div>
     </div>
 
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>日程管理</h2>
+            <div id="mobileCalendar" style="max-width: 100%; height: 400px;"></div>
+        </div>
+    </div>
+
+    <div id="overlay" class="overlay"></div>
+
     <script>
-        // 使用 jQuery 获取 API Key
-        function getApiKeyFromServer() {
-            return $.ajax({
-                url: '/api/dashboard/getWeatherApiKey/',
-                method: 'GET',
-                dataType: 'json'
-            }).then(data => {
-                return data.apiKey;
-            }).catch(error => {
-                console.error('获取API Key时出错:', error);
-                throw error;
-            });
-        }
-
-        // 使用 jQuery 获取���据
-        function fetchData(url) {
-            return $.ajax({
-                url: url,
-                method: 'GET',
-                dataType: 'json'
-            }).then(response => {
-                return response;
-            }).catch(error => {
-                throw new Error(`请求失败: ${error.statusText}`);
-            });
-        }
-
         // 获取天气和位置信息
         async function fetchWeatherAndLocation() {
             try {
@@ -383,8 +470,8 @@
                     <p>天气：${live.weather}</p>
                     <p>温度：${live.temperature}°C</p>
                     <p>湿度：${live.humidity}%</p>
-                    <p>风向：${live.windDirection}</p>
-                    <p>风力：${live.windPower}级</p>
+                    <p>风向：${live.winddirection}</p>
+                    <p>风力：${live.windpower}级</p>
                 `; // 显示天气信息
 
             } catch (error) {
@@ -405,12 +492,19 @@
             submenu.classList.toggle('show');
         }
 
-        // 点击文档隐藏子菜单
-        document.addEventListener('click', function() {
-            const submenu = document.getElementById('submenu');
-            if (submenu.classList.contains('show')) {
-                submenu.classList.remove('show');
-            }
+        // 显示信息修改模态框
+        document.getElementById('info-link').addEventListener('click', function(event) {
+            event.preventDefault();
+            const modal = document.getElementById('editModal');
+            modal.style.display = "block";
+            document.getElementById('overlay').style.display = "block"; // 显示遮罩层
+        });
+
+        // 关闭信息修改模态框
+        document.querySelector('#editModal .close-button').addEventListener('click', function() {
+            const modal = document.getElementById('editModal');
+            modal.style.display = "none";
+            document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
         });
 
         // 显示退出确认模态框
@@ -418,46 +512,14 @@
             event.preventDefault();
             const modal = document.getElementById('logoutModal');
             modal.style.display = "block";
+            document.getElementById('overlay').style.display = "block"; // 显示遮罩层
         });
 
-        // 确认退出跳转登录页面
-        document.getElementById('confirmLogout').addEventListener('click', function() {
-            window.location.href = 'login.html';
-        });
-
-        // 取消退出隐藏模态框
+        // 关闭退出确认模态框
         document.getElementById('cancelLogout').addEventListener('click', function() {
             const modal = document.getElementById('logoutModal');
             modal.style.display = "none";
-        });
-
-        // 点击模态框外部隐藏模态框
-        window.addEventListener('click', function(event) {
-            const modal = document.getElementById('logoutModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        });
-
-        // 显示信息修改模态框
-        document.getElementById('edit-info').addEventListener('click', function(event) {
-            event.preventDefault();
-            const modal = document.getElementById('editModal');
-            modal.style.display = "block";
-        });
-
-        // 关闭信息修改模态框
-        document.querySelector('.close-button').addEventListener('click', function() {
-            const modal = document.getElementById('editModal');
-            modal.style.display = "none";
-        });
-
-        // 点击模态框外部隐藏信息修改模态框
-        window.addEventListener('click', function(event) {
-            const modal = document.getElementById('editModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
+            document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
         });
 
         // 切换选项卡内容
@@ -478,12 +540,16 @@
         document.getElementById('order-management').addEventListener('click', function() {
             const modal = document.getElementById('orderManagementModal');
             modal.style.display = "block";
+            document.getElementById('overlay').style.display = "block"; // 显示遮罩层
+            this.classList.add('active'); // 添加浮起样式
         });
 
         // 关闭订单管理模态框
         document.querySelector('#orderManagementModal .close-button').addEventListener('click', function() {
             const modal = document.getElementById('orderManagementModal');
             modal.style.display = "none";
+            document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
+            document.getElementById('order-management').classList.remove('active'); // 移除浮起样式
         });
 
         // 切换订单管理选项卡内容
@@ -498,12 +564,137 @@
             event.currentTarget.className += " active";
         }
 
-        // 点击模态框外部隐藏订单管理模态框
-        window.addEventListener('click', function(event) {
-            const modal = document.getElementById('orderManagementModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
+        // 提交表单并调用API
+        document.getElementById('newOrderForm').addEventListener('submit', (event) => {
+            event.preventDefault(); // 阻止表单默认提交行为
+
+            const name = document.getElementById('name').value;
+            const userPhoneNumber = document.getElementById('userPhoneNumber').value;
+            const address = document.getElementById('address').value;
+            const issue = document.getElementById('issue').value;
+            const preferredTime = document.getElementById('preferredTime').value;
+
+            callReportAPI(name, userPhoneNumber, address, issue, preferredTime).then(data => {
+                document.getElementById('reportOrderInfo').innerHTML = `
+                    <p>报单信息: ${data.orderDetails}</p>
+                `;
+            }).catch(error => {
+                document.getElementById('reportOrderInfo').innerHTML = '<p>无法获取报单信息</p>';
+            });
+
+            document.getElementById('newOrderForm').reset(); // 提交后重置表单
+        });
+
+        // 自动调整textarea高度
+        document.getElementById('issue').addEventListener('input', function() {
+            this.style.height = 'auto'; // 重置高度
+            this.style.height = (this.scrollHeight) + 'px'; // 设置为内容高度
+        });
+
+        // 设置期望上门时间的范围
+        const preferredTimeInput = document.getElementById('preferredTime');
+        const timeWarning = document.getElementById('timeWarning');
+
+        if (preferredTimeInput) {
+            function setPreferredTimeRange() {
+                const now = new Date();
+                const startOfDay = new Date(now);
+                const endOfDay = new Date(now);
+
+                startOfDay.setHours(18, 0, 0, 0);
+                endOfDay.setHours(21, 0, 0, 0);
+
+                const formatDateTime = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    return `${year}-${month}-${day}T${hours}:${minutes}`;
+                };
+
+                preferredTimeInput.min = formatDateTime(startOfDay);
+                preferredTimeInput.max = formatDateTime(endOfDay);
             }
+
+            setPreferredTimeRange();
+
+            // 检查选择的时间是否在允许范围内
+            preferredTimeInput.addEventListener('change', () => {
+                const selectedTime = new Date(preferredTimeInput.value);
+                const selectedHour = selectedTime.getHours();
+
+                if (selectedHour < 18 || selectedHour >= 21) {
+                    timeWarning.style.display = 'block'; // 显示提示信息
+                    preferredTimeInput.value = ''; // 清空不符合条件的输入
+                } else {
+                    timeWarning.style.display = 'none'; // 隐藏提示信息
+                }
+            });
+        }
+
+        // 模拟获取用户信息的函数
+        function getUserInfo() {
+            // 假设从本地存储或其他来源获取用户信息
+            const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+            return userInfo;
+        }
+
+        // 检查用户信息并设置按钮状态
+        const userPhoneNumberInput = document.getElementById('userPhoneNumber');
+        const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
+
+        function checkUserPhoneNumber() {
+            const userInfo = getUserInfo();
+            if (userInfo.phoneNumber) {
+                fillPhoneNumberButton.disabled = false;
+                fillPhoneNumberButton.addEventListener('click', () => {
+                    userPhoneNumberInput.value = userInfo.phoneNumber;
+                });
+            } else {
+                fillPhoneNumberButton.disabled = true;
+            }
+        }
+
+        checkUserPhoneNumber();
+
+        document.getElementById('preferredTime').addEventListener('click', function(event) {
+            this.showPicker(); // 触发日期选择器
+            event.preventDefault(); // 阻止默认的文本选择行为
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const scheduleManagementButton = document.getElementById('schedule-management');
+            if (scheduleManagementButton) {
+                scheduleManagementButton.addEventListener('click', function() {
+                    const modal = document.getElementById('scheduleModal');
+                    modal.style.display = "block";
+                    document.getElementById('overlay').style.display = "block"; // 显示遮罩层
+                    this.classList.add('active'); // 添加浮起样式
+
+                    // 初始化并显示日历
+                    var calendarEl = document.getElementById('mobileCalendar');
+                    if (calendarEl) {
+                        var calendar = new FullCalendar.Calendar(calendarEl, {
+                            initialView: 'dayGridMonth',
+                            locale: 'zh-cn', // 设置语言为中文
+                            events: [
+                                { title: '事件1', start: '2023-10-01' },
+                                { title: '事件2', start: '2023-10-05', end: '2023-10-07' }
+                            ]
+                        });
+                        calendar.render();
+                    }
+                });
+            }
+
+            // 关闭日程管理模态框
+            document.querySelector('#scheduleModal .close-button').addEventListener('click', function() {
+                const modal = document.getElementById('scheduleModal');
+                modal.style.display = "none";
+                document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
+                document.getElementById('schedule-management').classList.remove('active'); // 移除浮起样式
+            });
         });
     </script>
 

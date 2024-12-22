@@ -140,8 +140,11 @@
     </div>
 
     <script>
+        // URL和CDN配置
         const ip = 'localhost:80';
-        var url = `http://${ip}/api/users/login/`;
+        const loginUrl = `http://${ip}/api/users/login/`;
+        const validateSessionUrl = `http://${ip}/api/users/validate-session/`;
+
         // 安全配置
         const CONFIG = {
             SECRET_KEY: 'your-secret-key-2024', // 加密密钥
@@ -156,18 +159,15 @@
             encrypt: (text) => {
                 return CryptoJS.AES.encrypt(text, CONFIG.SECRET_KEY).toString();
             },
-            
             // 解密文本
             decrypt: (ciphertext) => {
                 const bytes = CryptoJS.AES.decrypt(ciphertext, CONFIG.SECRET_KEY);
                 return bytes.toString(CryptoJS.enc.Utf8);
             },
-            
             // 生成随机Token
             generateToken: () => {
                 return CryptoJS.lib.WordArray.random(32).toString();
             },
-            
             // 显示错误信息
             showError: (message) => {
                 const errorElement = document.getElementById('errorMessage');
@@ -177,7 +177,6 @@
                     errorElement.style.display = 'none';
                 }, 3000);
             },
-            
             // 设置加载状态
             setLoading: (isLoading) => {
                 const loadingElement = document.querySelector('.loading');
@@ -189,22 +188,18 @@
 
         // 登录相关功能
         const auth = {
-            loginAttempts: 0, // 登录尝试计数
-            lockoutTime: null, // 锁定时间
-
-            // 登录函数
+            loginAttempts: 0,
+            lockoutTime: null,
+            // 登录方法
             async login(username, password) {
-                // 检查是否被锁定
                 if (this.isLockedOut()) {
                     throw new Error('账号已被锁定，请稍后再试');
                 }
-
                 try {
                     utils.setLoading(true);
                     const response = await this.loginAPI(username, password);
-                    
                     if (response.success) {
-                        this.loginAttempts = 0; // 重置登录尝试计数
+                        this.loginAttempts = 0;
                         return response;
                     } else {
                         this.handleFailedLogin();
@@ -214,14 +209,12 @@
                     utils.setLoading(false);
                 }
             },
-
-            // 调用API进行登录
+            // 调用登录API
             async loginAPI(username, password) {
                 return new Promise((resolve, reject) => {
                     $.ajax({
-                        url: url,
+                        url: loginUrl,
                         type: 'POST',
-                        // contentType: 'application/json',
                         data: JSON.stringify({
                             name: username,
                             password: password
@@ -230,7 +223,7 @@
                             if (data.message === 'Success') {
                                 resolve({
                                     success: true,
-                                    token: utils.generateToken(), // 假设后端没有返回token，前端生成一个
+                                    token: utils.generateToken(),
                                     refreshToken: utils.generateToken(),
                                     username: username
                                 });
@@ -247,7 +240,6 @@
                     });
                 });
             },
-
             // 处理登录失败
             handleFailedLogin() {
                 this.loginAttempts++;
@@ -256,7 +248,6 @@
                     localStorage.setItem('lockoutTime', this.lockoutTime);
                 }
             },
-
             // 检查是否被锁定
             isLockedOut() {
                 const storedLockoutTime = localStorage.getItem('lockoutTime');
@@ -267,12 +258,10 @@
                 }
                 return false;
             },
-
             // 保存登录数据
             saveLoginData(username, password, token, refreshToken) {
                 const tokenExpiry = new Date();
                 tokenExpiry.setDate(tokenExpiry.getDate() + CONFIG.TOKEN_EXPIRY_DAYS);
-
                 const loginData = {
                     username,
                     password,
@@ -280,11 +269,9 @@
                     refreshToken,
                     tokenExpiry: tokenExpiry.toISOString()
                 };
-
                 const encryptedData = utils.encrypt(JSON.stringify(loginData));
                 localStorage.setItem('loginData', encryptedData);
             },
-
             // 清除登录数据
             clearLoginData() {
                 localStorage.removeItem('loginData');
@@ -292,79 +279,64 @@
             }
         };
 
-        // 登录成功处理函数
+        // 处理登录成功
         function handleLoginSuccess(response) {
-            // 加密并保存登录数据
             const encryptedData = utils.encrypt(JSON.stringify({
                 username: response.username,
                 token: response.token
             }));
             localStorage.setItem('loginData', encryptedData);
-            
-           
-            // 如果选择了"记住我"，保存相关信息
             if (document.getElementById('rememberMe').checked) {
                 localStorage.setItem('rememberMe', 'true');
             }
-
-            // 检查设备类型并跳转
             if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                // 移动设备
                 window.location.href = 'mobile_dashboard.html';
             } else {
-                // 桌面设备
                 window.location.href = 'dashboard.html';
             }
         }
 
         // 页面加载时检查登录状态
         window.onload = async function() {
-                try {
-                    // 向后端发送请求以验证sessionid
-                    $.ajax({
-                        url: 'http://localhost:80/api/users/validate-session/',
-                        type: 'GET',
-                        xhrFields: {
-                            withCredentials: true // 允许跨域请求发送cookie
-                        },
-                        success: function(data) {
-                            if (data.isValid) {
-                                // 如果session有效，直接跳转到dashboard
-                                window.location.href = 'dashboard.html';
-                            } else {
-                                auth.clearLoginData();
-                            }
-                        },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            console.error('验证session失败:', textStatus);
+            try {
+                $.ajax({
+                    url: validateSessionUrl,
+                    type: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        if (data.isValid) {
+                            window.location.href = 'dashboard.html';
+                        } else {
                             auth.clearLoginData();
                         }
-                    });
-                } catch (error) {
-                    console.error('请求失败:', error);
-                    auth.clearLoginData();
-                }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('验证session失败:', textStatus);
+                        auth.clearLoginData();
+                    }
+                });
+            } catch (error) {
+                console.error('请求失败:', error);
+                auth.clearLoginData();
+            }
         };
 
         // 处理表单提交
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
-
             try {
                 const response = await auth.login(username, password);
-                
                 if (rememberMe) {
                     auth.saveLoginData(username, password, response.token, response.refreshToken);
                     localStorage.setItem('rememberMe', 'true');
                 } else {
                     auth.clearLoginData();
                 }
-
-                // 调用登录成功处理函数
                 handleLoginSuccess(response);
             } catch (error) {
                 utils.showError(error.message);

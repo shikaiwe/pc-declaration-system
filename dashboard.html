@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>控制面板</title>
+    <!-- CDN 链接 -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         /* 基本样式设置 */
         body {
@@ -33,7 +37,6 @@
             list-style: none;
             padding: 0;
             margin: 0;
-            position: relative;
         }
 
         .sidebar-menu li {
@@ -101,7 +104,6 @@
             justify-content: center;
             color: white;
             transition: transform 0.2s ease-out, background-color 0.2s ease-out;
-            will-change: transform, background-color;
         }
 
         .avatar:hover {
@@ -137,7 +139,6 @@
         .dropdown-menu a:hover {
             background-color: #007BFF;
             color: white;
-            border-radius: 4px;
         }
 
         /* 内容样式 */
@@ -164,20 +165,19 @@
             padding: 10px 20px;
             margin-right: 10px;
             border: none;
-            background-color: #007BFF; /* 蓝色 */
+            background-color: #007BFF;
             color: white;
             cursor: pointer;
             border-radius: 4px;
-            transition: transform 0.2s ease-out; /* 仅保留缩放动画 */
-            will-change: transform;
+            transition: transform 0.2s ease-out;
         }
         
         .tab-button:hover {
-            transform: scale(1.05); /* 仅在悬停时放大 */
+            transform: scale(1.05);
         }
         
         .tab-button.active {
-            background-color: #0056b3; /* 激活状态的颜色 */
+            background-color: #0056b3;
         }
         
         .tab-content {
@@ -215,7 +215,6 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.2s ease-out, transform 0.2s ease-out;
-            will-change: background-color, transform;
         }
 
         .tab-content button:hover {
@@ -225,39 +224,33 @@
 
         /* 账号设置样式 */
         #accountSettings {
-            width: calc(100% - 250px); /* 减去侧边栏的宽度 */
-            max-width: 800px; /* 设置最大宽度 */
-            display: none;
-            position: fixed; /* 改为固定定位 */
-            top: 60px; /* 从顶部导航栏下方开始 */
-            left: 50%; /* 居中对齐 */
-            transform: translateX(-50%); /* 居中对齐 */
             background-color: #f4f4f4;
-            padding: 20px;
+            border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 1002; /* 确保在其他内容之上 */
-            border-radius: 8px; /* 圆角 */
-            height: calc(100vh - 60px); /* 延 */
-            overflow-y: auto; /* 如果内容超出，允许滚动 */
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+            margin: 20px auto;
+            display: none;
         }
 
         /* 表单样式 */
         .tab-content form {
-            max-width: 600px; /* 设置表单最大宽度 */
-            margin: 0 auto; /* 居中对齐 */
+            max-width: 600px;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            align-items: center; /*居中对齐子元素 */
+            align-items: center;
         }
 
         .tab-content form div {
-            width: 100%; /* 确保输入框占满可用宽度 */
-            margin-bottom: 15px; /* 增加输入框之间的间距 */
+            width: 100%;
+            margin-bottom: 15px;
         }
 
         .tab-content label {
             display: block;
-            margin-bottom: 5px; /* 标签与输入框之间的间距 */
+            margin-bottom: 5px;
         }
 
         .tab-content input {
@@ -265,7 +258,7 @@
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            box-sizing: border-box; /* 确保内边距和边框包含在总宽度 */
+            box-sizing: border-box;
         }
 
         .tab-content button {
@@ -276,9 +269,8 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.2s ease-out, transform 0.2s ease-out;
-            will-change: background-color, transform;
-            margin-top: 10px; /* 与方入间距 */
-            align-self: center; /* 居中对齐按钮 */
+            margin-top: 10px;
+            align-self: center;
         }
 
         .tab-content button:hover {
@@ -348,7 +340,6 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.2s ease-out, transform 0.2s ease-out;
-            will-change: background-color, transform;
         }
 
         .modal-content button:hover {
@@ -369,72 +360,72 @@
             list-style: none;
             padding: 0;
             margin: 0;
-            display: none; /* 初始隐藏 */
-            background-color: #161616; /* 与主菜单一致的背景色 */
-            position: relative; /* 相对定位 */
-            width: 250px; /* 设置宽度250px */
-            border-radius: 4px; /* 添加圆角 */
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 减少阴影以优化边缘 */
-            z-index: 1001; /* 确保在其他内容之上 */
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* 添加过渡效果 */
-            transform: scaleY(0); /* 初始缩放0 */
-            transform-origin: top; /* 从顶部开始缩放 */
-            opacity: 0; /* 初始透明度为0 */
+            display: none;
+            background-color: #161616;
+            position: relative;
+            width: 250px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            transform: scaleY(0);
+            transform-origin: top;
+            opacity: 0;
         }
 
         .submenu.active {
-            display: block; /* 确保激活时显示 */
-            transform: scaleY(1); /* 展开时缩放为1 */
-            opacity: 1; /* 展开时的透明度 */
+            display: block;
+            transform: scaleY(1);
+            opacity: 1;
         }
 
         .submenu li {
-            padding: 10px 20px; /* 调整内边距以减少突出 */
-            height: 49px; /* 设置高度为51px */
+            padding: 10px 20px;
+            height: 49px;
             cursor: pointer;
             transition: transform 0.2s ease-out, background-color 0.2s ease-out;
-            border-bottom: 1px solid #444; /* 调整分隔线颜色以减少对比 */
-            color: white; /* 与主菜单项一致的字体颜色 */
-            display: flex; /* 使用flex布局 */
-            align-items: center; /* 垂直居中 */
+            border-bottom: 1px solid #444;
+            color: white;
+            display: flex;
+            align-items: center;
         }
 
         .submenu li:last-child {
-            border-bottom: none; /* 去掉最后一个子项的分隔线 */
+            border-bottom: none;
         }
 
         .submenu li:hover {
-            background-color: #007BFF; /* 与主菜单项一致的悬停背景颜色 */
-            transform: translateX(5px); /* 减少悬停时的位移 */
+            background-color: #007BFF;
+            transform: translateX(5px);
             color: white;
         }
 
         .sidebar-menu li {
-            transition: background-color 0.3s ease-out; /* 添加背景色过渡效果 */
+            transition: background-color 0.3s ease-out;
         }
 
         .sidebar-menu li.active {
-            background-color: #007BFF; /* 激活时的背景颜色 */
-            color: white; /* 激活时的文字颜色 */
+            background-color: #007BFF;
+            color: white;
         }
 
         .order-submenu {
-            display: none; /* 初始隐藏 */
-            background-color: #222; /* 设置背景色为略深于导航栏的颜色 */
-            width: 90%; /* 设置宽度为90%，以确保在导航栏内完整显示 */
-            border-radius: 4px; /* 添加圆角 */
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 减少阴影以优化边缘 */
-            z-index: 1001; /* 确保在其他内容之上 */
-            transition: max-height 0.3s ease-out, opacity 0.3s ease-out; /* 添加过渡效果 */
-            max-height: 0; /* 初始最大高度为0 */
-            overflow: hidden; /* 隐藏溢出内容 */
-            opacity: 0; /* 初始透明度为0 */
+            display: none;
+            background-color: #222;
+            width: 90%;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
         }
 
         .order-submenu.active {
-            display: block; /* 确保激活时显示 */
-            max-height: 120px; /* 展开时的最大高度，调整为两个按钮的总高度 */
-            opacity: 1; /* 展开时的透明度 */
+            display: block;
+            max-height: 120px;
+            opacity: 1;
         }
 
         .order-submenu ul {
@@ -444,39 +435,30 @@
         }
 
         .order-submenu li {
-            height: 60px; /* 每个按钮占据一半的高度 */
+            height: 60px;
             cursor: pointer;
             transition: transform 0.2s ease-out, background-color 0.2s ease-out;
-            color: white; /* 与主菜单项一致的体颜色 */
-            display: flex; /* 使用flex布局 */
-            align-items: center; /* 垂直居中 */
-            justify-content: center; /* 水平居中 */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .order-submenu li:hover {
-            background-color: #007BFF; /* 与主菜单项一致的悬停背景颜色 */
-            transform: translateX(5px); /* 减少悬停时的位移 */
+            background-color: #007BFF;
+            transform: translateX(5px);
             color: white;
-        }
-
-        .sidebar-menu li {
-            transition: background-color 0.3s ease-out; /* 添加背景颜色过渡效果 */
-        }
-
-        .sidebar-menu li.active {
-            background-color: #007BFF; /* 激活时的背景颜色 */
-            color: white; /* 激活时的文字颜色 */
         }
 
         /* 订单管理内容样式 */
         #orderContent {
-            background-color: #f4f4f4; /* 与其他内容区域一致的背景色 */
-            border-radius: 8px; /* 圆角 */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 阴影 */
-            padding: 20px; /* 内边距 */
-            max-width: 800px; /* 最大宽度 */
-            width: 100%; /* 占满可用宽度 */
-            margin: 20px auto; /* 居中对齐 */
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+            margin: 20px auto;
         }
 
         .tabs {
@@ -489,11 +471,10 @@
             padding: 10px 20px;
             margin-right: 10px;
             border: none;
-            background-color: #f0f0f0;
+            background-color: #06627e;
             cursor: pointer;
             border-radius: 4px;
             transition: background-color 0.2s ease-out, transform 0.2s ease-out;
-            will-change: background-color, transform;
         }
 
         .tab-button.active {
@@ -514,20 +495,20 @@
 
         /* 表单样式 */
         .styled-form {
-            max-width: 800px; /* 扩大表单的最大宽度 */
+            max-width: 800px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
             align-items: center;
             background-color: #f4f4f4;
-            padding: 30px; /* 增加内边距 */
+            padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .styled-form div {
             width: 100%;
-            margin-bottom: 20px; /* 增加输入框之间的间距 */
+            margin-bottom: 20px;
         }
 
         .styled-form label {
@@ -540,7 +521,7 @@
         .styled-form input,
         .styled-form textarea {
             width: 100%;
-            padding: 12px; /* 增加输入框的内边距 */
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
@@ -548,15 +529,14 @@
         }
 
         .styled-form button {
-            padding: 12px 24px; /* 增加按钮内边距 */
+            padding: 12px 24px;
             background-color: #007BFF;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.2s ease-out, transform 0.2s ease-out;
-            will-change: background-color, transform;
-            margin-top: 15px; /* 增加按钮与输入框之间的间距 */
+            margin-top: 15px;
             align-self: center;
         }
 
@@ -572,18 +552,16 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.2s ease-out, transform 0.2s ease-out;
-            will-change: background-color, transform;
         }
 
         .fill-button:disabled {
-            background-color: #ccc; /* 灰色 */
+            background-color: #ccc;
             color: #666;
             cursor: not-allowed;
-            transition: none; /* 禁用动画 */
         }
 
         .fill-button:not(:disabled) {
-            background-color: #007BFF; /* 蓝色 */
+            background-color: #007BFF;
             color: white;
         }
 
@@ -592,19 +570,18 @@
             transform: scale(1.05);
         }
 
-        /* 确保禁用状态下无悬停效果 */
         .fill-button:disabled:hover {
-            background-color: #ccc; /* 保持灰色 */
-            transform: none; /* 无缩放效果 */
+            background-color: #ccc;
+            transform: none;
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <ul class="sidebar-menu">
-            <li id="homeLink"><i>🏠</i>回到首页</li>
+            <li id="homeLink"><i>🏠</i>首页</li>
             <li id="orderManagement"><i>📝</i>订单管理</li>
-            <li id="scheduleManagement"><i>📅</i>日程安排</li>
+            <li id="scheduleManagement"><i>📅</i>日程管理</li>
             <li id="dataStatistics"><i>📊</i>数据统计</li>
             <li id="accountManagement"><i>👤</i>账号管理</li>
         </ul>
@@ -637,7 +614,7 @@
                 <button class="tab-button" data-tab="reportOrder">我要报单</button>
                 <button class="tab-button" data-tab="orderHistory">历史订单</button>
             </div>
-            <div class="tab-content" id="reportOrder" style="display: block;">
+            <div class="tab-content" id="reportOrder" style="display: none;">
                 <form id="reportOrderForm" class="styled-form">
                     <div>
                         <label for="name">姓名:</label>
@@ -660,6 +637,9 @@
                         <label for="preferredTime">期望上门时间:</label>
                         <input type="datetime-local" id="preferredTime" name="preferredTime" required>
                     </div>
+                    <div id="timeWarning" style="display: none; color: red; margin-top: 10px;">
+                        该时间非上门时段。正确的时间段为18:00-21:00
+                    </div>
                     <button type="submit">提交</button>
                 </form>
                 <div id="reportOrderInfo">
@@ -669,11 +649,6 @@
             <div class="tab-content" id="orderHistory" style="display: none;">
                 <p>历史订单内容...</p>
             </div>
-        </div>
-
-        <div class="content" id="scheduleContent" style="display: none;">
-            <h2>日程安排</h2>
-            <p>日程安排功能即将推出。</p>
         </div>
 
         <div class="content" id="dataStatisticsContent" style="display: none;">
@@ -727,21 +702,29 @@
             </div>
         </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <div class="content" id="scheduleContent" style="display: none;">
+            <h2>日程管理</h2>
+            <div id="calendar"></div>
+        </div>
+
     <script>
+        // 定义所有的URL
         const ip = 'localhost:80';
-        var url = `http://${ip}/api/dashboard/call_report/`;
+        const reportApiUrl = `http://${ip}/api/dashboard/call_report/`;
+        const weatherApiKeyUrl = '/api/dashboard/getWeatherApiKey/';
+        const mobileDashboardUrl = 'mobile_dashboard.html';
+        const loginUrl = 'login.html';
+
         document.addEventListener('DOMContentLoaded', () => {
             // 检查设备类型并跳转
             if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                // 移动设备
-                window.location.href = 'mobile_dashboard.html';
-                return; // 确保不执行后续码
+                window.location.href = mobileDashboardUrl;
+                return;
             }
 
             const currentTimeElement = document.getElementById('currentTime');
 
-            // 获登录数据
+            // 获取登录数据
             function getLoginData() {
                 const encryptedData = localStorage.getItem('loginData');
                 if (encryptedData) {
@@ -760,41 +743,41 @@
 
             async function fetchWeatherAndLocation() {
                 try {
-                    const apiKey = await getApiKeyFromServer(); // 从服务端获取API Key
+                    const apiKey = await getApiKeyFromServer();
 
                     const ipData = await fetchData(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
                     if (ipData.status !== '1') {
                         throw new Error(`无法获取IP信息: ${ipData.info}`);
                     }
 
-                    const cityAdcode = ipData.adcode; // 获取城市的行政划码
-                    const city = ipData.city.replace('市', ''); // 获取城市名
+                    const cityAdcode = ipData.adcode;
+                    const city = ipData.city.replace('市', '');
 
                     const weatherData = await fetchData(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
                     if (weatherData.status !== '1') {
                         throw new Error(`无法获取天气信息: ${weatherData.info}`);
                     }
 
-                    const live = weatherData.lives[0]; // 获取实时天气息
+                    const live = weatherData.lives[0];
                     weatherInfoElement.innerHTML = `
                         <p>地点：${city}</p>
                         <p>天气：${live.weather}</p>
                         <p>温度：${live.temperature}°C</p>
                         <p>湿度：${live.humidity}%</p>
-                        <p>风向：${live.windDirection}</p>
-                        <p>风力：${live.windPower}级</p>
-                    `; // 显示天气信息
+                        <p>风向：${live.winddirection}</p>
+                        <p>风力：${live.windpower}级</p>
+                    `;
 
                 } catch (error) {
                     console.error('获取天气信息时出错:', error);
-                    weatherInfoElement.innerHTML = '<p>无法获取信息</p>'; // 显��错误信息
+                    weatherInfoElement.innerHTML = '<p>无法获取信息</p>';
                 }
             }
 
             // 使用 jQuery 获取 API Key
             function getApiKeyFromServer() {
                 return $.ajax({
-                    url: '/api/dashboard/getWeatherApiKey/',
+                    url: weatherApiKeyUrl,
                     method: 'GET',
                     dataType: 'json',
                 }).then(data => {
@@ -811,10 +794,9 @@
 
             function handleSessionError(message) {
                 console.warn('Session error:', message);
-                // 根据不同的错误信息进行处理
                 if (message === 'Session has expired' || message === 'Invalid session' || message === 'No sessionid cookie') {
                     alert('会话已过期或无效，请重新登录。');
-                    window.location.href = 'login.html'; // 重定向到登录页面
+                    window.location.href = loginUrl;
                 }
             }
 
@@ -827,7 +809,7 @@
                 }).then(response => {
                     return response;
                 }).catch(error => {
-                    throw new Error(`求失败: ${error.statusText}`);
+                    throw new Error(`请求失败: ${error.statusText}`);
                 });
             }
 
@@ -845,63 +827,58 @@
 
             // 侧边栏菜单点击事件
             const menuItems = document.querySelectorAll('.sidebar-menu li');
-            const contentArea = document.getElementById('contentArea');
-            const orderContent = document.getElementById('orderContent');
-            const scheduleContent = document.getElementById('scheduleContent');
-            const dataStatisticsContent = document.getElementById('dataStatisticsContent');
-            const accountSettings = document.getElementById('accountSettings');
+            const contentSections = {
+                homeLink: document.getElementById('contentArea'),
+                orderManagement: document.getElementById('orderContent'),
+                scheduleManagement: document.getElementById('scheduleContent'),
+                dataStatistics: document.getElementById('dataStatisticsContent'),
+                accountManagement: document.getElementById('accountSettings')
+            };
 
             menuItems.forEach(item => {
                 item.addEventListener('click', (event) => {
-                    event.stopPropagation(); // 止事件冒泡
-                    menuItems.forEach(i => {
-                        i.classList.remove('active');
-                        if (i.style) {
-                            i.style.backgroundColor = ''; // 重置背景颜色
-                        }
-                    });
+                    event.stopPropagation();
+                    menuItems.forEach(i => i.classList.remove('active'));
                     item.classList.add('active');
 
-                    if (item.id === 'orderManagement') {
-                        contentArea.style.display = 'none';
-                        accountSettings.style.display = 'none';
-                        scheduleContent.style.display = 'none';
-                        dataStatisticsContent.style.display = 'none';
-                        orderContent.style.display = 'block';
-                    } else if (item.id === 'scheduleManagement') {
-                        contentArea.style.display = 'none';
-                        orderContent.style.display = 'none';
-                        accountSettings.style.display = 'none';
-                        dataStatisticsContent.style.display = 'none';
-                        scheduleContent.style.display = 'block';
-                    } else if (item.id === 'dataStatistics') {
-                        contentArea.style.display = 'none';
-                        orderContent.style.display = 'none';
-                        scheduleContent.style.display = 'none';
-                        accountSettings.style.display = 'none';
-                        dataStatisticsContent.style.display = 'block';
-                    } else if (item.id === 'accountManagement') {
-                        contentArea.style.display = 'none';
-                        orderContent.style.display = 'none';
-                        scheduleContent.style.display = 'none';
-                        dataStatisticsContent.style.display = 'none';
-                        accountSettings.style.display = 'block';
-                    } else {
-                        accountSettings.style.display = 'none';
-                        orderContent.style.display = 'none';
-                        scheduleContent.style.display = 'none';
-                        dataStatisticsContent.style.display = 'none';
-                        contentArea.style.display = 'block';
+                    // 隐藏所有内容
+                    Object.values(contentSections).forEach(section => {
+                        if (section) {
+                            section.style.display = 'none';
+                        }
+                    });
+
+                    // 显示对应的内容
+                    const sectionToShow = contentSections[item.id];
+                    if (sectionToShow) {
+                        sectionToShow.style.display = 'block';
+                    }
+
+                    // 如果点击的是日程管理，初始化并显示日历
+                    if (item.id === 'scheduleManagement') {
+                        var calendarEl = document.getElementById('calendar');
+                        var calendar = new FullCalendar.Calendar(calendarEl, {
+                            initialView: 'dayGridMonth',
+                            locale: 'zh-cn',
+                            events: [
+                                { title: '事件1', start: '2023-10-01' },
+                                { title: '事件2', start: '2023-10-05', end: '2023-10-07' }
+                            ]
+                        });
+                        calendar.render();
                     }
                 });
             });
+
+            // 默认显示首页内容
+            contentSections.homeLink.style.display = 'block';
 
             // 返回首页点击事件
             document.getElementById('homeLink').addEventListener('click', () => {
                 menuItems.forEach(i => i.classList.remove('active'));
                 document.getElementById('homeLink').classList.add('active');
-                accountSettings.style.display = 'none';
-                contentArea.style.display = 'block';
+                contentSections.accountManagement.style.display = 'none';
+                contentSections.homeLink.style.display = 'block';
                 userProfile.style.display = 'flex';
             });
 
@@ -937,32 +914,32 @@
             const cancelLogoutButton = document.getElementById('cancelLogoutButton');
 
             document.getElementById('logoutLink').addEventListener('click', (event) => {
-                event.preventDefault(); // 阻止默认链接行为
-                logoutModal.style.display = 'block'; // 显示模态框
+                event.preventDefault();
+                logoutModal.style.display = 'block';
             });
 
             confirmLogoutButton.addEventListener('click', () => {
                 localStorage.removeItem('loginData');
-                window.location.href = 'login.html';
+                window.location.href = loginUrl;
             });
 
             cancelLogoutButton.addEventListener('click', () => {
-                logoutModal.style.display = 'none'; // 隐藏模态框
+                logoutModal.style.display = 'none';
             });
 
             window.addEventListener('click', (event) => {
                 if (event.target === logoutModal) {
-                    logoutModal.style.display = 'none'; // 点击模态框外部隐藏模态框
+                    logoutModal.style.display = 'none';
                 }
             });
 
-            // 获天气和位置信息
-            fetchWeatherAndLocation(); // 保调用 fetchWeatherAndLocation 函数
+            // 获取天气和位置信息
+            fetchWeatherAndLocation();
 
-            // 定义调用报告API的函数
-            function callReportAPI(name, userPhoneNumber, address, issue, date) {
+            // 调用报告API的函数
+            function callReportAPI(name, userPhoneNumber, address, issue, preferredTime) {
                 return $.ajax({
-                    url: url,
+                    url: reportApiUrl,
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
@@ -970,11 +947,11 @@
                         userPhoneNumber: userPhoneNumber,
                         address: address,
                         issue: issue,
-                        date: date
+                        preferredTime: preferredTime
                     }),
                     dataType: 'json',
                     xhrFields: {
-                        withCredentials: true // 确保请求携带cookies
+                        withCredentials: true
                     }
                 }).then(response => {
                     if (response.message === 'Success') {
@@ -989,27 +966,26 @@
             }
 
             const reportOrderButton = document.querySelector('.tab-button[data-tab="reportOrder"]');
-            const reportOrderModal = document.getElementById('reportOrderModal');
             const reportOrderForm = document.getElementById('reportOrderForm');
-            const cancelReportOrderButton = document.getElementById('cancelReportOrder');
             const reportOrderInfo = document.getElementById('reportOrderInfo');
 
-            // 显示模态框
+            // 显示报单表单
             reportOrderButton.addEventListener('click', () => {
-                reportOrderModal.style.display = 'block';
+                document.getElementById('reportOrder').style.display = 'block';
+                document.getElementById('orderHistory').style.display = 'none';
             });
 
             // 提交表单并调用API
             reportOrderForm.addEventListener('submit', (event) => {
-                event.preventDefault(); // 阻止表单默认提交行为
+                event.preventDefault();
 
                 const name = document.getElementById('name').value;
                 const userPhoneNumber = document.getElementById('userPhoneNumber').value;
                 const address = document.getElementById('address').value;
                 const issue = document.getElementById('issue').value;
-                const date = document.getElementById('preferredTime').value;
+                const preferredTime = document.getElementById('preferredTime').value;
 
-                callReportAPI(name, userPhoneNumber, address, issue, date).then(data => {
+                callReportAPI(name, userPhoneNumber, address, issue, preferredTime).then(data => {
                     reportOrderInfo.innerHTML = `
                         <p>报单信息: ${data.orderDetails}</p>
                     `;
@@ -1017,34 +993,26 @@
                     reportOrderInfo.innerHTML = '<p>无法获取报单信息</p>';
                 });
 
-                reportOrderModal.style.display = 'none'; // 提交后隐藏模态框
-            });
-
-            // 取消按钮隐藏模态框
-            cancelReportOrderButton.addEventListener('click', () => {
-                reportOrderModal.style.display = 'none';
-            });
-
-            // 点击模态框外部隐藏模态框
-            window.addEventListener('click', (event) => {
-                if (event.target === reportOrderModal) {
-                    reportOrderModal.style.display = 'none';
-                }
+                document.getElementById('reportOrder').style.display = 'none';
             });
 
             const issueTextarea = document.getElementById('issue');
 
             // 自动调整textarea高度
             issueTextarea.addEventListener('input', function() {
-                this.style.height = 'auto'; // 重置高度
-                this.style.height = (this.scrollHeight) + 'px'; // 设置为内容高度
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
             });
 
             const preferredTimeInput = document.getElementById('preferredTime');
 
-            // 确保元素存在
             if (preferredTimeInput) {
                 // 设置期望上门时间的范围
+                document.getElementById('preferredTime').addEventListener('click', function(event) {
+                    this.showPicker();
+                    event.preventDefault();
+                });
+                
                 function setPreferredTimeRange() {
                     const now = new Date();
                     const dayOfWeek = now.getDay();
@@ -1076,10 +1044,13 @@
                 preferredTimeInput.addEventListener('change', () => {
                     const selectedTime = new Date(preferredTimeInput.value);
                     const selectedHour = selectedTime.getHours();
+                    const timeWarning = document.getElementById('timeWarning');
 
                     if (selectedHour < 18 || selectedHour >= 21) {
-                        alert('该时间非上门时段，请选择18:00-21:00之间的时间');
-                        preferredTimeInput.value = ''; // 清空不符合条件的输入
+                        timeWarning.style.display = 'block';
+                        preferredTimeInput.value = '';
+                    } else {
+                        timeWarning.style.display = 'none';
                     }
                 });
             } else {
@@ -1091,7 +1062,6 @@
 
             // 模拟获取用户信息的函数
             function getUserInfo() {
-                // 假设从本地存储或其他来源获取用户信息
                 const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
                 return userInfo;
             }
@@ -1110,6 +1080,31 @@
             }
 
             checkUserPhoneNumber();
+
+            const accountTabs = document.querySelectorAll('#accountSettings .tab-button');
+            const accountContents = {
+                info: document.getElementById('info'),
+                password: document.getElementById('password')
+            };
+
+            accountTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    accountTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    // 隐藏所有账号管理内容
+                    Object.values(accountContents).forEach(content => content.style.display = 'none');
+
+                    // 显示对应的内容
+                    const contentToShow = accountContents[tab.getAttribute('data-tab')];
+                    if (contentToShow) {
+                        contentToShow.style.display = 'block';
+                    }
+                });
+            });
+
+            // 不默认显示任何账号管理内容
+            Object.values(accountContents).forEach(content => content.style.display = 'none');
 
         });
     </script>
