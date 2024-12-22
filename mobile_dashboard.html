@@ -824,8 +824,13 @@
         document.getElementById('order-management').addEventListener('click', function() {
             const modal = document.getElementById('orderManagementModal');
             modal.style.display = "block";
-            document.getElementById('overlay').style.display = "block"; // 显示遮罩层
-            this.classList.add('active'); // 添加浮起样式
+            document.getElementById('overlay').style.display = "block";
+            this.classList.add('active');
+            
+            // 如果当前显示的是历史订单标签，则获取历史订单数据
+            if (document.getElementById('orderHistory').style.display === 'block') {
+                fetchHistoryOrders();
+            }
         });
 
         // 关闭订单管理模态框
@@ -846,6 +851,11 @@
 
             document.getElementById(tabName).style.display = "block";
             event.currentTarget.className += " active";
+
+            // 添加这个条件判断：当切换到历史订单标签页时，获取历史订单数据
+            if (tabName === 'orderHistory') {
+                fetchHistoryOrders();
+            }
         }
 
         // 提交表单并调用API
