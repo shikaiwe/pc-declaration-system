@@ -574,6 +574,51 @@
             background-color: #ccc;
             transform: none;
         }
+
+        /* 历史订单样式 */
+        .orders-container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .order-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease-out;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .order-info p {
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+
+        .order-info strong {
+            color: #333;
+            margin-right: 10px;
+        }
+
+        .no-orders {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 20px;
+            color: #dc3545;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -792,12 +837,23 @@
                 });
             }
 
+            // 统一的会话错误处理函数
             function handleSessionError(message) {
-                console.warn('Session error:', message);
-                if (message === 'Session has expired' || message === 'Invalid session' || message === 'No sessionid cookie') {
-                    alert('会话已过期或无效，请重新登录。');
-                    window.location.href = loginUrl;
+                switch (message) {
+                    case 'Session has expired':
+                        alert('会话已过期，请重新登录');
+                        break;
+                    case 'Invalid session':
+                        alert('无效的会话，请重新登录');
+                        break;
+                    case 'No sessionid cookie':
+                        alert('未找到会话信息，请重新登录');
+                        break;
+                    default:
+                        alert('发生未知错误，请重新登录');
                 }
+                localStorage.removeItem('loginData');
+                window.location.href = 'login.html';
             }
 
             // 使用 jQuery 获取数据
@@ -909,18 +965,35 @@
                 });
             });
 
+            // 登出功能
+            const logoutLink = document.getElementById('logoutLink');
             const logoutModal = document.getElementById('logoutModal');
             const confirmLogoutButton = document.getElementById('confirmLogoutButton');
             const cancelLogoutButton = document.getElementById('cancelLogoutButton');
 
-            document.getElementById('logoutLink').addEventListener('click', (event) => {
+            logoutLink.addEventListener('click', (event) => {
                 event.preventDefault();
                 logoutModal.style.display = 'block';
             });
 
             confirmLogoutButton.addEventListener('click', () => {
-                localStorage.removeItem('loginData');
-                window.location.href = loginUrl;
+                $.ajax({
+                    url: 'http://localhost:80/api/dashboard/logout/',
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                }).then(response => {
+                    if (response.message === 'Success') {
+                        localStorage.removeItem('loginData');
+                        window.location.href = 'login.html';
+                    } else {
+                        handleSessionError(response.message);
+                    }
+                }).catch(error => {
+                    console.error('登出失败:', error);
+                    alert('登出失败，请重试');
+                });
             });
 
             cancelLogoutButton.addEventListener('click', () => {
@@ -933,8 +1006,67 @@
                 }
             });
 
-            // 获取天气和位置信息
-            fetchWeatherAndLocation();
+            // 历史订单功能
+            const orderHistoryButton = document.querySelector('.tab-button[data-tab="orderHistory"]');
+            const orderHistoryContent = document.getElementById('orderHistory');
+
+            orderHistoryButton.addEventListener('click', fetchHistoryOrders);
+
+            function fetchHistoryOrders() {
+                $.ajax({
+                    url: 'http://localhost:80/api/dashboard/user_get_history_report/',
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                }).then(response => {
+                    if (response.message === 'Success') {
+                        displayHistoryOrders(response.report_info);
+                    } else if (response.message === 'No history report') {
+                        orderHistoryContent.innerHTML = `
+                            <div class="no-orders">
+                                <p>暂无历史订单</p>
+                            </div>
+                        `;
+                    } else {
+                        handleSessionError(response.message);
+                    }
+                }).catch(error => {
+                    console.error('获取历史订单失败:', error);
+                    orderHistoryContent.innerHTML = `
+                        <div class="error-message">
+                            <p>获取历史订单失败，请稍后重试</p>
+                        </div>
+                    `;
+                });
+            }
+
+            function displayHistoryOrders(orders) {
+                const ordersList = Array.isArray(orders) ? orders : [orders];
+                
+                const ordersHTML = ordersList.map(order => `
+                    <div class="order-card">
+                        <div class="order-info">
+                            <p><strong>手机号码：</strong>${order.userPhoneNumber}</p>
+                            <p><strong>地址：</strong>${order.address}</p>
+                            <p><strong>问题描述：</strong>${order.issue}</p>
+                            <p><strong>预约时间：</strong>${formatDate(order.date)}</p>
+                            <p><strong>状态：</strong>${order.allocationState ? '已分配' : '待分配'}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                orderHistoryContent.innerHTML = `
+                    <div class="orders-container">
+                        ${ordersHTML}
+                    </div>
+                `;
+            }
+
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+            }
 
             // 调用报告API的函数
             function callReportAPI(name, userPhoneNumber, address, issue, preferredTime) {
@@ -1105,7 +1237,6 @@
 
             // 不默认显示任何账号管理内容
             Object.values(accountContents).forEach(content => content.style.display = 'none');
-
         });
     </script>
 </body>
