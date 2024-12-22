@@ -311,6 +311,46 @@
             max-width: 100%;
             height: 400px;
         }
+        .order-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.2s ease-out;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .order-info p {
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+
+        .order-info strong {
+            color: #333;
+            margin-right: 8px;
+        }
+
+        .no-orders, .error-message {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .error-message {
+            color: #dc3545;
+        }
+
+        .orders-container {
+            padding: 15px;
+            max-width: 100%;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
@@ -515,7 +555,7 @@
             document.getElementById('overlay').style.display = "block"; // 显示遮罩层
         });
 
-        // 关闭退出确认模态框
+        // ��闭退出确认模态框
         document.getElementById('cancelLogout').addEventListener('click', function() {
             const modal = document.getElementById('logoutModal');
             modal.style.display = "none";
@@ -696,6 +736,102 @@
                 document.getElementById('schedule-management').classList.remove('active'); // 移除浮起样式
             });
         });
+
+        // 统一的会话错误处理函数
+        function handleSessionError(message) {
+            switch (message) {
+                case 'Session has expired':
+                    alert('会话已过期，请重新登录');
+                    break;
+                case 'Invalid session':
+                    alert('无效的会话，请重新登录');
+                    break;
+                case 'No sessionid cookie':
+                    alert('未找到会话信息，请重新登录');
+                    break;
+                default:
+                    alert('发生未知错误，请重新登录');
+            }
+            localStorage.removeItem('loginData');
+            window.location.href = 'login.html';
+        }
+
+        // 退出登录功能
+        document.getElementById('confirmLogout').addEventListener('click', () => {
+            $.ajax({
+                url: 'http://localhost:80/api/dashboard/logout/',
+                method: 'GET',
+                xhrFields: {
+                    withCredentials: true
+                }
+            }).then(response => {
+                if (response.message === 'Success') {
+                    localStorage.removeItem('loginData');
+                    window.location.href = 'login.html';
+                } else {
+                    handleSessionError(response.message);
+                }
+            }).catch(error => {
+                console.error('登出失败:', error);
+                alert('登出失败，请重试');
+            });
+        });
+
+        // 历史订单功能
+        function fetchHistoryOrders() {
+            $.ajax({
+                url: 'http://localhost:80/api/dashboard/user_get_history_report/',
+                method: 'GET',
+                xhrFields: {
+                    withCredentials: true
+                }
+            }).then(response => {
+                if (response.message === 'Success') {
+                    displayHistoryOrders(response.report_info);
+                } else if (response.message === 'No history report') {
+                    document.getElementById('orderHistory').innerHTML = `
+                        <div class="no-orders">
+                            <p>暂无历史订单</p>
+                        </div>
+                    `;
+                } else {
+                    handleSessionError(response.message);
+                }
+            }).catch(error => {
+                console.error('获取历史订单失败:', error);
+                document.getElementById('orderHistory').innerHTML = `
+                    <div class="error-message">
+                        <p>获取历史订单失败，请稍后重试</p>
+                    </div>
+                `;
+            });
+        }
+
+        function displayHistoryOrders(orders) {
+            const ordersList = Array.isArray(orders) ? orders : [orders];
+            
+            const ordersHTML = ordersList.map(order => `
+                <div class="order-card">
+                    <div class="order-info">
+                        <p><strong>手机号码：</strong>${order.userPhoneNumber}</p>
+                        <p><strong>地址：</strong>${order.address}</p>
+                        <p><strong>问题描述：</strong>${order.issue}</p>
+                        <p><strong>预约时间：</strong>${formatDate(order.date)}</p>
+                        <p><strong>状态：</strong>${order.allocationState ? '已分配' : '待分配'}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('orderHistory').innerHTML = `
+                <div class="orders-container">
+                    ${ordersHTML}
+                </div>
+            `;
+        }
+
+        // 在订单历史标签页点击时获取数据
+        document.querySelector('.tab-link[onclick="openOrderTab(event, \'orderHistory\')"]')
+            .addEventListener('click', fetchHistoryOrders);
     </script>
 
 </body>
