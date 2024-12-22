@@ -583,6 +583,8 @@
         const ip = '8.134.178.71';
         var logoutUrl = `https://${ip}/api/dashboard/logout/`;
         var getHistoryCallUrl = `https://${ip}/api/dashboard/user_get_history_report/`;
+        var weatherApiKeyUrl = `https://${ip}/api/dashboard/get_weather_api_key/`;
+        var reportApiUrl = `https://${ip}/api/dashboard/call_report/`;
         // 获取天气和位置信息
         async function fetchWeatherAndLocation() {
             // 使用 jQuery 获取 API Key
@@ -728,16 +730,61 @@
             const issue = document.getElementById('issue').value;
             const preferredTime = document.getElementById('preferredTime').value;
 
-            callReportAPI(name, userPhoneNumber, address, issue, preferredTime).then(data => {
-                document.getElementById('reportOrderInfo').innerHTML = `
-                    <p>报单信息: ${data.orderDetails}</p>
-                `;
+            // 调用报单API
+            callReportAPI(userPhoneNumber, address, issue, preferredTime).then(data => {
+                if (data.message === 'Success') {
+                    document.getElementById('reportOrderInfo').innerHTML = `
+                        <p>报单信息: 成功提交</p>
+                    `;
+                } else {
+                    handleSessionError(data.message);
+                }
             }).catch(error => {
                 document.getElementById('reportOrderInfo').innerHTML = '<p>无法获取报单信息</p>';
             });
 
             document.getElementById('newOrderForm').reset(); // 提交后重置表单
         });
+
+        // 调用报单API的函数
+        async function callReportAPI(userPhoneNumber, address, issue, date) {
+            const response = await fetch(reportApiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') // 如果需要CSRF token
+                },
+                body: JSON.stringify({
+                    userPhoneNumber: userPhoneNumber,
+                    address: address,
+                    issue: issue,
+                    date: date
+                }),
+                credentials: 'include' // 包含cookie
+            });
+
+            if (!response.ok) {
+                throw new Error('网络响应失败');
+            }
+
+            return response.json();
+        }
+
+        // 获取CSRF token的函数（如果需要）
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
 
         // 自动调整textarea高度
         document.getElementById('issue').addEventListener('input', function() {
@@ -964,7 +1011,7 @@
             document.getElementById('orderHistory').innerHTML = `
                 <div class="error-message">
                     <i>❌</i>
-                    <p>获取历史订单失败，请稍后重试</p>
+                    <p>获取历���订单失败，请稍后重试</p>
                 </div>
             `;
         }
