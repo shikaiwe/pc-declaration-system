@@ -292,12 +292,47 @@
         /* 天气信息样式 */
         .weather-info {
             margin-top: auto;
-            background-color: #007BFF;
+            background: linear-gradient(135deg, #6dd5ed, #2193b0);
             color: white;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             z-index: 1000;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .weather-info p {
+            margin: 12px 0;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            line-height: 1.5;
+        }
+
+        .weather-icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .weather-location {
+            font-size: 1.3em !important;
+            font-weight: bold;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 8px;
+            margin-bottom: 15px !important;
+        }
+
+        .weather-temp {
+            font-size: 2em !important;
+            font-weight: bold;
+            margin: 15px 0 !important;
+        }
+
+        .weather-details {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 15px;
         }
 
         /* 模态框样式 */
@@ -860,12 +895,32 @@
 
                     const live = weatherData.lives[0];
                     weatherInfoElement.innerHTML = `
-                        <p>地点：${city}</p>
-                        <p>天气：${live.weather}</p>
-                        <p>温度：${live.temperature}°C</p>
-                        <p>湿度：${live.humidity}%</p>
-                        <p>风向：${live.winddirection}</p>
-                        <p>风力：${live.windpower}级</p>
+                        <p class="weather-location">
+                            <span class="weather-icon">📍</span>
+                            ${city}
+                        </p>
+                        <p class="weather-temp">
+                            <span class="weather-icon">🌡️</span>
+                            ${live.temperature}°C
+                        </p>
+                        <div class="weather-details">
+                            <p>
+                                <span class="weather-icon">🌤️</span>
+                                天气：${live.weather}
+                            </p>
+                            <p>
+                                <span class="weather-icon">💧</span>
+                                湿度：${live.humidity}%
+                            </p>
+                            <p>
+                                <span class="weather-icon">🌪️</span>
+                                风向：${live.winddirection}
+                            </p>
+                            <p>
+                                <span class="weather-icon">💨</span>
+                                风力：${live.windpower}级
+                            </p>
+                        </div>
                     `;
 
                 } catch (error) {
