@@ -810,6 +810,8 @@
         const loginUrl = 'login.html';
 
         document.addEventListener('DOMContentLoaded', () => {
+            // 获取天气信息顺带验证登录
+            fetchWeatherAndLocation();
             // 检查设备类型并跳转
             if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
                 window.location.href = mobileDashboardUrl;
