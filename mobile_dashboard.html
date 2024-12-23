@@ -1751,7 +1751,7 @@
             color: #333;
             padding: 10px;
             white-space: nowrap; /* 防止文本换行 */
-            overflow: hidden; /* 防止文本溢出 */
+            overflow: hidden; /* 防止文���溢出 */
             text-overflow: ellipsis; /* 文本溢出时显示省略号 */
             width: 100%; /* 确保宽度填充 */
             text-align: center;
@@ -1941,7 +1941,13 @@
                     </div>
                     <div class="datetime-container">
                         <label for="preferredTime">期望上门时间:</label>
-                        <input type="text" id="preferredTime" name="preferredTime" placeholder="点击选择上门时间" required>
+                        <input type="text" 
+                               id="preferredTime" 
+                               name="preferredTime" 
+                               placeholder="点击选择上门时间" 
+                               required
+                               readonly
+                               inputmode="none">
                         <div id="timeWarning" style="display: none;">该时间非上门段。上门时段为18:00-21:00</div>
                     </div>
                     <button type="submit">提交</button>
@@ -2652,7 +2658,7 @@
                     localStorage.setItem('userInfo', JSON.stringify(userInfo));
                     // 更新一键填充按钮状态
                     checkUserPhoneNumber();
-                    // 关闭模态
+                    // 关闭模�����
                     document.getElementById('editModal').style.display = "none";
                     document.getElementById('overlay').style.display = "none";
                 } else {
