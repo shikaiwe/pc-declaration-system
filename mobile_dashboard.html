@@ -2338,18 +2338,33 @@
         const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
 
         function checkUserPhoneNumber() {
-            const userInfo = getUserInfo();
-            if (userInfo.phoneNumber) {
-                fillPhoneNumberButton.disabled = false;
-                fillPhoneNumberButton.addEventListener('click', () => {
-                    userPhoneNumberInput.value = userInfo.phoneNumber;
-                });
-            } else {
-                fillPhoneNumberButton.disabled = true;
-            }
+            // 移除本地存储相关代码，改为直接启用按钮
+            fillPhoneNumberButton.disabled = false;
+            fillPhoneNumberButton.addEventListener('click', fetchAndFillPhoneNumber);
         }
 
-        checkUserPhoneNumber();
+        // 添加新的函数用于获取和填充手机号
+        async function fetchAndFillPhoneNumber() {
+            try {
+                const response = await fetch(`https://${ip}/api/dashboard/getPhoneNumber/`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.message === 'Success') {
+                    userPhoneNumberInput.value = data.phoneNumber;
+                } else if (data.message === 'No phone number') {
+                    showMessage('您还未设置手机号，请先在账户管理中设置');
+                } else {
+                    handleSessionError(data.message);
+                }
+            } catch (error) {
+                console.error('获取手机号失败:', error);
+                showMessage('获取手机号失败，请重试');
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             const scheduleManagementButton = document.getElementById('schedule-management');
@@ -2430,12 +2445,14 @@
                                         }));
                                         successCallback(events);
                                     } else if (response.message === 'No history report') {
-                                        successCallback([]);
+                                        successCallback([]); // 如果没有订单，显示空日历
                                     } else {
+                                        showMessage('获取订单失败，请稍后重试');
                                         failureCallback(new Error(response.message));
                                     }
                                 }).catch(error => {
                                     console.error('获取日历订单数据失败:', error);
+                                    showMessage('获取订单失败，请稍后重试');
                                     failureCallback(error);
                                 });
                             },
@@ -2796,28 +2813,6 @@
                 }, 3000);
             }
         }
-
-        // 获取用户信息的函数
-        function getUserInfo() {
-            const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
-            return userInfo;
-        }
-
-        // 检查用户信息并设置按钮状态
-        function checkUserPhoneNumber() {
-            const userInfo = getUserInfo();
-            if (userInfo.phoneNumber) {
-                fillPhoneNumberButton.disabled = false;
-                fillPhoneNumberButton.addEventListener('click', () => {
-                    userPhoneNumberInput.value = userInfo.phoneNumber;
-                });
-            } else {
-                fillPhoneNumberButton.disabled = true;
-            }
-        }
-
-        // 初始化时查手机号状态
-        checkUserPhoneNumber();
 
         // 添加显示消息的函数
         function showMessage(message, callback) {

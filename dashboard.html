@@ -894,23 +894,31 @@
 
     <script>
         // 定义所有的URL
-        // const ip = 'localhost:80';
-        const ip = '8.134.178.71'
-        // const reportApiUrl = `http://${ip}/api/dashboard/call_report/`;
-        const reportApiUrl = `https://${ip}/api/dashboard/call_report/`;
-        const weatherApiKeyUrl = '/api/dashboard/getWeatherApiKey/';
-        const logoutUrl = `https://${ip}/api/dashboard/logout/`;
-        const mobileDashboardUrl = 'mobile_dashboard.html';
-        const loginUrl = 'login.html';
-        const getHistoryCallUrl = `https://${ip}/api/dashboard/user_get_history_report/`
-        const savePhoneNumberUrl = `https://${ip}/api/dashboard/savePhoneNumber/`;
+        const BASE_URL = 'https://8.134.178.71';
+        const API_URLS = {
+            // 报单相关
+            REPORT: `${BASE_URL}/api/dashboard/call_report/`,
+            GET_HISTORY: `${BASE_URL}/api/dashboard/user_get_history_report/`,
+            
+            // 用户相关
+            LOGOUT: `${BASE_URL}/api/dashboard/logout/`,
+            GET_PHONE: `${BASE_URL}/api/dashboard/getPhoneNumber/`,
+            SAVE_PHONE: `${BASE_URL}/api/dashboard/savePhoneNumber/`,
+            
+            // 天气相关
+            WEATHER_API_KEY: `${BASE_URL}/api/dashboard/getWeatherApiKey/`,
+            
+            // 页面跳转
+            MOBILE_DASHBOARD: 'mobile_dashboard.html',
+            LOGIN: 'login.html'
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
             // 获取天气信息顺带验证登录
             fetchWeatherAndLocation();
             // 检查设备类型并跳转
             if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                window.location.href = mobileDashboardUrl;
+                window.location.href = API_URLS.MOBILE_DASHBOARD;
                 return;
             }
 
@@ -989,7 +997,7 @@
             // 使用 jQuery 获取 API Key
             function getApiKeyFromServer() {
                 return $.ajax({
-                    url: weatherApiKeyUrl,
+                    url: API_URLS.WEATHER_API_KEY,
                     method: 'GET',
                     dataType: 'json',
                 }).then(data => {
@@ -1126,16 +1134,14 @@
                                 hour12: false
                             },
                             events: function(info, successCallback, failureCallback) {
-                                // 单独获取日历事件的订单数据
                                 $.ajax({
-                                    url: getHistoryCallUrl,
+                                    url: API_URLS.GET_HISTORY,
                                     method: 'GET',
                                     xhrFields: {
                                         withCredentials: true
                                     }
                                 }).then(response => {
                                     if (response.message === 'Success') {
-                                        // 将订单数据转换为日历事件格式
                                         const events = response.report_info.map(order => ({
                                             title: `维修订单: ${order.issue}`,
                                             start: new Date(order.date),
@@ -1151,10 +1157,12 @@
                                     } else if (response.message === 'No history report') {
                                         successCallback([]); // 如果没有订单，显示空日历
                                     } else {
+                                        showMessage('获取订单失败，请稍后重试');
                                         failureCallback(new Error(response.message));
                                     }
                                 }).catch(error => {
                                     console.error('获取日历订单数据失败:', error);
+                                    showMessage('获取订单失败，请稍后重试');
                                     failureCallback(error);
                                 });
                             },
@@ -1235,7 +1243,7 @@
 
             confirmLogoutButton.addEventListener('click', () => {
                 $.ajax({
-                    url: logoutUrl,
+                    url: API_URLS.LOGOUT,
                     method: 'GET',
                     xhrFields: {
                         withCredentials: true
@@ -1271,7 +1279,7 @@
 
             function fetchHistoryOrders() {
                 $.ajax({
-                    url: getHistoryCallUrl,
+                    url: API_URLS.GET_HISTORY,
                     method: 'GET',
                     xhrFields: {
                         withCredentials: true
@@ -1354,7 +1362,7 @@
             // 调用报告API的函数
             function callReportAPI(userPhoneNumber, address, issue, preferredTime) {
                 return $.ajax({
-                    url: reportApiUrl,
+                    url: API_URLS.REPORT,
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
@@ -1473,25 +1481,36 @@
             const userPhoneNumberInput = document.getElementById('userPhoneNumber');
             const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
 
-            // 模拟获取用户信息的函数
-            function getUserInfo() {
-                const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
-                return userInfo;
+            // 修改检查用户信息并设置按钮状态的函数
+            function checkUserPhoneNumber() {
+                fillPhoneNumberButton.disabled = false;
+                fillPhoneNumberButton.addEventListener('click', fetchAndFillPhoneNumber);
             }
 
-            // 检查用户信息并设置按钮状态
-            function checkUserPhoneNumber() {
-                const userInfo = getUserInfo();
-                if (userInfo.phoneNumber) {
-                    fillPhoneNumberButton.disabled = false;
-                    fillPhoneNumberButton.addEventListener('click', () => {
-                        userPhoneNumberInput.value = userInfo.phoneNumber;
+            // 添加新的函数用于获取和填充手机号
+            async function fetchAndFillPhoneNumber() {
+                try {
+                    const response = await fetch(API_URLS.GET_PHONE, {
+                        method: 'GET',
+                        credentials: 'include'
                     });
-                } else {
-                    fillPhoneNumberButton.disabled = true;
+                    
+                    const data = await response.json();
+                    
+                    if (data.message === 'Success') {
+                        userPhoneNumberInput.value = data.phoneNumber;
+                    } else if (data.message === 'No phone number') {
+                        showMessage('您还未设置手机号，请先在账户管理中设置');
+                    } else {
+                        handleSessionError(data.message);
+                    }
+                } catch (error) {
+                    console.error('获取手机号失败:', error);
+                    showMessage('获取手机号失败，请重试');
                 }
             }
 
+            // 保留 checkUserPhoneNumber() 的调用
             checkUserPhoneNumber();
 
             const accountTabs = document.querySelectorAll('#accountSettings .tab-button');
@@ -1528,7 +1547,7 @@
                 
                 // 调用保存手机号API
                 $.ajax({
-                    url: savePhoneNumberUrl,
+                    url: API_URLS.SAVE_PHONE,
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
