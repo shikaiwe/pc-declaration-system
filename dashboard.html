@@ -335,7 +335,7 @@
             margin-top: 15px;
         }
 
-        /* 模态框���式 */
+        /* 模态框样式 */
         .modal {
             display: none;
             position: fixed;
@@ -703,6 +703,59 @@
             margin: 20px;
             border: 1px solid #ffebee;
         }
+
+        .message-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .message-content {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            min-width: 280px;
+            max-width: 90%;
+        }
+
+        .message-content p {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .message-content button {
+            padding: 8px 24px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .message-content button:hover {
+            background-color: #1976D2;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -763,7 +816,7 @@
                         <input type="datetime-local" id="preferredTime" name="preferredTime" required>
                     </div>
                     <div id="timeWarning" style="display: none; color: red; margin-top: 10px;">
-                        该时间非上门时段。正确的时间段为18:00-21:00
+                        该时间非上门时段。正确时间段为18:00-21:00
                     </div>
                     <button type="submit">提交</button>
                 </form>
@@ -831,6 +884,13 @@
             <h2>日程管理</h2>
             <div id="calendar"></div>
         </div>
+
+    <div id="messageModal" class="message-modal">
+        <div class="message-content">
+            <p id="messageText"></p>
+            <button id="messageConfirm">确定</button>
+        </div>
+    </div>
 
     <script>
         // 定义所有的URL
@@ -1100,7 +1160,7 @@
                             },
                             eventClick: function(info) {
                                 // 点击事件时显示详细信息
-                                alert(`
+                                showMessage(`
                                     订单详情:
                                     问题: ${info.event.title}
                                     时间: ${info.event.start.toLocaleString()}
@@ -1123,7 +1183,7 @@
                 });
             });
 
-            // 默认显示首页内容
+            // 认显示首页内容
             contentSections.homeLink.style.display = 'block';
 
             // 返回首页点击事件
@@ -1309,7 +1369,7 @@
                     }
                 }).then(response => {
                     if (response.message === 'Success') {
-                        alert('订单提交成功，请留意推送');
+                        showMessage('订单提交成功，请留意推送');
                         return response;
                     } else {
                         handleSessionError(response.message);
@@ -1479,22 +1539,38 @@
                     }
                 }).then(response => {
                     if (response.message === 'Success') {
-                        alert('手机号保存成功！');
-                        // 更新本地存储的用户信息
-                        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-                        userInfo.phoneNumber = phoneNumber;
-                        localStorage.setItem('userInfo', JSON.stringify(userInfo));
-                        // 更新一键填充按钮状态
-                        checkUserPhoneNumber();
+                        showMessage('手机号保存成功！', () => {
+                            // 更新本地存储的用户信息
+                            const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                            userInfo.phoneNumber = phoneNumber;
+                            localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                            // 更新一键填充按钮状态
+                            checkUserPhoneNumber();
+                        });
                     } else {
                         handleSessionError(response.message);
                     }
                 }).catch(error => {
                     console.error('保存手机号失败:', error);
-                    alert('保存失败，请重试');
+                    showMessage('保存失败，请重试');
                 });
             });
         });
+
+        // 在script标签中添加显示消息的函数
+        function showMessage(message, callback) {
+            const messageModal = document.getElementById('messageModal');
+            const messageText = document.getElementById('messageText');
+            const confirmButton = document.getElementById('messageConfirm');
+            
+            messageText.textContent = message;
+            messageModal.style.display = 'block';
+            
+            confirmButton.onclick = () => {
+                messageModal.style.display = 'none';
+                if (callback) callback();
+            };
+        }
     </script>
 </body>
 </html> 
