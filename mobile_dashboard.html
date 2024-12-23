@@ -14,13 +14,16 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f9;
-            overflow: hidden;
+            padding-bottom: 60px;
         }
         .header {
             background-color: #2196F3;
             color: white;
             text-align: center;
             padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .card {
             background-color: white;
@@ -30,6 +33,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
             will-change: transform, box-shadow;
+            backface-visibility: hidden;
         }
         .card:hover {
             transform: translateY(-10px);
@@ -51,6 +55,7 @@
             display: flex;
             justify-content: space-around;
             box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
         .navbar a {
             flex: 1;
@@ -601,6 +606,13 @@
             border-radius: 6px;
             padding: 8px;
             margin-top: 10px;
+        }
+
+        /* 调整内容区域的样式 */
+        .content-container {
+            padding-bottom: 60px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
     </style>
 </head>
@@ -1278,7 +1290,7 @@
             document.getElementById('orderHistory').innerHTML = `
                 <div class="no-orders">
                     <i>📝</i>
-                    <p>暂无历史订单</p>
+                    <p>��无历史订单</p>
                 </div>
             `;
         }
