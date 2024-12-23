@@ -128,7 +128,7 @@
             </div>
             <div class="remember-me">
                 <input type="checkbox" id="rememberMe" name="rememberMe">
-                <label for="rememberMe">记住密码</label>
+                <label for="rememberMe">自动登录</label>
             </div>
             <button type="submit">登录</button>
             <div class="loading">登录中...</div>
@@ -299,6 +299,9 @@
 
         // 页面加载时检查登录状态
         window.onload = async function() {
+            // 检查是否启用了自动登录
+            const rememberMe = localStorage.getItem('rememberMe') === 'true';
+            
             // 向服务端请求检查是否有保存的登录数据
             $.ajax({
                 url: validateSessionUrl,
@@ -307,12 +310,21 @@
                     withCredentials: true
                 },
                 success: function(data) {
-                    if (data.isValid && data.username && data.password) {
-                        document.getElementById('username').value = data.username;
-                        document.getElementById('password').value = data.password;
-                        document.getElementById('rememberMe').checked = true;
+                    if (data.message === 'Success') {
+                        // 如果启用了自动登录，直接跳转到仪表板
+                        if (rememberMe) {
+                            if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                                window.location.href = 'mobile_dashboard.html';
+                            } else {
+                                window.location.href = 'dashboard.html';
+                            }
+                        }
                     } else {
+                        // 如果会话无效，清除本地存储的登录数据
                         auth.clearLoginData();
+                        if (data.message === 'Session has expired') {
+                            utils.showError('登录已过期，请重新登录');
+                        }
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
