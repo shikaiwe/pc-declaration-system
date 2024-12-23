@@ -640,7 +640,7 @@
     </div>
 
     <div class="navbar">
-        <a href="#info" id="info-link">信息修改</a>
+        <a href="#info" id="info-link">信息管理</a>
         <a href="#logout" id="logout">退出登录</a>
     </div>
     <div id="submenu" class="submenu">
@@ -704,10 +704,6 @@
             <div class="tab-content" id="newOrder" style="display: block;">
                 <form id="newOrderForm" class="styled-form">
                     <div>
-                        <label for="name">姓名:</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div>
                         <label for="userPhoneNumber">手机号码:</label>
                         <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}" placeholder="请输入11位手机号">
                         <button type="button" id="fillPhoneNumberButton" class="fill-button" disabled>一键填充</button>
@@ -754,6 +750,8 @@
         var getHistoryCallUrl = `https://${ip}/api/dashboard/user_get_history_report/`;
         var weatherApiKeyUrl = `https://${ip}/api/dashboard/getWeatherApiKey/`;
         var reportApiUrl = `https://${ip}/api/dashboard/call_report/`;
+        var savePhoneNumberUrl = `https://${ip}/api/dashboard/savePhoneNumber/`;
+
         // 添加 fetchData 函数定义
         async function fetchData(url) {
             const response = await fetch(url);
@@ -928,11 +926,12 @@
             }
         }
 
-        // 提交表单并调用API
+        // 修改表单提交处理逻辑
         document.getElementById('newOrderForm').addEventListener('submit', (event) => {
-            event.preventDefault(); // 阻止表单默认提交行为
+            event.preventDefault();
 
-            const name = document.getElementById('name').value;
+            // 删除用户名获取
+            // const name = document.getElementById('name').value;
             const userPhoneNumber = document.getElementById('userPhoneNumber').value;
             const address = document.getElementById('address').value;
             const issue = document.getElementById('issue').value;
@@ -954,21 +953,22 @@
             document.getElementById('newOrderForm').reset(); // 提交后重置表单
         });
 
-        // 调用报单API的函数
+        // 修改 callReportAPI 函数
         async function callReportAPI(userPhoneNumber, address, issue, date) {
             const response = await fetch(reportApiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken') // 如果需要CSRF token
+                    'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({
+                    // 删除 name 字段
                     userPhoneNumber: userPhoneNumber,
                     address: address,
                     issue: issue,
                     date: date
                 }),
-                credentials: 'include' // 包含cookie
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -1290,7 +1290,7 @@
             document.getElementById('orderHistory').innerHTML = `
                 <div class="no-orders">
                     <i>📝</i>
-                    <p>��无历史订单</p>
+                    <p>无历史订单</p>
                 </div>
             `;
         }
@@ -1326,6 +1326,66 @@
                 showError();
             });
         }
+
+        // 修改账号信息表单的提交处理
+        document.getElementById('infoForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            
+            const phoneNumber = document.getElementById('phone').value;
+            
+            // 调用保存手机号API
+            $.ajax({
+                url: savePhoneNumberUrl,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    phoneNumber: phoneNumber
+                }),
+                xhrFields: {
+                    withCredentials: true
+                }
+            }).then(response => {
+                if (response.message === 'Success') {
+                    alert('手机号保存成功！');
+                    // 更新本地存储的用户信息
+                    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                    userInfo.phoneNumber = phoneNumber;
+                    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                    // 更新一键填充按钮状态
+                    checkUserPhoneNumber();
+                    // 关闭模态框
+                    document.getElementById('editModal').style.display = "none";
+                    document.getElementById('overlay').style.display = "none";
+                } else {
+                    handleSessionError(response.message);
+                }
+            }).catch(error => {
+                console.error('保存手机号失败:', error);
+                alert('保存失败，请��试');
+            });
+        });
+
+        // 获取用户信息的函数
+        function getUserInfo() {
+            const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+            return userInfo;
+        }
+
+        // 检查用户信息并设置按钮状态
+        function checkUserPhoneNumber() {
+            const userInfo = getUserInfo();
+            if (userInfo.phoneNumber) {
+                fillPhoneNumberButton.disabled = false;
+                fillPhoneNumberButton.addEventListener('click', () => {
+                    userPhoneNumberInput.value = userInfo.phoneNumber;
+                });
+            } else {
+                fillPhoneNumberButton.disabled = true;
+            }
+        }
+
+        // 初始化时检查手机号状态
+        checkUserPhoneNumber();
     </script>
 
 </body>

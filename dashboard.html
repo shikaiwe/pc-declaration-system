@@ -335,7 +335,7 @@
             margin-top: 15px;
         }
 
-        /* 模态框样式 */
+        /* 模态框���式 */
         .modal {
             display: none;
             position: fixed;
@@ -746,10 +746,6 @@
             <div class="tab-content" id="reportOrder" style="display: none;">
                 <form id="reportOrderForm" class="styled-form">
                     <div>
-                        <label for="name">姓名:</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div>
                         <label for="userPhoneNumber">手机号码:</label>
                         <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}" placeholder="请输入11位手机号码">
                         <button type="button" id="fillPhoneNumberButton" class="fill-button" disabled>一键填充</button>
@@ -847,6 +843,7 @@
         const mobileDashboardUrl = 'mobile_dashboard.html';
         const loginUrl = 'login.html';
         const getHistoryCallUrl = `https://${ip}/api/dashboard/user_get_history_report/`
+        const savePhoneNumberUrl = `https://${ip}/api/dashboard/savePhoneNumber/`;
 
         document.addEventListener('DOMContentLoaded', () => {
             // 获取天气信息顺带验证登录
@@ -1295,13 +1292,12 @@
             }
 
             // 调用报告API的函数
-            function callReportAPI(name, userPhoneNumber, address, issue, preferredTime) {
+            function callReportAPI(userPhoneNumber, address, issue, preferredTime) {
                 return $.ajax({
                     url: reportApiUrl,
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
-                        name: name,
                         userPhoneNumber: userPhoneNumber,
                         address: address,
                         issue: issue,
@@ -1327,7 +1323,7 @@
             const reportOrderForm = document.getElementById('reportOrderForm');
             const reportOrderInfo = document.getElementById('reportOrderInfo');
 
-            // 显示报单表单
+            // 显示单表单
             reportOrderButton.addEventListener('click', () => {
                 document.getElementById('reportOrder').style.display = 'block';
                 document.getElementById('orderHistory').style.display = 'none';
@@ -1337,13 +1333,12 @@
             reportOrderForm.addEventListener('submit', (event) => {
                 event.preventDefault();
 
-                const name = document.getElementById('name').value;
                 const userPhoneNumber = document.getElementById('userPhoneNumber').value;
                 const address = document.getElementById('address').value;
                 const issue = document.getElementById('issue').value;
                 const preferredTime = document.getElementById('preferredTime').value;
 
-                callReportAPI(name, userPhoneNumber, address, issue, preferredTime).then(data => {
+                callReportAPI(userPhoneNumber, address, issue, preferredTime).then(data => {
                     reportOrderInfo.innerHTML = `
                         <p>报单信息: ${data.orderDetails}</p>
                     `;
@@ -1463,6 +1458,42 @@
 
             // 不默认显示任何账号管理内容
             Object.values(accountContents).forEach(content => content.style.display = 'none');
+
+            // 修改账号信息表单的提交处理
+            const infoForm = document.getElementById('infoForm');
+            infoForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                
+                const phoneNumber = document.getElementById('phone').value;
+                
+                // 调用保存手机号API
+                $.ajax({
+                    url: savePhoneNumberUrl,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        phoneNumber: phoneNumber
+                    }),
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                }).then(response => {
+                    if (response.message === 'Success') {
+                        alert('手机号保存成功！');
+                        // 更新本地存储的用户信息
+                        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                        userInfo.phoneNumber = phoneNumber;
+                        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                        // 更新一键填充按钮状态
+                        checkUserPhoneNumber();
+                    } else {
+                        handleSessionError(response.message);
+                    }
+                }).catch(error => {
+                    console.error('保存手机号失败:', error);
+                    alert('保存失败，请重试');
+                });
+            });
         });
     </script>
 </body>
