@@ -7,6 +7,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js' defer></script>
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <style>
         /* 全局样式 */
         body {
@@ -614,6 +616,1227 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
+
+        /* 日期选择器样式优化 */
+        .flatpickr-calendar {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+            width: 320px;
+            padding: 20px;
+            border: none;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        /* 月份导航区域 */
+        .flatpickr-months {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .flatpickr-month {
+            background: transparent;
+            color: #1a1a1a;
+            height: 40px;
+        }
+
+        .flatpickr-current-month {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            padding: 0;
+        }
+
+        .flatpickr-monthDropdown-months {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1a1a1a;
+            padding: 5px;
+            border-radius: 8px;
+        }
+
+        .flatpickr-monthDropdown-months:hover {
+            background: #f5f5f5;
+        }
+
+        .numInputWrapper {
+            width: 70px;
+        }
+
+        .numInputWrapper input {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        /* 月份切换按钮 */
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            top: 0;
+            height: 40px;
+            padding: 8px;
+        }
+
+        .flatpickr-months .flatpickr-prev-month svg,
+        .flatpickr-months .flatpickr-next-month svg {
+            fill: #666;
+            width: 16px;
+            height: 16px;
+        }
+
+        .flatpickr-months .flatpickr-prev-month:hover svg,
+        .flatpickr-months .flatpickr-next-month:hover svg {
+            fill: #2196F3;
+        }
+
+        /* 星期显示 */
+        .flatpickr-weekdays {
+            background: transparent;
+            margin: 15px 0 10px;
+        }
+
+        .flatpickr-weekday {
+            color: #999 !important;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* 日期网格 */
+        .dayContainer {
+            padding: 0;
+            min-width: 280px;
+        }
+
+        .flatpickr-day {
+            margin: 2px;
+            height: 38px;
+            line-height: 38px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            border: none;
+        }
+
+        .flatpickr-day.selected {
+            background: #2196F3;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        .flatpickr-day.today {
+            border: 2px solid #2196F3;
+            color: #2196F3;
+        }
+
+        .flatpickr-day:hover {
+            background: #f0f7ff;
+        }
+
+        .flatpickr-day.prevMonthDay,
+        .flatpickr-day.nextMonthDay {
+            color: #ddd;
+        }
+
+        .flatpickr-day.disabled {
+            color: #eee;
+            cursor: not-allowed;
+        }
+
+        /* 时间选择器 */
+        .flatpickr-time {
+            height: 50px;
+            line-height: 50px;
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .flatpickr-time input {
+            font-size: 15px;
+            font-weight: 500;
+            color: #333;
+            height: 50px;
+            background: transparent;
+        }
+
+        .flatpickr-time input:hover,
+        .flatpickr-time input:focus {
+            background: #f5f5f5;
+        }
+
+        .flatpickr-time .numInputWrapper {
+            height: 50px;
+            position: relative;
+        }
+
+        .flatpickr-time .numInputWrapper span {
+            border: none;
+            opacity: 0.7;
+            padding: 0 8px;
+        }
+
+        .flatpickr-time .numInputWrapper span:hover {
+            background: #f0f7ff;
+            opacity: 1;
+        }
+
+        /* 移动设备适配 */
+        @media screen and (max-width: 480px) {
+            .flatpickr-calendar {
+                width: 300px;
+                padding: 15px;
+            }
+
+            .flatpickr-day {
+                height: 35px;
+                line-height: 35px;
+                font-size: 13px;
+            }
+
+            .flatpickr-current-month {
+                font-size: 15px;
+            }
+
+            .flatpickr-time {
+                height: 45px;
+                line-height: 45px;
+            }
+
+            .flatpickr-time input {
+                height: 45px;
+                font-size: 14px;
+            }
+        }
+
+        /* 输入框样式 */
+        input[type="text"]#preferredTime {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            color: #333;
+            background: #fff;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]#preferredTime:hover {
+            border-color: #2196F3;
+        }
+
+        input[type="text"]#preferredTime:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        /* 警告提示样式 */
+        #timeWarning {
+            margin-top: 8px;
+            padding: 10px 15px;
+            background: #fff4e5;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #ff6b00;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 针对iOS设备的特殊样式 */
+        @supports (-webkit-touch-callout: none) {
+            input[type="text"]#preferredTime {
+                min-height: 44px; /* iOS建议的最小触摸区域 */
+                line-height: 1.3;
+            }
+        }
+
+        /* 添加或更新相关样式 */
+        .flatpickr-calendar {
+            position: static !important;
+            margin: 0 auto !important;
+        }
+
+        .datetime-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 日期选择器相关样式 */
+        .datetime-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .datetime-container label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input[type="text"]#preferredTime {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #333;
+            background-color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]#preferredTime:hover {
+            border-color: #2196F3;
+        }
+
+        input[type="text"]#preferredTime:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+        }
+
+        #timeWarning {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #e65100;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        /* Flatpickr 自定义样式 */
+        .flatpickr-calendar {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: none;
+            width: 100%;
+            max-width: 320px;
+            font-family: inherit;
+            margin: 8px auto;
+        }
+
+        .flatpickr-months {
+            background-color: #2196F3;
+            border-radius: 8px 8px 0 0;
+            padding: 8px 0;
+        }
+
+        .flatpickr-month {
+            color: #fff !important;
+        }
+
+        .flatpickr-current-month {
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flatpickr-monthDropdown-months,
+        .numInputWrapper {
+            color: #fff !important;
+        }
+
+        .flatpickr-weekday {
+            color: #2196F3 !important;
+            font-weight: 500;
+        }
+
+        .flatpickr-day {
+            border-radius: 4px;
+            margin: 2px;
+            height: 36px;
+            line-height: 36px;
+        }
+
+        .flatpickr-day.selected,
+        .flatpickr-day.selected:hover {
+            background-color: #2196F3;
+            border-color: #2196F3;
+        }
+
+        .flatpickr-day:hover {
+            background-color: #e3f2fd;
+        }
+
+        .flatpickr-time {
+            border-top: 1px solid #eee;
+            background: #f8f9fa;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .flatpickr-time input {
+            color: #333;
+            font-size: 15px;
+        }
+
+        .flatpickr-time .flatpickr-am-pm {
+            color: #333;
+        }
+
+        /* 响应式调整 */
+        @media screen and (max-width: 480px) {
+            .flatpickr-calendar {
+                width: 95%;
+                margin: 8px auto;
+            }
+
+            .flatpickr-day {
+                height: 32px;
+                line-height: 32px;
+            }
+
+            input[type="text"]#preferredTime {
+                padding: 10px;
+                font-size: 15px;
+            }
+        }
+
+        /* 确保日期选择器在模态框中正确显示 */
+        #newOrder .flatpickr-calendar {
+            position: absolute !important;
+            margin: 0 !important;
+            max-height: calc(100vh - 200px); /* 限制最大高度 */
+            overflow-y: auto; /* 如果内容过多允许滚动 */
+        }
+
+        /* 确保模态框内容可以滚动 */
+        #orderManagementModal .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* 优化滚动条样式 */
+        #orderManagementModal .modal-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #orderManagementModal .modal-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #orderManagementModal .modal-content::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        #orderManagementModal .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* 确保日期选择器在移动设备上也能正确显示 */
+        @media screen and (max-width: 480px) {
+            #newOrder .flatpickr-calendar {
+                width: 95% !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                max-height: calc(100vh - 160px);
+            }
+        }
+
+        /* 优化字体显示效果 */
+        .datetime-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .datetime-container label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+        }
+
+        input[type="text"]#preferredTime {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 15px;
+            font-weight: normal;
+            color: #333;
+            letter-spacing: 0.5px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #timeWarning {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: normal;
+            letter-spacing: 0.3px;
+            line-height: 1.4;
+            color: #e65100;
+        }
+
+        /* Flatpickr 日期选择器字体优化 */
+        .flatpickr-calendar {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .flatpickr-current-month {
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .flatpickr-current-month .cur-month {
+            font-weight: 600;
+        }
+
+        .flatpickr-monthDropdown-months {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .numInputWrapper span {
+            font-size: 14px;
+        }
+
+        .flatpickr-weekday {
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            color: #666 !important;
+        }
+
+        .flatpickr-day {
+            font-size: 14px;
+            font-weight: normal;
+            letter-spacing: 0.3px;
+            color: #333;
+        }
+
+        .flatpickr-day.selected {
+            font-weight: 500;
+        }
+
+        .flatpickr-time {
+            font-size: 14px;
+        }
+
+        .flatpickr-time input {
+            font-size: 14px;
+            font-weight: normal;
+            letter-spacing: 0.3px;
+        }
+
+        .flatpickr-time .flatpickr-am-pm {
+            font-size: 14px;
+            font-weight: normal;
+            letter-spacing: 0.3px;
+        }
+
+        /* 移动设备适配 */
+        @media screen and (max-width: 480px) {
+            .datetime-container label {
+                font-size: 14px;
+            }
+
+            input[type="text"]#preferredTime {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            #timeWarning {
+                font-size: 12px;
+            }
+
+            .flatpickr-current-month,
+            .flatpickr-monthDropdown-months {
+                font-size: 14px;
+            }
+
+            .flatpickr-weekday {
+                font-size: 12px;
+            }
+
+            .flatpickr-day {
+                font-size: 13px;
+            }
+
+            .flatpickr-time,
+            .flatpickr-time input,
+            .flatpickr-time .flatpickr-am-pm {
+                font-size: 13px;
+            }
+        }
+
+        /* 高分辨率屏幕优化 */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .flatpickr-calendar {
+                text-rendering: optimizeLegibility;
+            }
+        }
+
+        /* 优化日期选择器内部显示效果 */
+        .flatpickr-calendar {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+            padding: 12px;
+            width: 320px;
+        }
+
+        /* 月份选择区域 */
+        .flatpickr-months {
+            background-color: #2196F3;
+            border-radius: 8px;
+            padding: 12px 0;
+            margin: -12px -12px 12px -12px;
+        }
+
+        .flatpickr-month {
+            height: 36px;
+        }
+
+        .flatpickr-current-month {
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .flatpickr-monthDropdown-months {
+            background-color: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            padding: 2px 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .flatpickr-monthDropdown-months:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 月份切换按钮 */
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            top: 12px;
+            height: 36px;
+            padding: 0 10px;
+            transition: all 0.2s ease;
+        }
+
+        .flatpickr-months .flatpickr-prev-month:hover,
+        .flatpickr-months .flatpickr-next-month:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .flatpickr-months .flatpickr-prev-month svg,
+        .flatpickr-months .flatpickr-next-month svg {
+            fill: #fff;
+            width: 16px;
+            height: 16px;
+        }
+
+        /* 星期显示 */
+        .flatpickr-weekdays {
+            margin: 8px 0;
+        }
+
+        .flatpickr-weekday {
+            color: #666 !important;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* 日期网格 */
+        .flatpickr-days {
+            border-top: 1px solid #eee;
+            padding-top: 8px;
+        }
+
+        .dayContainer {
+            padding: 0 4px;
+            min-width: 280px;
+        }
+
+        .flatpickr-day {
+            margin: 2px;
+            height: 36px;
+            line-height: 36px;
+            border-radius: 8px;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .flatpickr-day.selected {
+            background-color: #2196F3;
+            border-color: #2196F3;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .flatpickr-day:hover {
+            background-color: #e3f2fd;
+            border-color: transparent;
+        }
+
+        .flatpickr-day.today {
+            border-color: #2196F3;
+            color: #2196F3;
+            font-weight: 600;
+        }
+
+        .flatpickr-day.prevMonthDay,
+        .flatpickr-day.nextMonthDay {
+            color: #bbb;
+        }
+
+        /* 时间选择器 */
+        .flatpickr-time {
+            border-top: 1px solid #eee;
+            margin-top: 12px;
+            padding-top: 12px;
+            height: 44px;
+        }
+
+        .flatpickr-time input {
+            font-size: 15px;
+            font-weight: 500;
+            color: #333;
+            height: 32px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .flatpickr-time input:hover {
+            background-color: #f5f5f5;
+        }
+
+        .flatpickr-time input:focus {
+            background-color: #e3f2fd;
+            border-color: #2196F3;
+        }
+
+        .numInputWrapper {
+            position: relative;
+            height: 32px;
+        }
+
+        .numInputWrapper span {
+            border: none;
+            padding: 0 4px;
+            height: 16px;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+
+        .numInputWrapper span:hover {
+            opacity: 1;
+            background-color: #e3f2fd;
+        }
+
+        .numInputWrapper span.arrowUp {
+            border-bottom: 1px solid #eee;
+        }
+
+        /* 移动设备适配 */
+        @media screen and (max-width: 480px) {
+            .flatpickr-calendar {
+                width: 300px;
+                padding: 8px;
+            }
+
+            .flatpickr-months {
+                padding: 8px 0;
+                margin: -8px -8px 8px -8px;
+            }
+
+            .flatpickr-day {
+                height: 32px;
+                line-height: 32px;
+                margin: 1px;
+            }
+
+            .flatpickr-time {
+                margin-top: 8px;
+                padding-top: 8px;
+                height: 40px;
+            }
+
+            .flatpickr-time input {
+                height: 28px;
+                font-size: 14px;
+            }
+
+            .numInputWrapper {
+                height: 28px;
+            }
+        }
+
+        /* 高对比度模式支持 */
+        @media (prefers-contrast: more) {
+            .flatpickr-day.selected {
+                background-color: #1976D2;
+                border: 2px solid #000;
+            }
+
+            .flatpickr-day.today {
+                border-width: 2px;
+            }
+        }
+
+        /* 优化日期选择器 UI */
+        .flatpickr-calendar {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+            padding: 16px;
+            width: 330px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 月份选择区域优化 */
+        .flatpickr-months {
+            background-color: #2196F3;
+            border-radius: 8px;
+            padding: 16px 0;
+            margin: -16px -16px 16px -16px;
+        }
+
+        .flatpickr-month {
+            height: 40px;
+        }
+
+        .flatpickr-current-month {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: #fff;
+        }
+
+        .flatpickr-monthDropdown-months {
+            font-size: 17px;
+            font-weight: 600;
+            height: 32px;
+            padding: 0 12px;
+        }
+
+        /* 星期显示优化 */
+        .flatpickr-weekdays {
+            margin: 12px 0;
+        }
+
+        .flatpickr-weekday {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2196F3 !important;
+            letter-spacing: 0.5px;
+            opacity: 1;
+        }
+
+        /* 日期网格优化 */
+        .dayContainer {
+            padding: 0 4px;
+            min-width: 290px;
+        }
+
+        .flatpickr-day {
+            font-size: 15px;
+            font-weight: 500;
+            height: 40px;
+            line-height: 40px;
+            margin: 2px;
+            border-radius: 8px;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+
+        .flatpickr-day.selected {
+            background-color: #2196F3;
+            border-color: #2196F3;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+        }
+
+        .flatpickr-day.today {
+            border-color: #2196F3;
+            color: #2196F3;
+            font-weight: 600;
+            background-color: #e3f2fd;
+        }
+
+        .flatpickr-day:hover {
+            background-color: #e3f2fd;
+            border-color: transparent;
+        }
+
+        .flatpickr-day.prevMonthDay,
+        .flatpickr-day.nextMonthDay {
+            color: #bbb;
+            font-weight: 400;
+        }
+
+        .flatpickr-day.disabled {
+            color: #ddd;
+            font-weight: 400;
+            cursor: not-allowed;
+        }
+
+        /* 时间选择器优化 */
+        .flatpickr-time {
+            border-top: 1px solid #eee;
+            margin-top: 16px;
+            padding-top: 16px;
+            height: 48px;
+        }
+
+        .flatpickr-time input {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            height: 36px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 0 8px;
+        }
+
+        .flatpickr-time input:hover {
+            background-color: #e3f2fd;
+        }
+
+        .flatpickr-time input:focus {
+            background-color: #e3f2fd;
+            color: #2196F3;
+        }
+
+        .numInputWrapper {
+            height: 36px;
+        }
+
+        .numInputWrapper span {
+            border: none;
+            height: 18px;
+            line-height: 18px;
+            font-size: 12px;
+            padding: 0 8px;
+            opacity: 0.8;
+        }
+
+        .numInputWrapper span:hover {
+            background-color: #e3f2fd;
+            opacity: 1;
+        }
+
+        /* 移动设备适配优化 */
+        @media screen and (max-width: 480px) {
+            .flatpickr-calendar {
+                width: 310px;
+                padding: 12px;
+            }
+
+            .flatpickr-months {
+                padding: 12px 0;
+                margin: -12px -12px 12px -12px;
+            }
+
+            .flatpickr-current-month {
+                font-size: 16px;
+            }
+
+            .flatpickr-monthDropdown-months {
+                font-size: 16px;
+            }
+
+            .flatpickr-weekday {
+                font-size: 13px;
+            }
+
+            .flatpickr-day {
+                font-size: 14px;
+                height: 36px;
+                line-height: 36px;
+            }
+
+            .flatpickr-time input {
+                font-size: 15px;
+                height: 32px;
+            }
+        }
+
+        /* 高清屏幕优化 */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .flatpickr-calendar {
+                text-rendering: optimizeLegibility;
+            }
+
+            .flatpickr-day,
+            .flatpickr-current-month,
+            .flatpickr-weekday {
+                -webkit-font-smoothing: subpixel-antialiased;
+            }
+        }
+
+        /* 深色模式支持 */
+        @media (prefers-color-scheme: dark) {
+            .flatpickr-calendar {
+                background: #333;
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+            }
+
+            .flatpickr-day {
+                color: #fff;
+            }
+
+            .flatpickr-day.disabled {
+                color: #666;
+            }
+
+            .flatpickr-time {
+                border-top-color: #444;
+            }
+
+            .flatpickr-time input {
+                background: #444;
+                color: #fff;
+            }
+        }
+
+        /* 输入框样式 */
+        input[type="text"]#preferredTime {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            color: #333;
+            background: #fff;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]#preferredTime:hover {
+            border-color: #2196F3;
+        }
+
+        input[type="text"]#preferredTime:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        /* 警告提示样式 */
+        #timeWarning {
+            margin-top: 8px;
+            padding: 10px 15px;
+            background: #fff4e5;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #ff6b00;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 移动设备优化 */
+        @media screen and (max-width: 480px) {
+            .mbsc-ios.mbsc-calendar-cell-text {
+                font-size: 13px;
+            }
+            
+            input[type="text"]#preferredTime {
+                font-size: 14px;
+                padding: 10px 12px;
+            }
+        }
+
+        /* 日期时间选择器样式 */
+        .datetime-picker {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            overflow: hidden; /* 防止整体溢出 */
+        }
+
+        .picker-container {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #fff;
+            border-radius: 16px 16px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            max-height: 80vh; /* 限制最大高度 */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+
+        .picker-content {
+            display: flex;
+            height: 250px;
+            padding: 20px;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+
+        /* Swiper 容器样式更新 */
+        .swiper-container {
+            flex: 1;
+            height: 100%;
+            overflow: hidden; /* 防止滑动内容溢出 */
+        }
+
+        .swiper-wrapper {
+            height: 100%;
+        }
+
+        .swiper-slide {
+            height: auto !important; /* 确保滑块高度正确 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .date-item,
+        .time-item {
+            font-size: 16px;
+            color: #333;
+            padding: 10px;
+            white-space: nowrap; /* 防止文本换行 */
+            overflow: hidden; /* 防止文本溢出 */
+            text-overflow: ellipsis; /* 文本溢出时显示省略号 */
+            width: 100%; /* 确保宽度填充 */
+            text-align: center;
+        }
+
+        /* 活动滑块样式 */
+        .swiper-slide-active .date-item,
+        .swiper-slide-active .time-item {
+            font-size: 18px;
+            font-weight: 500;
+            color: #2196F3;
+        }
+
+        /* 滚动条样式优化 */
+        .swiper-scrollbar {
+            width: 4px !important;
+            right: 0 !important;
+            opacity: 0.3;
+        }
+
+        /* 响应式调整 */
+        @media screen and (max-width: 480px) {
+            .picker-container {
+                max-height: 70vh;
+            }
+            
+            .picker-content {
+                height: 200px;
+                padding: 15px;
+            }
+            
+            .date-item,
+            .time-item {
+                font-size: 14px;
+                padding: 8px;
+            }
+            
+            .swiper-slide-active .date-item,
+            .swiper-slide-active .time-item {
+                font-size: 16px;
+            }
+        }
+
+        /* 添加显示状态的样式 */
+        .datetime-picker.active {
+            display: block;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .datetime-picker.active .picker-container {
+            transform: translateY(0);
+        }
+
+        /* 添加选择器头部样式 */
+        .picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .picker-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .picker-cancel,
+        .picker-confirm {
+            padding: 8px 12px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .picker-cancel {
+            color: #999;
+        }
+
+        .picker-confirm {
+            color: #2196F3;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -716,15 +1939,15 @@
                         <label for="issue">问题:</label>
                         <textarea id="issue" name="issue" required rows="1" style="resize: none; overflow: hidden;"></textarea>
                     </div>
-                    <div>
+                    <div class="datetime-container">
                         <label for="preferredTime">期望上门时间:</label>
-                        <input type="datetime-local" id="preferredTime" name="preferredTime" required>
-                        <p id="timeWarning" style="color: red; display: none;">该时间非上门时段。上门时段为18:00-21:00</p>
+                        <input type="text" id="preferredTime" name="preferredTime" placeholder="点击选择上门时间" required>
+                        <div id="timeWarning" style="display: none;">该时间非上门段。上门时段为18:00-21:00</div>
                     </div>
                     <button type="submit">提交</button>
                 </form>
                 <div id="reportOrderInfo">
-                    <!-- 这里将显示报单信息 -->
+                    <!-- 里将显示报单信息 -->
                 </div>
             </div>
             <div class="tab-content" id="orderHistory" style="display: none;">
@@ -849,7 +2072,7 @@
             event.preventDefault();
             const modal = document.getElementById('editModal');
             modal.style.display = "block";
-            document.getElementById('overlay').style.display = "block"; // 显示遮罩层
+            document.getElementById('overlay').style.display = "block"; // 显示遮���层
         });
 
         // 关闭信息修改模态框
@@ -953,7 +2176,7 @@
             document.getElementById('newOrderForm').reset(); // 提交后重置表单
         });
 
-        // 修改 callReportAPI 函数
+        // 修改 callReportAPI ��数
         async function callReportAPI(userPhoneNumber, address, issue, date) {
             const response = await fetch(reportApiUrl, {
                 method: 'POST',
@@ -1000,51 +2223,9 @@
             this.style.height = (this.scrollHeight) + 'px'; // 设置为内容高度
         });
 
-        // 设置期望上门时间的范围
-        const preferredTimeInput = document.getElementById('preferredTime');
-        const timeWarning = document.getElementById('timeWarning');
-
-        if (preferredTimeInput) {
-            function setPreferredTimeRange() {
-                const now = new Date();
-                const startOfDay = new Date(now);
-                const endOfDay = new Date(now);
-
-                startOfDay.setHours(18, 0, 0, 0);
-                endOfDay.setHours(21, 0, 0, 0);
-
-                const formatDateTime = (date) => {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    return `${year}-${month}-${day}T${hours}:${minutes}`;
-                };
-
-                preferredTimeInput.min = formatDateTime(startOfDay);
-                preferredTimeInput.max = formatDateTime(endOfDay);
-            }
-
-            setPreferredTimeRange();
-
-            // 检查选择的时间是否在允许范围内
-            preferredTimeInput.addEventListener('change', () => {
-                const selectedTime = new Date(preferredTimeInput.value);
-                const selectedHour = selectedTime.getHours();
-
-                if (selectedHour < 18 || selectedHour >= 21) {
-                    timeWarning.style.display = 'block'; // 显示提示信息
-                    preferredTimeInput.value = ''; // 清空不符合条件的输入
-                } else {
-                    timeWarning.style.display = 'none'; // 隐藏提示信息
-                }
-            });
-        }
-
         // 模拟获取用户信息的函数
         function getUserInfo() {
-            // 假设从本地存储或其他来源获取用户信息
+            // 假从本地存储或其他来源获取用户信息
             const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
             return userInfo;
         }
@@ -1067,19 +2248,14 @@
 
         checkUserPhoneNumber();
 
-        document.getElementById('preferredTime').addEventListener('click', function(event) {
-            this.showPicker(); // 触发日期选择器
-            event.preventDefault(); // 阻止默认的文本选择行为
-        });
-
         document.addEventListener('DOMContentLoaded', function() {
             const scheduleManagementButton = document.getElementById('schedule-management');
             if (scheduleManagementButton) {
                 scheduleManagementButton.addEventListener('click', function() {
                     const modal = document.getElementById('scheduleModal');
                     modal.style.display = "block";
-                    document.getElementById('overlay').style.display = "block"; // 显示遮罩层
-                    this.classList.add('active'); // 添加浮起样式
+                    document.getElementById('overlay').style.display = "block";
+                    this.classList.add('active');
 
                     // 初始化并显示日历
                     var calendarEl = document.getElementById('mobileCalendar');
@@ -1097,13 +2273,13 @@
                                 timeGridWeek: {
                                     slotMinTime: '18:00:00',
                                     slotMaxTime: '22:00:00',
-                                    slotDuration: '00:30:00', // 每个时间槽30分钟
+                                    slotDuration: '00:30:00',
                                     titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
                                 },
                                 timeGridDay: {
                                     slotMinTime: '18:00:00',
                                     slotMaxTime: '22:00:00',
-                                    slotDuration: '00:30:00', // 每个时间槽30分钟
+                                    slotDuration: '00:30:00',
                                     titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
                                 },
                                 dayGridMonth: {
@@ -1130,7 +2306,6 @@
                                 hour12: false
                             },
                             events: function(info, successCallback, failureCallback) {
-                                // 获取历史订单数据
                                 $.ajax({
                                     url: getHistoryCallUrl,
                                     method: 'GET',
@@ -1139,7 +2314,6 @@
                                     }
                                 }).then(response => {
                                     if (response.message === 'Success') {
-                                        // 将订单数据转换为日历事件格式
                                         const events = response.report_info.map(order => ({
                                             title: `维修订单: ${order.issue}`,
                                             start: new Date(order.date),
@@ -1153,7 +2327,7 @@
                                         }));
                                         successCallback(events);
                                     } else if (response.message === 'No history report') {
-                                        successCallback([]); // 如果没有订单，显示空日历
+                                        successCallback([]);
                                     } else {
                                         failureCallback(new Error(response.message));
                                     }
@@ -1163,7 +2337,6 @@
                                 });
                             },
                             eventClick: function(info) {
-                                // 点击事件时显示详细信息
                                 alert(`
                                     订单详情:
                                     问题: ${info.event.title}
@@ -1174,7 +2347,6 @@
                                 `.trim());
                             },
                             eventDidMount: function(info) {
-                                // 添加鼠标悬停提示
                                 info.el.title = `
                                     ${info.event.title}
                                     地址: ${info.event.extendedProps.address}
@@ -1194,7 +2366,134 @@
                 document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
                 document.getElementById('schedule-management').classList.remove('active'); // 移除浮起样式
             });
-        });
+
+            // 日期选择器初始化
+            const preferredTimeInput = document.getElementById('preferredTime');
+            if (preferredTimeInput) {
+                // 生成日期选项
+                function generateDateSlides() {
+                    const dates = [];
+                    const today = new Date();
+                    for (let i = 0; i < 14; i++) {
+                        const date = new Date(today);
+                        date.setDate(today.getDate() + i);
+                        dates.push(`
+                            <div class="swiper-slide">
+                                <div class="date-item">
+                                    ${date.getMonth() + 1}月${date.getDate()}日
+                                </div>
+                            </div>
+                        `);
+                    }
+                    return dates.join('');
+                }
+
+                // 生成时间选项（18:00-21:00，每30分钟）
+                function generateTimeSlides() {
+                    const times = [];
+                    for (let hour = 18; hour < 21; hour++) {
+                        for (let minute = 0; minute < 60; minute += 30) {
+                            times.push(`
+                                <div class="swiper-slide">
+                                    <div class="time-item">
+                                        ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}
+                                    </div>
+                                </div>
+                            `);
+                        }
+                    }
+                    // 添加21:00
+                    times.push(`
+                        <div class="swiper-slide">
+                            <div class="time-item">21:00</div>
+                        </div>
+                    `);
+                    return times.join('');
+                }
+
+                // 创建日期选择器的 HTML 结构
+                const pickerContainer = document.createElement('div');
+                pickerContainer.className = 'datetime-picker';
+                pickerContainer.innerHTML = `
+                    <div class="picker-container">
+                        <div class="picker-header">
+                            <button class="picker-cancel">取消</button>
+                            <div class="picker-title">选择时间</div>
+                            <button class="picker-confirm">确定</button>
+                        </div>
+                        <div class="picker-content">
+                            <div class="swiper-container date-swiper">
+                                <div class="swiper-wrapper">
+                                    ${generateDateSlides()}
+                                </div>
+                                <div class="swiper-scrollbar"></div>
+                            </div>
+                            <div class="swiper-container time-swiper">
+                                <div class="swiper-wrapper">
+                                    ${generateTimeSlides()}
+                                </div>
+                                <div class="swiper-scrollbar"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(pickerContainer);
+
+                // 初始化 Swiper
+                let dateSwiper, timeSwiper;
+                
+                // 确保 DOM 完全加载后再初始化 Swiper
+                setTimeout(() => {
+                    dateSwiper = new Swiper('.date-swiper', {
+                        direction: 'vertical',
+                        slidesPerView: 5,
+                        centeredSlides: true,
+                        spaceBetween: 10,
+                        scrollbar: {
+                            el: '.date-swiper .swiper-scrollbar',
+                        },
+                    });
+
+                    timeSwiper = new Swiper('.time-swiper', {
+                        direction: 'vertical',
+                        slidesPerView: 5,
+                        centeredSlides: true,
+                        spaceBetween: 10,
+                        scrollbar: {
+                            el: '.time-swiper .swiper-scrollbar',
+                        },
+                    });
+                }, 0);
+
+                // 事件处理
+                preferredTimeInput.addEventListener('click', function() {
+                    pickerContainer.classList.add('active');
+                });
+
+                pickerContainer.querySelector('.picker-cancel').addEventListener('click', function() {
+                    pickerContainer.classList.remove('active');
+                });
+
+                pickerContainer.querySelector('.picker-confirm').addEventListener('click', function() {
+                    if (dateSwiper && timeSwiper) {
+                        const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
+                        const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
+                        preferredTimeInput.value = `2024年${selectedDate} ${selectedTime}`;
+                        pickerContainer.classList.remove('active');
+                    }
+                });
+
+                // 防止点击选择器内容时关闭
+                pickerContainer.querySelector('.picker-container').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+
+                // 点击背景关闭选择器
+                pickerContainer.addEventListener('click', function() {
+                    pickerContainer.classList.remove('active');
+                });
+            }
+        }); // DOMContentLoaded 结束
 
         // 统一的会话错误处理函数
         function handleSessionError(message) {
@@ -1203,7 +2502,7 @@
                     alert('会话已过期，请重新登录');
                     break;
                 case 'Invalid session':
-                    alert('无效的会话，请重新登录');
+                    alert('无效会话，请重新登录');
                     break;
                 case 'No sessionid cookie':
                     alert('未找到会话信息，请重新登录');
@@ -1347,13 +2646,13 @@
             }).then(response => {
                 if (response.message === 'Success') {
                     alert('手机号保存成功！');
-                    // 更新本地存储的用户信息
+                    // 更新本地存的用户信息
                     const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
                     userInfo.phoneNumber = phoneNumber;
                     localStorage.setItem('userInfo', JSON.stringify(userInfo));
                     // 更新一键填充按钮状态
                     checkUserPhoneNumber();
-                    // 关闭模态框
+                    // 关闭模态
                     document.getElementById('editModal').style.display = "none";
                     document.getElementById('overlay').style.display = "none";
                 } else {
@@ -1361,7 +2660,7 @@
                 }
             }).catch(error => {
                 console.error('保存手机号失败:', error);
-                alert('保存失败，请��试');
+                alert('保存失败请重试');
             });
         });
 
@@ -1384,9 +2683,9 @@
             }
         }
 
-        // 初始化时检查手机号状态
+        // 初始化时查手机号状态
         checkUserPhoneNumber();
-    </script>
+        </script>
 
-</body>
-</html>
+    </body>
+    </html>
