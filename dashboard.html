@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气���息样式 */
+        /* 天气信息样式 */
         .weather-info {
             margin-top: auto;
             background: linear-gradient(135deg, #6dd5ed, #2193b0);
@@ -335,7 +335,7 @@
             margin-top: 15px;
         }
 
-        /* 模态框样式 */
+        /* 模态框���式 */
         .modal {
             display: none;
             position: fixed;
@@ -756,6 +756,74 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        .event-modal {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 90%;
+            width: 400px;
+        }
+
+        .event-modal-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f5e9;
+        }
+
+        .event-modal-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .event-detail {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .event-detail-icon {
+            font-size: 1.2em;
+            color: #2196F3;
+            width: 24px;
+            text-align: center;
+        }
+
+        .event-detail-label {
+            font-weight: 500;
+            color: #666;
+            min-width: 70px;
+        }
+
+        .event-detail-value {
+            color: #333;
+            flex: 1;
+        }
+
+        .event-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .event-status.allocated {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .event-status.pending {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
     </style>
 </head>
 <body>
@@ -908,7 +976,7 @@
             // 天气相关
             WEATHER_API_KEY: `${BASE_URL}/api/dashboard/getWeatherApiKey/`,
             
-            // 页面��转
+            // 页面转
             MOBILE_DASHBOARD: 'mobile_dashboard.html',
             LOGIN: 'login.html'
         };
@@ -1154,9 +1222,13 @@
                                                     .replace(/\s+/g, 'T');
                                             }
                                             
+                                            // 创建日期对象并设置具体时间
+                                            const date = new Date(dateStr);
+                                            
                                             return {
                                                 title: `维修订单: ${order.issue}`,
-                                                start: dateStr,
+                                                start: date,
+                                                allDay: false, // 确保事件不是全天事件
                                                 backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
                                                 borderColor: order.allocationState ? '#27ae60' : '#f39c12',
                                                 textColor: '#ffffff',
@@ -1170,7 +1242,7 @@
                                         });
                                         successCallback(events);
                                     } else if (response.message === 'No history report') {
-                                        successCallback([]); // 如果没有订单，显示空日历
+                                        successCallback([]);
                                     } else {
                                         showMessage('获取订单失败，请稍后重试');
                                         failureCallback(new Error(response.message));
@@ -1184,17 +1256,40 @@
                             eventClick: function(info) {
                                 const event = info.event;
                                 const startDate = event.start;
-                                
-                                // 格式化日期时间
                                 const formattedDate = formatDate(startDate);
+                                const isAllocated = event.extendedProps.status === '已分配';
                                 
                                 showMessage(`
-订单详情：
-问题：${event.extendedProps.issue}
-时间：${formattedDate}
-地址：${event.extendedProps.address}
-电话：${event.extendedProps.phoneNumber}
-状态：${event.extendedProps.status}
+                                    <div class="event-modal">
+                                        <div class="event-modal-header">维修订单详情</div>
+                                        <div class="event-modal-content">
+                                            <div class="event-detail">
+                                                <span class="event-detail-icon">🔧</span>
+                                                <span class="event-detail-label">问题：</span>
+                                                <span class="event-detail-value">${event.extendedProps.issue}</span>
+                                            </div>
+                                            <div class="event-detail">
+                                                <span class="event-detail-icon">🕒</span>
+                                                <span class="event-detail-label">时间：</span>
+                                                <span class="event-detail-value">${formattedDate}</span>
+                                            </div>
+                                            <div class="event-detail">
+                                                <span class="event-detail-icon">📍</span>
+                                                <span class="event-detail-label">地址：</span>
+                                                <span class="event-detail-value">${event.extendedProps.address}</span>
+                                            </div>
+                                            <div class="event-detail">
+                                                <span class="event-detail-icon">📱</span>
+                                                <span class="event-detail-label">电话：</span>
+                                                <span class="event-detail-value">${event.extendedProps.phoneNumber}</span>
+                                            </div>
+                                            <div class="event-detail">
+                                                <span class="event-detail-icon">📋</span>
+                                                <span class="event-detail-label">状态：</span>
+                                                <span class="event-status ${isAllocated ? 'allocated' : 'pending'}">${event.extendedProps.status}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 `);
                             },
                             eventDidMount: function(info) {
@@ -1291,7 +1386,7 @@
                 }
             });
 
-            // ���史订单功能
+            // 史订单功能
             const orderHistoryButton = document.querySelector('.tab-button[data-tab="orderHistory"]');
             const orderHistoryContent = document.getElementById('orderHistory');
 
@@ -1563,7 +1658,7 @@
                     }
                 } catch (error) {
                     console.error('获取手机号失败:', error);
-                    showMessage('获取手机号失败，请重试');
+                    showMessage('获取手机号失败，请重��');
                 }
             }
 
