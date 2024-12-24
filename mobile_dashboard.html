@@ -2590,7 +2590,7 @@
                                 hour12: false
                             },
                             events: function(info, successCallback, failureCallback) {
-                                // 获取历史订单数据
+                                // 使用 AJAX 获取历史订单数据
                                 $.ajax({
                                     url: getHistoryCallUrl,
                                     method: 'GET',
@@ -2600,19 +2600,32 @@
                                 }).then(response => {
                                     if (response.message === 'Success') {
                                         // 转换订单数据为日历事件格式
-                                        const events = response.report_info.map(order => ({
-                                            title: `维修订单: ${order.issue}`,
-                                            start: new Date(order.date),
-                                            backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
-                                            borderColor: order.allocationState ? '#27ae60' : '#f39c12',
-                                            textColor: '#ffffff',
-                                            extendedProps: {
-                                                address: order.address,
-                                                phoneNumber: order.userPhoneNumber,
-                                                status: order.allocationState ? '已分配' : '待分配',
-                                                issue: order.issue
+                                        const events = response.report_info.map(order => {
+                                            // 解析日期时间字符串
+                                            let dateStr = order.date;
+                                            if (dateStr.includes('年')) {
+                                                // 处理中文格式的日期
+                                                dateStr = dateStr
+                                                    .replace('年', '-')
+                                                    .replace('月', '-')
+                                                    .replace('日', '')
+                                                    .replace(/\s+/g, 'T');
                                             }
-                                        }));
+                                            
+                                            return {
+                                                title: `维修订单: ${order.issue}`,
+                                                start: dateStr,
+                                                backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
+                                                borderColor: order.allocationState ? '#27ae60' : '#f39c12',
+                                                textColor: '#ffffff',
+                                                extendedProps: {
+                                                    address: order.address,
+                                                    phoneNumber: order.userPhoneNumber,
+                                                    status: order.allocationState ? '已分配' : '待分配',
+                                                    issue: order.issue
+                                                }
+                                            };
+                                        });
                                         successCallback(events);
                                     } else if (response.message === 'No history report') {
                                         successCallback([]); // 如果没有订单，显示空日历
@@ -2626,28 +2639,23 @@
                                     failureCallback(error);
                                 });
                             },
+                            
+                            // 修改事件点击处理函数，使用新的日期格式化
                             eventClick: function(info) {
-                                // 点击事件时显示详细信息
+                                const event = info.event;
+                                const startDate = event.start;
+                                
+                                // 格式化日期时间
+                                const formattedDate = formatDate(startDate);
+                                
                                 showMessage(`
 订单详情：
-问题：${info.event.extendedProps.issue}
-时间：${formatDate(info.event.start)}
-地址：${info.event.extendedProps.address}
-电话：${info.event.extendedProps.phoneNumber}
-状态：${info.event.extendedProps.status}
+问题：${event.extendedProps.issue}
+时间：${formattedDate}
+地址：${event.extendedProps.address}
+电话：${event.extendedProps.phoneNumber}
+状态：${event.extendedProps.status}
                                 `);
-                            },
-                            eventDidMount: function(info) {
-                                // 鼠标悬停时显示提示信息
-                                const tooltip = document.createElement('div');
-                                tooltip.className = 'event-tooltip';
-                                tooltip.innerHTML = `
-                                    <strong>问题：</strong>${info.event.extendedProps.issue}<br>
-                                    <strong>地址：</strong>${info.event.extendedProps.address}<br>
-                                    <strong>状态：</strong>${info.event.extendedProps.status}
-                                `;
-                                
-                                info.el.title = tooltip.textContent;
                             }
                         });
                         calendar.render();
@@ -2882,31 +2890,36 @@
         function displayHistoryOrders(orders) {
             const ordersList = Array.isArray(orders) ? orders : [orders];
             
-            const ordersHTML = ordersList.map(order => `
-                <div class="order-card">
-                    <div class="order-info">
-                        <p>
-                            <strong>手机号码</strong>
-                            ${order.userPhoneNumber}
-                            <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
-                                ${order.allocationState ? '已分配' : '待分配'}
-                            </span>
-                        </p>
-                        <p>
-                            <strong>地址</strong>
-                            ${order.address}
-                        </p>
-                        <p>
-                            <strong>问题描述</strong>
-                            ${order.issue}
-                        </p>
-                        <p>
-                            <strong>预约时间</strong>
-                            ${formatDate(order.date)}
-                        </p>
+            const ordersHTML = ordersList.map(order => {
+                // 使用相同的日期格式化函数
+                const formattedDate = formatDate(order.date);
+                
+                return `
+                    <div class="order-card">
+                        <div class="order-info">
+                            <p>
+                                <strong>手机号码</strong>
+                                ${order.userPhoneNumber}
+                                <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
+                                    ${order.allocationState ? '已分配' : '待分配'}
+                                </span>
+                            </p>
+                            <p>
+                                <strong>地址</strong>
+                                ${order.address}
+                            </p>
+                            <p>
+                                <strong>问题描述</strong>
+                                ${order.issue}
+                            </p>
+                            <p>
+                                <strong>预约时间</strong>
+                                ${formattedDate}
+                            </p>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             document.getElementById('orderHistory').innerHTML = `
                 <div class="orders-container">
