@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气���息样式 */
+        /* 天气信息样式 */
         .weather-info {
             margin-top: auto;
             background: linear-gradient(135deg, #6dd5ed, #2193b0);
@@ -335,7 +335,7 @@
             margin-top: 15px;
         }
 
-        /* 模态框样式 */
+        /* 模态框��式 */
         .modal {
             display: none;
             position: fixed;
@@ -830,7 +830,14 @@
         .navbar a,
         .sidebar-menu li,
         .event-status,
-        .order-status {
+        .order-status,
+        .fc-button,
+        .fc-button-group button,
+        .fc-toolbar-title,
+        .fc-col-header-cell-cushion,
+        .fc-daygrid-day-number,
+        .fc-event-title,
+        .fc-event-time {
             user-select: none;
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -915,7 +922,7 @@
         </div>
 
         <div class="content" id="accountSettings" style="display: none;">
-            <h2>账号管理</h2>
+            <h2>账��管理</h2>
             <div class="tabs">
                 <button class="tab-button" data-tab="info">账号信息</button>
                 <button class="tab-button" data-tab="password">修改密码</button>
@@ -1601,7 +1608,7 @@
             const preferredTimeInput = document.getElementById('preferredTime');
 
             if (preferredTimeInput) {
-                // 设置期望上门时间的范围
+                // 设置期望上门���间的范围
                 document.getElementById('preferredTime').addEventListener('click', function(event) {
                     this.showPicker();
                     event.preventDefault();
@@ -1708,7 +1715,7 @@
                 });
             });
 
-            // 不默认显示任何账号管理内容
+            // 不默���显示任何账号管理内容
             Object.values(accountContents).forEach(content => content.style.display = 'none');
 
             // 修改账号信息表单的提交处理
@@ -1791,7 +1798,7 @@
         document.getElementById('messageModal').addEventListener('click', function(event) {
             if (event.target === this) {
                 this.style.display = 'none';
-                // 重置模态框样式
+                // 重置模���框样式
                 this.querySelector('.message-content').style.maxWidth = '';
                 this.querySelector('.message-content').style.width = '';
             }
