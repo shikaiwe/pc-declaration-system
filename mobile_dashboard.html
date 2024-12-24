@@ -559,7 +559,7 @@
             }
         }
 
-        /* 日期选择器容器样��� */
+        /* 日期选择器容器样式 */
         .datetime-container {
             position: relative;
             width: 100%;
@@ -1783,7 +1783,7 @@
             color: #333;
             padding: 10px;
             white-space: nowrap; /* 防止文本换行 */
-            overflow: hidden; /* 防止溢出 */
+            overflow: hidden; /* ��止溢出 */
             text-overflow: ellipsis; /* 文本溢出时显示省略号 */
             width: 100%; /* 确保宽度填充 */
             text-align: center;
@@ -1804,7 +1804,7 @@
             opacity: 0.3;
         }
 
-        /* 响应式调整 */
+        /* 响应式��整 */
         @media screen and (max-width: 480px) {
             .picker-container {
                 max-height: 70vh;
@@ -2659,7 +2659,6 @@
                                 hour12: false
                             },
                             events: function(info, successCallback, failureCallback) {
-                                // 使用 AJAX 获取历史订单数据
                                 $.ajax({
                                     url: getHistoryCallUrl,
                                     method: 'GET',
@@ -2668,7 +2667,6 @@
                                     }
                                 }).then(response => {
                                     if (response.message === 'Success') {
-                                        // 转换订单数据为日历事件格式
                                         const events = response.report_info.map(order => {
                                             // 解析日期时间字符串
                                             let dateStr = order.date;
@@ -2681,9 +2679,13 @@
                                                     .replace(/\s+/g, 'T');
                                             }
                                             
+                                            // 创建日期对象并设置具体时间
+                                            const date = new Date(dateStr);
+                                            
                                             return {
                                                 title: `维修订单: ${order.issue}`,
-                                                start: dateStr,
+                                                start: date,
+                                                allDay: false, // 确保事件不是全天事件
                                                 backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
                                                 borderColor: order.allocationState ? '#27ae60' : '#f39c12',
                                                 textColor: '#ffffff',
@@ -2697,7 +2699,7 @@
                                         });
                                         successCallback(events);
                                     } else if (response.message === 'No history report') {
-                                        successCallback([]); // 如果没有订单，显示空日历
+                                        successCallback([]);
                                     } else {
                                         handleSessionError(response.message);
                                         failureCallback(new Error(response.message));
@@ -2914,25 +2916,33 @@
 
         // 修改日期格式化函数
         function formatDate(dateString) {
-            // 检查日期字符串是否有效
+            // 检查输入是否有效
             if (!dateString) {
                 return '时间未指定';
             }
 
             try {
-                // 处理多种可能的日期格式
                 let date;
-                if (dateString.includes('年')) {
-                    // 处理 "2024年3月15日 18:00" 格式
-                    const [datePart, timePart] = dateString.split(' ');
-                    const [year, month, day] = datePart
-                        .replace('年', '-')
-                        .replace('月', '-')
-                        .replace('日', '')
-                        .split('-');
-                    date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${timePart}`);
+                // 如果输入已经是 Date 对象
+                if (dateString instanceof Date) {
+                    date = dateString;
+                } else if (typeof dateString === 'string') {
+                    // 处理字符串格式的日期
+                    if (dateString.includes('年')) {
+                        // 处理 "2024年3月15日 18:00" 格式
+                        const [datePart, timePart] = dateString.split(' ');
+                        const [year, month, day] = datePart
+                            .replace('年', '-')
+                            .replace('月', '-')
+                            .replace('日', '')
+                            .split('-');
+                        date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${timePart}`);
+                    } else {
+                        // 处理标准 ISO 格式或其他格式
+                        date = new Date(dateString);
+                    }
                 } else {
-                    // 处理标准 ISO 格式或其他格式
+                    // 如果是其他格式，尝试转换为 Date 对象
                     date = new Date(dateString);
                 }
 
