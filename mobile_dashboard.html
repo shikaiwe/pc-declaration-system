@@ -2487,6 +2487,7 @@
                                 hour12: false
                             },
                             events: function(info, successCallback, failureCallback) {
+                                // 获取历史订单数据
                                 $.ajax({
                                     url: getHistoryCallUrl,
                                     method: 'GET',
@@ -2495,22 +2496,25 @@
                                     }
                                 }).then(response => {
                                     if (response.message === 'Success') {
+                                        // 转换订单数据为日历事件格式
                                         const events = response.report_info.map(order => ({
                                             title: `维修订单: ${order.issue}`,
                                             start: new Date(order.date),
                                             backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
                                             borderColor: order.allocationState ? '#27ae60' : '#f39c12',
+                                            textColor: '#ffffff',
                                             extendedProps: {
                                                 address: order.address,
                                                 phoneNumber: order.userPhoneNumber,
-                                                status: order.allocationState ? '已分配' : '待分配'
+                                                status: order.allocationState ? '已分配' : '待分配',
+                                                issue: order.issue
                                             }
                                         }));
                                         successCallback(events);
                                     } else if (response.message === 'No history report') {
                                         successCallback([]); // 如果没有订单，显示空日历
                                     } else {
-                                        showMessage('获取订单失败，请稍后重试');
+                                        handleSessionError(response.message);
                                         failureCallback(new Error(response.message));
                                     }
                                 }).catch(error => {
@@ -2520,21 +2524,27 @@
                                 });
                             },
                             eventClick: function(info) {
-                                alert(`
-                                    订单详情:
-                                    问题: ${info.event.title}
-                                    时间: ${info.event.start.toLocaleString()}
-                                    地址: ${info.event.extendedProps.address}
-                                    电话: ${info.event.extendedProps.phoneNumber}
-                                    状态: ${info.event.extendedProps.status}
-                                `.trim());
+                                // 点击事件时显示详细信息
+                                showMessage(`
+订单详情：
+问题：${info.event.extendedProps.issue}
+时间：${formatDate(info.event.start)}
+地址：${info.event.extendedProps.address}
+电话：${info.event.extendedProps.phoneNumber}
+状态：${info.event.extendedProps.status}
+                                `);
                             },
                             eventDidMount: function(info) {
-                                info.el.title = `
-                                    ${info.event.title}
-                                    地址: ${info.event.extendedProps.address}
-                                    状态: ${info.event.extendedProps.status}
-                                `.trim();
+                                // 鼠标悬停时显示提示信息
+                                const tooltip = document.createElement('div');
+                                tooltip.className = 'event-tooltip';
+                                tooltip.innerHTML = `
+                                    <strong>问题：</strong>${info.event.extendedProps.issue}<br>
+                                    <strong>地址：</strong>${info.event.extendedProps.address}<br>
+                                    <strong>状态：</strong>${info.event.extendedProps.status}
+                                `;
+                                
+                                info.el.title = tooltip.textContent;
                             }
                         });
                         calendar.render();
