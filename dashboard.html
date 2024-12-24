@@ -335,7 +335,7 @@
             margin-top: 15px;
         }
 
-        /* 模态框��式 */
+        /* 模态框样式 */
         .modal {
             display: none;
             position: fixed;
@@ -922,7 +922,7 @@
         </div>
 
         <div class="content" id="accountSettings" style="display: none;">
-            <h2>账��管理</h2>
+            <h2>账号管理</h2>
             <div class="tabs">
                 <button class="tab-button" data-tab="info">账号信息</button>
                 <button class="tab-button" data-tab="password">修改密码</button>
@@ -1241,7 +1241,7 @@
                                                     .replace(/\s+/g, 'T');
                                             }
                                             
-                                            // 创建日期对象并设置具体时间
+                                            // ��建日期对象并设置具体时间
                                             const date = new Date(dateStr);
                                             
                                             return {
@@ -1280,7 +1280,7 @@
                                 
                                 showMessage(`
                                     <div class="event-modal">
-                                        <div class="event-modal-header">维修订单详情</div>
+                                        <div class="event-modal-header">维修订���详情</div>
                                         <div class="event-modal-content">
                                             <div class="event-detail">
                                                 <span class="event-detail-icon">🔧</span>
@@ -1439,6 +1439,10 @@
                     <div class="order-card">
                         <div class="order-info">
                             <p>
+                                <strong>用户名</strong>
+                                ${order.username || '未设置'}
+                            </p>
+                            <p>
                                 <strong>手机号码</strong>
                                 ${order.userPhoneNumber}
                                 <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
@@ -1541,11 +1545,15 @@
 
             // 调用报告API的函数
             function callReportAPI(userPhoneNumber, address, issue, preferredTime) {
+                // 获取当前用户名
+                const username = document.getElementById('displayUsername').textContent;
+                
                 return $.ajax({
                     url: API_URLS.REPORT,
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
+                        username: username,
                         userPhoneNumber: userPhoneNumber,
                         address: address,
                         issue: issue,
@@ -1608,7 +1616,7 @@
             const preferredTimeInput = document.getElementById('preferredTime');
 
             if (preferredTimeInput) {
-                // 设置期望上门���间的范围
+                // 设置期望上门时间的范围
                 document.getElementById('preferredTime').addEventListener('click', function(event) {
                     this.showPicker();
                     event.preventDefault();
@@ -1715,7 +1723,7 @@
                 });
             });
 
-            // 不默���显示任何账号管理内容
+            // 不默认显示任何账号管理内容
             Object.values(accountContents).forEach(content => content.style.display = 'none');
 
             // 修改账号信息表单的提交处理
@@ -1798,7 +1806,7 @@
         document.getElementById('messageModal').addEventListener('click', function(event) {
             if (event.target === this) {
                 this.style.display = 'none';
-                // 重置模���框样式
+                // 重置模态框样式
                 this.querySelector('.message-content').style.maxWidth = '';
                 this.querySelector('.message-content').style.width = '';
             }

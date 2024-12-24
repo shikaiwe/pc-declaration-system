@@ -559,7 +559,7 @@
             }
         }
 
-        /* 日期选择器容器样��� */
+        /* 日期选择器容器样����� */
         .datetime-container {
             position: relative;
             width: 100%;
@@ -2527,28 +2527,35 @@
         });
 
         // 修改 callReportAPI 函数
-        async function callReportAPI(userPhoneNumber, address, issue, date) {
-            const response = await fetch(reportApiUrl, {
+        function callReportAPI(userPhoneNumber, address, issue, preferredTime) {
+            // 从页面标题中获取用户名
+            const username = document.querySelector('.header h1').textContent.split(' - ')[1];
+            
+            return $.ajax({
+                url: reportApiUrl,
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({
-                    // 删除 name 字段
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    username: username,
                     userPhoneNumber: userPhoneNumber,
                     address: address,
                     issue: issue,
-                    date: date
+                    date: preferredTime
                 }),
-                credentials: 'include'
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
+            }).then(response => {
+                if (response.message === 'Success') {
+                    showMessage('订单提交成功，请留意推送');
+                    return response;
+                } else {
+                    handleSessionError(response.message);
+                }
+            }).catch(error => {
+                console.error('API调用失败:', error);
             });
-
-            if (!response.ok) {
-                throw new Error('网络响应失败');
-            }
-
-            return response.json();
         }
 
         // 获取CSRF token的函数（如果需要）
