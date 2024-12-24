@@ -2337,13 +2337,7 @@
         const userPhoneNumberInput = document.getElementById('userPhoneNumber');
         const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
 
-        function checkUserPhoneNumber() {
-            // 移除本地存储相关代码，改为直接启用按钮
-            fillPhoneNumberButton.disabled = false;
-            fillPhoneNumberButton.addEventListener('click', fetchAndFillPhoneNumber);
-        }
-
-        // 添加新的函数用于获取和填充手机号
+        // 修改获取和填充手机号的函数
         async function fetchAndFillPhoneNumber() {
             try {
                 const response = await fetch(`https://${ip}/api/dashboard/getPhoneNumber/`, {
@@ -2353,7 +2347,7 @@
                 
                 const data = await response.json();
                 
-                if (data.message === 'Success') {
+                if (data.message === 'Success' && data.phoneNumber) {
                     userPhoneNumberInput.value = data.phoneNumber;
                 } else if (data.message === 'No phone number') {
                     showMessage('您还未设置手机号，请先在账户管理中设置');
@@ -2365,6 +2359,19 @@
                 showMessage('获取手机号失败，请重试');
             }
         }
+
+        // 在文档加载完成后设置按钮事件
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... existing code ...
+            
+            // 按钮始终可用，移除disabled属性
+            fillPhoneNumberButton.disabled = false;
+            
+            // 给一键填充按钮添加点击事件
+            fillPhoneNumberButton.addEventListener('click', fetchAndFillPhoneNumber);
+            
+            // ... existing code ...
+        });
 
         document.addEventListener('DOMContentLoaded', function() {
             const scheduleManagementButton = document.getElementById('schedule-management');
