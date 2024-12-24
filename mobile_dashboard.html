@@ -559,7 +559,7 @@
             }
         }
 
-        /* 日期选择器容器样��� */
+        /* 日期选择器容器样式 */
         .datetime-container {
             position: relative;
             width: 100%;
@@ -1783,7 +1783,7 @@
             color: #333;
             padding: 10px;
             white-space: nowrap; /* 防止文本换行 */
-            overflow: hidden; /* ��止溢出 */
+            overflow: hidden; /* 防止溢出 */
             text-overflow: ellipsis; /* 文本溢出时显示省略号 */
             width: 100%; /* 确保宽度填充 */
             text-align: center;
@@ -1804,7 +1804,7 @@
             opacity: 0.3;
         }
 
-        /* 响应式��整 */
+        /* 响应式调整 */
         @media screen and (max-width: 480px) {
             .picker-container {
                 max-height: 70vh;
@@ -2140,6 +2140,18 @@
         .event-status.pending {
             background-color: #fff3e0;
             color: #ef6c00;
+        }
+
+        /* 在 mobile_dashboard.html 的 style 标签中添加 */
+        button, 
+        .tab-button,
+        .navbar a,
+        .event-status,
+        .order-status {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
     </style>
 </head>
@@ -3115,7 +3127,7 @@
                     if (phoneNumber && newName) {
                         successMessage += '用户名和手机号';
                     } else if (phoneNumber) {
-                        successMessage += '手机��';
+                        successMessage += '手机号';
                     } else {
                         successMessage += '用户名';
                     }

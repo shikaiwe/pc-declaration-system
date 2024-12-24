@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气信息样式 */
+        /* 天气���息样式 */
         .weather-info {
             margin-top: auto;
             background: linear-gradient(135deg, #6dd5ed, #2193b0);
@@ -824,6 +824,18 @@
             background-color: #fff3e0;
             color: #ef6c00;
         }
+
+        button, 
+        .tab-button,
+        .navbar a,
+        .sidebar-menu li,
+        .event-status,
+        .order-status {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
     </style>
 </head>
 <body>
@@ -1175,7 +1187,7 @@
                                 timeGridDay: {
                                     slotMinTime: '18:00:00',
                                     slotMaxTime: '22:00:00',
-                                    slotDuration: '00:30:00', // 每��时间槽30分钟
+                                    slotDuration: '00:30:00', // 每个时间槽30分钟
                                     titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
                                 },
                                 dayGridMonth: {
