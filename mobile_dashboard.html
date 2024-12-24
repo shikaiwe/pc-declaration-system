@@ -1194,7 +1194,7 @@
             }
         }
 
-        /* 高分辨率屏幕优��� */
+        /* 高分辨率屏幕优化 */
         @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
             .flatpickr-calendar {
                 text-rendering: optimizeLegibility;
@@ -2900,6 +2900,31 @@
                 document.body.classList.add('modal-open');
             } else {
                 document.body.classList.remove('modal-open');
+            }
+        }
+
+        // 在现有的 script 标签内添加以下函数
+
+        function openOrderTab(event, tabName) {
+            // 隐藏所有标签内容
+            const tabcontent = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // 移除所有标签按钮的 active 类
+            const tablinks = document.getElementsByClassName("tab-link");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // 显示当前标签内容并添加 active 类到按钮
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.className += " active";
+
+            // 如果是历史订单标签，加载历史订单数据
+            if (tabName === 'orderHistory') {
+                fetchHistoryOrders();
             }
         }
         </script>
