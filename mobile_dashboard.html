@@ -559,7 +559,7 @@
             }
         }
 
-        /* 日期选择器容器样式 */
+        /* 日期选择器容器样��� */
         .datetime-container {
             position: relative;
             width: 100%;
@@ -2715,18 +2715,41 @@
                             eventClick: function(info) {
                                 const event = info.event;
                                 const startDate = event.start;
-                                
-                                // 格式化日期时间
                                 const formattedDate = formatDate(startDate);
+                                const isAllocated = event.extendedProps.status === '已分配';
                                 
                                 showMessage(`
-订单详情：
-问题：${event.extendedProps.issue}
-时间：${formattedDate}
-地址：${event.extendedProps.address}
-电话：${event.extendedProps.phoneNumber}
-状态：${event.extendedProps.status}
-                                `);
+                                    <div class="event-modal">
+                                        <div class="event-modal-header">维修订单详情</div>
+                                        <div class="event-modal-content">
+                                            <div class="event-detail">
+                                                <span class="event-detail-icon">🔧</span>
+                                                <span class="event-detail-label">问题：</span>
+                                                <span class="event-detail-value">${event.extendedProps.issue}</span>
+                                            </div>
+                                            <div class="event-detail">
+                                                <span class="event-detail-icon">🕒</span>
+                                                <span class="event-detail-label">时间：</span>
+                                                <span class="event-detail-value">${formattedDate}</span>
+                                            </div>
+                                            <div class="event-detail">
+                                                <span class="event-detail-icon">📍</span>
+                                                <span class="event-detail-label">地址：</span>
+                                                <span class="event-detail-value">${event.extendedProps.address}</span>
+                                            </div>
+                                            <div class="event-detail">
+                                                <span class="event-detail-icon">📱</span>
+                                                <span class="event-detail-label">电话：</span>
+                                                <span class="event-detail-value">${event.extendedProps.phoneNumber}</span>
+                                            </div>
+                                            <div class="event-detail">
+                                                <span class="event-detail-icon">📋</span>
+                                                <span class="event-detail-label">状态：</span>
+                                                <span class="event-status ${isAllocated ? 'allocated' : 'pending'}">${event.extendedProps.status}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `.trim());
                             }
                         });
                         calendar.render();
@@ -3092,7 +3115,7 @@
                     if (phoneNumber && newName) {
                         successMessage += '用户名和手机号';
                     } else if (phoneNumber) {
-                        successMessage += '手机号';
+                        successMessage += '手机��';
                     } else {
                         successMessage += '用户名';
                     }
@@ -3155,7 +3178,15 @@
             const messageText = document.getElementById('messageText');
             const confirmButton = document.getElementById('messageConfirm');
             
-            messageText.textContent = message;
+            // 检查消息是否包含 HTML 标签
+            if (message.includes('<div class="event-modal">')) {
+                // 如果是事件详情，直接设置 innerHTML
+                messageText.innerHTML = message;
+            } else {
+                // 如果是普通消息，使用 textContent
+                messageText.textContent = message;
+            }
+            
             messageModal.style.display = 'block';
             
             confirmButton.onclick = () => {

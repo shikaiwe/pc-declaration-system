@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气���息样式 */
+        /* 天气信息样式 */
         .weather-info {
             margin-top: auto;
             background: linear-gradient(135deg, #6dd5ed, #2193b0);
@@ -485,7 +485,7 @@
             color: white;
         }
 
-        /* 订单管理��容样式 */
+        /* 订单管理内容样式 */
         #orderContent {
             background-color: #f4f4f4;
             border-radius: 8px;
@@ -836,7 +836,7 @@
             <li id="accountManagement"><i>👤</i>账号管理</li>
         </ul>
         <div class="weather-info" id="weatherInfo">
-            <p>天���信息加载中...</p>
+            <p>天气信息加载中...</p>
         </div>
     </div>
 
@@ -889,7 +889,7 @@
                     <button type="submit">提交</button>
                 </form>
                 <div id="reportOrderInfo">
-                    <!-- 这里将显示报单���息 -->
+                    <!-- 这里将显示报单信息 -->
                 </div>
             </div>
             <div class="tab-content" id="orderHistory" style="display: none;">
@@ -916,7 +916,7 @@
                     </div>
                     <div>
                         <label for="phone">手机号码:</label>
-                        <input type="tel" id="phone" name="phone" autocomplete="tel" required pattern="[0-9]{11}" placeholder="请输入11位手机��码">
+                        <input type="tel" id="phone" name="phone" autocomplete="tel" required pattern="[0-9]{11}" placeholder="请输入11位手机号码">
                     </div>
                     <button type="submit">保存更改</button>
                 </form>
@@ -944,7 +944,7 @@
             <div class="modal-content">
                 <p>您确定要退出登录吗？</p>
                 <button id="confirmLogoutButton">确认</button>
-                <button id="cancelLogoutButton">��消</button>
+                <button id="cancelLogoutButton">取消</button>
             </div>
         </div>
 
@@ -1153,7 +1153,7 @@
                         sectionToShow.style.display = 'block';
                     }
 
-                    // 如果点击的是日程管理，初始化并显示���历
+                    // 如果点击的是日程管理，初始化并显示日历
                     if (item.id === 'scheduleManagement') {
                         var calendarEl = document.getElementById('calendar');
                         var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -1175,7 +1175,7 @@
                                 timeGridDay: {
                                     slotMinTime: '18:00:00',
                                     slotMaxTime: '22:00:00',
-                                    slotDuration: '00:30:00', // 每个时间槽30分钟
+                                    slotDuration: '00:30:00', // 每��时间槽30分钟
                                     titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
                                 },
                                 dayGridMonth: {
@@ -1285,7 +1285,7 @@
                                             </div>
                                             <div class="event-detail">
                                                 <span class="event-detail-icon">📋</span>
-                                                <span class="event-detail-label">���态：</span>
+                                                <span class="event-detail-label">状态：</span>
                                                 <span class="event-status ${isAllocated ? 'allocated' : 'pending'}">${event.extendedProps.status}</span>
                                             </div>
                                         </div>
@@ -1306,7 +1306,7 @@
                 });
             });
 
-            // ��显示首页内容
+            // 显示首页内容
             contentSections.homeLink.style.display = 'block';
 
             // 返回首页点击事件
@@ -1544,7 +1544,7 @@
                         handleSessionError(response.message);
                     }
                 }).catch(error => {
-                    console.error('API���用失败:', error);
+                    console.error('API调用失败:', error);
                 });
             }
 
@@ -1743,20 +1743,47 @@
             });
         });
 
-        // 在script标签中添加显示消息的函数
+        // 修改 showMessage 函数
         function showMessage(message, callback) {
             const messageModal = document.getElementById('messageModal');
             const messageText = document.getElementById('messageText');
             const confirmButton = document.getElementById('messageConfirm');
             
-            messageText.textContent = message;
+            // 检查消息是否包含 HTML 标签
+            if (message.includes('<div class="event-modal">')) {
+                // 如果是事件详情，直接设置 innerHTML
+                messageText.innerHTML = message;
+                // 调整模态框样式以适应事件详情
+                messageModal.querySelector('.message-content').style.maxWidth = '450px';
+                messageModal.querySelector('.message-content').style.width = '90%';
+            } else {
+                // 如果是普通消息，使用 textContent
+                messageText.textContent = message;
+                // 重置模态框样式
+                messageModal.querySelector('.message-content').style.maxWidth = '';
+                messageModal.querySelector('.message-content').style.width = '';
+            }
+            
             messageModal.style.display = 'block';
             
             confirmButton.onclick = () => {
                 messageModal.style.display = 'none';
+                // 重置模态框样式
+                messageModal.querySelector('.message-content').style.maxWidth = '';
+                messageModal.querySelector('.message-content').style.width = '';
                 if (callback) callback();
             };
         }
+
+        // 添加点击模态框背景关闭功能
+        document.getElementById('messageModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                this.style.display = 'none';
+                // 重置模态框样式
+                this.querySelector('.message-content').style.maxWidth = '';
+                this.querySelector('.message-content').style.width = '';
+            }
+        });
     </script>
 </body>
 </html> 
