@@ -1544,33 +1544,46 @@
                 event.preventDefault();
                 
                 const phoneNumber = document.getElementById('phone').value;
+                const newName = document.getElementById('username').value;
                 
-                // 调用保存手机号API
+                // 构建请求数据
+                const requestData = {};
+                if (phoneNumber) requestData.phoneNumber = phoneNumber;
+                if (newName) requestData.newName = newName;
+                
+                // 调用保存API
                 $.ajax({
                     url: API_URLS.SAVE_PHONE,
                     method: 'POST',
                     contentType: 'application/json',
-                    data: JSON.stringify({
-                        phoneNumber: phoneNumber
-                    }),
+                    data: JSON.stringify(requestData),
                     xhrFields: {
                         withCredentials: true
                     }
                 }).then(response => {
                     if (response.message === 'Success') {
-                        showMessage('手机号保存成功！', () => {
+                        showMessage('保存成功！', () => {
                             // 更新本地存储的用户信息
                             const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-                            userInfo.phoneNumber = phoneNumber;
+                            if (phoneNumber) userInfo.phoneNumber = phoneNumber;
+                            if (newName) userInfo.username = newName;
                             localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                            
+                            // 如果修改了用户名，更新显示
+                            if (newName) {
+                                document.getElementById('displayUsername').textContent = newName;
+                            }
+                            
                             // 更新一键填充按钮状态
                             checkUserPhoneNumber();
                         });
+                    } else if (response.message === 'This user is existed') {
+                        showMessage('用户名已被占用，请更换其他用户名');
                     } else {
                         handleSessionError(response.message);
                     }
                 }).catch(error => {
-                    console.error('保存手机号失败:', error);
+                    console.error('保存失败:', error);
                     showMessage('保存失败，请重试');
                 });
             });

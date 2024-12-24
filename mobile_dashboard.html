@@ -2751,22 +2751,26 @@
             event.preventDefault();
             
             const phoneNumber = document.getElementById('phone').value;
+            const newName = document.getElementById('username').value;
             const formMessage = document.getElementById('formMessage');
             
             // 添加手机号格式验证
-            if(!/^1[3-9]\d{9}$/.test(phoneNumber)) {
+            if(phoneNumber && !/^1[3-9]\d{9}$/.test(phoneNumber)) {
                 showFormMessage('请输入正确的手机号格式', 'error');
                 return;
             }
             
-            // 调用保存手机号API
+            // 构建请求数据
+            const requestData = {};
+            if (phoneNumber) requestData.phoneNumber = phoneNumber;
+            if (newName) requestData.newName = newName;
+            
+            // 调用保存API
             $.ajax({
                 url: savePhoneNumberUrl,
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({
-                    phoneNumber: phoneNumber
-                }),
+                data: JSON.stringify(requestData),
                 xhrFields: {
                     withCredentials: true
                 },
@@ -2775,12 +2779,18 @@
                 }
             }).then(response => {
                 if (response.message === 'Success') {
-                    showFormMessage('手机号保存成功！', 'success');
+                    showFormMessage('保存成功！', 'success');
                     
                     // 更新本地存储的用户信息
                     const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-                    userInfo.phoneNumber = phoneNumber;
+                    if (phoneNumber) userInfo.phoneNumber = phoneNumber;
+                    if (newName) userInfo.username = newName;
                     localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                    
+                    // 如果修改了用户名，更新页面显示
+                    if (newName) {
+                        document.querySelector('.header h1').textContent = `PC志愿者服务队 - ${newName}`;
+                    }
                     
                     // 更新一键填充按钮状态
                     checkUserPhoneNumber();
@@ -2790,11 +2800,13 @@
                         document.getElementById('editModal').style.display = "none";
                         document.getElementById('overlay').style.display = "none";
                     }, 3000);
+                } else if (response.message === 'This user is existed') {
+                    showFormMessage('用户名已被占用，请更换其他用户名', 'error');
                 } else {
                     handleSessionError(response.message);
                 }
             }).catch(error => {
-                console.error('保存手机号失败:', error);
+                console.error('保存失败:', error);
                 showFormMessage('保存失败，请重试', 'error');
             });
         });
