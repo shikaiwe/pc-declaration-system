@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气信息样式 */
+        /* 天气���息样式 */
         .weather-info {
             margin-top: auto;
             background: linear-gradient(135deg, #6dd5ed, #2193b0);
@@ -908,7 +908,7 @@
             // 天气相关
             WEATHER_API_KEY: `${BASE_URL}/api/dashboard/getWeatherApiKey/`,
             
-            // 页面跳转
+            // 页面��转
             MOBILE_DASHBOARD: 'mobile_dashboard.html',
             LOGIN: 'login.html'
         };
@@ -1142,17 +1142,32 @@
                                     }
                                 }).then(response => {
                                     if (response.message === 'Success') {
-                                        const events = response.report_info.map(order => ({
-                                            title: `维修订单: ${order.issue}`,
-                                            start: new Date(order.date),
-                                            backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
-                                            borderColor: order.allocationState ? '#27ae60' : '#f39c12',
-                                            extendedProps: {
-                                                address: order.address,
-                                                phoneNumber: order.userPhoneNumber,
-                                                status: order.allocationState ? '已分配' : '待分配'
+                                        const events = response.report_info.map(order => {
+                                            // 解析日期时间字符串
+                                            let dateStr = order.date;
+                                            if (dateStr.includes('年')) {
+                                                // 处理中文格式的日期
+                                                dateStr = dateStr
+                                                    .replace('年', '-')
+                                                    .replace('月', '-')
+                                                    .replace('日', '')
+                                                    .replace(/\s+/g, 'T');
                                             }
-                                        }));
+                                            
+                                            return {
+                                                title: `维修订单: ${order.issue}`,
+                                                start: dateStr,
+                                                backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
+                                                borderColor: order.allocationState ? '#27ae60' : '#f39c12',
+                                                textColor: '#ffffff',
+                                                extendedProps: {
+                                                    address: order.address,
+                                                    phoneNumber: order.userPhoneNumber,
+                                                    status: order.allocationState ? '已分配' : '待分配',
+                                                    issue: order.issue
+                                                }
+                                            };
+                                        });
                                         successCallback(events);
                                     } else if (response.message === 'No history report') {
                                         successCallback([]); // 如果没有订单，显示空日历
@@ -1167,15 +1182,20 @@
                                 });
                             },
                             eventClick: function(info) {
-                                // 点击事件时显示详细信息
+                                const event = info.event;
+                                const startDate = event.start;
+                                
+                                // 格式化日期时间
+                                const formattedDate = formatDate(startDate);
+                                
                                 showMessage(`
-                                    订单详情:
-                                    问题: ${info.event.title}
-                                    时间: ${info.event.start.toLocaleString()}
-                                    地址: ${info.event.extendedProps.address}
-                                    电话: ${info.event.extendedProps.phoneNumber}
-                                    状态: ${info.event.extendedProps.status}
-                                `.trim());
+订单详情：
+问题：${event.extendedProps.issue}
+时间：${formattedDate}
+地址：${event.extendedProps.address}
+电话：${event.extendedProps.phoneNumber}
+状态：${event.extendedProps.status}
+                                `);
                             },
                             eventDidMount: function(info) {
                                 // 添加鼠标悬停提示
@@ -1271,7 +1291,7 @@
                 }
             });
 
-            // 历史订单功能
+            // ���史订单功能
             const orderHistoryButton = document.querySelector('.tab-button[data-tab="orderHistory"]');
             const orderHistoryContent = document.getElementById('orderHistory');
 
@@ -1335,8 +1355,45 @@
             }
 
             function formatDate(dateString) {
-                const date = new Date(dateString);
-                return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                // 检查日期字符串是否有效
+                if (!dateString) {
+                    return '时间未指定';
+                }
+
+                try {
+                    // 处理多种可能的日期格式
+                    let date;
+                    if (dateString.includes('年')) {
+                        // 处理 "2024年3月15日 18:00" 格式
+                        const [datePart, timePart] = dateString.split(' ');
+                        const [year, month, day] = datePart
+                            .replace('年', '-')
+                            .replace('月', '-')
+                            .replace('日', '')
+                            .split('-');
+                        date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${timePart}`);
+                    } else {
+                        // 处理标准 ISO 格式或其他格式
+                        date = new Date(dateString);
+                    }
+
+                    // 检查日期是否有效
+                    if (isNaN(date.getTime())) {
+                        return '无效日期';
+                    }
+
+                    // 格式化日期
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    
+                    return `${year}年${month}月${day}日 ${hours}:${minutes}`;
+                } catch (error) {
+                    console.error('日期格式化错误:', error);
+                    return '日期格式错误';
+                }
             }
 
             // 更新空状态显示
