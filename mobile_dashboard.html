@@ -2781,19 +2781,10 @@
                 if (response.message === 'Success') {
                     showFormMessage('保存成功！', 'success');
                     
-                    // 更新本地存储的用户信息
-                    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-                    if (phoneNumber) userInfo.phoneNumber = phoneNumber;
-                    if (newName) userInfo.username = newName;
-                    localStorage.setItem('userInfo', JSON.stringify(userInfo));
-                    
-                    // 如果修改了用户名，更新页面显示
+                    // 添加这一行来更新标题显示的用户名
                     if (newName) {
                         document.querySelector('.header h1').textContent = `PC志愿者服务队 - ${newName}`;
                     }
-                    
-                    // 更新一键填充按钮状态
-                    checkUserPhoneNumber();
                     
                     // 3秒后关闭模态框
                     setTimeout(() => {

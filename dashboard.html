@@ -1546,12 +1546,10 @@
                 const phoneNumber = document.getElementById('phone').value;
                 const newName = document.getElementById('username').value;
                 
-                // 构建请求数据
                 const requestData = {};
                 if (phoneNumber) requestData.phoneNumber = phoneNumber;
                 if (newName) requestData.newName = newName;
                 
-                // 调用保存API
                 $.ajax({
                     url: API_URLS.SAVE_PHONE,
                     method: 'POST',
@@ -1563,15 +1561,10 @@
                 }).then(response => {
                     if (response.message === 'Success') {
                         showMessage('保存成功！', () => {
-                            // 更新本地存储的用户信息
-                            const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-                            if (phoneNumber) userInfo.phoneNumber = phoneNumber;
-                            if (newName) userInfo.username = newName;
-                            localStorage.setItem('userInfo', JSON.stringify(userInfo));
-                            
-                            // 如果修改了用户名，更新显示
+                            // 更新显示的用户名
                             if (newName) {
                                 document.getElementById('displayUsername').textContent = newName;
+                                document.getElementById('userAvatar').textContent = newName.charAt(0).toUpperCase();
                             }
                             
                             // 更新一键填充按钮状态
