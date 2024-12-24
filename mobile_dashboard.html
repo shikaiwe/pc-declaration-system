@@ -1750,7 +1750,7 @@
             font-size: 16px;
             color: #333;
             padding: 10px;
-            white-space: nowrap; /* 防止文本换行 */
+            white-space: nowrap; /* 防��文本换行 */
             overflow: hidden; /* 防止溢出 */
             text-overflow: ellipsis; /* 文本溢出时显示省略号 */
             width: 100%; /* 确保宽度填充 */
@@ -2718,16 +2718,47 @@
             });
         });
 
-        // 日期格式化函数
+        // 修改日期格式化函数
         function formatDate(dateString) {
-            const date = new Date(dateString);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            
-            return `${year}-${month}-${day} ${hours}:${minutes}`;
+            // 检查日期字符串是否有效
+            if (!dateString) {
+                return '时间未指定';
+            }
+
+            try {
+                // 处理多种可能的日期格式
+                let date;
+                if (dateString.includes('年')) {
+                    // 处理 "2024年3月15日 18:00" 格式
+                    const [datePart, timePart] = dateString.split(' ');
+                    const [year, month, day] = datePart
+                        .replace('年', '-')
+                        .replace('月', '-')
+                        .replace('日', '')
+                        .split('-');
+                    date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${timePart}`);
+                } else {
+                    // 处理标准 ISO 格式或其他格式
+                    date = new Date(dateString);
+                }
+
+                // 检查日期是否有效
+                if (isNaN(date.getTime())) {
+                    return '无效日期';
+                }
+
+                // 格式化日期
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                
+                return `${year}年${month}月${day}日 ${hours}:${minutes}`;
+            } catch (error) {
+                console.error('日期格式化错误:', error);
+                return '日期格式错误';
+            }
         }
 
         // 显示历史订单
