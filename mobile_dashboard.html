@@ -1194,7 +1194,7 @@
             }
         }
 
-        /* 高分辨率屏幕优化 */
+        /* 高分辨率屏幕优��� */
         @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
             .flatpickr-calendar {
                 text-rendering: optimizeLegibility;
@@ -1924,6 +1924,53 @@
                 transform: translateY(0);
             }
         }
+
+        /* 添加或更新 body 样式 */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 更新 modal 样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            background-color: rgba(0,0,0,0.5);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 更新 modal-content 样式 */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15px auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* 更新 logout-modal 样式 */
+        .logout-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
@@ -2170,34 +2217,81 @@
             submenu.classList.toggle('show');
         }
 
-        // 显示信息修改模态框
+        // 修改所有打开模态框的事件处理器
+        // 信息修改模态框
         document.getElementById('info-link').addEventListener('click', function(event) {
             event.preventDefault();
             const modal = document.getElementById('editModal');
             modal.style.display = "block";
-            document.getElementById('overlay').style.display = "block"; // 显示遮罩层
+            document.getElementById('overlay').style.display = "block";
+            toggleBodyScroll(true);
         });
 
-        // 关闭信息修改模态框
-        document.querySelector('#editModal .close-button').addEventListener('click', function() {
-            const modal = document.getElementById('editModal');
-            modal.style.display = "none";
-            document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
+        // 订单管理模态框
+        document.getElementById('order-management').addEventListener('click', function() {
+            const modal = document.getElementById('orderManagementModal');
+            modal.style.display = "block";
+            document.getElementById('overlay').style.display = "block";
+            this.classList.add('active');
+            toggleBodyScroll(true);
+            
+            if (document.getElementById('orderHistory').style.display === 'block') {
+                fetchHistoryOrders();
+            }
         });
 
-        // 显示退出确认模态框
+        // 日程管理模态框
+        document.getElementById('schedule-management').addEventListener('click', function() {
+            const modal = document.getElementById('scheduleModal');
+            modal.style.display = "block";
+            document.getElementById('overlay').style.display = "block";
+            this.classList.add('active');
+            toggleBodyScroll(true);
+            // ... 其余代码保持不变 ...
+        });
+
+        // 退出确认模态框
         document.getElementById('logout').addEventListener('click', function(event) {
             event.preventDefault();
             const modal = document.getElementById('logoutModal');
             modal.style.display = "block";
-            document.getElementById('overlay').style.display = "block"; // 显示遮罩层
+            document.getElementById('overlay').style.display = "block";
+            toggleBodyScroll(true);
         });
 
-        // 关闭退出确认模态框
+        // 修改所有关闭模态框的事件处理器
+        // 信息修改模态框关闭
+        document.querySelector('#editModal .close-button').addEventListener('click', function() {
+            const modal = document.getElementById('editModal');
+            modal.style.display = "none";
+            document.getElementById('overlay').style.display = "none";
+            toggleBodyScroll(false);
+        });
+
+        // 订单管理模态框关闭
+        document.querySelector('#orderManagementModal .close-button').addEventListener('click', function() {
+            const modal = document.getElementById('orderManagementModal');
+            modal.style.display = "none";
+            document.getElementById('overlay').style.display = "none";
+            document.getElementById('order-management').classList.remove('active');
+            toggleBodyScroll(false);
+        });
+
+        // 日程管理模态框关闭
+        document.querySelector('#scheduleModal .close-button').addEventListener('click', function() {
+            const modal = document.getElementById('scheduleModal');
+            modal.style.display = "none";
+            document.getElementById('overlay').style.display = "none";
+            document.getElementById('schedule-management').classList.remove('active');
+            toggleBodyScroll(false);
+        });
+
+        // 退出确认模态框关闭
         document.getElementById('cancelLogout').addEventListener('click', function() {
             const modal = document.getElementById('logoutModal');
             modal.style.display = "none";
-            document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
+            document.getElementById('overlay').style.display = "none";
+            toggleBodyScroll(false);
         });
 
         // 切换项内容
@@ -2212,44 +2306,6 @@
             }
             document.getElementById(tabName).style.display = "block";
             event.currentTarget.className += " active";
-        }
-
-        // 显示订单管理模态框
-        document.getElementById('order-management').addEventListener('click', function() {
-            const modal = document.getElementById('orderManagementModal');
-            modal.style.display = "block";
-            document.getElementById('overlay').style.display = "block";
-            this.classList.add('active');
-            
-            // 如果当前显示的是历史订单标签，则获取历史订单数据
-            if (document.getElementById('orderHistory').style.display === 'block') {
-                fetchHistoryOrders();
-            }
-        });
-
-        // 关闭订单管理模态框
-        document.querySelector('#orderManagementModal .close-button').addEventListener('click', function() {
-            const modal = document.getElementById('orderManagementModal');
-            modal.style.display = "none";
-            document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
-            document.getElementById('order-management').classList.remove('active'); // 移除浮起样式
-        });
-
-        // 切换订单管理选项卡内容
-        function openOrderTab(event, tabName) {
-            const tabcontent = document.querySelectorAll("#orderManagementModal .tab-content");
-            tabcontent.forEach(content => content.style.display = "none");
-
-            const tablinks = document.querySelectorAll("#orderManagementModal .tab-link");
-            tablinks.forEach(link => link.className = link.className.replace(" active", ""));
-
-            document.getElementById(tabName).style.display = "block";
-            event.currentTarget.className += " active";
-
-            // 添加这个条件判断：当切换到历史订单标签页时，获取历史订单数据
-            if (tabName === 'orderHistory') {
-                fetchHistoryOrders();
-            }
         }
 
         // 修改表单提交理逻辑
@@ -2836,6 +2892,15 @@
                 messageModal.style.display = 'none';
                 if (callback) callback();
             };
+        }
+
+        // 在现有的 JavaScript 代码中添加以下函数
+        function toggleBodyScroll(disable) {
+            if (disable) {
+                document.body.classList.add('modal-open');
+            } else {
+                document.body.classList.remove('modal-open');
+            }
         }
         </script>
 
