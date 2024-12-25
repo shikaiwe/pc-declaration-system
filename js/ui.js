@@ -40,5 +40,27 @@ const UI = {
         } else {
             document.body.classList.remove('modal-open');
         }
+    },
+
+    handleSessionError: function(message) {
+        switch (message) {
+            case 'Session has expired':
+                this.showMessage('会话已过期，请重新登录');
+                break;
+            case 'Invalid session':
+                this.showMessage('无效会话，请重新登录');
+                break;
+            case 'No sessionid cookie':
+                this.showMessage('未找到会话信息，请重新登录');
+                break;
+            default:
+                this.showMessage('发生未知错误，请重新登录');
+        }
+        utils.removeData('username');
+        utils.removeData('loginData');
+        utils.removeData('rememberMe');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 2000);
     }
 }; 
