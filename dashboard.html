@@ -1336,7 +1336,7 @@
 
         <div class="content" id="dataStatisticsContent" style="display: none;">
             <h2>数据统计</h2>
-            <p>数据统计功能即将推出。</p>
+            <p>数据统计功能即将推出��</p>
         </div>
 
         <div class="content" id="accountSettings" style="display: none;">
@@ -1610,7 +1610,226 @@
             // 初始化显示
             displayUsername();
             
-            // 其他初始化代码...
+            // 获取天气信息
+            fetchWeatherAndLocation();
+            
+            // 初始化时间显示
+            function updateTime() {
+                const currentTimeElement = document.getElementById('currentTime');
+                const now = new Date();
+                const dateString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+                const timeString = `${now.getHours()}时${now.getMinutes()}分${now.getSeconds()}秒`;
+                currentTimeElement.textContent = `${dateString} ${timeString}`;
+            }
+            updateTime();
+            setInterval(updateTime, 500);
+
+            // 更新问候语
+            function updateGreeting() {
+                const greetingText = document.getElementById('greetingText');
+                const hour = new Date().getHours();
+                let greeting = '';
+                
+                if (hour >= 5 && hour < 9) greeting = '早上好，';
+                else if (hour >= 9 && hour < 11) greeting = '上午好，';
+                else if (hour >= 11 && hour < 13) greeting = '中午好，';
+                else if (hour >= 13 && hour < 18) greeting = '下午好，';
+                else greeting = '晚上好，';
+                
+                greetingText.textContent = greeting;
+            }
+            updateGreeting();
+            setInterval(updateGreeting, 60000);
+
+            // 侧边栏菜单点击事件
+            const menuItems = document.querySelectorAll('.sidebar-menu li');
+            const contentSections = {
+                homeLink: document.getElementById('contentArea'),
+                orderManagement: document.getElementById('orderContent'),
+                scheduleManagement: document.getElementById('scheduleContent'),
+                dataStatistics: document.getElementById('dataStatisticsContent'),
+                accountManagement: document.getElementById('accountSettings')
+            };
+
+            menuItems.forEach(item => {
+                item.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+
+                    Object.values(contentSections).forEach(section => {
+                        if (section) section.style.display = 'none';
+                    });
+
+                    const sectionToShow = contentSections[item.id];
+                    if (sectionToShow) sectionToShow.style.display = 'block';
+
+                    // 日程管理特殊处理
+                    if (item.id === 'scheduleManagement') {
+                        initializeCalendar();
+                    }
+                });
+            });
+
+            // 标签页切换
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+                    const tabContent = document.getElementById(tabId);
+                    
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    
+                    button.classList.add('active');
+                    if (tabContent) tabContent.style.display = 'block';
+
+                    // 如果是历史订单标签，加载历史订单
+                    if (tabId === 'orderHistory') {
+                        fetchHistoryOrders();
+                    }
+                });
+            });
+
+            // 报单表单提交处理
+            const reportOrderForm = document.getElementById('reportOrderForm');
+            if (reportOrderForm) {
+                reportOrderForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const formData = {
+                        userPhoneNumber: document.getElementById('userPhoneNumber').value,
+                        address: document.getElementById('address').value,
+                        issue: document.getElementById('issue').value,
+                        date: document.getElementById('preferredTime').value
+                    };
+
+                    try {
+                        const response = await fetch(API_URLS.order.report, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(formData),
+                            credentials: 'include'
+                        });
+                        
+                        const data = await response.json();
+                        if (data.message === 'Success') {
+                            showReportMessage('报单提交成功！', 'success');
+                            reportOrderForm.reset();
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    } catch (error) {
+                        showReportMessage('报单提交失败，请重试', 'error');
+                    }
+                });
+            }
+
+            // 退出登录处理
+            const logoutLink = document.getElementById('logoutLink');
+            const logoutModal = document.getElementById('logoutModal');
+            const confirmLogoutButton = document.getElementById('confirmLogoutButton');
+            const cancelLogoutButton = document.getElementById('cancelLogoutButton');
+
+            if (logoutLink) {
+                logoutLink.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (logoutModal) logoutModal.style.display = 'block';
+                });
+            }
+
+            if (confirmLogoutButton) {
+                confirmLogoutButton.addEventListener('click', () => {
+                    auth.handleLogout();
+                });
+            }
+
+            if (cancelLogoutButton) {
+                cancelLogoutButton.addEventListener('click', () => {
+                    if (logoutModal) logoutModal.style.display = 'none';
+                });
+            }
+
+            // 账号管理表单处理
+            const infoForm = document.getElementById('infoForm');
+            const passwordForm = document.getElementById('passwordForm');
+
+            if (infoForm) {
+                infoForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const formData = {
+                        phoneNumber: document.getElementById('phone').value.trim(),
+                        newName: document.getElementById('username').value.trim()
+                    };
+
+                    try {
+                        const response = await fetch(API_URLS.account.savePhone, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(formData),
+                            credentials: 'include'
+                        });
+
+                        const data = await response.json();
+                        if (data.message === 'Success') {
+                            utils.ui.showMessage('保存成功');
+                            if (formData.newName) {
+                                utils.storage.save('username', formData.newName);
+                                displayUsername();
+                            }
+                        } else if (data.message === 'This user is existed') {
+                            utils.ui.showMessage('用户名已被占用');
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    } catch (error) {
+                        utils.ui.showMessage('保存失败，请重试');
+                    }
+                });
+            }
+
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const oldPassword = document.getElementById('currentPassword').value;
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+
+                    if (newPassword !== confirmPassword) {
+                        utils.ui.showMessage('两次输入的新密码不一致');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(API_URLS.account.changePassword, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                old_password: oldPassword,
+                                new_password: newPassword
+                            }),
+                            credentials: 'include'
+                        });
+
+                        const data = await response.json();
+                        if (data.message === 'Success') {
+                            utils.ui.showMessage('密码修改成功');
+                            passwordForm.reset();
+                        } else if (data.message === 'Password error') {
+                            utils.ui.showMessage('原密码错误');
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    } catch (error) {
+                        utils.ui.showMessage('密码修改失败，请重试');
+                    }
+                });
+            }
+
+            // 默认显示首页
+            contentSections.homeLink.style.display = 'block';
         });
 
         // 添加显示报单消息的函数
