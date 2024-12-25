@@ -2550,6 +2550,104 @@
         }
 
         /* 其他相关样式保持不变... */
+
+        /* 加载动画样式 */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 订单容器动画 */
+        .orders-container {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* 空状态样式 */
+        .no-orders {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .no-orders-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .no-orders p {
+            margin: 0;
+            font-size: 16px;
+            color: #666;
+        }
+
+        /* 错误状态样式 */
+        .error-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #dc3545;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .error-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .error-message p {
+            margin: 0 0 15px;
+            font-size: 16px;
+            color: #dc3545;
+        }
+
+        .retry-button {
+            padding: 8px 24px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .retry-button:hover {
+            background-color: #1976D2;
+            transform: translateY(-1px);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -2833,7 +2931,7 @@
                 throw new Error(`无法获取天气信息: ${weatherData.info}`);
             }
 
-            const live = weatherData.lives[0]; // 获取实时天气信息
+            const live = weatherData.lives[0]; // 获取实时���气信息
             document.getElementById('weather-info').innerHTML = `
                 <p class="weather-location">
                     <span class="weather-icon">📍</span>
@@ -2886,7 +2984,7 @@
         event.preventDefault();
         const modal = document.getElementById('editModal');
         
-        // 直接从 localStorage 获取用户��
+        // 直接从 localStorage 获取用户
         const username = localStorage.getItem('username');
         if (username) {
             document.getElementById('username').value = username;
@@ -3499,7 +3597,7 @@
                     
                     // 构建标准格式的日期字符串用于显示
                     const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
-                    // 构建标准格式的日期字符串用于提交
+                    // 构建���准格式的日期字符串用于提交
                     const submitDateTime = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${selectedTime}`;
                     
                     // 存储两种格式
@@ -3590,7 +3688,7 @@
         `;
     }
 
-    // 显示错误状态
+    // 显示错误状���
     function showError() {
         document.getElementById('orderHistory').innerHTML = `
             <div class="error-message">
@@ -4385,6 +4483,123 @@
         currentY = 0;
         pickerContent.style.transform = '';
     }
+
+    // 修改获取历史订单的函数
+    async function loadOrderHistory() {
+        const orderHistoryTab = document.getElementById('orderHistory');
+        
+        // 添加加载动画
+        orderHistoryTab.innerHTML = `
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <span>加载中...</span>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(API_URLS.GET_HISTORY, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('获取历史订单失败');
+            }
+
+            const data = await response.json();
+            const ordersContainer = document.createElement('div');
+            ordersContainer.className = 'orders-container';
+
+            if (data.length === 0) {
+                ordersContainer.innerHTML = `
+                    <div class="no-orders">
+                        <i class="no-orders-icon">📝</i>
+                        <p>暂无历史订单</p>
+                    </div>
+                `;
+            } else {
+                data.forEach(order => {
+                    const orderCard = createOrderCard(order);
+                    ordersContainer.appendChild(orderCard);
+                });
+            }
+
+            // 使用淡入动画替换内容
+            orderHistoryTab.innerHTML = '';
+            ordersContainer.style.opacity = '0';
+            orderHistoryTab.appendChild(ordersContainer);
+            
+            // 触发重排后添加动画
+            setTimeout(() => {
+                ordersContainer.style.opacity = '1';
+            }, 50);
+
+        } catch (error) {
+            console.error('加载历史订单失败:', error);
+            orderHistoryTab.innerHTML = `
+                <div class="error-message">
+                    <i class="error-icon">❌</i>
+                    <p>获取历史订单失败</p>
+                    <button class="retry-button" onclick="loadOrderHistory()">重试</button>
+                </div>
+            `;
+        }
+    }
+
+    // 修改日期选择器的相关 JavaScript 代码
+    function initDateTimePicker() {
+        const picker = document.querySelector('.datetime-picker');
+        const container = picker.querySelector('.picker-container');
+        const cancelBtn = picker.querySelector('.picker-cancel');
+        
+        // 点击遮罩层关闭
+        picker.addEventListener('click', (e) => {
+            if (e.target === picker) {
+                closeDateTimePicker();
+            }
+        });
+        
+        // 阻止容器的点击事件冒泡
+        container.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
+        // 取消按钮关闭
+        cancelBtn.addEventListener('click', () => {
+            closeDateTimePicker();
+        });
+    }
+
+    function closeDateTimePicker() {
+        const picker = document.querySelector('.datetime-picker');
+        const container = picker.querySelector('.picker-container');
+        
+        // 先执行动画
+        container.style.transform = 'translateY(100%)';
+        
+        // 等待动画完成后隐藏整个选择器
+        setTimeout(() => {
+            picker.classList.remove('active');
+            container.style.transform = ''; // 重置transform
+        }, 300); // 与 CSS transition 时间相匹配
+    }
+
+    function showDateTimePicker() {
+        const picker = document.querySelector('.datetime-picker');
+        picker.classList.add('active');
+        
+        // 确保容器动画正确显示
+        const container = picker.querySelector('.picker-container');
+        // 强制重排后执行动画
+        requestAnimationFrame(() => {
+            container.style.transform = 'translateY(0)';
+        });
+    }
+
+    // 确保在页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        initDateTimePicker();
+    });
 </script>
 
 </body>
