@@ -3471,23 +3471,31 @@
             
             // 获取并显示用户名
             function displayUsername() {
+                const usernameDisplay = document.getElementById('username-display');
+                if (!usernameDisplay) return;
+
                 try {
                     const loginData = localStorage.getItem('loginData');
-                    if (loginData) {
-                        const decryptedData = utils.decrypt(loginData);
-                        if (decryptedData) {
-                            try {
-                                const userData = JSON.parse(decryptedData);
-                                usernameDisplay.textContent = userData.username || '用户';
-                            } catch (error) {
-                                console.error('解析用户数据失败:', error);
-                                usernameDisplay.textContent = '用户';
-                            }
-                        } else {
-                            usernameDisplay.textContent = '用户';
-                        }
-                    } else {
+                    if (!loginData) {
                         usernameDisplay.textContent = '用户';
+                        return;
+                    }
+
+                    // 尝试解密数据
+                    const decryptedData = utils.decrypt(loginData);
+                    if (!decryptedData) {
+                        usernameDisplay.textContent = '用户';
+                        return;
+                    }
+
+                    // 尝试解析 JSON
+                    try {
+                        const userData = JSON.parse(decryptedData);
+                        usernameDisplay.textContent = userData.username || '用户';
+                    } catch (jsonError) {
+                        console.error('JSON解析失败:', jsonError);
+                        // 如果解析失败，直接使用解密后的文本（可能是纯用户名）
+                        usernameDisplay.textContent = decryptedData || '用户';
                     }
                 } catch (error) {
                     console.error('获取用户名失败:', error);

@@ -1182,7 +1182,7 @@
                         <input type="datetime-local" id="preferredTime" name="preferredTime" required>
                     </div>
                     <div id="timeWarning" style="display: none; color: red; margin-top: 10px;">
-                        该时间非上门时段。正确��间段为18:00-21:00
+                        该时间非上门时段。正确时间段为18:00-21:00
                     </div>
                     <button type="submit">提交</button>
                 </form>
@@ -1297,7 +1297,7 @@
             // 简单的加密解密方法
             encrypt: function(text) {
                 try {
-                    return btoa(encodeURIComponent(text));
+                    return window.btoa(unescape(encodeURIComponent(text)));
                 } catch (e) {
                     console.error('加密失败:', e);
                     return null;
@@ -1305,7 +1305,7 @@
             },
             decrypt: function(text) {
                 try {
-                    return decodeURIComponent(atob(text));
+                    return decodeURIComponent(escape(window.atob(text)));
                 } catch (e) {
                     console.error('解密失败:', e);
                     return null;
@@ -1343,23 +1343,31 @@
             
             // 获取并显示用户名
             function displayUsername() {
+                const usernameDisplay = document.getElementById('username-display');
+                if (!usernameDisplay) return;
+
                 try {
                     const loginData = localStorage.getItem('loginData');
-                    if (loginData) {
-                        const decryptedData = utils.decrypt(loginData);
-                        if (decryptedData) {
-                            try {
-                                const userData = JSON.parse(decryptedData);
-                                usernameDisplay.textContent = userData.username || '用户';
-                            } catch (error) {
-                                console.error('解析用户数据失败:', error);
-                                usernameDisplay.textContent = '用户';
-                            }
-                        } else {
-                            usernameDisplay.textContent = '用户';
-                        }
-                    } else {
+                    if (!loginData) {
                         usernameDisplay.textContent = '用户';
+                        return;
+                    }
+
+                    // 尝试解密数据
+                    const decryptedData = utils.decrypt(loginData);
+                    if (!decryptedData) {
+                        usernameDisplay.textContent = '用户';
+                        return;
+                    }
+
+                    // 尝试解析 JSON
+                    try {
+                        const userData = JSON.parse(decryptedData);
+                        usernameDisplay.textContent = userData.username || '用户';
+                    } catch (jsonError) {
+                        console.error('JSON解析失败:', jsonError);
+                        // 如果解析失败，直接使用解密后的文本
+                        usernameDisplay.textContent = decryptedData || '用户';
                     }
                 } catch (error) {
                     console.error('获取用户名失败:', error);
@@ -1847,7 +1855,7 @@
                         showError();
                     }
                 }).catch(error => {
-                    console.error('获取历史��单失败:', error);
+                    console.error('获取历史订单失败:', error);
                     showError();
                 });
             }
