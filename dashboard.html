@@ -1434,161 +1434,113 @@
     <div class="detail-overlay" id="detailOverlay"></div>
 
     <script>
-        // API URL 配置对象
-        var API_URLS = {
-            // 用户认证相关接口
-            LOGIN: `${BASE_URL}/users/login/`,              // 用户登录接口
-            LOGOUT: `${BASE_URL}/dashboard/logout/`,        // 用户登出接口
-            GET_USER_INFO: `${BASE_URL}/dashboard/get_user_info/`,  // 获取用户信息接口
-            
-            // 账户管理相关接口
-            SAVE_PHONE: `${BASE_URL}/dashboard/savePhoneNumber/`,   // 保存手机号和用户名接口
-            GET_PHONE: `${BASE_URL}/dashboard/getPhoneNumber/`,     // 获取用户手机号接口
-            CHANGE_PASSWORD: `${BASE_URL}/dashboard/renew_password/`,// 修改密码接口
-            
-            // 订单管理相关接口
-            REPORT: `${BASE_URL}/dashboard/call_report/`,           // 提交维修报单接口
-            GET_HISTORY: `${BASE_URL}/dashboard/user_get_history_report/`, // 获取用户历史订单接口
-            ASSIGN_ORDER: `${BASE_URL}/dashboard/assign_order/`,    // 分配维修订单接口
-            GET_REPORT_LIST: `${BASE_URL}/dashboard/worker_get_report_list/`, // 获取维修工订单列表接口
-            COMPLETE_REPORT: `${BASE_URL}/dashboard/complete_report/`, // 完成维修订单接口
-            
-            // 天气相关接口
-            WEATHER_API_KEY: `${BASE_URL}/dashboard/getWeatherApiKey/` // 获取天气API密钥接口
+        // 配置常量
+        const CONFIG = {
+            ip: '8.134.178.71',
+            baseUrl: 'https://8.134.178.71/api'
         };
-        // 工具函数
-        var utils = {
-            // Base64加密函数
-            encrypt: function(text) {
-                return btoa(encodeURIComponent(text));
+
+        // API 端点配置
+        const API_URLS = {
+            // 用户认证相关接口
+            auth: {
+                login: `${CONFIG.baseUrl}/users/login/`,
+                logout: `${CONFIG.baseUrl}/dashboard/logout/`,
+                getUserInfo: `${CONFIG.baseUrl}/dashboard/get_user_info/`
             },
             
-            // Base64解密函数
-            decrypt: function(encoded) {
-                return decodeURIComponent(atob(encoded));
-            }
-        };
-
-        // 通用的会话错误处理函数
-        function handleSessionError(message) {
-            switch (message) {
-                case 'Session has expired':
-                    showMessage('会话已过期，请重新登录');
-                    break;
-                case 'Invalid session':
-                    showMessage('无效的会话，请重新登录');
-                    break;
-                case 'No sessionid cookie':
-                    showMessage('未找到会话信息，请重新登录');
-                    break;
-                default:
-                    showMessage('发生未知错误，请重新登录');
-            }
-            
-            // 清除登录信息并跳转到登录页
-            localStorage.removeItem('loginData');
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 2000);
-        }
-
-        // 通用的消息提示函数
-        function showMessage(message, callback) {
-            const messageModal = document.getElementById('messageModal');
-            const messageText = document.getElementById('messageText');
-            const confirmButton = document.getElementById('messageConfirm');
-            
-            messageText.textContent = message;
-            messageModal.style.display = 'block';
-            
-            confirmButton.onclick = () => {
-                messageModal.style.display = 'none';
-                if (callback) callback();
-            };
-        }
-
-        // API URL配置
-        const ip = '8.134.178.71';
-        const BASE_URL = `https://${ip}/api`;
-
-        // 定义所有API端点
-        var API_URLS = {
-            // 用户认证相关接口
-            LOGIN: `${BASE_URL}/users/login/`,              // 用户登录
-            LOGOUT: `${BASE_URL}/dashboard/logout/`,        // 用户登出
-            GET_USER_INFO: `${BASE_URL}/dashboard/get_user_info/`,  // 获取用户信息
-            
             // 账户管理相关接口
-            SAVE_PHONE: `${BASE_URL}/dashboard/savePhoneNumber/`,  // 保存手机号
-            GET_PHONE: `${BASE_URL}/dashboard/getPhoneNumber/`,    // 获取手机号
-            CHANGE_PASSWORD: `${BASE_URL}/dashboard/renew_password/`,  // 修改密码
+            account: {
+                savePhone: `${CONFIG.baseUrl}/dashboard/savePhoneNumber/`,
+                getPhone: `${CONFIG.baseUrl}/dashboard/getPhoneNumber/`,
+                changePassword: `${CONFIG.baseUrl}/dashboard/renew_password/`
+            },
             
             // 订单管理相关接口
-            REPORT: `${BASE_URL}/dashboard/call_report/`,           // 提交报单
-            GET_HISTORY: `${BASE_URL}/dashboard/user_get_history_report/`,  // 获取历史订单
-            ASSIGN_ORDER: `${BASE_URL}/dashboard/assign_order/`,    // 分配订单
-            GET_REPORT_LIST: `${BASE_URL}/dashboard/worker_get_report_list/`,  // 获取报单列表
-            COMPLETE_REPORT: `${BASE_URL}/dashboard/complete_report/`,  // 完成订单
+            order: {
+                report: `${CONFIG.baseUrl}/dashboard/call_report/`,
+                getHistory: `${CONFIG.baseUrl}/dashboard/user_get_history_report/`,
+                assign: `${CONFIG.baseUrl}/dashboard/assign_order/`,
+                getReportList: `${CONFIG.baseUrl}/dashboard/worker_get_report_list/`,
+                complete: `${CONFIG.baseUrl}/dashboard/complete_report/`
+            },
             
             // 天气相关接口
-            WEATHER_API_KEY: `${BASE_URL}/dashboard/getWeatherApiKey/`  // 获取天气API密钥
+            weather: {
+                getApiKey: `${CONFIG.baseUrl}/dashboard/getWeatherApiKey/`
+            }
         };
 
-        // 在脚本开头定义统一的 utils 对象
+        // 工具函数集合
         const utils = {
             // 加密/解密功能
-            encrypt: function(text) {
-                return btoa(encodeURIComponent(text));
+            crypto: {
+                encrypt: (text) => btoa(encodeURIComponent(text)),
+                decrypt: (encoded) => decodeURIComponent(atob(encoded))
             },
             
-            decrypt: function(encoded) {
-                return decodeURIComponent(atob(encoded));
-            },
-
             // localStorage 操作功能
-            saveData: function(key, data) {
-                try {
-                    localStorage.setItem(key, JSON.stringify(data));
-                } catch (error) {
-                    console.error(`保存${key}数据失败:`, error);
+            storage: {
+                save: function(key, data) {
+                    try {
+                        localStorage.setItem(key, JSON.stringify(data));
+                    } catch (error) {
+                        console.error(`保存${key}数据失败:`, error);
+                    }
+                },
+                
+                get: function(key) {
+                    try {
+                        const data = localStorage.getItem(key);
+                        return data ? JSON.parse(data) : null;
+                    } catch (error) {
+                        console.error(`获取${key}数据失败:`, error);
+                        return null;
+                    }
+                },
+                
+                remove: function(key) {
+                    try {
+                        localStorage.removeItem(key);
+                    } catch (error) {
+                        console.error(`删除${key}数据失败:`, error);
+                    }
                 }
             },
             
-            getData: function(key) {
-                try {
-                    const data = localStorage.getItem(key);
-                    return data ? JSON.parse(data) : null;
-                } catch (error) {
-                    console.error(`获取${key}数据失败:`, error);
-                    return null;
-                }
-            },
-            
-            removeData: function(key) {
-                try {
-                    localStorage.removeItem(key);
-                } catch (error) {
-                    console.error(`删除${key}数据失败:`, error);
+            // UI相关工具函数
+            ui: {
+                showMessage: function(message, callback) {
+                    const messageModal = document.getElementById('messageModal');
+                    const messageText = document.getElementById('messageText');
+                    const confirmButton = document.getElementById('messageConfirm');
+                    
+                    messageText.textContent = message;
+                    messageModal.style.display = 'block';
+                    
+                    confirmButton.onclick = () => {
+                        messageModal.style.display = 'none';
+                        if (callback) callback();
+                    };
                 }
             }
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // 修改获取登录数据的函数
-            function getLoginData() {
-                return utils.getData('loginData');
-            }
-
-            // 修改退出登录的处理函数
-            function handleLogout() {
+        // 用户认证相关功能
+        const auth = {
+            getLoginData: function() {
+                return utils.storage.get('loginData');
+            },
+            
+            handleLogout: function() {
                 // 清除所有相关数据
-                utils.removeData('username');
-                utils.removeData('loginData');
-                utils.removeData('rememberMe');
+                utils.storage.remove('username');
+                utils.storage.remove('loginData');
+                utils.storage.remove('rememberMe');
 
                 // 调用退出登录API
                 $.ajax({
-                    url: API_URLS.LOGOUT,
+                    url: API_URLS.auth.logout,
                     method: 'GET',
                     xhrFields: {
                         withCredentials: true
@@ -1597,20 +1549,44 @@
                     if (response.message === 'Success') {
                         window.location.href = 'login.html';
                     } else {
-                        handleSessionError(response.message);
+                        this.handleSessionError(response.message);
                     }
                 }).catch(error => {
                     console.error('退出登录失败:', error);
-                    showMessage('退出登录失败，请重试');
+                    utils.ui.showMessage('退出登录失败，请重试');
                 });
+            },
+            
+            handleSessionError: function(message) {
+                switch (message) {
+                    case 'Session has expired':
+                        utils.ui.showMessage('会话已过期，请重新登录');
+                        break;
+                    case 'Invalid session':
+                        utils.ui.showMessage('无效的会话，请重新登录');
+                        break;
+                    case 'No sessionid cookie':
+                        utils.ui.showMessage('未找到会话信息，请重新登录');
+                        break;
+                    default:
+                        utils.ui.showMessage('发生未知错误，请重新登录');
+                }
+                
+                utils.storage.remove('loginData');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
             }
+        };
 
-            // 修改显示用户名的函数
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            // 显示用户名的函数
             function displayUsername() {
                 const usernameDisplay = document.getElementById('username-display');
                 if (!usernameDisplay) return;
 
-                fetch(API_URLS.GET_USER_INFO, {
+                fetch(API_URLS.auth.getUserInfo, {
                     method: 'GET',
                     credentials: 'include'
                 })
@@ -1618,890 +1594,23 @@
                 .then(data => {
                     if (data.message === 'Success') {
                         const username = data.username;
-                        utils.saveData('username', username);
+                        utils.storage.save('username', username);
                         usernameDisplay.textContent = username;
                     } else {
-                        handleSessionError(data.message);
+                        auth.handleSessionError(data.message);
                     }
                 })
                 .catch(error => {
                     console.error('获取用户信息失败:', error);
-                    // 如果API调用失败，尝试从localStorage获取
-                    const username = utils.getData('username');
+                    const username = utils.storage.get('username');
                     usernameDisplay.textContent = username || '用户';
                 });
             }
 
-            // 获取气信息顺带验证登录
-            fetchWeatherAndLocation();
-            
-            // 获取问候语元素
-            const greetingText = document.getElementById('greetingText');
-            const usernameDisplay = document.getElementById('username-display');
-            
-            // 更新问候语函数
-            function updateGreeting() {
-                const hour = new Date().getHours();
-                let greeting = '';
-                
-                if (hour >= 5 && hour < 9) {
-                    greeting = '早上好，';
-                } else if (hour >= 9 && hour < 11) {
-                    greeting = '上午好，';
-                } else if (hour >= 11 && hour < 13) {
-                    greeting = '中午好，';
-                } else if (hour >= 13 && hour < 18) {
-                    greeting = '下午好，';
-                } else {
-                    greeting = '晚上好，';
-                }
-                
-                greetingText.textContent = greeting;
-            }
-            
             // 初始化显示
-            updateGreeting();
             displayUsername();
             
-            // 每分钟更新一次问候语
-            setInterval(updateGreeting, 60000);
-
-            // 检查设备类型并跳转
-            if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                window.location.href = API_URLS.MOBILE_DASHBOARD;
-                return;
-            }
-
-            const currentTimeElement = document.getElementById('currentTime');
-
-            // 获取登录数据
-            function getLoginData() {
-                const encryptedData = localStorage.getItem('loginData');
-                if (!encryptedData) {
-                    return null;
-                }
-                
-                try {
-                    const decryptedData = utils.decrypt(encryptedData);
-                    if (!decryptedData) {
-                        return null;
-                    }
-                    return JSON.parse(decryptedData);
-                } catch (error) {
-                    console.error('获取登录数据失败:', error);
-                    return null;
-                }
-            }
-
-            const weatherInfoElement = document.getElementById('weatherInfo');
-
-            async function fetchWeatherAndLocation() {
-                try {
-                    const apiKey = await getApiKeyFromServer();
-
-                    const ipData = await fetchData(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
-                    if (ipData.status !== '1') {
-                        throw new Error(`无法获取IP信息: ${ipData.info}`);
-                    }
-
-                    const cityAdcode = ipData.adcode;
-                    const city = ipData.city.replace('市', '');
-
-                    const weatherData = await fetchData(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
-                    if (weatherData.status !== '1') {
-                        throw new Error(`无法获取天气信息: ${weatherData.info}`);
-                    }
-
-                    const live = weatherData.lives[0];
-                    weatherInfoElement.innerHTML = `
-                        <p class="weather-location">
-                            <span class="weather-icon">🌡️</span>
-                            ${city}
-                        </p>
-                        <p class="weather-temp">
-                            <span class="weather-icon">🌡️</span>
-                            ${live.temperature}°C
-                        </p>
-                        <div class="weather-details">
-                            <p>
-                                <span class="weather-icon">🌤️</span>
-                                天气：${live.weather}
-                            </p>
-                            <p>
-                                <span class="weather-icon">💧</span>
-                                湿度：${live.humidity}%
-                            </p>
-                            <p>
-                                <span class="weather-icon">🌪️</span>
-                                风向：${live.winddirection}
-                            </p>
-                            <p>
-                                <span class="weather-icon">💨</span>
-                                风力：${live.windpower}级
-                            </p>
-                        </div>
-                    `;
-
-                } catch (error) {
-                    console.error('获取天气信息时出错:', error);
-                    weatherInfoElement.innerHTML = '<p>无法获取信息</p>';
-                }
-            }
-
-            // 使用 jQuery 获取 API Key
-            function getApiKeyFromServer() {
-                return $.ajax({
-                    url: API_URLS.WEATHER_API_KEY,
-                    method: 'GET',
-                    dataType: 'json',
-                }).then(data => {
-                    if (data.message === 'Success') {
-                        return data.apiKey;
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                }).catch(error => {
-                    console.error('获取API Key时出错:', error);
-                    throw error;
-                });
-            }
-
-            // 用 jQuery 获取数据
-            function fetchData(url) {
-                return $.ajax({
-                    url: url,
-                    method: 'GET',
-                    dataType: 'json'
-                }).then(response => {
-                    return response;
-                }).catch(error => {
-                    throw new Error(`请求失败: ${error.statusText}`);
-                });
-            }
-
-            // 更新当前时间
-            function updateTime() {
-                const now = new Date();
-                const dateString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
-                const timeString = `${now.getHours()}时${now.getMinutes()}分${now.getSeconds()}秒`;
-                currentTimeElement.textContent = `${dateString} ${timeString}`;
-            }
-
-            // 初始化时间更新
-            updateTime();
-            setInterval(updateTime, 500);
-
-            // 侧边栏菜单点击事件
-            const menuItems = document.querySelectorAll('.sidebar-menu li');
-            const contentSections = {
-                homeLink: document.getElementById('contentArea'),
-                orderManagement: document.getElementById('orderContent'),
-                scheduleManagement: document.getElementById('scheduleContent'),
-                dataStatistics: document.getElementById('dataStatisticsContent'),
-                accountManagement: document.getElementById('accountSettings')
-            };
-
-            menuItems.forEach(item => {
-                item.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    menuItems.forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-
-                    // 隐藏所有内容
-                    Object.values(contentSections).forEach(section => {
-                        if (section) {
-                            section.style.display = 'none';
-                        }
-                    });
-
-                    // 显示对应的内容
-                    const sectionToShow = contentSections[item.id];
-                    if (sectionToShow) {
-                        sectionToShow.style.display = 'block';
-                    }
-
-                    // 如果点击的是日程管理，初始化并显示日历
-                    if (item.id === 'scheduleManagement') {
-                        var calendarEl = document.getElementById('calendar');
-                        var calendar = new FullCalendar.Calendar(calendarEl, {
-                            initialView: 'dayGridMonth',
-                            locale: 'zh-cn',
-                            height: 'auto',
-                            headerToolbar: {
-                                left: 'prev,next today',
-                                center: 'title',
-                                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                            },
-                            views: {
-                                timeGridWeek: {
-                                    slotMinTime: '18:00:00',
-                                    slotMaxTime: '22:00:00',
-                                    slotDuration: '00:30:00', // 每个时间槽30分钟
-                                    titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
-                                },
-                                timeGridDay: {
-                                    slotMinTime: '18:00:00',
-                                    slotMaxTime: '22:00:00',
-                                    slotDuration: '00:30:00', // 每个时间槽30分钟
-                                    titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
-                                },
-                                dayGridMonth: {
-                                    titleFormat: { year: 'numeric', month: 'short' }
-                                }
-                            },
-                            slotLabelFormat: {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false
-                            },
-                            buttonText: {
-                                today: '今天',
-                                month: '月',
-                                week: '周',
-                                day: '日'
-                            },
-                            dayHeaderFormat: { weekday: 'short' },
-                            allDayText: '全天',
-                            noEventsText: '暂无事件',
-                            eventTimeFormat: {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false
-                            },
-                            events: function(info, successCallback, failureCallback) {
-                                $.ajax({
-                                    url: API_URLS.GET_HISTORY,
-                                    method: 'GET',
-                                    xhrFields: {
-                                        withCredentials: true
-                                    }
-                                }).then(response => {
-                                    if (response.message === 'Success') {
-                                        const events = response.report_info.map(order => ({
-                                            title: `维修订单: ${order.issue}`,
-                                            start: new Date(order.date),
-                                            backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
-                                            borderColor: order.allocationState ? '#27ae60' : '#f39c12',
-                                            extendedProps: {
-                                                address: order.address,
-                                                phoneNumber: order.userPhoneNumber,
-                                                status: order.allocationState ? '已分配' : '待分配'
-                                            }
-                                        }));
-                                        successCallback(events);
-                                    } else if (response.message === 'No history report') {
-                                        successCallback([]); // 如果没有订单，显示空日历
-                                    } else {
-                                        showMessage('获取订单失败，请稍后重试');
-                                        failureCallback(new Error(response.message));
-                                    }
-                                }).catch(error => {
-                                    console.error('获取日历订单数据失败:', error);
-                                    showMessage('获取订单失败，请稍后重试');
-                                    failureCallback(error);
-                                });
-                            },
-                            eventClick: function(info) {
-                                const orderDetailModal = document.getElementById('orderDetailModal');
-                                const orderDetailBody = document.getElementById('orderDetailBody');
-                                const closeDetailBtn = document.getElementById('closeDetailBtn');
-                                
-                                // 格式化日期
-                                const eventDate = new Date(info.event.start);
-                                const formattedDate = `${eventDate.getFullYear()}年${eventDate.getMonth() + 1}月${eventDate.getDate()}日 ${String(eventDate.getHours()).padStart(2, '0')}:${String(eventDate.getMinutes()).padStart(2, '0')}`;
-                                
-                                // 设置详情内容
-                                orderDetailBody.innerHTML = `
-                                    <div class="detail-item">
-                                        <span class="detail-label">状态</span>
-                                        <span class="detail-value">
-                                            <span class="status-badge ${info.event.extendedProps.status === '已分配' ? 'allocated' : 'pending'}">
-                                                ${info.event.extendedProps.status}
-                                            </span>
-                                        </span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">问题描述</span>
-                                        <span class="detail-value">${info.event.title.replace('维修订单: ', '')}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">预约时间</span>
-                                        <span class="detail-value">${formattedDate}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">地址</span>
-                                        <span class="detail-value">${info.event.extendedProps.address}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">联系电话</span>
-                                        <span class="detail-value">${info.event.extendedProps.phoneNumber}</span>
-                                    </div>
-                                `;
-                                
-                                // 显示模态框
-                                orderDetailModal.style.display = 'block';
-                                
-                                // 关闭按钮事件
-                                closeDetailBtn.onclick = function() {
-                                    orderDetailModal.style.display = 'none';
-                                };
-                                
-                                // 点击模态框外部关闭
-                                orderDetailModal.onclick = function(event) {
-                                    if (event.target === orderDetailModal) {
-                                        orderDetailModal.style.display = 'none';
-                                    }
-                                };
-                            },
-                            eventDidMount: function(info) {
-                                // 添加鼠标悬停提示
-                                info.el.title = `
-                                    ${info.event.title}
-                                    地址: ${info.event.extendedProps.address}
-                                    状态: ${info.event.extendedProps.status}
-                                `.trim();
-                            }
-                        });
-                        calendar.render();
-                    }
-                });
-            });
-
-            // 认显示首页内容
-            contentSections.homeLink.style.display = 'block';
-
-            // 返回首页点击事件
-            document.getElementById('homeLink').addEventListener('click', () => {
-                menuItems.forEach(i => i.classList.remove('active'));
-                document.getElementById('homeLink').classList.add('active');
-                contentSections.accountManagement.style.display = 'none';
-                contentSections.homeLink.style.display = 'block';
-            });
-
-            // 标签页切换
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    tabContents.forEach(content => content.style.display = 'none');
-
-                    button.classList.add('active');
-                    document.getElementById(button.getAttribute('data-tab')).style.display = 'block';
-                });
-            });
-
-            // 修改用户显示和下拉菜单功能
-            const userGreeting = document.querySelector('.user-greeting');
-            
-            // 创建下拉菜单元素
-            const dropdownMenu = document.createElement('div');
-            dropdownMenu.className = 'dropdown-menu';
-            dropdownMenu.id = 'userMenu';
-            dropdownMenu.innerHTML = `
-                <a href="#" id="logoutLink">
-                    退出登录
-                </a>
-            `;
-            userGreeting.appendChild(dropdownMenu);
-
-            // 点击问候语区域显示/隐藏下拉菜单
-            userGreeting.addEventListener('click', (event) => {
-                event.stopPropagation();
-                dropdownMenu.classList.toggle('active');
-            });
-
-            // 点击页面其他地方隐藏下拉菜单
-            document.addEventListener('click', () => {
-                if (dropdownMenu) {
-                    dropdownMenu.classList.remove('active');
-                }
-            });
-
-            // 实现退出登录功能
-            function handleLogout() {
-                // 清除用户名和登录数据
-                localStorage.removeItem('username');
-                localStorage.removeItem('loginData');
-                localStorage.removeItem('rememberMe');
-
-                // 调用退出登录API
-                $.ajax({
-                    url: API_URLS.LOGOUT,
-                    method: 'GET',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                }).then(response => {
-                    if (response.message === 'Success') {
-                        window.location.href = 'login.html';
-                    } else {
-                        handleSessionError(response.message);
-                    }
-                }).catch(error => {
-                    console.error('退出登录失败:', error);
-                    showMessage('退出登录失败，请重试');
-                });
-            }
-
-            // 退出登录按点击事件
-            const logoutLink = document.getElementById('logoutLink');
-            if (logoutLink) {
-                logoutLink.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    
-                    // 显示确认对话框
-                    const logoutModal = document.getElementById('logoutModal');
-                    if (logoutModal) {
-                        logoutModal.style.display = 'block';
-                    }
-                });
-            }
-
-            // 确认退出按钮事件
-            const confirmLogoutButton = document.getElementById('confirmLogoutButton');
-            if (confirmLogoutButton) {
-                confirmLogoutButton.addEventListener('click', () => {
-                    handleLogout();
-                });
-            }
-
-            // 取消退出按钮事件
-            const cancelLogoutButton = document.getElementById('cancelLogoutButton');
-            if (cancelLogoutButton) {
-                cancelLogoutButton.addEventListener('click', () => {
-                    const logoutModal = document.getElementById('logoutModal');
-                    if (logoutModal) {
-                        logoutModal.style.display = 'none';
-                    }
-                });
-            }
-
-            // 点击模态框外部关闭
-            const logoutModal = document.getElementById('logoutModal');
-            if (logoutModal) {
-                logoutModal.addEventListener('click', (event) => {
-                    if (event.target === logoutModal) {
-                        logoutModal.style.display = 'none';
-                    }
-                });
-            }
-
-            // 修改保存用户信息后的更新逻辑
-            function updateUserDisplay(newName) {
-                const usernameDisplay = document.getElementById('username-display');
-                if (usernameDisplay && newName) {
-                    usernameDisplay.textContent = newName;
-                }
-            }
-
-            // 历史订单功能
-            const orderHistoryButton = document.querySelector('.tab-button[data-tab="orderHistory"]');
-            const orderHistoryContent = document.getElementById('orderHistory');
-
-            orderHistoryButton.addEventListener('click', fetchHistoryOrders);
-
-            async function fetchHistoryOrders() {
-                try {
-                    const response = await fetch(API_URLS.GET_HISTORY, {
-                        method: 'GET',
-                        credentials: 'include'
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.message === 'Success') {
-                        displayHistoryOrders(data.report_info);
-                    } else if (data.message === 'No history report') {
-                        showNoOrders();
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                } catch (error) {
-                    console.error('获取历史订单失败:', error);
-                    showMessage('获取历史订单失败，请重试');
-                }
-            }
-
-            function displayHistoryOrders(orders) {
-                const ordersList = Array.isArray(orders) ? orders : [orders];
-                
-                const ordersHTML = ordersList.map(order => `
-                    <div class="order-card">
-                        <div class="order-info">
-                            <p>
-                                <strong>手机号码</strong>
-                                ${order.userPhoneNumber}
-                                <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
-                                    ${order.allocationState ? '已分配' : '待分配'}
-                                </span>
-                            </p>
-                            <p>
-                                <strong>地址</strong>
-                                ${order.address}
-                            </p>
-                            <p>
-                                <strong>问题描述</strong>
-                                ${order.issue}
-                            </p>
-                            <p>
-                                <strong>预约时间</strong>
-                                ${formatDate(order.date)}
-                            </p>
-                        </div>
-                    </div>
-                `).join('');
-
-                document.getElementById('orderHistory').innerHTML = `
-                    <div class="orders-container">
-                        ${ordersHTML}
-                    </div>
-                `;
-            }
-
-            // 添加更健壮的日期格式化函数
-            function formatDate(dateString) {
-                try {
-                    if (!dateString) {
-                        return '无效日期';
-                    }
-                    
-                    // 处理标准格式 YYYY-MM-DD HH:mm
-                    if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)) {
-                        const [datePart, timePart] = dateString.split(' ');
-                        const [year, month, day] = datePart.split('-');
-                        const [hours, minutes] = timePart.split(':');
-                        return `${year}年${parseInt(month)}月${parseInt(day)}日 ${hours}:${minutes}`;
-                    }
-                    
-                    // 处理已经是中文格式的情况
-                    if (typeof dateString === 'string' && dateString.includes('年') && dateString.includes('月')) {
-                        return dateString;
-                    }
-                    
-                    // 处理其他格式
-                    const date = new Date(dateString);
-                    if (isNaN(date.getTime())) {
-                        return '无效日期';
-                    }
-                    
-                    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-                } catch (error) {
-                    console.error('日期格式化错误:', error);
-                    return '无效日期';
-                }
-            }
-
-            // 更新空状态显示
-            function showNoOrders() {
-                document.getElementById('orderHistory').innerHTML = `
-                    <div class="no-orders">
-                        <i>📝</i>
-                        <p>暂无历史订单</p>
-                    </div>
-                `;
-            }
-
-            // 更新错误状态显示
-            function showError() {
-                document.getElementById('orderHistory').innerHTML = `
-                    <div class="error-message">
-                        <i>❌</i>
-                        <p>获取历史订单失败，请稍后重试</p>
-                    </div>
-                `;
-            }
-
-            // 修改报单API调用
-            async function callReportAPI(userPhoneNumber, address, issue, date) {
-                const response = await fetch(API_URLS.REPORT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userPhoneNumber: userPhoneNumber,
-                        address: address,
-                        issue: issue,
-                        date: date
-                    }),
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    throw new Error('网络响应失败');
-                }
-
-                const data = await response.json();
-                if (data.message === 'Success') {
-                    return data;
-                } else {
-                    handleSessionError(data.message);
-                    throw new Error(data.message);
-                }
-            }
-
-            const reportOrderButton = document.querySelector('.tab-button[data-tab="reportOrder"]');
-            const reportOrderForm = document.getElementById('reportOrderForm');
-            const reportOrderInfo = document.getElementById('reportOrderInfo');
-
-            // 显示单表单
-            reportOrderButton.addEventListener('click', () => {
-                document.getElementById('reportOrder').style.display = 'block';
-                document.getElementById('orderHistory').style.display = 'none';
-            });
-
-            // 提交表单并调用API
-            reportOrderForm.addEventListener('submit', (event) => {
-                event.preventDefault();
-
-                const userPhoneNumber = document.getElementById('userPhoneNumber').value;
-                const address = document.getElementById('address').value;
-                const issue = document.getElementById('issue').value;
-                const preferredTime = document.getElementById('preferredTime').value;
-
-                callReportAPI(userPhoneNumber, address, issue, preferredTime).then(data => {
-                    if (data.message === 'Success') {
-                        showReportMessage('报单提交成功！', 'success');
-                        document.getElementById('reportOrderForm').reset(); // 提交后重置表单
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                }).catch(error => {
-                    showReportMessage('报单提交失败，请重试', 'error');
-                });
-            });
-
-            const issueTextarea = document.getElementById('issue');
-
-            // 自动调整textarea高度
-            issueTextarea.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
-
-            const preferredTimeInput = document.getElementById('preferredTime');
-
-            if (preferredTimeInput) {
-                // 设置期望上门时间的范围
-                document.getElementById('preferredTime').addEventListener('click', function(event) {
-                    this.showPicker();
-                    event.preventDefault();
-                });
-                
-                function setPreferredTimeRange() {
-                    const now = new Date();
-                    const dayOfWeek = now.getDay();
-                    const startOfWeek = new Date(now);
-                    const endOfWeek = new Date(now);
-
-                    startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
-                    endOfWeek.setDate(now.getDate() + (7 - dayOfWeek));
-
-                    startOfWeek.setHours(18, 0, 0, 0);
-                    endOfWeek.setHours(21, 0, 0, 0);
-
-                    const formatDateTime = (date) => {
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
-                        const hours = String(date.getHours()).padStart(2, '0');
-                        const minutes = String(date.getMinutes()).padStart(2, '0');
-                        return `${year}-${month}-${day}T${hours}:${minutes}`;
-                    };
-
-                    preferredTimeInput.min = formatDateTime(startOfWeek);
-                    preferredTimeInput.max = formatDateTime(endOfWeek);
-                }
-
-                setPreferredTimeRange();
-
-                // 检查选择的时间是否允许范围内
-                preferredTimeInput.addEventListener('change', () => {
-                    const selectedTime = new Date(preferredTimeInput.value);
-                    const selectedHour = selectedTime.getHours();
-                    const timeWarning = document.getElementById('timeWarning');
-
-                    if (selectedHour < 18 || selectedHour >= 21) {
-                        timeWarning.style.display = 'block';
-                        preferredTimeInput.value = '';
-                    } else {
-                        timeWarning.style.display = 'none';
-                    }
-                });
-            } else {
-                console.error('找不到期望上门时间输入框');
-            }
-
-            const userPhoneNumberInput = document.getElementById('userPhoneNumber');
-            const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
-
-            // 修改检查用户信息并设置按钮状态的函数
-            function checkUserPhoneNumber() {
-                fillPhoneNumberButton.disabled = false;
-                fillPhoneNumberButton.addEventListener('click', fetchAndFillPhoneNumber);
-            }
-
-            // 添加新的函数用于获取和填充手机号
-            async function fetchAndFillPhoneNumber() {
-                try {
-                    const response = await fetch(API_URLS.GET_PHONE, {
-                        method: 'GET',
-                        credentials: 'include'
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.message === 'Success' && data.phoneNumber) {
-                        document.getElementById('userPhoneNumber').value = data.phoneNumber;
-                    } else if (data.message === 'No phone number') {
-                        showMessage('您还未设置手机号，请先在账户管理中设置');
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                } catch (error) {
-                    console.error('获取手机号失败:', error);
-                    showMessage('获取手机号失败，请重试');
-                }
-            }
-
-            // 保存 checkUserPhoneNumber() 的调用
-            checkUserPhoneNumber();
-
-            const accountTabs = document.querySelectorAll('#accountSettings .tab-button');
-            const accountContents = {
-                info: document.getElementById('info'),
-                password: document.getElementById('password')
-            };
-
-            accountTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    accountTabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-
-                    // 隐藏所有账号管理内容
-                    Object.values(accountContents).forEach(content => content.style.display = 'none');
-
-                    // 显示对应的内容
-                    const contentToShow = accountContents[tab.getAttribute('data-tab')];
-                    if (contentToShow) {
-                        contentToShow.style.display = 'block';
-                    }
-                });
-            });
-
-            // 不默认显示任何账号管理内容
-            Object.values(accountContents).forEach(content => content.style.display = 'none');
-
-            // 修改账号信息表单的提交处理
-            document.getElementById('infoForm').addEventListener('submit', async (event) => {
-                event.preventDefault();
-                
-                const phoneNumber = document.getElementById('phone').value;
-                const newName = document.getElementById('username').value;
-                const requestData = {};
-                
-                if (phoneNumber.trim()) {
-                    if (!/^1[3-9]\d{9}$/.test(phoneNumber)) {
-                        showMessage('请输入正确的手机号码格式');
-                        return;
-                    }
-                    requestData.phoneNumber = phoneNumber.trim();
-                }
-                
-                if (newName.trim()) {
-                    requestData.newName = newName.trim();
-                }
-                
-                try {
-                    const response = await fetch(API_URLS.SAVE_PHONE, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestData),
-                        credentials: 'include'
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.message === 'Success') {
-                        showMessage('保存成功');
-                        if (requestData.newName) {
-                            utils.saveData('username', requestData.newName);
-                            document.getElementById('username-display').textContent = requestData.newName;
-                        }
-                    } else if (data.message === 'This user is existed') {
-                        showMessage('用户名已被占用');
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                } catch (error) {
-                    console.error('保存失败:', error);
-                    showMessage('保存失败，请重试');
-                }
-            });
-
-            // 添加修改密码表单提交处理
-            document.getElementById('passwordForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-                
-                const currentPassword = document.getElementById('currentPassword').value;
-                const newPassword = document.getElementById('newPassword').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                
-                if (newPassword !== confirmPassword) {
-                    showMessage('两次输入的新密码不一致');
-                    return;
-                }
-                
-                changePassword(currentPassword, newPassword);
-            });
-
-            // 修改修改密码API调用
-            async function changePassword(oldPassword, newPassword) {
-                try {
-                    const response = await fetch(API_URLS.CHANGE_PASSWORD, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            old_password: oldPassword,
-                            new_password: newPassword
-                        }),
-                        credentials: 'include'
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.message === 'Success') {
-                        showMessage('密码修改成功');
-                        document.getElementById('passwordForm').reset();
-                    } else if (data.message === 'Password error') {
-                        showMessage('原密码错误');
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                } catch (error) {
-                    console.error('密码修改失败:', error);
-                    showMessage('密码修改失败，请重试');
-                }
-            }
-
-            // 替换为在账号管理标签页切换时加载用户信息
-            document.querySelector('.tab-button[data-tab="info"]').addEventListener('click', function() {
-                // 直接从 localStorage 获取用户名
-                const username = utils.getData('username');
-                if (username) {
-                    const usernameInput = document.getElementById('username');
-                    if (usernameInput) {
-                        usernameInput.value = username;
-                    }
-                }
-            });
+            // 其他初始化代码...
         });
 
         // 添加显示报单消息的函数
@@ -2522,7 +1631,7 @@
         // 添加统一的错误处理函数
         function handleApiError(error, customMessage) {
             console.error(error);
-            showMessage(customMessage || '操作失败，请重试');
+            utils.ui.showMessage(customMessage || '操作失败，请重试');
         }
 
         // 添加加载状态管理函数
