@@ -1770,23 +1770,22 @@
             left: 0;
             right: 0;
             bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
-            overflow: hidden; /* 防止整体溢出 */
         }
 
         .picker-container {
-            position: absolute;
+            position: fixed;
             left: 0;
             right: 0;
             bottom: 0;
-            background: #fff;
+            background: white;
             border-radius: 16px 16px 0 0;
             transform: translateY(100%);
             transition: transform 0.3s ease;
-            max-height: 80vh; /* 限制最大高度 */
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* 防止内容溢出 */
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+            /* 添加��全区域适配 */
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .picker-content {
@@ -1824,6 +1823,11 @@
             text-overflow: ellipsis; /* 文本溢出时显示省略号 */
             width: 100%; /* 确保宽度填充 */
             text-align: center;
+            /* 优化移动端触摸体验 */
+            touch-action: pan-y;
+            /* 添加移动端振动反馈 */
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         /* 活动滑块样式 */
@@ -1832,9 +1836,11 @@
             font-size: 18px;
             font-weight: 500;
             color: #2196F3;
+            /* 添加移动端振动反馈 */
+            transform: scale(1.05);
         }
 
-        /* 滚动条样式优化 */
+        /* �����动条样式优化 */
         .swiper-scrollbar {
             width: 4px !important;
             right: 0 !important;
@@ -2073,7 +2079,7 @@
 
         /* 在现有的 style 标签中添加以下样式 */
 
-        /* 订��详情卡片样式 */
+        /* 订详情卡片样式 */
         .order-detail-card {
             position: fixed;
             bottom: 0;
@@ -2332,6 +2338,9 @@
             cursor: pointer;
             -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
             touch-action: manipulation; /* 优化移动端点击体验 */
+            /* 增大移动端点击区域 */
+            min-height: 44px;
+            min-width: 44px;
         }
         
         .picker-cancel {
@@ -2480,6 +2489,67 @@
         .picker-header button:active {
             transform: scale(0.95);
         }
+
+        /* 添加硬件加速 */
+        .datetime-picker {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            will-change: opacity;
+        }
+
+        .picker-container {
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        /* 日期时间选择器样式 */
+        .datetime-picker {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            will-change: opacity;
+        }
+
+        .datetime-picker.active {
+            display: block;
+        }
+
+        .picker-container {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            border-radius: 16px 16px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+            padding-bottom: env(safe-area-inset-bottom);
+            -webkit-transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .datetime-picker.active .picker-container {
+            transform: translateY(0);
+        }
+
+        /* 其他相关样式保持不变... */
     </style>
 </head>
 <body>
@@ -2816,7 +2886,7 @@
         event.preventDefault();
         const modal = document.getElementById('editModal');
         
-        // 直接从 localStorage 获取用户名
+        // 直接从 localStorage 获取用户��
         const username = localStorage.getItem('username');
         if (username) {
             document.getElementById('username').value = username;
@@ -2850,7 +2920,7 @@
         // ... 其余代码保持不变 ...
     });
 
-    // 退出确认模态框
+    // 退出确认态框
     document.getElementById('logout').addEventListener('click', function(event) {
         event.preventDefault();
         const logoutModal = document.getElementById('logoutModal');
@@ -3230,7 +3300,7 @@
                                     failureCallback(new Error(response.message));
                                 }
                             }).catch(error => {
-                                console.error('获取日历订单数据失败:', error);
+                                console.error('获取日订单数据失败:', error);
                                 showMessage('获取订单失败，请稍后重试');
                                 failureCallback(error);
                             });
@@ -3374,7 +3444,7 @@
             // 初始化 Swiper
             let dateSwiper, timeSwiper;
             
-            // 确保 DOM 完全加载后再初始化 Swiper
+            // 初始化 Swiper 时添加触摸优化
             setTimeout(() => {
                 dateSwiper = new Swiper('.date-swiper', {
                     direction: 'vertical',
@@ -3384,6 +3454,11 @@
                     scrollbar: {
                         el: '.date-swiper .swiper-scrollbar',
                     },
+                    touchRatio: 1.5,
+                    resistance: true,
+                    resistanceRatio: 0.85,
+                    touchAngle: 45,
+                    touchReleaseOnEdges: true,
                 });
 
                 timeSwiper = new Swiper('.time-swiper', {
@@ -3394,6 +3469,11 @@
                     scrollbar: {
                         el: '.time-swiper .swiper-scrollbar',
                     },
+                    touchRatio: 1.5,
+                    resistance: true,
+                    resistanceRatio: 0.85,
+                    touchAngle: 45,
+                    touchReleaseOnEdges: true,
                 });
             }, 0);
 
@@ -3411,7 +3491,7 @@
                     const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
                     const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
                     
-                    // 获取当前年份
+                    // 获取当前份
                     const year = new Date().getFullYear();
                     
                     // 解析月和日
@@ -3825,7 +3905,7 @@
         });
     }
 
-    // 初始化移动端功能
+    // 始化移动端功能
     document.addEventListener('DOMContentLoaded', () => {
         initMobileFeatures();
     });
@@ -3863,6 +3943,22 @@
 
     // 修改日期时间选择器的初始化代码
     function initDateTimePicker(preferredTimeInput) {
+        // 事件处理函数
+        function showPicker() {
+            pickerContainer.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+
+        function hidePicker() {
+            pickerContainer.classList.remove('active');
+            document.body.style.overflow = ''; // 恢复背景滚动
+            // 重置选择器位置
+            const pickerContent = pickerContainer.querySelector('.picker-container');
+            if (pickerContent) {
+                pickerContent.style.transform = '';
+            }
+        }
+
         // 添加时间验证
         function validateTime(time) {
             const [hours, minutes] = time.split(':').map(Number);
@@ -3887,7 +3983,7 @@
             return dates.join('');
         }
 
-        // 生成时间选项（18:00-21:00，每30分钟）
+        // 生成时间选项
         function generateTimeSlides() {
             const times = [];
             for (let hour = 18; hour < 21; hour++) {
@@ -3901,7 +3997,6 @@
                     `);
                 }
             }
-            // 添加21:00
             times.push(`
                 <div class="swiper-slide">
                     <div class="time-item">21:00</div>
@@ -3910,7 +4005,7 @@
             return times.join('');
         }
 
-        // 创建日期选择器的 HTML 结构
+        // 创建并添加选择器到DOM
         const pickerContainer = document.createElement('div');
         pickerContainer.className = 'datetime-picker';
         pickerContainer.innerHTML = `
@@ -3938,79 +4033,8 @@
         `;
         document.body.appendChild(pickerContainer);
 
-        // 添加样式
-        const pickerStyles = `
-            .datetime-picker {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 2000;
-            }
-            
-            .datetime-picker.active {
-                display: block;
-            }
-            
-            .picker-container {
-                position: fixed;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: white;
-                border-radius: 16px 16px 0 0;
-                transform: translateY(100%);
-                transition: transform 0.3s ease;
-            }
-            
-            .datetime-picker.active .picker-container {
-                transform: translateY(0);
-            }
-            
-            .picker-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 16px;
-                border-bottom: 1px solid #eee;
-            }
-            
-            .picker-content {
-                display: flex;
-                height: 250px;
-                padding: 20px;
-            }
-            
-            .swiper-container {
-                flex: 1;
-                height: 100%;
-            }
-            
-            .date-item,
-            .time-item {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                height: 40px;
-                font-size: 16px;
-            }
-            
-            .swiper-slide-active .date-item,
-            .swiper-slide-active .time-item {
-                color: #2196F3;
-                font-weight: bold;
-            }
-        `;
-        
-        const styleElement = document.createElement('style');
-        styleElement.textContent = pickerStyles;
-        document.head.appendChild(styleElement);
-
         let dateSwiper, timeSwiper;
-        
+
         // 初始化 Swiper
         setTimeout(() => {
             dateSwiper = new Swiper('.date-swiper', {
@@ -4021,6 +4045,11 @@
                 scrollbar: {
                     el: '.date-swiper .swiper-scrollbar',
                 },
+                touchRatio: 1.5,
+                resistance: true,
+                resistanceRatio: 0.85,
+                touchAngle: 45,
+                touchReleaseOnEdges: true,
             });
 
             timeSwiper = new Swiper('.time-swiper', {
@@ -4031,20 +4060,27 @@
                 scrollbar: {
                     el: '.time-swiper .swiper-scrollbar',
                 },
+                touchRatio: 1.5,
+                resistance: true,
+                resistanceRatio: 0.85,
+                touchAngle: 45,
+                touchReleaseOnEdges: true,
             });
         }, 0);
 
-        // 事件处理
-        preferredTimeInput.addEventListener('click', function() {
-            pickerContainer.classList.add('active');
-        });
+        // 绑定事件
+        preferredTimeInput.addEventListener('click', showPicker);
 
-        pickerContainer.querySelector('.picker-cancel').addEventListener('click', function() {
-            pickerContainer.classList.remove('active');
-        });
+        pickerContainer.querySelector('.picker-cancel').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            hidePicker();
+        }, { once: false });
 
-        // 修改确认按钮的处理逻辑
-        pickerContainer.querySelector('.picker-confirm').addEventListener('click', function() {
+        pickerContainer.querySelector('.picker-confirm').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             if (dateSwiper && timeSwiper) {
                 const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
                 const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
@@ -4063,27 +4099,65 @@
                 preferredTimeInput.value = displayDateTime;
                 preferredTimeInput.dataset.submitValue = submitDateTime;
                 
-                pickerContainer.classList.remove('active');
+                hidePicker();
             }
         });
 
         // 防止点击选择器内容时关闭
-        pickerContainer.querySelector('.picker-container').addEventListener('click', function(e) {
+        const pickerContainerElement = pickerContainer.querySelector('.picker-container');
+        pickerContainerElement.addEventListener('click', function(e) {
             e.stopPropagation();
         });
 
         // 点击背景关闭选择器
-        pickerContainer.addEventListener('click', function() {
-            pickerContainer.classList.remove('active');
-        });
+        pickerContainer.addEventListener('click', function(e) {
+            if (e.target === this) {
+                hidePicker();
+            }
+        }, { once: false });
 
         // 添加键盘事件处理
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && pickerContainer.classList.contains('active')) {
-                pickerContainer.classList.remove('active');
-                document.body.style.overflow = ''; // 恢复背景滚动
+                hidePicker();
             }
         });
+
+        // 修改手势关闭功能
+        let startY = 0;
+        let currentY = 0;
+        const pickerContent = pickerContainer.querySelector('.picker-container');
+
+        pickerContent.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        });
+
+        pickerContent.addEventListener('touchmove', (e) => {
+            currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            
+            if (deltaY > 0) {
+                pickerContent.style.transform = `translateY(${deltaY}px)`;
+            }
+        });
+
+        pickerContent.addEventListener('touchend', () => {
+            if (currentY - startY > 100) {
+                hidePicker();
+            } else {
+                resetTouchState();
+            }
+        });
+
+        // 添加触摸取消事件处理
+        pickerContent.addEventListener('touchcancel', resetTouchState);
+
+        // 在函数作用域内定义
+        function resetTouchState() {
+            startY = 0;
+            currentY = 0;
+            pickerContent.style.transform = '';
+        }
     }
 
     // 添加统一的错误提示函数
@@ -4231,7 +4305,7 @@
         // ... 其他现有的初始化代码 ...
     });
 
-    // 合并所有 DOMContentLoaded 事件监听器
+    // 保留一个统一的初始化函数
     document.addEventListener('DOMContentLoaded', function() {
         // 初始化网络检测
         initNetworkDetection();
@@ -4251,6 +4325,9 @@
         // 初始化用户信息显示
         updateGreeting();
         displayUsername();
+        
+        // 每分钟更新一次问候语
+        setInterval(updateGreeting, 60000);
     });
 
     // 更新问候语函数
@@ -4302,30 +4379,12 @@
         });
     }
 
-    // 合并所有 DOMContentLoaded 事件监听器
-    document.addEventListener('DOMContentLoaded', function() {
-        // 初始化网络检测
-        initNetworkDetection();
-        
-        // 初始化日期时间选择器
-        const preferredTimeInput = document.getElementById('preferredTime');
-        if (preferredTimeInput) {
-            initDateTimePicker(preferredTimeInput);
-        }
-        
-        // 初始化日程管理
-        const scheduleManagementButton = document.getElementById('schedule-management');
-        if (scheduleManagementButton) {
-            // 日程管理相关代码
-        }
-        
-        // 初始化用户信息显示
-        updateGreeting();
-        displayUsername();
-        
-        // 每分钟更新一次问候语
-        setInterval(updateGreeting, 60000);
-    });
+    // 重置触摸状态的函数
+    function resetTouchState() {
+        startY = 0;
+        currentY = 0;
+        pickerContent.style.transform = '';
+    }
 </script>
 
 </body>
