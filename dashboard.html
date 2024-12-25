@@ -1147,6 +1147,38 @@
         button {
             cursor: default !important;
         }
+
+        /* 在现有的 style 标签中添加表单提示信息样式 */
+        .form-message {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease-out;
+            display: none;
+        }
+
+        .form-message.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .form-message.error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1184,6 +1216,8 @@
             </div>
             <div class="tab-content" id="reportOrder" style="display: none;">
                 <form id="reportOrderForm" class="styled-form">
+                    <!-- 现有表单字段 -->
+                    <div id="reportOrderMessage" class="form-message" style="display: none;"></div>
                     <div>
                         <label for="userPhoneNumber">手机号码:</label>
                         <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}" placeholder="请输入11位手机号码">
@@ -2005,14 +2039,15 @@
                 const preferredTime = document.getElementById('preferredTime').value;
 
                 callReportAPI(userPhoneNumber, address, issue, preferredTime).then(data => {
-                    reportOrderInfo.innerHTML = `
-                        <p>报单信息: ${data.orderDetails}</p>
-                    `;
+                    if (data.message === 'Success') {
+                        showReportMessage('报单提交成功！', 'success');
+                        document.getElementById('reportOrderForm').reset(); // 提交后重置表单
+                    } else {
+                        handleSessionError(data.message);
+                    }
                 }).catch(error => {
-                    reportOrderInfo.innerHTML = '<p>无法获取报单信息</p>';
+                    showReportMessage('报单提交失败，请重试', 'error');
                 });
-
-                document.getElementById('reportOrder').style.display = 'none';
             });
 
             const issueTextarea = document.getElementById('issue');
@@ -2255,6 +2290,21 @@
                 messageModal.style.display = 'none';
                 if (callback) callback();
             };
+        }
+
+        // 添加显示报单消息的函数
+        function showReportMessage(message, type) {
+            const messageElement = document.getElementById('reportOrderMessage');
+            messageElement.textContent = message;
+            messageElement.className = `form-message ${type}`;
+            messageElement.style.display = 'block';
+            
+            // 如果是成功消息，3秒后自动隐藏
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageElement.style.display = 'none';
+                }, 3000);
+            }
         }
     </script>
 </body>
