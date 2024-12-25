@@ -2396,7 +2396,7 @@
             LOGIN: `${BASE_URL}/api/users/login/`,
             LOGOUT: `${BASE_URL}/api/users/logout/`,
             VALIDATE_SESSION: `${BASE_URL}/api/users/validate-session/`,
-            GET_USER_INFO: `${BASE_URL}/api/users/get_user_info/`,
+            GET_USER_INFO: `${BASE_URL}/api/dashboard/get_user_info/`,
             
             // 账户管理相关
             SAVE_PHONE: `${BASE_URL}/api/dashboard/save_phone_number/`,
@@ -3452,7 +3452,7 @@
                     handleSessionError(response.message);
                 }
             }).catch(error => {
-                console.error('修改密码失���:', error);
+                console.error('修改密码失败:', error);
                 showFormMessage('修改密码失败，请重试', 'error');
             });
         });

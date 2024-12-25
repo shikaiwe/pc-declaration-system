@@ -661,7 +661,7 @@
             margin-right: 12px;
         }
 
-        /* 订单状���样式 */
+        /* 订单状态样式 */
         .order-status {
             display: inline-block;
             padding: 4px 12px;
@@ -1282,7 +1282,7 @@
             LOGIN: `${BASE_URL}/api/users/login/`,
             LOGOUT: `${BASE_URL}/api/users/logout/`,
             VALIDATE_SESSION: `${BASE_URL}/api/users/validate-session/`,
-            GET_USER_INFO: `${BASE_URL}/api/users/get_user_info/`,
+            GET_USER_INFO: `${BASE_URL}/api/dashboard/get_user_info/`,
             
             // 账户管理相关
             SAVE_PHONE: `${BASE_URL}/api/dashboard/save_phone_number/`,
@@ -1665,7 +1665,7 @@
                                     </div>
                                 `;
                                 
-                                // 显示���态框
+                                // 显示模态框
                                 orderDetailModal.style.display = 'block';
                                 
                                 // 关闭按钮事件
@@ -1915,7 +1915,7 @@
             function showError() {
                 document.getElementById('orderHistory').innerHTML = `
                     <div class="error-message">
-                        <i>��</i>
+                        <i>❌</i>
                         <p>获取历史订单失败，请稍后重试</p>
                     </div>
                 `;
@@ -2023,7 +2023,7 @@
 
                 setPreferredTimeRange();
 
-                // 检查选择��时间是否允许范围内
+                // 检查选择的时间是否允许范围内
                 preferredTimeInput.addEventListener('change', () => {
                     const selectedTime = new Date(preferredTimeInput.value);
                     const selectedHour = selectedTime.getHours();
@@ -2192,7 +2192,7 @@
                         const decryptedData = utils.decrypt(loginData);
                         if (decryptedData) {
                             const userData = JSON.parse(decryptedData);
-                            // 设置用户名输入框��值
+                            // 设置用户名输入框的值
                             const usernameInput = document.getElementById('username');
                             if (usernameInput) {
                                 usernameInput.value = userData.username;
