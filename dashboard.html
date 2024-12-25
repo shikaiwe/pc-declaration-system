@@ -335,7 +335,7 @@
             margin-top: 15px;
         }
 
-        /* 模态框��式 */
+        /* 模态框样式 */
         .modal {
             display: none;
             position: fixed;
@@ -868,6 +868,69 @@
             background-color: #fff3e0;
             color: #ef6c00;
         }
+
+        /* 添加问候语样式 */
+        .user-greeting {
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #333;
+            margin-right: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .user-greeting:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        }
+
+        #username-display {
+            font-weight: 600;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #2196F3;
+            position: relative;
+            padding-left: 5px;
+        }
+
+        #greetingText {
+            color: #555;
+            font-weight: 500;
+            position: relative;
+        }
+
+        /* 添加分隔符 */
+        #username-display::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 12px;
+            width: 1px;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* 响应式调整 */
+        @media screen and (max-width: 768px) {
+            .user-greeting {
+                padding: 6px 12px;
+                font-size: 0.85em;
+            }
+            
+            #username-display {
+                max-width: 100px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -887,6 +950,10 @@
     <div class="main-content">
         <div class="top-nav">
             <div class="current-time" id="currentTime">00:00:00</div>
+            <div class="user-greeting">
+                <span id="greetingText"></span>
+                <span id="username-display"></span>
+            </div>
             <div class="user-profile" id="userProfile">
                 <div class="user-info">
                     <span id="displayUsername">用户</span>
@@ -1042,6 +1109,52 @@
         document.addEventListener('DOMContentLoaded', () => {
             // 获取天气信息顺带验证登录
             fetchWeatherAndLocation();
+            
+            // 获取问候语元素
+            const greetingText = document.getElementById('greetingText');
+            const usernameDisplay = document.getElementById('username-display');
+            
+            // 更新问候语函数
+            function updateGreeting() {
+                const hour = new Date().getHours();
+                let greeting = '';
+                
+                if (hour >= 5 && hour < 9) {
+                    greeting = '早上好，';
+                } else if (hour >= 9 && hour < 11) {
+                    greeting = '上午好，';
+                } else if (hour >= 11 && hour < 13) {
+                    greeting = '中午好，';
+                } else if (hour >= 13 && hour < 18) {
+                    greeting = '下午好，';
+                } else {
+                    greeting = '晚上好，';
+                }
+                
+                greetingText.textContent = greeting;
+            }
+            
+            // 获取并显示用户名
+            function displayUsername() {
+                try {
+                    const loginData = localStorage.getItem('loginData');
+                    if (loginData) {
+                        const decryptedData = JSON.parse(utils.decrypt(loginData));
+                        usernameDisplay.textContent = decryptedData.username;
+                    }
+                } catch (error) {
+                    console.error('获取用户名失败:', error);
+                    usernameDisplay.textContent = '用户';
+                }
+            }
+            
+            // 初始化显示
+            updateGreeting();
+            displayUsername();
+            
+            // 每分钟更新一次问候语
+            setInterval(updateGreeting, 60000);
+
             // 检查设备类型并跳转
             if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
                 window.location.href = API_URLS.MOBILE_DASHBOARD;
@@ -1637,7 +1750,7 @@
 
                 setPreferredTimeRange();
 
-                // 检查选择的时间是否���允许范围内
+                // 检查选择的时间是否允许范围内
                 preferredTimeInput.addEventListener('change', () => {
                     const selectedTime = new Date(preferredTimeInput.value);
                     const selectedHour = selectedTime.getHours();
@@ -1676,7 +1789,7 @@
                     if (data.message === 'Success') {
                         userPhoneNumberInput.value = data.phoneNumber;
                     } else if (data.message === 'No phone number') {
-                        showMessage('您还未设置手机号，请先在账户管理���设置');
+                        showMessage('您还未设置手机号，请先在账户管理设置');
                     } else {
                         handleSessionError(data.message);
                     }

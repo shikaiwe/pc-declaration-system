@@ -26,6 +26,47 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+        .user-greeting {
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        .user-greeting:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        #username-display {
+            font-weight: 600;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #fff;
+            position: relative;
+            padding-left: 5px;
+        }
+        #greetingText {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
         }
         .card {
             background-color: white;
@@ -2100,6 +2141,10 @@
 
     <div class="header">
         <h1>PC志愿者服务队</h1>
+        <div class="user-greeting">
+            <span id="greetingText"></span>
+            <span id="username-display"></span>
+        </div>
     </div>
 
     <div class="card">
@@ -3314,7 +3359,55 @@
                 showFormMessage('修改密码失败，请重试', 'error');
             });
         });
-        </script>
+
+        // 在文档加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取问候语元素
+            const greetingText = document.getElementById('greetingText');
+            const usernameDisplay = document.getElementById('username-display');
+            
+            // 更新问候语函数
+            function updateGreeting() {
+                const hour = new Date().getHours();
+                let greeting = '';
+                
+                if (hour >= 5 && hour < 9) {
+                    greeting = '早上好，';
+                } else if (hour >= 9 && hour < 11) {
+                    greeting = '上午好，';
+                } else if (hour >= 11 && hour < 13) {
+                    greeting = '中午好，';
+                } else if (hour >= 13 && hour < 18) {
+                    greeting = '下午好，';
+                } else {
+                    greeting = '晚上好，';
+                }
+                
+                greetingText.textContent = greeting;
+            }
+            
+            // 获取并显示用户名
+            function displayUsername() {
+                try {
+                    const loginData = localStorage.getItem('loginData');
+                    if (loginData) {
+                        const decryptedData = JSON.parse(utils.decrypt(loginData));
+                        usernameDisplay.textContent = decryptedData.username;
+                    }
+                } catch (error) {
+                    console.error('获取用户名失败:', error);
+                    usernameDisplay.textContent = '用户';
+                }
+            }
+            
+            // 初始化显示
+            updateGreeting();
+            displayUsername();
+            
+            // 每分钟更新一次问候语
+            setInterval(updateGreeting, 60000);
+        });
+    </script>
 
     </body>
     </html>
