@@ -1004,7 +1004,7 @@
             <h2>订单管理</h2>
             <div class="tabs">
                 <button class="tab-button" data-tab="reportOrder">我要报单</button>
-                <button class="tab-button" data-tab="orderHistory">历史订单</button>
+                <button class="tab-button" data-tab="orderHistory">历��订单</button>
             </div>
             <div class="tab-content" id="reportOrder" style="display: none;">
                 <form id="reportOrderForm" class="styled-form">
@@ -1231,7 +1231,7 @@
                     const live = weatherData.lives[0];
                     weatherInfoElement.innerHTML = `
                         <p class="weather-location">
-                            <span class="weather-icon">📍</span>
+                            <span class="weather-icon">💧</span>
                             ${city}
                         </p>
                         <p class="weather-temp">
@@ -1244,7 +1244,7 @@
                                 天气：${live.weather}
                             </p>
                             <p>
-                                <span class="weather-icon">���</span>
+                                <span class="weather-icon">💧</span>
                                 湿度：${live.humidity}%
                             </p>
                             <p>
@@ -1511,20 +1511,6 @@
                 document.getElementById('homeLink').classList.add('active');
                 contentSections.accountManagement.style.display = 'none';
                 contentSections.homeLink.style.display = 'block';
-                userProfile.style.display = 'flex';
-            });
-
-            // 用户菜单显示/隐藏
-            const userMenu = document.getElementById('userMenu');
-            userProfile.addEventListener('click', () => {
-                userMenu.classList.toggle('active');
-            });
-
-            // 点击页面其他地方隐藏用户菜单
-            document.addEventListener('click', (event) => {
-                if (!userProfile.contains(event.target)) {
-                    userMenu.classList.remove('active');
-                }
             });
 
             // 标签页切换
