@@ -1291,7 +1291,7 @@
             <li id="orderManagement"><i>📝</i>订单管理</li>
             <li id="scheduleManagement"><i>📅</i>日程管理</li>
             <li id="dataStatistics"><i>📊</i>数据统计</li>
-            <li id="accountManagement"><i>��</i>账号管理</li>
+            <li id="accountManagement"><i>👤</i>账号管理</li>
         </ul>
         <div class="weather-info" id="weatherInfo">
             <p>天气信息加载中...</p>
@@ -1339,7 +1339,7 @@
                         <input type="datetime-local" id="preferredTime" name="preferredTime" required>
                     </div>
                     <div id="timeWarning" style="display: none; color: red; margin-top: 10px;">
-                        ���时间非上门时段。正确时间段为18:00-21:00
+                        该时间非上门时段。正确时间段为18:00-21:00
                     </div>
                     <button type="submit">提交</button>
                 </form>
@@ -1367,11 +1367,11 @@
                 <form id="infoForm">
                     <div>
                         <label for="username">用户名:</label>
-                        <input type="text" id="username" name="username" autocomplete="username" required>
+                        <input type="text" id="username" name="username" autocomplete="username">
                     </div>
                     <div>
                         <label for="phone">手机号码:</label>
-                        <input type="tel" id="phone" name="phone" autocomplete="tel" required pattern="[0-9]{11}" placeholder="请输入11位手机号码">
+                        <input type="tel" id="phone" name="phone" autocomplete="tel" pattern="[0-9]{11}" placeholder="请输入11位手机号码">
                     </div>
                     <button type="submit">保存更改</button>
                 </form>
@@ -1458,7 +1458,7 @@
             baseUrl: 'https://8.134.178.71/api'
         };
 
-        // API 端点���置
+        // API 端点配置
         const API_URLS = {
             // 用户认证相关接口
             auth: {
@@ -1491,7 +1491,7 @@
 
         // 工具函数集合
         const utils = {
-            // 加密/解密功���
+            // 加密/解密功能
             crypto: {
                 encrypt: (text) => btoa(encodeURIComponent(text)),
                 decrypt: (encoded) => decodeURIComponent(atob(encoded))
@@ -1594,7 +1594,7 @@
                         utils.ui.showMessage('未找到会话信息，请重新登录');
                         break;
                     default:
-                        utils.ui.showMessage('发生未知错误，��重新登录');
+                        utils.ui.showMessage('发生未知错误，请重新登录');
                 }
                 
                 utils.storage.remove('loginData');
@@ -1823,7 +1823,7 @@
                         
                         const data = await response.json();
                         if (data.message === 'Success') {
-                            showReportMessage('报单提交成功���', 'success');
+                            showReportMessage('报单提交成功！', 'success');
                             reportOrderForm.reset();
                         } else {
                             auth.handleSessionError(data.message);
@@ -1867,10 +1867,25 @@
             if (infoForm) {
                 infoForm.addEventListener('submit', async (event) => {
                     event.preventDefault();
-                    const formData = {
-                        phoneNumber: document.getElementById('phone').value.trim(),
-                        newName: document.getElementById('username').value.trim()
-                    };
+                    const phoneNumber = document.getElementById('phone').value.trim();
+                    const newName = document.getElementById('username').value.trim();
+                    
+                    // 如果两个字段都为空，提示用户
+                    if (!phoneNumber && !newName) {
+                        utils.ui.showMessage('请至少填写一项需要修改的信息');
+                        return;
+                    }
+                    
+                    // 如果填写了手机号，验证格式
+                    if (phoneNumber && !/^1[3-9]\d{9}$/.test(phoneNumber)) {
+                        utils.ui.showMessage('请输入正确的手机号码格式');
+                        return;
+                    }
+
+                    const formData = {};
+                    // 只包含有值的字段
+                    if (phoneNumber) formData.phoneNumber = phoneNumber;
+                    if (newName) formData.newName = newName;
 
                     try {
                         const response = await fetch(API_URLS.account.savePhone, {
@@ -1953,7 +1968,7 @@
                         if (data.message === 'Success' && data.phoneNumber) {
                             document.getElementById('userPhoneNumber').value = data.phoneNumber;
                         } else if (data.message === 'No phone number') {
-                            utils.ui.showMessage('您还未���置手机号，请先在账户管理中设置');
+                            utils.ui.showMessage('您还未设置手机号，请先在账户管理中设置');
                         } else {
                             auth.handleSessionError(data.message);
                         }
@@ -2145,7 +2160,7 @@
                     auth.handleSessionError(data.message);
                 }
             } catch (error) {
-                console.error('���取历史订单失败:', error);
+                console.error('获取历史订单失败:', error);
                 showError();
             } finally {
                 hideLoading(orderHistoryContent);
