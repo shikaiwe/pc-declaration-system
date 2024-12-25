@@ -2247,6 +2247,40 @@
         .picker-confirm {
             cursor: default;
         }
+
+        /* 添加加载状态指示器 */
+        .loading-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 10px;
+            color: #333;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -2698,26 +2732,42 @@
             event.currentTarget.className += " active";
         }
 
-        // 修改表单提交理逻辑
-        document.getElementById('newOrderForm').addEventListener('submit', (event) => {
+        // 修改订单提交处理
+        document.getElementById('newOrderForm').addEventListener('submit', async (event) => {
             event.preventDefault();
 
             const userPhoneNumber = document.getElementById('userPhoneNumber').value;
             const address = document.getElementById('address').value;
             const issue = document.getElementById('issue').value;
-            const preferredTime = document.getElementById('preferredTime').value;
+            const preferredTimeInput = document.getElementById('preferredTime');
+            const preferredTime = preferredTimeInput.dataset.submitValue || preferredTimeInput.value;
 
-            // 调用报单API
-            callReportAPI(userPhoneNumber, address, issue, preferredTime).then(data => {
+            try {
+                const response = await fetch(API_URLS.REPORT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userPhoneNumber,
+                        address,
+                        issue,
+                        date: preferredTime
+                    }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
                 if (data.message === 'Success') {
-                    showReportMessage('报单提交成功！', 'success');
-                    document.getElementById('newOrderForm').reset(); // 提交后重置表单
+                    showMessage('报单提交成功', 'success');
+                    document.getElementById('newOrderForm').reset();
                 } else {
                     handleSessionError(data.message);
                 }
-            }).catch(error => {
-                showReportMessage('报单提交失败，请重试', 'error');
-            });
+            } catch (error) {
+                console.error('报单提交失败:', error);
+                showMessage('报单提交失败，请重试', 'error');
+            }
         });
 
         // 添加显示报单消息的函数
@@ -2821,7 +2871,7 @@
             this.style.height = (this.scrollHeight) + 'px'; // 设置为内容高度
         });
 
-        // 模拟获取用户信息的函���
+        // 模拟获取用户信息的函
         function getUserInfo() {
             // 假从本地存储或其来源获取用户信息
             const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
@@ -2971,7 +3021,7 @@
                                                     originalDate: order.date // 保存原始日期字符串
                                                 }
                                             };
-                                        }).filter(event => event !== null); // 过滤掉无效的��件
+                                        }).filter(event => event !== null); // 过滤掉无效的件
 
                                         successCallback(events);
                                     } else if (response.message === 'No history report') {
@@ -3101,7 +3151,7 @@
                     <div class="picker-container">
                         <div class="picker-header">
                             <button class="picker-cancel">取消</button>
-                            <div class="picker-title">选择���间</div>
+                            <div class="picker-title">选择时间</div>
                             <button class="picker-confirm">确定</button>
                         </div>
                         <div class="picker-content">
@@ -3611,6 +3661,142 @@
                 showMessage('密码修改失败，请重试');
             }
         }
+
+        // 修改日期时间选择器的初始化代码
+        function initDateTimePicker() {
+            const pickerContainer = document.querySelector('.datetime-picker');
+            if (!pickerContainer) return;
+
+            // 添加时间验证
+            function validateTime(time) {
+                const [hours, minutes] = time.split(':').map(Number);
+                return (hours >= 18 && hours < 21) || (hours === 21 && minutes === 0);
+            }
+
+            // 修改确认按钮的处理逻辑
+            pickerContainer.querySelector('.picker-confirm').addEventListener('click', function() {
+                if (dateSwiper && timeSwiper) {
+                    const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
+                    const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
+                    
+                    if (!validateTime(selectedTime)) {
+                        showMessage('请选择18:00-21:00之间的时间');
+                        return;
+                    }
+
+                    const year = new Date().getFullYear();
+                    const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
+                    
+                    const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
+                    const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
+                    
+                    preferredTimeInput.value = displayDateTime;
+                    preferredTimeInput.dataset.submitValue = submitDateTime;
+                    
+                    pickerContainer.classList.remove('active');
+                }
+            });
+        }
+
+        // 添加统一的错误提示函数
+        function showError(message, type = 'error') {
+            const messageElement = document.createElement('div');
+            messageElement.className = `alert alert-${type}`;
+            messageElement.textContent = message;
+            messageElement.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 10px 20px;
+                border-radius: 4px;
+                background-color: ${type === 'error' ? '#ff4d4f' : '#52c41a'};
+                color: white;
+                z-index: 2000;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            document.body.appendChild(messageElement);
+            
+            setTimeout(() => {
+                messageElement.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => messageElement.remove(), 300);
+            }, 3000);
+        }
+
+        // 添加网络状态监测
+        function initNetworkDetection() {
+            function updateNetworkStatus() {
+                if (!navigator.onLine) {
+                    showMessage('网络连接已断开，请检查网络设置', 'error');
+                }
+            }
+
+            window.addEventListener('online', () => showMessage('网络已连接', 'success'));
+            window.addEventListener('offline', updateNetworkStatus);
+            
+            // 初始检查
+            updateNetworkStatus();
+        }
+
+        // 在文档加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initNetworkDetection();
+        });
+
+        // 添加加载状态指示器
+        function showLoading(show = true) {
+            let loader = document.querySelector('.loading-indicator');
+            if (!loader && show) {
+                loader = document.createElement('div');
+                loader.className = 'loading-indicator';
+                loader.innerHTML = `
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">加载中...</div>
+                `;
+                document.body.appendChild(loader);
+            } else if (loader && !show) {
+                loader.remove();
+            }
+        }
+
+        // 添加相应的CSS样式
+        const style = document.createElement('style');
+        style.textContent = `
+            .loading-indicator {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(255, 255, 255, 0.8);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 2000;
+            }
+
+            .loading-spinner {
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #2196F3;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            .loading-text {
+                margin-top: 10px;
+                color: #333;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 
     </body>
