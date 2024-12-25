@@ -1168,7 +1168,7 @@
             color: #e65100;
         }
 
-        /* Flatpickr 日期选择器����体优化 */
+        /* Flatpickr 日期选择器整体优化 */
         .flatpickr-calendar {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
@@ -2281,1395 +2281,1020 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* 修改日期选择器的样式部分 */
+        .datetime-picker {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+        }
+            
+        .datetime-picker.active {
+            display: block;
+        }
+        
+        .picker-container {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            border-radius: 16px 16px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .datetime-picker.active .picker-container {
+            transform: translateY(0);
+        }
+        
+        .picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid rgba(33, 150, 243, 0.1);
+            background: rgba(33, 150, 243, 0.05);
+        }
+        
+        .picker-header button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .picker-cancel {
+            background-color: #f5f5f5;
+            color: #666;
+        }
+        
+        .picker-cancel:hover {
+            background-color: #eeeeee;
+        }
+        
+        .picker-confirm {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .picker-confirm:hover {
+            background-color: #1976D2;
+        }
+        
+        .picker-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .picker-content {
+            display: flex;
+            height: 250px;
+            padding: 20px;
+            background: #fff;
+        }
+        
+        .swiper-container {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .swiper-scrollbar {
+            width: 4px !important;
+            right: 4px !important;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+        }
+        
+        .swiper-scrollbar-drag {
+            background: rgba(33, 150, 243, 0.5);
+            border-radius: 2px;
+        }
+        
+        .date-item,
+        .time-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s ease;
+            padding: 0 10px;
+            border-radius: 8px;
+        }
+        
+        .swiper-slide {
+            transition: all 0.3s ease;
+        }
+        
+        .swiper-slide:hover .date-item,
+        .swiper-slide:hover .time-item {
+            background: rgba(33, 150, 243, 0.05);
+        }
+        
+        .swiper-slide-active .date-item,
+        .swiper-slide-active .time-item {
+            color: #2196F3;
+            font-weight: bold;
+            background: rgba(33, 150, 243, 0.1);
+            transform: scale(1.05);
+        }
+        
+        /* 添加滑动指示器 */
+        .picker-content::before,
+        .picker-content::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 40px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .picker-content::before {
+            top: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+        }
+        
+        .picker-content::after {
+            bottom: 0;
+            background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+        }
+        
+        /* 适配深色模式 */
+        @media (prefers-color-scheme: dark) {
+            .picker-container {
+                background: #333;
+            }
+            
+            .picker-header {
+                background: rgba(33, 150, 243, 0.1);
+                border-bottom-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .picker-title {
+                color: #fff;
+            }
+            
+            .picker-cancel {
+                background-color: #424242;
+                color: #fff;
+            }
+            
+            .picker-cancel:hover {
+                background-color: #505050;
+            }
+            
+            .date-item,
+            .time-item {
+                color: #bbb;
+            }
+            
+            .swiper-slide:hover .date-item,
+            .swiper-slide:hover .time-item {
+                background: rgba(255, 255, 255, 0.05);
+            }
+            
+            .swiper-slide-active .date-item,
+            .swiper-slide-active .time-item {
+                background: rgba(33, 150, 243, 0.2);
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>PC志愿者服务队</h1>
-        <div class="user-greeting">
-            <span id="greetingText"></span>
-            <span id="username-display"></span>
+<div class="header">
+    <h1>PC志愿者服务队</h1>
+    <div class="user-greeting">
+        <span id="greetingText"></span>
+        <span id="username-display"></span>
+    </div>
+</div>
+
+<div class="card">
+    <h2>今日天气</h2>
+    <div id="weather-info" class="weather-container">
+        <!-- 天气信息将显示在这里 -->
+    </div>
+</div>
+
+<div class="card hover" id="order-management">
+    <h2>订单管理</h2>
+    <p>更多信息...</p>
+</div>
+
+<div class="card" id="schedule-management">
+    <h2>日程管理</h2>
+    <p>打开日历</p>
+</div>
+
+<div class="navbar">
+    <a href="#info" id="info-link">信息管理</a>
+    <a href="#logout" id="logout">退出登录</a>
+</div>
+<div id="submenu" class="submenu">
+    <a id="home" href="home.html">返回首页</a>
+    <a id="account" href="#account">账户管理</a>
+</div>
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>账户管理</h2>
+        <div class="tab-menu">
+            <button class="tab-link active" onclick="openTab(event, 'info')">信息修改</button>
+            <button class="tab-link" onclick="openTab(event, 'password')">修改密码</button>
         </div>
-    </div>
-
-    <div class="card">
-        <h2>今日天气</h2>
-        <div id="weather-info" class="weather-container">
-            <!-- 天气信息将显示在这里 -->
-        </div>
-    </div>
-
-    <div class="card hover" id="order-management">
-        <h2>订单管理</h2>
-        <p>更多信息...</p>
-    </div>
-
-    <div class="card" id="schedule-management">
-        <h2>日程管理</h2>
-        <p>打开日历</p>
-    </div>
-
-    <div class="navbar">
-        <a href="#info" id="info-link">信息管理</a>
-        <a href="#logout" id="logout">退出登录</a>
-    </div>
-    <div id="submenu" class="submenu">
-        <a id="home" href="home.html">返回首页</a>
-        <a id="account" href="#account">账户管理</a>
-    </div>
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>账户管理</h2>
-            <div class="tab-menu">
-                <button class="tab-link active" onclick="openTab(event, 'info')">信息修改</button>
-                <button class="tab-link" onclick="openTab(event, 'password')">修改密码</button>
-            </div>
-            <div class="tab-content" id="info" style="display: block;">
-                <form id="infoForm">
-                    <div>
-                        <label for="username">用户名:</label>
-                        <input type="text" id="username" name="username" autocomplete="username">
-                    </div>
-                    <div>
-                        <label for="phone">手机号码:</label>
-                        <input type="tel" id="phone" name="phone" autocomplete="tel" pattern="[0-9]{11}" placeholder="请输入11位手机号码">
-                    </div>
-                    <div id="formMessage" class="form-message"></div>
-                    <button type="submit">保存修改</button>
-                </form>
-            </div>
-            <div class="tab-content" id="password" style="display: none;">
-                <form id="passwordForm">
-                    <div>
-                        <label for="current-password">原密码:</label>
-                        <input type="password" id="current-password" name="current-password" required>
-                    </div>
-                    <div>
-                        <label for="new-password">新密码:</label>
-                        <input type="password" id="new-password" name="new-password" required>
-                    </div>
-                    <div>
-                        <label for="confirm-password">确认密码:</label>
-                        <input type="password" id="confirm-password" name="confirm-password" required>
-                    </div>
-                    <div id="passwordMessage" class="form-message"></div>
-                    <button type="submit">修改密码</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div id="logoutModal" class="logout-modal">
-        <div class="logout-modal-content">
-            <p>确定要退出登录吗？</p>
-            <div class="logout-modal-buttons">
-                <button id="confirmLogout">确认</button>
-                <button id="cancelLogout">取消</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="orderManagementModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>订单管理</h2>
-            <div class="tab-menu">
-                <button class="tab-link active" onclick="openOrderTab(event, 'newOrder')">我要报单</button>
-                <button class="tab-link" onclick="openOrderTab(event, 'orderHistory')">历史订单</button>
-            </div>
-            <div class="tab-content" id="newOrder" style="display: block;">
-                <form id="newOrderForm" class="styled-form">
-                    <div>
-                        <label for="userPhoneNumber">手机号码:</label>
-                        <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}" placeholder="请输入11位手机号">
-                        <button type="button" id="fillPhoneNumberButton" class="fill-button" disabled>一键填充</button>
-                    </div>
-                    <div>
-                        <label for="address">地址:</label>
-                        <input type="text" id="address" name="address" required placeholder="请输入地址">
-                    </div>
-                    <div>
-                        <label for="issue">问题:</label>
-                        <textarea id="issue" name="issue" required rows="1" style="resize: none; overflow: hidden;"></textarea>
-                    </div>
-                    <div class="datetime-container">
-                        <label for="preferredTime">期望上门时间:</label>
-                        <input type="text" 
-                               id="preferredTime" 
-                               name="preferredTime" 
-                               placeholder="点击选择上门时间" 
-                               required
-                               readonly
-                               inputmode="none">
-                        <div id="timeWarning" style="display: none;">该时间非上门段。上门时段为18:00-21:00</div>
-                    </div>
-                    <div id="reportOrderMessage" class="form-message" style="display: none;"></div>
-                    <button type="submit">提交</button>
-                </form>
-                <div id="reportOrderInfo">
-                    <!-- 这里将显示报单信息 -->
+        <div class="tab-content" id="info" style="display: block;">
+            <form id="infoForm">
+                <div>
+                    <label for="username">用户名:</label>
+                    <input type="text" id="username" name="username" autocomplete="username">
                 </div>
+                <div>
+                    <label for="phone">手机号码:</label>
+                    <input type="tel" id="phone" name="phone" autocomplete="tel" pattern="[0-9]{11}" placeholder="请输入11位手机号码">
+                </div>
+                <div id="formMessage" class="form-message"></div>
+                <button type="submit">保存修改</button>
+            </form>
+        </div>
+        <div class="tab-content" id="password" style="display: none;">
+            <form id="passwordForm">
+                <div>
+                    <label for="current-password">原密码:</label>
+                    <input type="password" id="current-password" name="current-password" required>
+                </div>
+                <div>
+                    <label for="new-password">新密码:</label>
+                    <input type="password" id="new-password" name="new-password" required>
+                </div>
+                <div>
+                    <label for="confirm-password">确认密码:</label>
+                    <input type="password" id="confirm-password" name="confirm-password" required>
+                </div>
+                <div id="passwordMessage" class="form-message"></div>
+                <button type="submit">修改密码</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div id="logoutModal" class="logout-modal">
+    <div class="logout-modal-content">
+        <p>确定要退出登录吗？</p>
+        <div class="logout-modal-buttons">
+            <button id="confirmLogout">确认</button>
+            <button id="cancelLogout">取消</button>
+        </div>
+    </div>
+</div>
+
+<div id="orderManagementModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>订单管理</h2>
+        <div class="tab-menu">
+            <button class="tab-link active" onclick="openOrderTab(event, 'newOrder')">我要报单</button>
+            <button class="tab-link" onclick="openOrderTab(event, 'orderHistory')">历史订单</button>
+        </div>
+        <div class="tab-content" id="newOrder" style="display: block;">
+            <form id="newOrderForm" class="styled-form">
+                <div>
+                    <label for="userPhoneNumber">手机号码:</label>
+                    <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}" placeholder="请输入11位手机号">
+                    <button type="button" id="fillPhoneNumberButton" class="fill-button" disabled>一键填充</button>
+                </div>
+                <div>
+                    <label for="address">地址:</label>
+                    <input type="text" id="address" name="address" required placeholder="请输入地址">
+                </div>
+                <div>
+                    <label for="issue">问题:</label>
+                    <textarea id="issue" name="issue" required rows="1" style="resize: none; overflow: hidden;"></textarea>
+                </div>
+                <div class="datetime-container">
+                    <label for="preferredTime">期望上门时间:</label>
+                    <input type="text" 
+                           id="preferredTime" 
+                           name="preferredTime" 
+                           placeholder="点击选择上门时间" 
+                           required
+                           readonly
+                           inputmode="none">
+                    <div id="timeWarning" style="display: none;">该时间非上门段。上门时段为18:00-21:00</div>
+                </div>
+                <div id="reportOrderMessage" class="form-message" style="display: none;"></div>
+                <button type="submit">提交</button>
+            </form>
+            <div id="reportOrderInfo">
+                <!-- 这里将显示报单信息 -->
             </div>
-            <div class="tab-content" id="orderHistory" style="display: none;">
-                <p>这里是历史订单的内容。</p>
-                <!-- 你可以在这里添加订单列表或其他内容 -->
-            </div>
+        </div>
+        <div class="tab-content" id="orderHistory" style="display: none;">
+            <p>这里是历史订单的内容。</p>
+            <!-- 你可以在这里添加订单列表或其他内容 -->
         </div>
     </div>
+</div>
 
-    <div id="scheduleModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>日程管理</h2>
-            <div id="mobileCalendar" style="max-width: 100%; height: 400px;"></div>
-        </div>
+<div id="scheduleModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>日程管理</h2>
+        <div id="mobileCalendar" style="max-width: 100%; height: 400px;"></div>
     </div>
+</div>
 
-    <div id="overlay" class="overlay"></div>
+<div id="overlay" class="overlay"></div>
 
-    <!-- 在body标签内添加 -->
-    <div id="messageModal" class="message-modal">
-        <div class="message-content">
-            <p id="messageText"></p>
-            <button id="messageConfirm">确定</button>
-        </div>
+<!-- 在body标签内添加 -->
+<div id="messageModal" class="message-modal">
+    <div class="message-content">
+        <p id="messageText"></p>
+        <button id="messageConfirm">确定</button>
     </div>
+</div>
 
-    <!-- 在 body 标签末尾添加���下 HTML -->
-    <div class="detail-overlay" id="detailOverlay"></div>
-    <div class="order-detail-card" id="orderDetailCard">
-        <div class="pull-indicator"></div>
-        <div class="detail-header">
-            <h3>订单详情</h3>
-            <button class="close-detail" id="closeDetail">&times;</button>
-        </div>
-        <div class="detail-content" id="orderDetailContent">
-            <!-- 内容将通过 JavaScript 动态填充 -->
-        </div>
+<!-- 在 body 标签末尾添加下 HTML -->
+<div class="detail-overlay" id="detailOverlay"></div>
+<div class="order-detail-card" id="orderDetailCard">
+    <div class="pull-indicator"></div>
+    <div class="detail-header">
+        <h3>订单详情</h3>
+        <button class="close-detail" id="closeDetail">&times;</button>
     </div>
+    <div class="detail-content" id="orderDetailContent">
+        <!-- 内容将通过 JavaScript 动态填充 -->
+    </div>
+</div>
 
-    <script>
-        // URL和API配置
-        const ip = '8.134.178.71';
-        const BASE_URL = `https://${ip}/api`;
-        const API_URLS = {
-            // 用户相关
-            LOGIN: `${BASE_URL}/users/login/`,
-            LOGOUT: `${BASE_URL}/dashboard/logout/`,
-            GET_USER_INFO: `${BASE_URL}/dashboard/get_user_info/`,
-            
-            // 账户管理相关
-            SAVE_PHONE: `${BASE_URL}/dashboard/savePhoneNumber/`,
-            GET_PHONE: `${BASE_URL}/dashboard/getPhoneNumber/`,
-            CHANGE_PASSWORD: `${BASE_URL}/dashboard/renew_password/`,
-            
-            // 订单相关
-            REPORT: `${BASE_URL}/dashboard/call_report/`,
-            GET_HISTORY: `${BASE_URL}/dashboard/user_get_history_report/`,
-            ASSIGN_ORDER: `${BASE_URL}/dashboard/assign_order/`,
-            GET_REPORT_LIST: `${BASE_URL}/dashboard/worker_get_report_list/`,
-            COMPLETE_REPORT: `${BASE_URL}/dashboard/complete_report/`,
-            
-            // 天气相关
-            WEATHER_API_KEY: `${BASE_URL}/dashboard/getWeatherApiKey/`
-        };
-
-
-        // 在 script 标签的开头添加以下工具函数定义
-        const utils = {
-            // 加密函数
-            encrypt: function(text) {
-                return btoa(encodeURIComponent(text));
-            },
-            
-            // 解密函数
-            decrypt: function(encoded) {
-                return decodeURIComponent(atob(encoded));
-            },
-            
-            // 存储数据到 localStorage
-            saveData: function(key, data) {
-                try {
-                    localStorage.setItem(key, JSON.stringify(data));
-                } catch (error) {
-                    console.error(`保存${key}数据失败:`, error);
-                }
-            },
-            
-            // 从 localStorage 获取数据
-            getData: function(key) {
-                try {
-                    const data = localStorage.getItem(key);
-                    return data ? JSON.parse(data) : null;
-                } catch (error) {
-                    console.error(`获取${key}数据失败:`, error);
-                    return null;
-                }
-            },
-            
-            // 从 localStorage 删除数据
-            removeData: function(key) {
-                try {
-                    localStorage.removeItem(key);
-                } catch (error) {
-                    console.error(`删除${key}数据失败:`, error);
-                }
-            }
-        };
-
-        // 修改 API_URLS 对象，添加缺失的 URL
+<script>
+    // URL和API配置
+    const ip = '8.134.178.71';
+    const BASE_URL = `https://${ip}/api`;
+    const API_URLS = {
+        // 用户相关
+        LOGIN: `${BASE_URL}/users/login/`,
+        LOGOUT: `${BASE_URL}/dashboard/logout/`,
+        GET_USER_INFO: `${BASE_URL}/dashboard/get_user_info/`,
         
-        // 添加 fetchData 函数定义
-        async function fetchData(url) {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        }
+        // 账户管理相关
+        SAVE_PHONE: `${BASE_URL}/dashboard/savePhoneNumber/`,
+        GET_PHONE: `${BASE_URL}/dashboard/getPhoneNumber/`,
+        CHANGE_PASSWORD: `${BASE_URL}/dashboard/renew_password/`,
+        
+        // 订单相关
+        REPORT: `${BASE_URL}/dashboard/call_report/`,
+        GET_HISTORY: `${BASE_URL}/dashboard/user_get_history_report/`,
+        ASSIGN_ORDER: `${BASE_URL}/dashboard/assign_order/`,
+        GET_REPORT_LIST: `${BASE_URL}/dashboard/worker_get_report_list/`,
+        COMPLETE_REPORT: `${BASE_URL}/dashboard/complete_report/`,
+        
+        // 天气相关
+        WEATHER_API_KEY: `${BASE_URL}/dashboard/getWeatherApiKey/`
+    };
 
-        // 获取天气和位置信息
-        async function fetchWeatherAndLocation() {
-            // 使用 jQuery 获取 API Key
-            function getApiKeyFromServer() {
-                return $.ajax({
-                    url: API_URLS.WEATHER_API_KEY,
-                    method: 'GET',
-                    dataType: 'json',
-                }).then(data => {
-                    if (data.message === 'Success') {
-                        return data.apiKey;
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                }).catch(error => {
-                    console.error('获取API Key时出错:', error);
-                    throw error;
-                });
-            }
+
+    // 在 script 标签的开头添加以下工具函数定义
+    const utils = {
+        // 加密函数
+        encrypt: function(text) {
+            return btoa(encodeURIComponent(text));
+        },
+        
+        // 解密函数
+        decrypt: function(encoded) {
+            return decodeURIComponent(atob(encoded));
+        },
+        
+        // 存储数据到 localStorage
+        saveData: function(key, data) {
             try {
-                const apiKey = await getApiKeyFromServer(); // 从服务端获取API Key
-
-                const ipData = await fetchData(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
-                if (ipData.status !== '1') {
-                    throw new Error(`无法获取IP信息: ${ipData.info}`);
-                }
-
-                const cityAdcode = ipData.adcode; // 获取城市的行政区划代码
-                const city = ipData.city.replace('市', ''); // 获取城市名称
-
-                const weatherData = await fetchData(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
-                if (weatherData.status !== '1') {
-                    throw new Error(`无法获取天气信息: ${weatherData.info}`);
-                }
-
-                const live = weatherData.lives[0]; // 获取实时天气信息
-                document.getElementById('weather-info').innerHTML = `
-                    <p class="weather-location">
-                        <span class="weather-icon">📍</span>
-                        ${city}
-                    </p>
-                    <p class="weather-temp">
-                        <span class="weather-icon">🌡️</span>
-                        ${live.temperature}°C
-                    </p>
-                    <div class="weather-details">
-                        <p>
-                            <span class="weather-icon">🌤️</span>
-                            天气：${live.weather}
-                        </p>
-                        <p>
-                            <span class="weather-icon">💧</span>
-                            湿度：${live.humidity}%
-                        </p>
-                        <p>
-                            <span class="weather-icon">🌪️</span>
-                            风向：${live.winddirection}
-                        </p>
-                        <p>
-                            <span class="weather-icon">💨</span>
-                            风力：${live.windpower}级
-                        </p>
-                    </div>
-                `; // 显示天气信息
-
+                localStorage.setItem(key, JSON.stringify(data));
             } catch (error) {
-                console.error('获取天气信息时出错:', error);
-                document.getElementById('weather-info').innerHTML = '<p>无法获取信息</p>'; // 捕获并显示请求错误
+                console.error(`保存${key}数据失败:`, error);
             }
-        }
-
-        // 文档加载后获取天气和位置信息
-        document.addEventListener('DOMContentLoaded', (event) => {
-            fetchWeatherAndLocation();
-        });
-
-        // 切换子菜单显示
-        function toggleSubmenu(event) {
-            event.stopPropagation();
-            const submenu = document.getElementById('submenu');
-            submenu.classList.toggle('show');
-        }
-
-        // 修改信息管理链接的点击事件
-        document.getElementById('info-link').addEventListener('click', function(event) {
-            event.preventDefault();
-            const modal = document.getElementById('editModal');
-            
-            // 直接从 localStorage 获取用户名
-            const username = localStorage.getItem('username');
-            if (username) {
-                document.getElementById('username').value = username;
-            }
-            
-            modal.style.display = "block";
-            document.getElementById('overlay').style.display = "block";
-            toggleBodyScroll(true);
-        });
-
-        // 订单管理模态框
-        document.getElementById('order-management').addEventListener('click', function() {
-            const modal = document.getElementById('orderManagementModal');
-            modal.style.display = "block";
-            document.getElementById('overlay').style.display = "block";
-            this.classList.add('active');
-            toggleBodyScroll(true);
-            
-            if (document.getElementById('orderHistory').style.display === 'block') {
-                fetchHistoryOrders();
-            }
-        });
-
-        // 日程管理模态框
-        document.getElementById('schedule-management').addEventListener('click', function() {
-            const modal = document.getElementById('scheduleModal');
-            modal.style.display = "block";
-            document.getElementById('overlay').style.display = "block";
-            this.classList.add('active');
-            toggleBodyScroll(true);
-            // ... 其余代码保持不变 ...
-        });
-
-        // 退出确认模态框
-        document.getElementById('logout').addEventListener('click', function(event) {
-            event.preventDefault();
-            const logoutModal = document.getElementById('logoutModal');
-            const overlay = document.getElementById('overlay');
-            logoutModal.style.display = 'block';
-            overlay.style.display = 'block';
-            toggleBodyScroll(true);
-        });
-
-        document.getElementById('cancelLogout').addEventListener('click', function() {
-            const logoutModal = document.getElementById('logoutModal');
-            const overlay = document.getElementById('overlay');
-            logoutModal.style.display = 'none';
-            overlay.style.display = 'none';
-            toggleBodyScroll(false);
-        });
-
-        document.getElementById('confirmLogout').addEventListener('click', function() {
-            $.ajax({
-                url: API_URLS.LOGOUT,  // 使用 API_URLS 中定义的 URL
-                method: 'GET',
-                xhrFields: {
-                    withCredentials: true
-                }
-            }).then(response => {
-                if (response.message === 'Success') {
-                    utils.removeData('username');
-                    utils.removeData('loginData');
-                    utils.removeData('rememberMe');
-                    window.location.href = 'login.html';
-                } else {
-                    handleSessionError(response.message);
-                }
-            }).catch(error => {
-                console.error('登出失败:', error);
-                showMessage('登出失败，请重试');
-            });
-        });
-
-        // 修改���有关闭模态框的事件处理器
-        // 信息修改模态框关闭
-        document.querySelector('#editModal .close-button').addEventListener('click', function() {
-            const modal = document.getElementById('editModal');
-            modal.style.display = "none";
-            document.getElementById('overlay').style.display = "none";
-            toggleBodyScroll(false);
-        });
-
-        // 订单管理模态框关闭
-        document.querySelector('#orderManagementModal .close-button').addEventListener('click', function() {
-            const modal = document.getElementById('orderManagementModal');
-            modal.style.display = "none";
-            document.getElementById('overlay').style.display = "none";
-            document.getElementById('order-management').classList.remove('active');
-            toggleBodyScroll(false);
-        });
-
-        // 日程管理模态框关闭
-        document.querySelector('#scheduleModal .close-button').addEventListener('click', function() {
-            const modal = document.getElementById('scheduleModal');
-            modal.style.display = "none";
-            document.getElementById('overlay').style.display = "none";
-            document.getElementById('schedule-management').classList.remove('active');
-            toggleBodyScroll(false);
-        });
-
-        // 切换项内容
-        function openTab(event, tabName) {
-            const tabcontent = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            const tablinks = document.getElementsByClassName("tab-link");
-            for (let i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            event.currentTarget.className += " active";
-        }
-
-        // 修改订单提交处理
-        document.getElementById('newOrderForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            const userPhoneNumber = document.getElementById('userPhoneNumber').value;
-            const address = document.getElementById('address').value;
-            const issue = document.getElementById('issue').value;
-            const preferredTimeInput = document.getElementById('preferredTime');
-            const preferredTime = preferredTimeInput.dataset.submitValue || preferredTimeInput.value;
-
+        },
+        
+        // 从 localStorage 获取数据
+        getData: function(key) {
             try {
-                const response = await fetch(API_URLS.REPORT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userPhoneNumber,
-                        address,
-                        issue,
-                        date: preferredTime
-                    }),
-                    credentials: 'include'
-                });
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            } catch (error) {
+                console.error(`获取${key}数据失败:`, error);
+                return null;
+            }
+        },
+        
+        // 从 localStorage 删除数据
+        removeData: function(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch (error) {
+                console.error(`删除${key}数据失败:`, error);
+            }
+        }
+    };
 
-                const data = await response.json();
+    // 修改 API_URLS 对象，添加缺失的 URL
+    
+    // 添加 fetchData 函数定义
+    async function fetchData(url) {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    }
+
+    // 获取天气和位置信息
+    async function fetchWeatherAndLocation() {
+        // 使用 jQuery 获取 API Key
+        function getApiKeyFromServer() {
+            return $.ajax({
+                url: API_URLS.WEATHER_API_KEY,
+                method: 'GET',
+                dataType: 'json',
+            }).then(data => {
                 if (data.message === 'Success') {
-                    showMessage('报单提交成功', 'success');
-                    document.getElementById('newOrderForm').reset();
+                    return data.apiKey;
                 } else {
                     handleSessionError(data.message);
                 }
-            } catch (error) {
-                console.error('报单提交失败:', error);
-                showMessage('报单提交失败，请重试', 'error');
+            }).catch(error => {
+                console.error('获取API Key时出错:', error);
+                throw error;
+            });
+        }
+        try {
+            const apiKey = await getApiKeyFromServer(); // 从服务端获取API Key
+
+            const ipData = await fetchData(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
+            if (ipData.status !== '1') {
+                throw new Error(`无法获取IP信息: ${ipData.info}`);
             }
+
+            const cityAdcode = ipData.adcode; // 获取城市的行政区划代码
+            const city = ipData.city.replace('市', ''); // 获取城市名称
+
+            const weatherData = await fetchData(`https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`);
+            if (weatherData.status !== '1') {
+                throw new Error(`无法获取天气信息: ${weatherData.info}`);
+            }
+
+            const live = weatherData.lives[0]; // 获取实时天气信息
+            document.getElementById('weather-info').innerHTML = `
+                <p class="weather-location">
+                    <span class="weather-icon">📍</span>
+                    ${city}
+                </p>
+                <p class="weather-temp">
+                    <span class="weather-icon">🌡️</span>
+                    ${live.temperature}°C
+                </p>
+                <div class="weather-details">
+                    <p>
+                        <span class="weather-icon">🌤️</span>
+                        天气：${live.weather}
+                    </p>
+                    <p>
+                        <span class="weather-icon">💧</span>
+                        湿度：${live.humidity}%
+                    </p>
+                    <p>
+                        <span class="weather-icon">🌪️</span>
+                        风向：${live.winddirection}
+                    </p>
+                    <p>
+                        <span class="weather-icon">💨</span>
+                        风力：${live.windpower}级
+                    </p>
+                </div>
+            `; // 显示天气信息
+
+        } catch (error) {
+            console.error('获取天气信息时出错:', error);
+            document.getElementById('weather-info').innerHTML = '<p>无法获取信息</p>'; // 捕获并显示请求错误
+        }
+    }
+
+    // 文档加载后获取天气和位置信息
+    document.addEventListener('DOMContentLoaded', (event) => {
+        fetchWeatherAndLocation();
+    });
+
+    // 切换子菜单显示
+    function toggleSubmenu(event) {
+        event.stopPropagation();
+        const submenu = document.getElementById('submenu');
+        submenu.classList.toggle('show');
+    }
+
+    // 修改信息管理链接的点击事件
+    document.getElementById('info-link').addEventListener('click', function(event) {
+        event.preventDefault();
+        const modal = document.getElementById('editModal');
+        
+        // 直接从 localStorage 获取用户名
+        const username = localStorage.getItem('username');
+        if (username) {
+            document.getElementById('username').value = username;
+        }
+        
+        modal.style.display = "block";
+        document.getElementById('overlay').style.display = "block";
+        toggleBodyScroll(true);
+    });
+
+    // 订单管理模态框
+    document.getElementById('order-management').addEventListener('click', function() {
+        const modal = document.getElementById('orderManagementModal');
+        modal.style.display = "block";
+        document.getElementById('overlay').style.display = "block";
+        this.classList.add('active');
+        toggleBodyScroll(true);
+        
+        if (document.getElementById('orderHistory').style.display === 'block') {
+            fetchHistoryOrders();
+        }
+    });
+
+    // 日程管理模态框
+    document.getElementById('schedule-management').addEventListener('click', function() {
+        const modal = document.getElementById('scheduleModal');
+        modal.style.display = "block";
+        document.getElementById('overlay').style.display = "block";
+        this.classList.add('active');
+        toggleBodyScroll(true);
+        // ... 其余代码保持不变 ...
+    });
+
+    // 退出确认模态框
+    document.getElementById('logout').addEventListener('click', function(event) {
+        event.preventDefault();
+        const logoutModal = document.getElementById('logoutModal');
+        const overlay = document.getElementById('overlay');
+        logoutModal.style.display = 'block';
+        overlay.style.display = 'block';
+        toggleBodyScroll(true);
+    });
+
+    document.getElementById('cancelLogout').addEventListener('click', function() {
+        const logoutModal = document.getElementById('logoutModal');
+        const overlay = document.getElementById('overlay');
+        logoutModal.style.display = 'none';
+        overlay.style.display = 'none';
+        toggleBodyScroll(false);
+    });
+
+    document.getElementById('confirmLogout').addEventListener('click', function() {
+        $.ajax({
+            url: API_URLS.LOGOUT,  // 使用 API_URLS 中定义的 URL
+            method: 'GET',
+            xhrFields: {
+                withCredentials: true
+            }
+        }).then(response => {
+            if (response.message === 'Success') {
+                utils.removeData('username');
+                utils.removeData('loginData');
+                utils.removeData('rememberMe');
+                window.location.href = 'login.html';
+            } else {
+                handleSessionError(response.message);
+            }
+        }).catch(error => {
+            console.error('登出失败:', error);
+            showMessage('登出失败，请重试');
         });
+    });
 
-        // 添加显示报单消息的函数
-        function showReportMessage(message, type) {
-            const messageElement = document.getElementById('reportOrderMessage');
-            messageElement.textContent = message;
-            messageElement.className = `form-message ${type}`;
-            messageElement.style.display = 'block';
-            
-            // 如果是成功消息，3秒后自动隐藏
-            if (type === 'success') {
-                setTimeout(() => {
-                    messageElement.style.display = 'none';
-                }, 3000);
-            }
+    // 修改有关闭模态框的事件处理器
+    // 信息修改模态框关闭
+    document.querySelector('#editModal .close-button').addEventListener('click', function() {
+        const modal = document.getElementById('editModal');
+        modal.style.display = "none";
+        document.getElementById('overlay').style.display = "none";
+        toggleBodyScroll(false);
+    });
+
+    // 订单管理模态框关闭
+    document.querySelector('#orderManagementModal .close-button').addEventListener('click', function() {
+        const modal = document.getElementById('orderManagementModal');
+        modal.style.display = "none";
+        document.getElementById('overlay').style.display = "none";
+        document.getElementById('order-management').classList.remove('active');
+        toggleBodyScroll(false);
+    });
+
+    // 日程管理模态框关闭
+    document.querySelector('#scheduleModal .close-button').addEventListener('click', function() {
+        const modal = document.getElementById('scheduleModal');
+        modal.style.display = "none";
+        document.getElementById('overlay').style.display = "none";
+        document.getElementById('schedule-management').classList.remove('active');
+        toggleBodyScroll(false);
+    });
+
+    // 切换项内容
+    function openTab(event, tabName) {
+        const tabcontent = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
         }
-
-        // 修改 formatDate 函数
-        function formatDate(dateString) {
-            try {
-                // 如果是标准格式的日期字符串 (YYYY-MM-DD HH:mm)
-                if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)) {
-                    const [datePart, timePart] = dateString.split(' ');
-                    const [year, month, day] = datePart.split('-');
-                    const [hours, minutes] = timePart.split(':');
-                    return `${year}年${parseInt(month)}月${parseInt(day)}日 ${hours}:${minutes}`;
-                }
-                
-                // 如果已经是中文格式，直接返回
-                if (typeof dateString === 'string' && dateString.includes('年') && dateString.includes('月')) {
-                    return dateString;
-                }
-                
-                // 处理 Date 对象或其他格式的日期字符串
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) {
-                    return '时间格式错误';
-                }
-                
-                const year = date.getFullYear();
-                const month = date.getMonth() + 1;
-                const day = date.getDate();
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                
-                return `${year}年${month}月${day}日 ${hours}:${minutes}`;
-            } catch (error) {
-                console.error('日期格式化错误:', error);
-                return '时间格式错误';
-            }
+        const tablinks = document.getElementsByClassName("tab-link");
+        for (let i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
         }
+        document.getElementById(tabName).style.display = "block";
+        event.currentTarget.className += " active";
+    }
 
-        // 修改 callReportAPI 函数
-        async function callReportAPI(userPhoneNumber, address, issue, date) {
+    // 修改订单提交处理
+    document.getElementById('newOrderForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const userPhoneNumber = document.getElementById('userPhoneNumber').value;
+        const address = document.getElementById('address').value;
+        const issue = document.getElementById('issue').value;
+        const preferredTimeInput = document.getElementById('preferredTime');
+        const preferredTime = preferredTimeInput.dataset.submitValue || preferredTimeInput.value;
+
+        try {
             const response = await fetch(API_URLS.REPORT, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    userPhoneNumber: userPhoneNumber,
-                    address: address,
-                    issue: issue,
-                    date: date
+                    userPhoneNumber,
+                    address,
+                    issue,
+                    date: preferredTime
                 }),
                 credentials: 'include'
             });
 
-            if (!response.ok) {
-                throw new Error('网络响应失败');
-            }
-
             const data = await response.json();
             if (data.message === 'Success') {
-                return data;
+                showMessage('报单提交成功', 'success');
+                document.getElementById('newOrderForm').reset();
             } else {
                 handleSessionError(data.message);
-                throw new Error(data.message);
             }
+        } catch (error) {
+            console.error('报单提交失败:', error);
+            showMessage('报单提交失败，请重试', 'error');
         }
+    });
 
-        // 获取CSRF token的函数（如果需要）
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
+    // 添加显示报单消息的函数
+    function showReportMessage(message, type) {
+        const messageElement = document.getElementById('reportOrderMessage');
+        messageElement.textContent = message;
+        messageElement.className = `form-message ${type}`;
+        messageElement.style.display = 'block';
+        
+        // 如果是成功消息，3秒后自动隐藏
+        if (type === 'success') {
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, 3000);
+        }
+    }
+
+    // 修改 formatDate 函数
+    function formatDate(dateString) {
+        try {
+            // 如果是标准格式的日期字符串 (YYYY-MM-DD HH:mm)
+            if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)) {
+                const [datePart, timePart] = dateString.split(' ');
+                const [year, month, day] = datePart.split('-');
+                const [hours, minutes] = timePart.split(':');
+                return `${year}年${parseInt(month)}月${parseInt(day)}日 ${hours}:${minutes}`;
             }
-            return cookieValue;
+            
+            // 如果已经是中文格式，直接返回
+            if (typeof dateString === 'string' && dateString.includes('年') && dateString.includes('月')) {
+                return dateString;
+            }
+            
+            // 处理 Date 对象或其他格式的日期字符串
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return '时间格式错误';
+            }
+            
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${year}年${month}月${day}日 ${hours}:${minutes}`;
+        } catch (error) {
+            console.error('日期格式化错误:', error);
+            return '时间格式错误';
         }
+    }
 
-        // 自动调整textarea高度
-        document.getElementById('issue').addEventListener('input', function() {
-            this.style.height = 'auto'; // 重置高度
-            this.style.height = (this.scrollHeight) + 'px'; // 设置为内容高度
+    // 修改 callReportAPI 函数
+    async function callReportAPI(userPhoneNumber, address, issue, date) {
+        const response = await fetch(API_URLS.REPORT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userPhoneNumber: userPhoneNumber,
+                address: address,
+                issue: issue,
+                date: date
+            }),
+            credentials: 'include'
         });
 
-        // 模拟获取用户信息的函
-        function getUserInfo() {
-            // 假从本地存储或其来源获取用户信息
-            const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
-            return userInfo;
+        if (!response.ok) {
+            throw new Error('网络响应失败');
         }
 
-        // 检查用户信息并设置按钮状态
-        const userPhoneNumberInput = document.getElementById('userPhoneNumber');
-        const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
-
-        // 修改获取和填充手机号的函数
-        async function fetchAndFillPhoneNumber() {
-            try {
-                const response = await fetch(`https://${ip}/api/dashboard/getPhoneNumber/`, {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-                
-                const data = await response.json();
-                
-                if (data.message === 'Success' && data.phoneNumber) {
-                    userPhoneNumberInput.value = data.phoneNumber;
-                } else if (data.message === 'No phone number') {
-                    showMessage('您还未设置手机号，请先在户管理中设置');
-                } else {
-                    handleSessionError(data.message);
-                }
-            } catch (error) {
-                console.error('获取手机号失:', error);
-                showMessage('获取手机号失败，请重试');
-            }
+        const data = await response.json();
+        if (data.message === 'Success') {
+            return data;
+        } else {
+            handleSessionError(data.message);
+            throw new Error(data.message);
         }
+    }
 
-        // 在文档加载完成后设置按钮事件
-        document.addEventListener('DOMContentLoaded', function() {
-            // ... existing code ...
-            
-            // 按钮始终可用，移除disabled属性
-            fillPhoneNumberButton.disabled = false;
-            
-            // 给一键填充按钮添加点击事件
-            fillPhoneNumberButton.addEventListener('click', fetchAndFillPhoneNumber);
-            
-            // ... existing code ...
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const scheduleManagementButton = document.getElementById('schedule-management');
-            if (scheduleManagementButton) {
-                scheduleManagementButton.addEventListener('click', function() {
-                    const modal = document.getElementById('scheduleModal');
-                    modal.style.display = "block";
-                    document.getElementById('overlay').style.display = "block";
-                    this.classList.add('active');
-
-                    // 初始化并显示日历
-                    var calendarEl = document.getElementById('mobileCalendar');
-                    if (calendarEl) {
-                        var calendar = new FullCalendar.Calendar(calendarEl, {
-                            initialView: 'dayGridMonth',
-                            locale: 'zh-cn',
-                            height: 'auto',
-                            headerToolbar: {
-                                left: 'prev,next today',
-                                center: 'title',
-                                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                            },
-                            views: {
-                                timeGridWeek: {
-                                    slotMinTime: '18:00:00',
-                                    slotMaxTime: '22:00:00',
-                                    slotDuration: '00:30:00',
-                                    titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
-                                },
-                                timeGridDay: {
-                                    slotMinTime: '18:00:00',
-                                    slotMaxTime: '22:00:00',
-                                    slotDuration: '00:30:00',
-                                    titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
-                                },
-                                dayGridMonth: {
-                                    titleFormat: { year: 'numeric', month: 'short' }
-                                }
-                            },
-                            slotLabelFormat: {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false
-                            },
-                            buttonText: {
-                                today: '今天',
-                                month: '月',
-                                week: '周',
-                                day: '日'
-                            },
-                            dayHeaderFormat: { weekday: 'short' },
-                            allDayText: '全天',
-                            noEventsText: '暂无事件',
-                            eventTimeFormat: {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false
-                            },
-                            events: function(info, successCallback, failureCallback) {
-                                $.ajax({
-                                    url: API_URLS.GET_HISTORY,  // 使用 API_URLS 中定义的 URL
-                                    method: 'GET',
-                                    xhrFields: {
-                                        withCredentials: true
-                                    }
-                                }).then(response => {
-                                    if (response.message === 'Success') {
-                                        const events = response.report_info.map(order => {
-                                            // 解析日期字符串
-                                            let eventDate;
-                                            if (order.date.includes('年')) {
-                                                // 处理中文格式的日期
-                                                const matches = order.date.match(/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/);
-                                                if (matches) {
-                                                    const [_, year, month, day, hour, minute] = matches;
-                                                    eventDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${minute}:00`;
-                                                }
-                                            } else if (order.date.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)) {
-                                                // 处理标准格式的日期
-                                                const [datePart, timePart] = order.date.split(' ');
-                                                eventDate = `${datePart}T${timePart}:00`;
-                                            } else {
-                                                // 尝试直接解析日期
-                                                const date = new Date(order.date);
-                                                if (!isNaN(date.getTime())) {
-                                                    eventDate = date.toISOString().slice(0, 16).replace('Z', '');
-                                                } else {
-                                                    console.error('无法解析的日期格式:', order.date);
-                                                    return null;
-                                                }
-                                            }
-
-                                            return {
-                                                title: `维修订单: ${order.issue}`,
-                                                start: eventDate,
-                                                backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
-                                                borderColor: order.allocationState ? '#27ae60' : '#f39c12',
-                                                extendedProps: {
-                                                    address: order.address,
-                                                    phoneNumber: order.userPhoneNumber,
-                                                    status: order.allocationState ? '已分配' : '待分配',
-                                                    originalDate: order.date // 保存原始日期字符串
-                                                }
-                                            };
-                                        }).filter(event => event !== null); // 过滤掉无效的件
-
-                                        successCallback(events);
-                                    } else if (response.message === 'No history report') {
-                                        successCallback([]); // 如果没有订单，显示空日历
-                                    } else {
-                                        showMessage('获取订单失败，请稍后重试');
-                                        failureCallback(new Error(response.message));
-                                    }
-                                }).catch(error => {
-                                    console.error('获取日历订单数据失败:', error);
-                                    showMessage('获取订单失败，请稍后重试');
-                                    failureCallback(error);
-                                });
-                            },
-                            eventClick: function(info) {
-                                const detailCard = document.getElementById('orderDetailCard');
-                                const detailContent = document.getElementById('orderDetailContent');
-                                const overlay = document.getElementById('detailOverlay');
-                                const closeBtn = document.getElementById('closeDetail');
-                                
-                                // 使用原始日期字符串或格式化日期
-                                const displayDate = info.event.extendedProps.originalDate || formatDate(info.event.start);
-                                
-                                // 设置详情内容
-                                detailContent.innerHTML = `
-                                    <div class="detail-row">
-                                        <span class="detail-label">状态</span>
-                                        <span class="detail-value">
-                                            <span class="status-badge ${info.event.extendedProps.status === '已分配' ? 'allocated' : 'pending'}">
-                                                ${info.event.extendedProps.status}
-                                            </span>
-                                        </span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <span class="detail-label">问题描述</span>
-                                        <span class="detail-value">${info.event.title.replace('维修订单: ', '')}</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <span class="detail-label">预约时间</span>
-                                        <span class="detail-value">${displayDate}</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <span class="detail-label">地址</span>
-                                        <span class="detail-value">${info.event.extendedProps.address}</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <span class="detail-label">联系电话</span>
-                                        <span class="detail-value">${info.event.extendedProps.phoneNumber}</span>
-                                    </div>
-                                `;
-                                
-                                detailCard.classList.add('show');
-                                overlay.classList.add('show');
-                                
-                                closeBtn.onclick = closeDetail;
-                                overlay.onclick = closeDetail;
-                            },
-                            eventDidMount: function(info) {
-                                info.el.title = `
-                                    ${info.event.title}
-                                    地址: ${info.event.extendedProps.address}
-                                    状态: ${info.event.extendedProps.status}
-                                `.trim();
-                            }
-                        });
-                        calendar.render();
-                    }
-                });
-            }
-
-            // 关闭日程管理模态框
-            document.querySelector('#scheduleModal .close-button').addEventListener('click', function() {
-                const modal = document.getElementById('scheduleModal');
-                modal.style.display = "none";
-                document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
-                document.getElementById('schedule-management').classList.remove('active'); // 移除浮起样式
-            });
-
-            // 日期选择器初始化
-            const preferredTimeInput = document.getElementById('preferredTime');
-            if (preferredTimeInput) {
-                // 生成日期选项
-                function generateDateSlides() {
-                    const dates = [];
-                    const today = new Date();
-                    for (let i = 0; i < 14; i++) {
-                        const date = new Date(today);
-                        date.setDate(today.getDate() + i);
-                        dates.push(`
-                            <div class="swiper-slide">
-                                <div class="date-item">
-                                    ${date.getMonth() + 1}月${date.getDate()}日
-                                </div>
-                            </div>
-                        `);
-                    }
-                    return dates.join('');
-                }
-
-                // 生成时间选项（18:00-21:00，每30分钟）
-                function generateTimeSlides() {
-                    const times = [];
-                    for (let hour = 18; hour < 21; hour++) {
-                        for (let minute = 0; minute < 60; minute += 30) {
-                            times.push(`
-                                <div class="swiper-slide">
-                                    <div class="time-item">
-                                        ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}
-                                    </div>
-                                </div>
-                            `);
-                        }
-                    }
-                    // 添加21:00
-                    times.push(`
-                        <div class="swiper-slide">
-                            <div class="time-item">21:00</div>
-                        </div>
-                    `);
-                    return times.join('');
-                }
-
-                // 创建日期选择器的 HTML 结构
-                const pickerContainer = document.createElement('div');
-                pickerContainer.className = 'datetime-picker';
-                pickerContainer.innerHTML = `
-                    <div class="picker-container">
-                        <div class="picker-header">
-                            <button class="picker-cancel">取消</button>
-                            <div class="picker-title">选择时间</div>
-                            <button class="picker-confirm">确定</button>
-                        </div>
-                        <div class="picker-content">
-                            <div class="swiper-container date-swiper">
-                                <div class="swiper-wrapper">
-                                    ${generateDateSlides()}
-                                </div>
-                                <div class="swiper-scrollbar"></div>
-                            </div>
-                            <div class="swiper-container time-swiper">
-                                <div class="swiper-wrapper">
-                                    ${generateTimeSlides()}
-                                </div>
-                                <div class="swiper-scrollbar"></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(pickerContainer);
-
-                // 初始化 Swiper
-                let dateSwiper, timeSwiper;
-                
-                // 确保 DOM 完全加载后再初始化 Swiper
-                setTimeout(() => {
-                    dateSwiper = new Swiper('.date-swiper', {
-                        direction: 'vertical',
-                        slidesPerView: 5,
-                        centeredSlides: true,
-                        spaceBetween: 10,
-                        scrollbar: {
-                            el: '.date-swiper .swiper-scrollbar',
-                        },
-                    });
-
-                    timeSwiper = new Swiper('.time-swiper', {
-                        direction: 'vertical',
-                        slidesPerView: 5,
-                        centeredSlides: true,
-                        spaceBetween: 10,
-                        scrollbar: {
-                            el: '.time-swiper .swiper-scrollbar',
-                        },
-                    });
-                }, 0);
-
-                // 事件处理
-                preferredTimeInput.addEventListener('click', function() {
-                    pickerContainer.classList.add('active');
-                });
-
-                pickerContainer.querySelector('.picker-cancel').addEventListener('click', function() {
-                    pickerContainer.classList.remove('active');
-                });
-
-                pickerContainer.querySelector('.picker-confirm').addEventListener('click', function() {
-                    if (dateSwiper && timeSwiper) {
-                        const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
-                        const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
-                        
-                        // 获取当前年份
-                        const year = new Date().getFullYear();
-                        
-                        // 解析月和日
-                        const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
-                        
-                        // 构建标准格式的日期字符串用于显示
-                        const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
-                        // 构建标准格式的日期字符串用于提交
-                        const submitDateTime = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${selectedTime}`;
-                        
-                        // 存储两种格式
-                        preferredTimeInput.value = displayDateTime;
-                        preferredTimeInput.dataset.submitValue = submitDateTime;
-                        
-                        pickerContainer.classList.remove('active');
-                    }
-                });
-
-                // 防止点击选择器内容时关闭
-                pickerContainer.querySelector('.picker-container').addEventListener('click', function(e) {
-                    e.stopPropagation();
-                });
-
-                // 点击背景关闭选择器
-                pickerContainer.addEventListener('click', function() {
-                    pickerContainer.classList.remove('active');
-                });
-            }
-        }); // DOMContentLoaded 结束
-
-        // 统一的会话错误处理函数
-        function handleSessionError(message) {
-            switch (message) {
-                case 'Session has expired':
-                    alert('会话已过期，请重新登录');  // 修复这里的乱码
+    // 获取CSRF token的函数（如果需要）
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;
-                case 'Invalid session':
-                    alert('无效会话，请重新登录');
-                    break;
-                case 'No sessionid cookie':
-                    alert('未找到会话信息，请重新登录');
-                    break;
-                default:
-                    alert('发生未知错误，请重新登录');
-            }
-            utils.removeData('username');
-            utils.removeData('loginData');
-            utils.removeData('rememberMe');
-            window.location.href = 'login.html';
-        }
-
-        // 显示历史订单
-        function displayHistoryOrders(orders) {
-            const ordersList = Array.isArray(orders) ? orders : [orders];
-            
-            const ordersHTML = ordersList.map(order => `
-                <div class="order-card">
-                    <div class="order-info">
-                        <p>
-                            <strong>手机号码</strong>
-                            ${order.userPhoneNumber}
-                            <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
-                                ${order.allocationState ? '已分配' : '待分配'}
-                            </span>
-                        </p>
-                        <p>
-                            <strong>地址</strong>
-                            ${order.address}
-                        </p>
-                        <p>
-                            <strong>问题描述</strong>
-                            ${order.issue}
-                        </p>
-                        <p>
-                            <strong>预约时间</strong>
-                            ${formatDate(order.date)}
-                        </p>
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('orderHistory').innerHTML = `
-                <div class="orders-container">
-                    ${ordersHTML}
-                </div>
-            `;
-        }
-
-        // 显示空状态
-        function showNoOrders() {
-            document.getElementById('orderHistory').innerHTML = `
-                <div class="no-orders">
-                    <i>📝</i>
-                    <p>无历史订单</p>
-                </div>
-            `;
-        }
-
-        // 显示错误状态
-        function showError() {
-            document.getElementById('orderHistory').innerHTML = `
-                <div class="error-message">
-                    <i>❌</i>
-                    <p>获取历史订单失败，请稍后重试</p>
-                </div>
-            `;
-        }
-
-        // 获取历史订单
-        async function fetchHistoryOrders() {
-            try {
-                const response = await fetch(API_URLS.GET_HISTORY, {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-                
-                const data = await response.json();
-                
-                if (data.message === 'Success') {
-                    displayHistoryOrders(data.report_info);
-                } else if (data.message === 'No history report') {
-                    showNoOrders();
-                } else {
-                    handleSessionError(data.message);
-                }
-            } catch (error) {
-                console.error('获取历史订单失败:', error);
-                showError();
-            }
-        }
-
-        // 修改账号信息表单的提交处理
-        document.getElementById('infoForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            
-            const phoneNumber = document.getElementById('phone').value;
-            const newName = document.getElementById('username').value;
-            const requestData = {};
-            
-            if (phoneNumber.trim()) {
-                if (!/^1[3-9]\d{9}$/.test(phoneNumber)) {
-                    showMessage('请输入正确的手机号码格式');
-                    return;
-                }
-                requestData.phoneNumber = phoneNumber.trim();
-            }
-            
-            if (newName.trim()) {
-                requestData.newName = newName.trim();
-            }
-            
-            try {
-                const response = await fetch(API_URLS.SAVE_PHONE, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestData),
-                    credentials: 'include'
-                });
-                
-                const data = await response.json();
-                
-                if (data.message === 'Success') {
-                    showMessage('保存成功');
-                    if (requestData.newName) {
-                        utils.saveData('username', requestData.newName);
-                        document.getElementById('username-display').textContent = requestData.newName;
-                    }
-                } else if (data.message === 'This user is existed') {
-                    showMessage('用户名已被占用');
-                } else {
-                    handleSessionError(data.message);
-                }
-            } catch (error) {
-                console.error('保存失败:', error);
-                showMessage('保存失败，请重试');
-            }
-        });
-
-        // 添显示消息的函数
-        function showMessage(message, type) {
-            const messageModal = document.getElementById('messageModal');
-            const messageText = document.getElementById('messageText');
-            const confirmButton = document.getElementById('messageConfirm');
-            
-            messageText.textContent = message;
-            messageModal.style.display = 'block';
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    messageModal.style.display = 'none';
-                }, 3000);
-            }
-            
-            confirmButton.onclick = () => {
-                messageModal.style.display = 'none';
-            };
-        }
-
-        // 在现有的 JavaScript 代码中添加以下函数
-        function toggleBodyScroll(disable) {
-            if (disable) {
-                document.body.classList.add('modal-open');
-            } else {
-                document.body.classList.remove('modal-open');
-            }
-        }
-
-        // 添加订单标签切换函数
-        function openOrderTab(event, tabName) {
-            const tabcontent = document.querySelectorAll("#orderManagementModal .tab-content");
-            tabcontent.forEach(tab => tab.style.display = "none");
-
-            const tablinks = document.querySelectorAll("#orderManagementModal .tab-link");
-            tablinks.forEach(link => link.classList.remove("active"));
-
-            document.getElementById(tabName).style.display = "block";
-            event.currentTarget.classList.add("active");
-
-            // 如果切换到历史订单标签，则获取历史订单数据
-            if (tabName === 'orderHistory') {
-                fetchHistoryOrders();
-            }
-        }
-
-        // 添加关闭详情的函数
-        function closeDetail() {
-            const detailCard = document.getElementById('orderDetailCard');
-            const overlay = document.getElementById('detailOverlay');
-            
-            detailCard.classList.remove('show');
-            overlay.classList.remove('show');
-            
-            // 重置transform样式
-            detailCard.style.transform = '';
-        }
-
-        // 添加修改密码表单提交处理
-        document.getElementById('passwordForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            
-            const currentPassword = document.getElementById('current-password').value;
-            const newPassword = document.getElementById('new-password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
-            
-            if (newPassword !== confirmPassword) {
-                showMessage('两次输入的新密码不一致');
-                return;
-            }
-            
-            try {
-                const response = await fetch(API_URLS.CHANGE_PASSWORD, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        old_password: currentPassword,
-                        new_password: newPassword
-                    }),
-                    credentials: 'include'
-                });
-                
-                const data = await response.json();
-                
-                if (data.message === 'Success') {
-                    showMessage('密码修改成功！请重新登录');
-                    setTimeout(() => {
-                        utils.removeData('username');
-                        utils.removeData('loginData');
-                        window.location.href = 'login.html';
-                    }, 2000);
-                } else if (data.message === 'Password error') {
-                    showMessage('原密码错误');
-                } else {
-                    handleSessionError(data.message);
-                }
-            } catch (error) {
-                console.error('密码修改失败:', error);
-                showMessage('密码修改失败，请重试');
-            }
-        });
-
-        // 在文档加载完成后执行
-        document.addEventListener('DOMContentLoaded', function() {
-            // 获取问候语元素
-            const greetingText = document.getElementById('greetingText');
-            const usernameDisplay = document.getElementById('username-display');
-            
-            // 更新问候语函数
-            function updateGreeting() {
-                const hour = new Date().getHours();
-                let greeting = '';
-                
-                if (hour >= 5 && hour < 9) {
-                    greeting = '早上好，';
-                } else if (hour >= 9 && hour < 11) {
-                    greeting = '上午好，';
-                } else if (hour >= 11 && hour < 13) {
-                    greeting = '中午好，';
-                } else if (hour >= 13 && hour < 18) {
-                    greeting = '下午好，';
-                } else {
-                    greeting = '晚上好，';
-                }
-                
-                if (greetingText) {
-                    greetingText.textContent = greeting;
                 }
             }
-            
-            // 获取并显示用户名
-            function displayUsername() {
-                const usernameDisplay = document.getElementById('username-display');
-                if (!usernameDisplay) return;
-
-                fetch(API_URLS.GET_USER_INFO, {
-                    method: 'GET',
-                    credentials: 'include'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message === 'Success') {
-                        const username = data.username;
-                        utils.saveData('username', username);
-                        usernameDisplay.textContent = username;
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('获取用户信息失败:', error);
-                    const username = utils.getData('username');
-                    usernameDisplay.textContent = username || '用户';
-                });
-            }
-            
-            // 初始化显示
-            updateGreeting();
-            displayUsername();
-            
-            // 每分钟更新一次问候语
-            setInterval(updateGreeting, 60000);
-        });
-
-        // 在登录成功时保存用户名
-        function saveUsername(username) {
-            if (username) {
-                utils.saveData('username', username);
-            }
         }
+        return cookieValue;
+    }
 
-        // 在退出登录时清除用户名
-        function clearUsername() {
-            utils.removeData('username');
-        }
+    // 自动调整textarea高度
+    document.getElementById('issue').addEventListener('input', function() {
+        this.style.height = 'auto'; // 重置高度
+        this.style.height = (this.scrollHeight) + 'px'; // 设置为内容高度
+    });
 
-        // 在退出登录函数中添加
-        function handleLogout() {
-            $.ajax({
-                url: API_URLS.LOGOUT,
+    // 模拟获取用户信息的函
+    function getUserInfo() {
+        // 假从本地存储或其来源获取用户信息
+        const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+        return userInfo;
+    }
+
+    // 检查用户信息并设置按钮状态
+    const userPhoneNumberInput = document.getElementById('userPhoneNumber');
+    const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
+
+    // 修改获取和填充手机号的函数
+    async function fetchAndFillPhoneNumber() {
+        try {
+            const response = await fetch(`https://${ip}/api/dashboard/getPhoneNumber/`, {
                 method: 'GET',
-                xhrFields: {
-                    withCredentials: true
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (data.message === 'Success' && data.phoneNumber) {
+                userPhoneNumberInput.value = data.phoneNumber;
+            } else if (data.message === 'No phone number') {
+                showMessage('您还未设置手机号，请先在户管理中设置');
+            } else {
+                handleSessionError(data.message);
+            }
+        } catch (error) {
+            console.error('获取手机号失:', error);
+            showMessage('获取手机号失败，请重试');
+        }
+    }
+
+    // 在文档加载完成后设置按钮事件
+    document.addEventListener('DOMContentLoaded', function() {
+        // ... existing code ...
+        
+        // 按钮始终可用，移除disabled属性
+        fillPhoneNumberButton.disabled = false;
+        
+        // 给一键填充按钮添加点击事件
+        fillPhoneNumberButton.addEventListener('click', fetchAndFillPhoneNumber);
+        
+        // ... existing code ...
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const scheduleManagementButton = document.getElementById('schedule-management');
+        if (scheduleManagementButton) {
+            scheduleManagementButton.addEventListener('click', function() {
+                const modal = document.getElementById('scheduleModal');
+                modal.style.display = "block";
+                document.getElementById('overlay').style.display = "block";
+                this.classList.add('active');
+
+                // 初始化并显示日历
+                var calendarEl = document.getElementById('mobileCalendar');
+                if (calendarEl) {
+                    var calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        locale: 'zh-cn',
+                        height: 'auto',
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                        },
+                        views: {
+                            timeGridWeek: {
+                                slotMinTime: '18:00:00',
+                                slotMaxTime: '22:00:00',
+                                slotDuration: '00:30:00',
+                                titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
+                            },
+                            timeGridDay: {
+                                slotMinTime: '18:00:00',
+                                slotMaxTime: '22:00:00',
+                                slotDuration: '00:30:00',
+                                titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
+                            },
+                            dayGridMonth: {
+                                titleFormat: { year: 'numeric', month: 'short' }
+                            }
+                        },
+                        slotLabelFormat: {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        },
+                        buttonText: {
+                            today: '今天',
+                            month: '月',
+                            week: '周',
+                            day: '日'
+                        },
+                        dayHeaderFormat: { weekday: 'short' },
+                        allDayText: '全天',
+                        noEventsText: '暂无事件',
+                        eventTimeFormat: {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        },
+                        events: function(info, successCallback, failureCallback) {
+                            $.ajax({
+                                url: API_URLS.GET_HISTORY,  // 使用 API_URLS 中定义的 URL
+                                method: 'GET',
+                                xhrFields: {
+                                    withCredentials: true
+                                }
+                            }).then(response => {
+                                if (response.message === 'Success') {
+                                    const events = response.report_info.map(order => {
+                                        // 解析日期字符串
+                                        let eventDate;
+                                        if (order.date.includes('年')) {
+                                            // 处理中文格式的日期
+                                            const matches = order.date.match(/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/);
+                                            if (matches) {
+                                                const [_, year, month, day, hour, minute] = matches;
+                                                eventDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${minute}:00`;
+                                            }
+                                        } else if (order.date.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)) {
+                                            // 处理标准格式的日期
+                                            const [datePart, timePart] = order.date.split(' ');
+                                            eventDate = `${datePart}T${timePart}:00`;
+                                        } else {
+                                            // 尝试直接解析日期
+                                            const date = new Date(order.date);
+                                            if (!isNaN(date.getTime())) {
+                                                eventDate = date.toISOString().slice(0, 16).replace('Z', '');
+                                            } else {
+                                                console.error('无法解析的日期格式:', order.date);
+                                                return null;
+                                            }
+                                        }
+
+                                        return {
+                                            title: `维修订单: ${order.issue}`,
+                                            start: eventDate,
+                                            backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
+                                            borderColor: order.allocationState ? '#27ae60' : '#f39c12',
+                                            extendedProps: {
+                                                address: order.address,
+                                                phoneNumber: order.userPhoneNumber,
+                                                status: order.allocationState ? '已分配' : '待分配',
+                                                originalDate: order.date // 保存原始日期字符串
+                                            }
+                                        };
+                                    }).filter(event => event !== null); // 过滤掉无效的件
+
+                                    successCallback(events);
+                                } else if (response.message === 'No history report') {
+                                    successCallback([]); // 如果没有订单，显示空日历
+                                } else {
+                                    showMessage('获取订单失败，请稍后重试');
+                                    failureCallback(new Error(response.message));
+                                }
+                            }).catch(error => {
+                                console.error('获取日历订单数据失败:', error);
+                                showMessage('获取订单失败，请稍后重试');
+                                failureCallback(error);
+                            });
+                        },
+                        eventClick: function(info) {
+                            const detailCard = document.getElementById('orderDetailCard');
+                            const detailContent = document.getElementById('orderDetailContent');
+                            const overlay = document.getElementById('detailOverlay');
+                            const closeBtn = document.getElementById('closeDetail');
+                            
+                            // 使用原始日期字符串或格式化日期
+                            const displayDate = info.event.extendedProps.originalDate || formatDate(info.event.start);
+                            
+                            // 设置详情内容
+                            detailContent.innerHTML = `
+                                <div class="detail-row">
+                                    <span class="detail-label">状态</span>
+                                    <span class="detail-value">
+                                        <span class="status-badge ${info.event.extendedProps.status === '已分配' ? 'allocated' : 'pending'}">
+                                            ${info.event.extendedProps.status}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">问题描述</span>
+                                    <span class="detail-value">${info.event.title.replace('维修订单: ', '')}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">预约时间</span>
+                                    <span class="detail-value">${displayDate}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">地址</span>
+                                    <span class="detail-value">${info.event.extendedProps.address}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">联系电话</span>
+                                    <span class="detail-value">${info.event.extendedProps.phoneNumber}</span>
+                                </div>
+                            `;
+                            
+                            detailCard.classList.add('show');
+                            overlay.classList.add('show');
+                            
+                            closeBtn.onclick = closeDetail;
+                            overlay.onclick = closeDetail;
+                        },
+                        eventDidMount: function(info) {
+                            info.el.title = `
+                                ${info.event.title}
+                                地址: ${info.event.extendedProps.address}
+                                状态: ${info.event.extendedProps.status}
+                            `.trim();
+                        }
+                    });
+                    calendar.render();
                 }
-            }).then(response => {
-                if (response.message === 'Success') {
-                    // 清除所有存储的数据
-                    utils.removeData('username');
-                    utils.removeData('loginData');
-                    utils.removeData('rememberMe');
-                    window.location.href = 'login.html';
-                } else {
-                    handleSessionError(response.message);
-                }
-            }).catch(error => {
-                console.error('退出登录失败:', error);
-                showMessage('退出登录失败，请重试');
             });
         }
 
-        // 移动端特有的手势操作功能
-        function initMobileFeatures() {
-            const detailCard = document.getElementById('orderDetailCard');
-            let startY = 0;
-            let currentY = 0;
-            
-            // 触摸开始时记录起始位置
-            detailCard.addEventListener('touchstart', (e) => {
-                startY = e.touches[0].clientY;
-            });
-            
-            // 触摸移动时计算位移并应用变换
-            detailCard.addEventListener('touchmove', (e) => {
-                currentY = e.touches[0].clientY;
-                const deltaY = currentY - startY;
-                
-                if (deltaY > 0) {
-                    detailCard.style.transform = `translateY(${deltaY}px)`;
-                }
-            });
-            
-            // 触摸结束时判断是否关闭详情卡片
-            detailCard.addEventListener('touchend', () => {
-                if (currentY - startY > 100) {
-                    closeDetail();
-                } else {
-                    detailCard.style.transform = '';
-                }
-            });
-        }
-
-        // 初始化移动端功能
-        document.addEventListener('DOMContentLoaded', () => {
-            initMobileFeatures();
+        // 关闭日程管理模态框
+        document.querySelector('#scheduleModal .close-button').addEventListener('click', function() {
+            const modal = document.getElementById('scheduleModal');
+            modal.style.display = "none";
+            document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
+            document.getElementById('schedule-management').classList.remove('active'); // 移除浮起样式
         });
 
-        // 修改密码修改函数
-        async function changePassword(oldPassword, newPassword) {
-            try {
-                const response = await fetch(API_URLS.CHANGE_PASSWORD, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        old_password: oldPassword,
-                        new_password: newPassword
-                    }),
-                    credentials: 'include'
-                });
-                
-                const data = await response.json();
-                
-                if (data.message === 'Success') {
-                    showMessage('密码修改成功');
-                    document.getElementById('passwordForm').reset();
-                } else if (data.message === 'Password error') {
-                    showMessage('原密码错误');
-                } else {
-                    handleSessionError(data.message);
-                }
-            } catch (error) {
-                console.error('密码修改失败:', error);
-                showMessage('密码修改失败，请重试');
-            }
-        }
-
-        // 修改日期时间选择器的初始化代码
-        function initDateTimePicker(preferredTimeInput) {
-            // 添加时间验证
-            function validateTime(time) {
-                const [hours, minutes] = time.split(':').map(Number);
-                return (hours >= 18 && hours < 21) || (hours === 21 && minutes === 0);
-            }
-
+        // 日期选择器初始化
+        const preferredTimeInput = document.getElementById('preferredTime');
+        if (preferredTimeInput) {
             // 生成日期选项
             function generateDateSlides() {
                 const dates = [];
@@ -3739,80 +3364,10 @@
             `;
             document.body.appendChild(pickerContainer);
 
-            // 添加样式
-            const pickerStyles = `
-                .datetime-picker {
-                    display: none;
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(0, 0, 0, 0.5);
-                    z-index: 2000;
-                }
-                
-                .datetime-picker.active {
-                    display: block;
-                }
-                
-                .picker-container {
-                    position: fixed;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: white;
-                    border-radius: 16px 16px 0 0;
-                    transform: translateY(100%);
-                    transition: transform 0.3s ease;
-                }
-                
-                .datetime-picker.active .picker-container {
-                    transform: translateY(0);
-                }
-                
-                .picker-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 16px;
-                    border-bottom: 1px solid #eee;
-                }
-                
-                .picker-content {
-                    display: flex;
-                    height: 250px;
-                    padding: 20px;
-                }
-                
-                .swiper-container {
-                    flex: 1;
-                    height: 100%;
-                }
-                
-                .date-item,
-                .time-item {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    height: 40px;
-                    font-size: 16px;
-                }
-                
-                .swiper-slide-active .date-item,
-                .swiper-slide-active .time-item {
-                    color: #2196F3;
-                    font-weight: bold;
-                }
-            `;
-            
-            const styleElement = document.createElement('style');
-            styleElement.textContent = pickerStyles;
-            document.head.appendChild(styleElement);
-
+            // 初始化 Swiper
             let dateSwiper, timeSwiper;
             
-            // 初始化 Swiper
+            // 确保 DOM 完全加载后再初始化 Swiper
             setTimeout(() => {
                 dateSwiper = new Swiper('.date-swiper', {
                     direction: 'vertical',
@@ -3844,23 +3399,23 @@
                 pickerContainer.classList.remove('active');
             });
 
-            // 修改确认按钮的处理逻辑
             pickerContainer.querySelector('.picker-confirm').addEventListener('click', function() {
                 if (dateSwiper && timeSwiper) {
                     const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
                     const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
                     
-                    if (!validateTime(selectedTime)) {
-                        showMessage('请选择18:00-21:00之间的时间');
-                        return;
-                    }
-
+                    // 获取当前年份
                     const year = new Date().getFullYear();
+                    
+                    // 解析月和日
                     const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
                     
+                    // 构建标准格式的日期字符串用于显示
                     const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
-                    const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
+                    // 构建标准格式的日期字符串用于提交
+                    const submitDateTime = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${selectedTime}`;
                     
+                    // 存储两种格式
                     preferredTimeInput.value = displayDateTime;
                     preferredTimeInput.dataset.submitValue = submitDateTime;
                     
@@ -3878,116 +3433,811 @@
                 pickerContainer.classList.remove('active');
             });
         }
+    }); // DOMContentLoaded 结束
 
-        // 添加统一的错误提示函数
-        function showError(message, type = 'error') {
-            const messageElement = document.createElement('div');
-            messageElement.className = `alert alert-${type}`;
-            messageElement.textContent = message;
-            messageElement.style.cssText = `
-                position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                padding: 10px 20px;
-                border-radius: 4px;
-                background-color: ${type === 'error' ? '#ff4d4f' : '#52c41a'};
-                color: white;
-                z-index: 2000;
-                animation: slideIn 0.3s ease;
-            `;
+    // 统一的会话错误处理函数
+    function handleSessionError(message) {
+        switch (message) {
+            case 'Session has expired':
+                alert('会话已过期，请重新登录');  // 修复这里的乱码
+                break;
+            case 'Invalid session':
+                alert('无效会话，请重新登录');
+                break;
+            case 'No sessionid cookie':
+                alert('未找到会话信息，请重新登录');
+                break;
+            default:
+                alert('发生未知错误，请重新登录');
+        }
+        utils.removeData('username');
+        utils.removeData('loginData');
+        utils.removeData('rememberMe');
+        window.location.href = 'login.html';
+    }
+
+    // 显示历史订单
+    function displayHistoryOrders(orders) {
+        const ordersList = Array.isArray(orders) ? orders : [orders];
+        
+        const ordersHTML = ordersList.map(order => `
+            <div class="order-card">
+                <div class="order-info">
+                    <p>
+                        <strong>手机号码</strong>
+                        ${order.userPhoneNumber}
+                        <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
+                            ${order.allocationState ? '已分配' : '待分配'}
+                        </span>
+                    </p>
+                    <p>
+                        <strong>地址</strong>
+                        ${order.address}
+                    </p>
+                    <p>
+                        <strong>问题描述</strong>
+                        ${order.issue}
+                    </p>
+                    <p>
+                        <strong>预约时间</strong>
+                        ${formatDate(order.date)}
+                    </p>
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('orderHistory').innerHTML = `
+            <div class="orders-container">
+                ${ordersHTML}
+            </div>
+        `;
+    }
+
+    // 显示空状态
+    function showNoOrders() {
+        document.getElementById('orderHistory').innerHTML = `
+            <div class="no-orders">
+                <i>📝</i>
+                <p>无历史订单</p>
+            </div>
+        `;
+    }
+
+    // 显示错误状态
+    function showError() {
+        document.getElementById('orderHistory').innerHTML = `
+            <div class="error-message">
+                <i>❌</i>
+                <p>获取历史订单失败，请稍后重试</p>
+            </div>
+        `;
+    }
+
+    // 获取历史订单
+    async function fetchHistoryOrders() {
+        try {
+            const response = await fetch(API_URLS.GET_HISTORY, {
+                method: 'GET',
+                credentials: 'include'
+            });
             
-            document.body.appendChild(messageElement);
+            const data = await response.json();
             
+            if (data.message === 'Success') {
+                displayHistoryOrders(data.report_info);
+            } else if (data.message === 'No history report') {
+                showNoOrders();
+            } else {
+                handleSessionError(data.message);
+            }
+        } catch (error) {
+            console.error('获取历史订单失败:', error);
+            showError();
+        }
+    }
+
+    // 修改账号信息表单的提交处理
+    document.getElementById('infoForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        
+        const phoneNumber = document.getElementById('phone').value;
+        const newName = document.getElementById('username').value;
+        const requestData = {};
+        
+        if (phoneNumber.trim()) {
+            if (!/^1[3-9]\d{9}$/.test(phoneNumber)) {
+                showMessage('请输入正确的手机号码格式');
+                return;
+            }
+            requestData.phoneNumber = phoneNumber.trim();
+        }
+        
+        if (newName.trim()) {
+            requestData.newName = newName.trim();
+        }
+        
+        try {
+            const response = await fetch(API_URLS.SAVE_PHONE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData),
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (data.message === 'Success') {
+                showMessage('保存成功');
+                if (requestData.newName) {
+                    utils.saveData('username', requestData.newName);
+                    document.getElementById('username-display').textContent = requestData.newName;
+                }
+            } else if (data.message === 'This user is existed') {
+                showMessage('用户名已被占用');
+            } else {
+                handleSessionError(data.message);
+            }
+        } catch (error) {
+            console.error('保存失败:', error);
+            showMessage('保存失败，请重试');
+        }
+    });
+
+    // 添显示消息的函数
+    function showMessage(message, type) {
+        const messageModal = document.getElementById('messageModal');
+        const messageText = document.getElementById('messageText');
+        const confirmButton = document.getElementById('messageConfirm');
+        
+        messageText.textContent = message;
+        messageModal.style.display = 'block';
+        
+        if (type === 'success') {
             setTimeout(() => {
-                messageElement.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => messageElement.remove(), 300);
+                messageModal.style.display = 'none';
             }, 3000);
         }
+        
+        confirmButton.onclick = () => {
+            messageModal.style.display = 'none';
+        };
+    }
 
-        // 添加网络状态监测
-        function initNetworkDetection() {
-            function updateNetworkStatus() {
-                if (!navigator.onLine) {
-                    showMessage('网络连接已断开，请检查网络设置', 'error');
+    // 在现有的 JavaScript 代码中添加以下函数
+    function toggleBodyScroll(disable) {
+        if (disable) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+    }
+
+    // 添加订单标签切换函数
+    function openOrderTab(event, tabName) {
+        const tabcontent = document.querySelectorAll("#orderManagementModal .tab-content");
+        tabcontent.forEach(tab => tab.style.display = "none");
+
+        const tablinks = document.querySelectorAll("#orderManagementModal .tab-link");
+        tablinks.forEach(link => link.classList.remove("active"));
+
+        document.getElementById(tabName).style.display = "block";
+        event.currentTarget.classList.add("active");
+
+        // 如果切换到历史订单标签，则获取历史订单数据
+        if (tabName === 'orderHistory') {
+            fetchHistoryOrders();
+        }
+    }
+
+    // 添加关闭详情的函数
+    function closeDetail() {
+        const detailCard = document.getElementById('orderDetailCard');
+        const overlay = document.getElementById('detailOverlay');
+        
+        detailCard.classList.remove('show');
+        overlay.classList.remove('show');
+        
+        // 重置transform样式
+        detailCard.style.transform = '';
+    }
+
+    // 添加修改密码表单提交处理
+    document.getElementById('passwordForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        
+        if (newPassword !== confirmPassword) {
+            showMessage('两次输入的新密码不一致');
+            return;
+        }
+        
+        try {
+            const response = await fetch(API_URLS.CHANGE_PASSWORD, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    old_password: currentPassword,
+                    new_password: newPassword
+                }),
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (data.message === 'Success') {
+                showMessage('密码修改成功！请重新登录');
+                setTimeout(() => {
+                    utils.removeData('username');
+                    utils.removeData('loginData');
+                    window.location.href = 'login.html';
+                }, 2000);
+            } else if (data.message === 'Password error') {
+                showMessage('原密码错误');
+            } else {
+                handleSessionError(data.message);
+            }
+        } catch (error) {
+            console.error('密码修改失败:', error);
+            showMessage('密码修改失败，请重试');
+        }
+    });
+
+    // 在文档加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取问候语元素
+        const greetingText = document.getElementById('greetingText');
+        const usernameDisplay = document.getElementById('username-display');
+        
+        // 更新问候语函数
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            let greeting = '';
+            
+            if (hour >= 5 && hour < 9) {
+                greeting = '早上好，';
+            } else if (hour >= 9 && hour < 11) {
+                greeting = '上午好，';
+            } else if (hour >= 11 && hour < 13) {
+                greeting = '中午好，';
+            } else if (hour >= 13 && hour < 18) {
+                greeting = '下午好，';
+            } else {
+                greeting = '晚上好，';
+            }
+            
+            if (greetingText) {
+                greetingText.textContent = greeting;
+            }
+        }
+        
+        // 获取并显示用户名
+        function displayUsername() {
+            const usernameDisplay = document.getElementById('username-display');
+            if (!usernameDisplay) return;
+
+            fetch(API_URLS.GET_USER_INFO, {
+                method: 'GET',
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Success') {
+                    const username = data.username;
+                    utils.saveData('username', username);
+                    usernameDisplay.textContent = username;
+                } else {
+                    handleSessionError(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('获取用户信息失败:', error);
+                const username = utils.getData('username');
+                usernameDisplay.textContent = username || '用户';
+            });
+        }
+        
+        // 初始化显示
+        updateGreeting();
+        displayUsername();
+        
+        // 每分钟更新一次问候语
+        setInterval(updateGreeting, 60000);
+    });
+
+    // 在登录成功时保存用户名
+    function saveUsername(username) {
+        if (username) {
+            utils.saveData('username', username);
+        }
+    }
+
+    // 在退出登录时清除用户名
+    function clearUsername() {
+        utils.removeData('username');
+    }
+
+    // 在退出登录函数中添加
+    function handleLogout() {
+        $.ajax({
+            url: API_URLS.LOGOUT,
+            method: 'GET',
+            xhrFields: {
+                withCredentials: true
+            }
+        }).then(response => {
+            if (response.message === 'Success') {
+                // 清除所有存储的数据
+                utils.removeData('username');
+                utils.removeData('loginData');
+                utils.removeData('rememberMe');
+                window.location.href = 'login.html';
+            } else {
+                handleSessionError(response.message);
+            }
+        }).catch(error => {
+            console.error('退出登录失败:', error);
+            showMessage('退出登录失败，请重试');
+        });
+    }
+
+    // 移动端特有的手势操作功能
+    function initMobileFeatures() {
+        const detailCard = document.getElementById('orderDetailCard');
+        let startY = 0;
+        let currentY = 0;
+        
+        // 触摸开始时记录起始位置
+        detailCard.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        });
+        
+        // 触摸移动时计算位移并应用变换
+        detailCard.addEventListener('touchmove', (e) => {
+            currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            
+            if (deltaY > 0) {
+                detailCard.style.transform = `translateY(${deltaY}px)`;
+            }
+        });
+        
+        // 触摸结束时判断是否关闭详情卡片
+        detailCard.addEventListener('touchend', () => {
+            if (currentY - startY > 100) {
+                closeDetail();
+            } else {
+                detailCard.style.transform = '';
+            }
+        });
+    }
+
+    // 初始化移动端功能
+    document.addEventListener('DOMContentLoaded', () => {
+        initMobileFeatures();
+    });
+
+    // 修改密码修改函数
+    async function changePassword(oldPassword, newPassword) {
+        try {
+            const response = await fetch(API_URLS.CHANGE_PASSWORD, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    old_password: oldPassword,
+                    new_password: newPassword
+                }),
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (data.message === 'Success') {
+                showMessage('密码修改成功');
+                document.getElementById('passwordForm').reset();
+            } else if (data.message === 'Password error') {
+                showMessage('原密码错误');
+            } else {
+                handleSessionError(data.message);
+            }
+        } catch (error) {
+            console.error('密码修改失败:', error);
+            showMessage('密码修改失败，请重试');
+        }
+    }
+
+    // 修改日期时间选择器的初始化代码
+    function initDateTimePicker(preferredTimeInput) {
+        // 添加时间验证
+        function validateTime(time) {
+            const [hours, minutes] = time.split(':').map(Number);
+            return (hours >= 18 && hours < 21) || (hours === 21 && minutes === 0);
+        }
+
+        // 生成日期选项
+        function generateDateSlides() {
+            const dates = [];
+            const today = new Date();
+            for (let i = 0; i < 14; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                dates.push(`
+                    <div class="swiper-slide">
+                        <div class="date-item">
+                            ${date.getMonth() + 1}月${date.getDate()}日
+                        </div>
+                    </div>
+                `);
+            }
+            return dates.join('');
+        }
+
+        // 生成时间选项（18:00-21:00，每30分钟）
+        function generateTimeSlides() {
+            const times = [];
+            for (let hour = 18; hour < 21; hour++) {
+                for (let minute = 0; minute < 60; minute += 30) {
+                    times.push(`
+                        <div class="swiper-slide">
+                            <div class="time-item">
+                                ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}
+                            </div>
+                        </div>
+                    `);
                 }
             }
-
-            window.addEventListener('online', () => showMessage('网络已连接', 'success'));
-            window.addEventListener('offline', updateNetworkStatus);
-            
-            // 初始检查
-            updateNetworkStatus();
+            // 添加21:00
+            times.push(`
+                <div class="swiper-slide">
+                    <div class="time-item">21:00</div>
+                </div>
+            `);
+            return times.join('');
         }
 
-        // 在文档加载完成后初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            initNetworkDetection();
-        });
+        // 创建日期选择器的 HTML 结构
+        const pickerContainer = document.createElement('div');
+        pickerContainer.className = 'datetime-picker';
+        pickerContainer.innerHTML = `
+            <div class="picker-container">
+                <div class="picker-header">
+                    <button class="picker-cancel">取消</button>
+                    <div class="picker-title">选择时间</div>
+                    <button class="picker-confirm">确定</button>
+                </div>
+                <div class="picker-content">
+                    <div class="swiper-container date-swiper">
+                        <div class="swiper-wrapper">
+                            ${generateDateSlides()}
+                        </div>
+                        <div class="swiper-scrollbar"></div>
+                    </div>
+                    <div class="swiper-container time-swiper">
+                        <div class="swiper-wrapper">
+                            ${generateTimeSlides()}
+                        </div>
+                        <div class="swiper-scrollbar"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(pickerContainer);
 
-        // 添加加载状态指示器
-        function showLoading(show = true) {
-            let loader = document.querySelector('.loading-indicator');
-            if (!loader && show) {
-                loader = document.createElement('div');
-                loader.className = 'loading-indicator';
-                loader.innerHTML = `
-                    <div class="loading-spinner"></div>
-                    <div class="loading-text">加载中...</div>
-                `;
-                document.body.appendChild(loader);
-            } else if (loader && !show) {
-                loader.remove();
-            }
-        }
-
-        // 添加相应的CSS样式
-        const style = document.createElement('style');
-        style.textContent = `
-            .loading-indicator {
+        // 添加样式
+        const pickerStyles = `
+            .datetime-picker {
+                display: none;
                 position: fixed;
                 top: 0;
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(255, 255, 255, 0.8);
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
+                background: rgba(0, 0, 0, 0.5);
                 z-index: 2000;
             }
-
-            .loading-spinner {
-                width: 40px;
+            
+            .datetime-picker.active {
+                display: block;
+            }
+            
+            .picker-container {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: white;
+                border-radius: 16px 16px 0 0;
+                transform: translateY(100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .datetime-picker.active .picker-container {
+                transform: translateY(0);
+            }
+            
+            .picker-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 16px;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .picker-content {
+                display: flex;
+                height: 250px;
+                padding: 20px;
+            }
+            
+            .swiper-container {
+                flex: 1;
+                height: 100%;
+            }
+            
+            .date-item,
+            .time-item {
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 height: 40px;
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid #2196F3;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
+                font-size: 16px;
             }
-
-            .loading-text {
-                margin-top: 10px;
-                color: #333;
-            }
-
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+            
+            .swiper-slide-active .date-item,
+            .swiper-slide-active .time-item {
+                color: #2196F3;
+                font-weight: bold;
             }
         `;
-        document.head.appendChild(style);
+        
+        const styleElement = document.createElement('style');
+        styleElement.textContent = pickerStyles;
+        document.head.appendChild(styleElement);
 
-        // 在文档加载完成后初始化日期时间选择器
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化日期时间选择器
-            const preferredTimeInput = document.getElementById('preferredTime');
-            if (preferredTimeInput) {
-                initDateTimePicker(preferredTimeInput);
+        let dateSwiper, timeSwiper;
+        
+        // 初始化 Swiper
+        setTimeout(() => {
+            dateSwiper = new Swiper('.date-swiper', {
+                direction: 'vertical',
+                slidesPerView: 5,
+                centeredSlides: true,
+                spaceBetween: 10,
+                scrollbar: {
+                    el: '.date-swiper .swiper-scrollbar',
+                },
+            });
+
+            timeSwiper = new Swiper('.time-swiper', {
+                direction: 'vertical',
+                slidesPerView: 5,
+                centeredSlides: true,
+                spaceBetween: 10,
+                scrollbar: {
+                    el: '.time-swiper .swiper-scrollbar',
+                },
+            });
+        }, 0);
+
+        // 事件处理
+        preferredTimeInput.addEventListener('click', function() {
+            pickerContainer.classList.add('active');
+        });
+
+        pickerContainer.querySelector('.picker-cancel').addEventListener('click', function() {
+            pickerContainer.classList.remove('active');
+        });
+
+        // 修改确认按钮的处理逻辑
+        pickerContainer.querySelector('.picker-confirm').addEventListener('click', function() {
+            if (dateSwiper && timeSwiper) {
+                const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
+                const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
+                
+                if (!validateTime(selectedTime)) {
+                    showMessage('请选择18:00-21:00之间的时间');
+                    return;
+                }
+
+                const year = new Date().getFullYear();
+                const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
+                
+                const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
+                const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
+                
+                preferredTimeInput.value = displayDateTime;
+                preferredTimeInput.dataset.submitValue = submitDateTime;
+                
+                pickerContainer.classList.remove('active');
             }
         });
-    </script>
 
-    </body>
-    </html>
+        // 防止点击选择器内容时关闭
+        pickerContainer.querySelector('.picker-container').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // 点击背景关闭选择器
+        pickerContainer.addEventListener('click', function() {
+            pickerContainer.classList.remove('active');
+        });
+    }
+
+    // 添加统一的错误提示函数
+    function showError(message, type = 'error') {
+        const messageElement = document.createElement('div');
+        messageElement.className = `alert alert-${type}`;
+        messageElement.textContent = message;
+        messageElement.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 4px;
+            background-color: ${type === 'error' ? '#ff4d4f' : '#52c41a'};
+            color: white;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        `;
+        
+        document.body.appendChild(messageElement);
+        
+        setTimeout(() => {
+            messageElement.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => messageElement.remove(), 300);
+        }, 3000);
+    }
+
+    // 添加网络状态监测
+    function initNetworkDetection() {
+        function updateNetworkStatus() {
+            if (!navigator.onLine) {
+                showMessage('网络连接已断开，请检查网络设置', 'error');
+            }
+        }
+
+        window.addEventListener('online', () => showMessage('网络已连接', 'success'));
+        window.addEventListener('offline', updateNetworkStatus);
+        
+        // 初始检查
+        updateNetworkStatus();
+    }
+
+    // 在文档加载完成后初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        initNetworkDetection();
+    });
+
+    // 添加加载状态指示器
+    function showLoading(show = true) {
+        let loader = document.querySelector('.loading-indicator');
+        if (!loader && show) {
+            loader = document.createElement('div');
+            loader.className = 'loading-indicator';
+            loader.innerHTML = `
+                <div class="loading-spinner"></div>
+                <div class="loading-text">加载中...</div>
+            `;
+            document.body.appendChild(loader);
+        } else if (loader && !show) {
+            loader.remove();
+        }
+    }
+
+    // 添加相应的CSS样式
+    const style = document.createElement('style');
+    style.textContent = `
+        .loading-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 10px;
+            color: #333;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // 在文档加载完成后初始化日期时间选择器
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化日期时间选择器
+        const preferredTimeInput = document.getElementById('preferredTime');
+        if (preferredTimeInput) {
+            initDateTimePicker(preferredTimeInput);
+        }
+    });
+
+    // 在已有的 DOMContentLoaded 事件监听器中添加样式注入代码
+    document.addEventListener('DOMContentLoaded', function() {
+        // 注入日期时间选择器样式
+        const pickerStyles = `
+            .datetime-picker {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 2000;
+            }
+            
+            .datetime-picker.active {
+                display: block;
+            }
+            
+            // ... 其余样式保持不变 ...
+        `;
+
+        // 创建并添加样式到文档头部
+        const styleElement = document.createElement('style');
+        styleElement.textContent = pickerStyles;
+        document.head.appendChild(styleElement);
+
+        // 其余现有的初始化代码...
+        const scheduleManagementButton = document.getElementById('schedule-management');
+        if (scheduleManagementButton) {
+            // ... 现有的日程管理代码 ...
+        }
+        
+        // ... 其他现有的初始化代码 ...
+    });
+
+    // 合并所有 DOMContentLoaded 事件监听器
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化网络检测
+        initNetworkDetection();
+        
+        // 初始化日期时间选择器
+        const preferredTimeInput = document.getElementById('preferredTime');
+        if (preferredTimeInput) {
+            initDateTimePicker(preferredTimeInput);
+        }
+        
+        // 初始化日程管理
+        const scheduleManagementButton = document.getElementById('schedule-management');
+        if (scheduleManagementButton) {
+            // 日程管理相关代码
+        }
+        
+        // 初始化用户信息显示
+        updateGreeting();
+        displayUsername();
+    });
+</script>
+
+</body>
+</html>
