@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气���息样式 */
+        /* 天气信息样式 */
         .weather-info {
             margin-top: auto;
             background: linear-gradient(135deg, #6dd5ed, #2193b0);
@@ -335,7 +335,7 @@
             margin-top: 15px;
         }
 
-        /* 模态框样式 */
+        /* 模态框��式 */
         .modal {
             display: none;
             position: fixed;
@@ -1738,7 +1738,7 @@
                             checkUserPhoneNumber();
                         });
                     } else if (response.message === 'This user is existed') {
-                        showMessage('用户名已被占用，请更换其他用户���');
+                        showMessage('用户名��被占用，请更换其他用户���');
                     } else {
                         handleSessionError(response.message);
                     }
@@ -1787,6 +1787,28 @@
                     console.error('修改密码失败:', error);
                     showMessage('修改密码失败，请重试');
                 });
+            });
+
+            // 修改信息修改模态框打开的事件处理
+            document.getElementById('info-link').addEventListener('click', function(event) {
+                event.preventDefault();
+                const modal = document.getElementById('editModal');
+                
+                // 从本地存储获取登录数据
+                const loginData = localStorage.getItem('loginData');
+                if (loginData) {
+                    try {
+                        const decryptedData = JSON.parse(utils.decrypt(loginData));
+                        // 设置用户名输入框的值
+                        document.getElementById('username').value = decryptedData.username;
+                    } catch (error) {
+                        console.error('获取登录数据失败:', error);
+                    }
+                }
+                
+                modal.style.display = "block";
+                document.getElementById('overlay').style.display = "block";
+                toggleBodyScroll(true);
             });
         });
 

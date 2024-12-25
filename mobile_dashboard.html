@@ -2354,11 +2354,23 @@
             submenu.classList.toggle('show');
         }
 
-        // 修改所有打开模态框的事件处理器
-        // 信息修改模态框
+        // 修改信息管理链接的点击事件
         document.getElementById('info-link').addEventListener('click', function(event) {
             event.preventDefault();
             const modal = document.getElementById('editModal');
+            
+            // 从本地存储获取登录数据
+            const loginData = localStorage.getItem('loginData');
+            if (loginData) {
+                try {
+                    const decryptedData = JSON.parse(utils.decrypt(loginData));
+                    // 设置用户名输入框的值
+                    document.getElementById('username').value = decryptedData.username;
+                } catch (error) {
+                    console.error('获取登录数据失败:', error);
+                }
+            }
+            
             modal.style.display = "block";
             document.getElementById('overlay').style.display = "block";
             toggleBodyScroll(true);
@@ -3076,7 +3088,7 @@
             }
         }
 
-        // 添加显示消息的函数
+        // 添���显示消息的函数
         function showMessage(message, callback) {
             const messageModal = document.getElementById('messageModal');
             const messageText = document.getElementById('messageText');
