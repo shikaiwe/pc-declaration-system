@@ -1507,19 +1507,6 @@
             };
         }
 
-        // 在 script 标签的开头添加 utils 对象定义
-        const utils = {
-            // 加密函数
-            encrypt: function(text) {
-                return btoa(encodeURIComponent(text));
-            },
-            
-            // 解密函数
-            decrypt: function(encoded) {
-                return decodeURIComponent(atob(encoded));
-            }
-        };
-
         // API URL配置
         const ip = '8.134.178.71';
         const BASE_URL = `https://${ip}/api`;
@@ -1545,6 +1532,45 @@
             
             // 天气相关接口
             WEATHER_API_KEY: `${BASE_URL}/dashboard/getWeatherApiKey/`  // 获取天气API密钥
+        };
+
+        // 在脚本开头定义统一的 utils 对象
+        const utils = {
+            // 加密/解密功能
+            encrypt: function(text) {
+                return btoa(encodeURIComponent(text));
+            },
+            
+            decrypt: function(encoded) {
+                return decodeURIComponent(atob(encoded));
+            },
+
+            // localStorage 操作功能
+            saveData: function(key, data) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                } catch (error) {
+                    console.error(`保存${key}数据失败:`, error);
+                }
+            },
+            
+            getData: function(key) {
+                try {
+                    const data = localStorage.getItem(key);
+                    return data ? JSON.parse(data) : null;
+                } catch (error) {
+                    console.error(`获取${key}数据失败:`, error);
+                    return null;
+                }
+            },
+            
+            removeData: function(key) {
+                try {
+                    localStorage.removeItem(key);
+                } catch (error) {
+                    console.error(`删除${key}数据失败:`, error);
+                }
+            }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1902,7 +1928,7 @@
                                         failureCallback(new Error(response.message));
                                     }
                                 }).catch(error => {
-                                    console.error('获取日历订单数据失败:', error);
+                                    console.error('获取日历订单数���失败:', error);
                                     showMessage('获取订单失败，请稍后重试');
                                     failureCallback(error);
                                 });
