@@ -1574,38 +1574,6 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 定义统一的数据存储工具
-            const utils = {
-                // 存储数据到 localStorage
-                saveData: function(key, data) {
-                    try {
-                        localStorage.setItem(key, JSON.stringify(data));
-                    } catch (error) {
-                        console.error(`保存${key}数据失败:`, error);
-                    }
-                },
-                
-                // 从 localStorage 获取数据
-                getData: function(key) {
-                    try {
-                        const data = localStorage.getItem(key);
-                        return data ? JSON.parse(data) : null;
-                    } catch (error) {
-                        console.error(`获取${key}数据失败:`, error);
-                        return null;
-                    }
-                },
-                
-                // 从 localStorage 删除数据
-                removeData: function(key) {
-                    try {
-                        localStorage.removeItem(key);
-                    } catch (error) {
-                        console.error(`删除${key}数据失败:`, error);
-                    }
-                }
-            };
-
             // 修改获取登录数据的函数
             function getLoginData() {
                 return utils.getData('loginData');
@@ -1928,7 +1896,7 @@
                                         failureCallback(new Error(response.message));
                                     }
                                 }).catch(error => {
-                                    console.error('获取日历订单数���失败:', error);
+                                    console.error('获取日历订单数据失败:', error);
                                     showMessage('获取订单失败，请稍后重试');
                                     failureCallback(error);
                                 });
