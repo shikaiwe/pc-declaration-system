@@ -2275,7 +2275,7 @@
             return response.json();
         }
 
-        // 获取天���和位置信息
+        // 获取天�����和位置信息
         async function fetchWeatherAndLocation() {
             // 使用 jQuery 获取 API Key
             function getApiKeyFromServer() {
@@ -2488,8 +2488,45 @@
             document.getElementById('newOrderForm').reset(); // 提交后重置表单
         });
 
+        // 修改 formatDate 函数
+        function formatDate(dateString) {
+            // 如果是字符串格式的日期，先尝试解析
+            if (typeof dateString === 'string') {
+                // 处理包含中文的日期字符串
+                if (dateString.includes('年') && dateString.includes('月') && dateString.includes('日')) {
+                    const parts = dateString.match(/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/);
+                    if (parts) {
+                        return dateString; // 如果已经是正确格式，直接返回
+                    }
+                }
+                dateString = new Date(dateString);
+            }
+
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return '时间格式错误';
+            }
+            
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
+        }
+
         // 修改 callReportAPI 函数
         async function callReportAPI(userPhoneNumber, address, issue, date) {
+            // 将中文格式的日期转换为标准格式
+            let formattedDate = date;
+            if (date.includes('年')) {
+                const parts = date.match(/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/);
+                if (parts) {
+                    formattedDate = `${parts[1]}-${parts[2].padStart(2, '0')}-${parts[3].padStart(2, '0')} ${parts[4].padStart(2, '0')}:${parts[5]}`;
+                }
+            }
+
             const response = await fetch(reportApiUrl, {
                 method: 'POST',
                 headers: {
@@ -2497,11 +2534,10 @@
                     'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({
-                    // 删除 name 字段
                     userPhoneNumber: userPhoneNumber,
                     address: address,
                     issue: issue,
-                    date: date
+                    date: formattedDate
                 }),
                 credentials: 'include'
             });
@@ -2852,7 +2888,16 @@
                     if (dateSwiper && timeSwiper) {
                         const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
                         const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
-                        preferredTimeInput.value = `2024年${selectedDate} ${selectedTime}`;
+                        
+                        // 获取当前年份
+                        const year = new Date().getFullYear();
+                        
+                        // 解析月和日
+                        const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
+                        
+                        // 构建标准格式的日期字符串
+                        const formattedDateTime = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${selectedTime}`;
+                        preferredTimeInput.value = formattedDateTime;
                         pickerContainer.classList.remove('active');
                     }
                 });
@@ -2908,21 +2953,6 @@
                 alert('登出失败，请重试');
             });
         });
-
-        // 日期格式化函数
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) {
-                return '时间格式错误';
-            }
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            
-            return `${year}年${month}月${day}日 ${hours}:${minutes}`;
-        }
 
         // 显示历史订单
         function displayHistoryOrders(orders) {
@@ -3068,7 +3098,7 @@
                 if (response.message === 'Success') {
                     showFormMessage('保存成功！', 'success');
                     
-                    // 3秒���关闭模态框
+                    // 3秒关闭模态框
                     setTimeout(() => {
                         document.getElementById('editModal').style.display = "none";
                         document.getElementById('overlay').style.display = "none";
