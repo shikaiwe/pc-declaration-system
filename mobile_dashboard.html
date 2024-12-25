@@ -4060,7 +4060,7 @@
             }
         });
 
-        // 防止点击选择器内容时关闭
+        // 防止点击���择器内容时关闭
         pickerContainer.querySelector('.picker-container').addEventListener('click', function(e) {
             e.stopPropagation();
         });
@@ -4236,6 +4236,80 @@
         // 初始化用户信息显示
         updateGreeting();
         displayUsername();
+    });
+
+    // 更新问候语函数
+    function updateGreeting() {
+        const greetingText = document.getElementById('greetingText');
+        if (greetingText) {
+            const hour = new Date().getHours();
+            let greeting = '';
+            
+            if (hour >= 5 && hour < 9) {
+                greeting = '早上好，';
+            } else if (hour >= 9 && hour < 11) {
+                greeting = '上午好，';
+            } else if (hour >= 11 && hour < 13) {
+                greeting = '中午好，';
+            } else if (hour >= 13 && hour < 18) {
+                greeting = '下午好，';
+            } else {
+                greeting = '晚上好，';
+            }
+            
+            greetingText.textContent = greeting;
+        }
+    }
+
+    // 获取并显示用户名
+    function displayUsername() {
+        const usernameDisplay = document.getElementById('username-display');
+        if (!usernameDisplay) return;
+
+        fetch(API_URLS.GET_USER_INFO, {
+            method: 'GET',
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message === 'Success') {
+                const username = data.username;
+                utils.saveData('username', username);
+                usernameDisplay.textContent = username;
+            } else {
+                handleSessionError(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('获取用户信息失败:', error);
+            const username = utils.getData('username');
+            usernameDisplay.textContent = username || '用户';
+        });
+    }
+
+    // 合并所有 DOMContentLoaded 事件监听器
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化网络检测
+        initNetworkDetection();
+        
+        // 初始化日期时间选择器
+        const preferredTimeInput = document.getElementById('preferredTime');
+        if (preferredTimeInput) {
+            initDateTimePicker(preferredTimeInput);
+        }
+        
+        // 初始化日程管理
+        const scheduleManagementButton = document.getElementById('schedule-management');
+        if (scheduleManagementButton) {
+            // 日程管理相关代码
+        }
+        
+        // 初始化用户信息显示
+        updateGreeting();
+        displayUsername();
+        
+        // 每分钟更新一次问候语
+        setInterval(updateGreeting, 60000);
     });
 </script>
 
