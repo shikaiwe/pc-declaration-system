@@ -2745,7 +2745,7 @@
 
         // 模拟获取用户信息的函数
         function getUserInfo() {
-            // 假从本地存储或其他来源获取用户信息
+            // 假从本地存储或其���来源获取用户信息
             const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
             return userInfo;
         }
@@ -3497,7 +3497,7 @@
                 .then(data => {
                     if (data.message === 'Success') {
                         // 保存并显示用户名
-                        const username = data.user_info.name;
+                        const username = data.username;  // 修改这里，使用正确的响应字段
                         localStorage.setItem('username', username);
                         usernameDisplay.textContent = username;
                     } else {

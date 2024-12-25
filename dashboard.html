@@ -661,7 +661,7 @@
             margin-right: 12px;
         }
 
-        /* 订单状态样式 */
+        /* 订单状���样式 */
         .order-status {
             display: inline-block;
             padding: 4px 12px;
@@ -1330,7 +1330,7 @@
                 if (hour >= 5 && hour < 9) {
                     greeting = '早上好，';
                 } else if (hour >= 9 && hour < 11) {
-                    greeting = '上��好，';
+                    greeting = '上午好，';
                 } else if (hour >= 11 && hour < 13) {
                     greeting = '中午好，';
                 } else if (hour >= 13 && hour < 18) {
@@ -1356,7 +1356,7 @@
                 .then(data => {
                     if (data.message === 'Success') {
                         // 保存并显示用户名
-                        const username = data.user_info.name;
+                        const username = data.username;
                         localStorage.setItem('username', username);
                         usernameDisplay.textContent = username;
                     } else {
@@ -1474,7 +1474,7 @@
                 });
             }
 
-            // 统一的会话错��处理函数
+            // 统一的会话错误处理函数
             function handleSessionError(message) {
                 switch (message) {
                     case 'Session has expired':
@@ -1665,7 +1665,7 @@
                                     </div>
                                 `;
                                 
-                                // 显示模态框
+                                // 显示���态框
                                 orderDetailModal.style.display = 'block';
                                 
                                 // 关闭按钮事件
@@ -2023,7 +2023,7 @@
 
                 setPreferredTimeRange();
 
-                // 检查选择的时间是否允许范围内
+                // 检查选择��时间是否允许范围内
                 preferredTimeInput.addEventListener('change', () => {
                     const selectedTime = new Date(preferredTimeInput.value);
                     const selectedHour = selectedTime.getHours();
@@ -2192,7 +2192,7 @@
                         const decryptedData = utils.decrypt(loginData);
                         if (decryptedData) {
                             const userData = JSON.parse(decryptedData);
-                            // 设置用户名输入框的值
+                            // 设置用户名输入框��值
                             const usernameInput = document.getElementById('username');
                             if (usernameInput) {
                                 usernameInput.value = userData.username;
