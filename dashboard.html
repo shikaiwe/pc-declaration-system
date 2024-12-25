@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气���息样式 */
+        /* 天气信息样式 */
         .weather-info {
             margin-top: auto;
             background: linear-gradient(135deg, #6dd5ed, #2193b0);
@@ -335,7 +335,7 @@
             margin-top: 15px;
         }
 
-        /* 模态框样式 */
+        /* 模态框��式 */
         .modal {
             display: none;
             position: fixed;
@@ -485,7 +485,7 @@
             color: white;
         }
 
-        /* 订单管理内���样式 */
+        /* 订单管理内容样式 */
         #orderContent {
             background-color: #f4f4f4;
             border-radius: 8px;
@@ -1747,7 +1747,7 @@
                             checkUserPhoneNumber();
                         });
                     } else if (response.message === 'This user is existed') {
-                        showMessage('用户名��被占用，请更换其他用户���');
+                        showMessage('用户名已被占用，请更换其他用户名');
                     } else {
                         handleSessionError(response.message);
                     }
@@ -1793,7 +1793,7 @@
                         handleSessionError(response.message);
                     }
                 }).catch(error => {
-                    console.error('修���密码失败:', error);
+                    console.error('修改密码失败:', error);
                     showMessage('修改密码失败，请重试');
                 });
             });

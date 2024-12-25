@@ -2171,9 +2171,13 @@
         </div>
     </div>
     <div id="logoutModal" class="logout-modal">
-        <p>确定要退出登录吗？</p>
-        <button id="confirmLogout">确认</button>
-        <button id="cancelLogout">取消</button>
+        <div class="logout-modal-content">
+            <p>确定要退出登录吗？</p>
+            <div class="logout-modal-buttons">
+                <button id="confirmLogout">确认</button>
+                <button id="cancelLogout">取消</button>
+            </div>
+        </div>
     </div>
 
     <div id="orderManagementModal" class="modal">
@@ -2271,7 +2275,7 @@
             return response.json();
         }
 
-        // 获取天气和位置信息
+        // 获取天���和位置信息
         async function fetchWeatherAndLocation() {
             // 使用 jQuery 获取 API Key
             function getApiKeyFromServer() {
@@ -3064,7 +3068,7 @@
                 if (response.message === 'Success') {
                     showFormMessage('保存成功！', 'success');
                     
-                    // 3秒后关闭模态框
+                    // 3秒���关闭模态框
                     setTimeout(() => {
                         document.getElementById('editModal').style.display = "none";
                         document.getElementById('overlay').style.display = "none";
