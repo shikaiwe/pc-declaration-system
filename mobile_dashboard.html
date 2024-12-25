@@ -2394,8 +2394,8 @@
         const API_URLS = {
             // 用户相关
             LOGIN: `${BASE_URL}/api/users/login/`,
-            LOGOUT: `${BASE_URL}/api/users/logout/`,
-            VALIDATE_SESSION: `${BASE_URL}/api/users/validate-session/`,
+            logoutUrl: `${BASE_URL}/api/dashboard/logout/`,
+            VALIDATE_SESSION: `${BASE_URL}/api/user/validate-session/`,
             GET_USER_INFO: `${BASE_URL}/api/dashboard/get_user_info/`,
             
             // 账户管理相关
@@ -2405,7 +2405,7 @@
             
             // 订单相关
             REPORT: `${BASE_URL}/api/dashboard/call_report/`,
-            GET_HISTORY: `${BASE_URL}/api/dashboard/user_get_history_report/`,
+            getHistoryCallUrl: `${BASE_URL}/api/dashboard/user_get_history_report/`,
 
             // 天气相关
             WEATHER_API_KEY: `${BASE_URL}/api/dashboard/getWeatherApiKey/`
@@ -2420,7 +2420,7 @@
             return response.json();
         }
 
-        // 获取天���������和位置信息
+        // 获取天气和位置信息
         async function fetchWeatherAndLocation() {
             // 使用 jQuery 获取 API Key
             function getApiKeyFromServer() {
