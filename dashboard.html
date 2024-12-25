@@ -1298,18 +1298,27 @@
         };
 
         const utils = {
-            // 简单的加密方法
+            // 加密方法
             encrypt: function(text) {
                 try {
-                    return window.btoa(unescape(encodeURIComponent(text)));
+                    // 使用 Base64 编码，并处理特殊字符
+                    return btoa(encodeURIComponent(text).replace(/%([0-9A-F]{2})/g,
+                        function toSolidBytes(match, p1) {
+                            return String.fromCharCode('0x' + p1);
+                    }));
                 } catch (e) {
                     console.error('加密失败:', e);
                     return null;
                 }
             },
+            
+            // 解密方法
             decrypt: function(text) {
                 try {
-                    return decodeURIComponent(escape(window.atob(text)));
+                    // 解码 Base64，并处理特殊字符
+                    return decodeURIComponent(Array.prototype.map.call(atob(text), function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
                 } catch (e) {
                     console.error('解密失败:', e);
                     return null;
@@ -1392,16 +1401,20 @@
             // 获取登录数据
             function getLoginData() {
                 const encryptedData = localStorage.getItem('loginData');
-                if (encryptedData) {
-                    try {
-                        const decryptedData = JSON.parse(utils.decrypt(encryptedData));
-                        return decryptedData;
-                    } catch (error) {
-                        console.error('获取登录数据失败:', error);
+                if (!encryptedData) {
+                    return null;
+                }
+                
+                try {
+                    const decryptedData = utils.decrypt(encryptedData);
+                    if (!decryptedData) {
                         return null;
                     }
+                    return JSON.parse(decryptedData);
+                } catch (error) {
+                    console.error('获取登录数据失败:', error);
+                    return null;
                 }
-                return null;
             }
 
             const weatherInfoElement = document.getElementById('weatherInfo');
@@ -1722,7 +1735,7 @@
                 });
             });
 
-            // 修改用户名显示和下拉菜单功能
+            // 修改用户显示和下拉菜单功能
             const userGreeting = document.querySelector('.user-greeting');
             
             // 创建下拉菜单元素
@@ -1849,7 +1862,7 @@
                         showError();
                     }
                 }).catch(error => {
-                    console.error('获取历史订单失败:', error);
+                    console.error('获取历史订���失败:', error);
                     showError();
                 });
             }
@@ -1914,7 +1927,7 @@
                 `;
             }
 
-            // 更新错误状态显示
+            // 更��错误状态显示
             function showError() {
                 document.getElementById('orderHistory').innerHTML = `
                     <div class="error-message">
