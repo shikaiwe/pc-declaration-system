@@ -1173,7 +1173,7 @@
             // 更新当前时间
             function updateTime() {
                 const now = new Date();
-                const dateString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}��`;
+                const dateString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
                 const timeString = `${now.getHours()}时${now.getMinutes()}分${now.getSeconds()}秒`;
                 currentTimeElement.textContent = `${dateString} ${timeString}`;
             }
@@ -1628,7 +1628,7 @@
 
                 setPreferredTimeRange();
 
-                // 检查选择的时间是否在允��范围内
+                // 检查选择的时间是否在允许范围内
                 preferredTimeInput.addEventListener('change', () => {
                     const selectedTime = new Date(preferredTimeInput.value);
                     const selectedHour = selectedTime.getHours();
@@ -1744,7 +1744,47 @@
                     }
                 }).catch(error => {
                     console.error('保存失败:', error);
-                    showMessage('��存失败，请重试');
+                    showMessage('保存失败，请重试');
+                });
+            });
+
+            // 添加修改密码表单提交处理
+            document.getElementById('passwordForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (newPassword !== confirmPassword) {
+                    showMessage('两次输入的新密码不一致');
+                    return;
+                }
+                
+                $.ajax({
+                    url: `${BASE_URL}/api/dashboard/renew_password/`,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        old_password: currentPassword,
+                        new_password: newPassword
+                    }),
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                }).then(response => {
+                    if (response.message === 'Success') {
+                        showMessage('密码修改成功！', () => {
+                            document.getElementById('passwordForm').reset();
+                        });
+                    } else if (response.message === 'Password error') {
+                        showMessage('原密码错误，请重试');
+                    } else {
+                        handleSessionError(response.message);
+                    }
+                }).catch(error => {
+                    console.error('修改密码失败:', error);
+                    showMessage('修改密码失败，请重试');
                 });
             });
         });
