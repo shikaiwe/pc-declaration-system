@@ -1242,7 +1242,7 @@
 <body>
     <div class="sidebar">
         <ul class="sidebar-menu">
-            <li id="homeLink"><i>🏠</i>首页</li>
+            <li id="homeLink"><i>���</i>首页</li>
             <li id="orderManagement"><i>📝</i>订单管理</li>
             <li id="scheduleManagement"><i>📅</i>日程管理</li>
             <li id="dataStatistics"><i>📊</i>数据统计</li>
@@ -1420,28 +1420,31 @@
             }
         };
 
-        // URL和API配置
+        // API URL配置
         const ip = '8.134.178.71';
-        const BASE_URL = `https://${ip}`;
+        const BASE_URL = `https://${ip}/api`;
 
+        // 定义所有API端点
         const API_URLS = {
-            // 用户相关
-            LOGIN: `${BASE_URL}/api/users/login/`,
-            LOGOUT: `${BASE_URL}/api/dashboard/logout/`,
-            VALIDATE_SESSION: `${BASE_URL}/api/user/validate-session/`,
-            GET_USER_INFO: `${BASE_URL}/api/dashboard/get_user_info/`,
+            // 用户认证相关接口
+            LOGIN: `${BASE_URL}/users/login/`,              // 用户登录
+            LOGOUT: `${BASE_URL}/dashboard/logout/`,        // 用户登出
+            GET_USER_INFO: `${BASE_URL}/dashboard/get_user_info/`,  // 获取用户信息
             
-            // 账户管理相关
-            SAVE_PHONE: `${BASE_URL}/api/dashboard/save_phone_number/`,
-            GET_PHONE: `${BASE_URL}/api/dashboard/get_phone_number/`,
-            CHANGE_PASSWORD: `${BASE_URL}/api/dashboard/renew_password/`,
+            // 账户管理相关接口
+            SAVE_PHONE: `${BASE_URL}/dashboard/save_phone_number/`,  // 保存手机号
+            GET_PHONE: `${BASE_URL}/dashboard/get_phone_number/`,    // 获取手机号
+            CHANGE_PASSWORD: `${BASE_URL}/dashboard/renew_password/`,  // 修改密码
             
-            // 订单相关
-            REPORT: `${BASE_URL}/api/dashboard/call_report/`,
-            GET_HISTORY: `${BASE_URL}/api/dashboard/user_get_history_report/`,
+            // 订单管理相关接口
+            REPORT: `${BASE_URL}/dashboard/call_report/`,           // 提交报单
+            GET_HISTORY: `${BASE_URL}/dashboard/user_get_history_report/`,  // 获取历史订单
+            ASSIGN_ORDER: `${BASE_URL}/dashboard/assign_order/`,    // 分配订单
+            GET_REPORT_LIST: `${BASE_URL}/dashboard/worker_get_report_list/`,  // 获取报单列表
+            COMPLETE_REPORT: `${BASE_URL}/dashboard/complete_report/`,  // 完成订单
             
-            // 天气相关
-            WEATHER_API_KEY: `${BASE_URL}/api/dashboard/getWeatherApiKey/`
+            // 天气相关接口
+            WEATHER_API_KEY: `${BASE_URL}/dashboard/get_weather_api_key/`  // 获取天气API密钥
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1612,19 +1615,22 @@
             function handleSessionError(message) {
                 switch (message) {
                     case 'Session has expired':
-                        alert('会话已过期，请重新登录');
+                        showMessage('会话已过期，请重新登录');
                         break;
                     case 'Invalid session':
-                        alert('无效的会话，请重新登录');
+                        showMessage('无效的会话，请重新登录');
                         break;
                     case 'No sessionid cookie':
-                        alert('未找到会话信息，请重新登录');
+                        showMessage('未找到会话信息，请重新登录');
                         break;
                     default:
-                        alert('发生未知错误，请重新登录');
+                        showMessage('发生未知错误，请重新登录');
                 }
+                
                 localStorage.removeItem('loginData');
-                window.location.href = 'login.html';
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
             }
 
             // 用 jQuery 获取数据
@@ -1964,25 +1970,26 @@
 
             orderHistoryButton.addEventListener('click', fetchHistoryOrders);
 
-            function fetchHistoryOrders() {
-                $.ajax({
-                    url: API_URLS.GET_HISTORY,
-                    method: 'GET',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                }).then(response => {
-                    if (response.message === 'Success') {
-                        displayHistoryOrders(response.report_info);
-                    } else if (response.message === 'No history report') {
+            async function fetchHistoryOrders() {
+                try {
+                    const response = await fetch(API_URLS.GET_HISTORY, {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.message === 'Success') {
+                        displayHistoryOrders(data.report_info);
+                    } else if (data.message === 'No history report') {
                         showNoOrders();
                     } else {
-                        showError();
+                        handleSessionError(data.message);
                     }
-                }).catch(error => {
+                } catch (error) {
                     console.error('获取历史订单失败:', error);
-                    showError();
-                });
+                    showMessage('获取历史订单失败，请重试');
+                }
             }
 
             function displayHistoryOrders(orders) {
@@ -2055,32 +2062,27 @@
                 `;
             }
 
-            // 调用报告API的函数
-            function callReportAPI(userPhoneNumber, address, issue, preferredTime) {
-                return $.ajax({
-                    url: API_URLS.REPORT,
+            // 修改报单API调用
+            async function callReportAPI(userPhoneNumber, address, issue, date) {
+                const response = await fetch(API_URLS.REPORT, {
                     method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({
-                        userPhoneNumber: userPhoneNumber,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone_number: userPhoneNumber,
                         address: address,
                         issue: issue,
-                        date: preferredTime
+                        date: date
                     }),
-                    dataType: 'json',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                }).then(response => {
-                    if (response.message === 'Success') {
-                        showMessage('订单提交成功，请留意推送');
-                        return response;
-                    } else {
-                        handleSessionError(response.message);
-                    }
-                }).catch(error => {
-                    console.error('API调用失败:', error);
+                    credentials: 'include'
                 });
+
+                if (!response.ok) {
+                    throw new Error('网络响应失败');
+                }
+
+                return response.json();
             }
 
             const reportOrderButton = document.querySelector('.tab-button[data-tab="reportOrder"]');
@@ -2297,7 +2299,7 @@
                         }
                         showMessage(successMessage);
                     } else if (response.message === 'This user is existed') {
-                        showMessage('用户名已被占用，请更换其他用户名');
+                        showMessage('用户名��被占用，请更换其他用户名');
                     } else {
                         handleSessionError(response.message);
                     }
@@ -2320,33 +2322,39 @@
                     return;
                 }
                 
-                $.ajax({
-                    url: `${BASE_URL}/api/dashboard/renew_password/`,
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({
-                        old_password: currentPassword,
-                        new_password: newPassword
-                    }),
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                }).then(response => {
-                    if (response.message === 'Success') {
+                changePassword(currentPassword, newPassword);
+            });
+
+            // 修改修改密码API调用
+            async function changePassword(oldPassword, newPassword) {
+                try {
+                    const response = await fetch(API_URLS.CHANGE_PASSWORD, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            old_password: oldPassword,
+                            new_password: newPassword
+                        }),
+                        credentials: 'include'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.message === 'Success') {
                         showMessage('密码修改成功！请重新登录', () => {
                             localStorage.removeItem('loginData');
                             window.location.href = 'login.html';
                         });
-                    } else if (response.message === 'Password error') {
-                        showMessage('原密码错误，请重试');
                     } else {
-                        handleSessionError(response.message);
+                        throw new Error(data.message);
                     }
-                }).catch(error => {
+                } catch (error) {
                     console.error('修改密码失败:', error);
-                    showMessage('修改密码失败，请重试');
-                });
-            });
+                    showMessage('修改密码失败: ' + error.message);
+                }
+            }
 
             // 替换为在账号管理标签页切换时加载用户信息
             document.querySelector('.tab-button[data-tab="info"]').addEventListener('click', function() {
@@ -2361,7 +2369,7 @@
             });
         });
 
-        // 在script标签中添加显示消息的函数
+        // 统一的消息提示函数
         function showMessage(message, callback) {
             const messageModal = document.getElementById('messageModal');
             const messageText = document.getElementById('messageText');

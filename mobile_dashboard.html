@@ -3568,6 +3568,42 @@
             localStorage.removeItem('rememberMe');
             window.location.href = 'login.html';
         }
+
+        // 移动端特有的手势操作功能
+        function initMobileFeatures() {
+            const detailCard = document.getElementById('orderDetailCard');
+            let startY = 0;
+            let currentY = 0;
+            
+            // 触摸开始时记录起始位置
+            detailCard.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+            });
+            
+            // 触摸移动时计算位移并应用变换
+            detailCard.addEventListener('touchmove', (e) => {
+                currentY = e.touches[0].clientY;
+                const deltaY = currentY - startY;
+                
+                if (deltaY > 0) {
+                    detailCard.style.transform = `translateY(${deltaY}px)`;
+                }
+            });
+            
+            // 触摸结束时判断是否关闭详情卡片
+            detailCard.addEventListener('touchend', () => {
+                if (currentY - startY > 100) {
+                    closeDetail();
+                } else {
+                    detailCard.style.transform = '';
+                }
+            });
+        }
+
+        // 初始化移动端功能
+        document.addEventListener('DOMContentLoaded', () => {
+            initMobileFeatures();
+        });
     </script>
 
     </body>
