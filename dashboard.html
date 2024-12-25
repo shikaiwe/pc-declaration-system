@@ -1237,12 +1237,39 @@
             display: none;
             z-index: 1004;
         }
+
+        /* 添加加载状态样式 */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        /* 优化错误消息样式 */
+        .error-message {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            color: #ff4d4f;
+        }
+
+        /* 优化成功消息样式 */
+        .success-message {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            color: #52c41a;
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <ul class="sidebar-menu">
-            <li id="homeLink"><i>���</i>首页</li>
+            <li id="homeLink"><i>🏠</i>首页</li>
             <li id="orderManagement"><i>📝</i>订单管理</li>
             <li id="scheduleManagement"><i>📅</i>日程管理</li>
             <li id="dataStatistics"><i>📊</i>数据统计</li>
@@ -1407,6 +1434,79 @@
     <div class="detail-overlay" id="detailOverlay"></div>
 
     <script>
+        // API URL 配置对象
+        var API_URLS = {
+            // 用户认证相关接口
+            LOGIN: `${BASE_URL}/users/login/`,              // 用户登录接口
+            LOGOUT: `${BASE_URL}/dashboard/logout/`,        // 用户登出接口
+            GET_USER_INFO: `${BASE_URL}/dashboard/get_user_info/`,  // 获取用户信息接口
+            
+            // 账户管理相关接口
+            SAVE_PHONE: `${BASE_URL}/dashboard/savePhoneNumber/`,   // 保存手机号和用户名接口
+            GET_PHONE: `${BASE_URL}/dashboard/getPhoneNumber/`,     // 获取用户手机号接口
+            CHANGE_PASSWORD: `${BASE_URL}/dashboard/renew_password/`,// 修改密码接口
+            
+            // 订单管理相关接口
+            REPORT: `${BASE_URL}/dashboard/call_report/`,           // 提交维修报单接口
+            GET_HISTORY: `${BASE_URL}/dashboard/user_get_history_report/`, // 获取用户历史订单接口
+            ASSIGN_ORDER: `${BASE_URL}/dashboard/assign_order/`,    // 分配维修订单接口
+            GET_REPORT_LIST: `${BASE_URL}/dashboard/worker_get_report_list/`, // 获取维修工订单列表接口
+            COMPLETE_REPORT: `${BASE_URL}/dashboard/complete_report/`, // 完成维修订单接口
+            
+            // 天气相关接口
+            WEATHER_API_KEY: `${BASE_URL}/dashboard/getWeatherApiKey/` // 获取天气API密钥接口
+        };
+        // 工具函数
+        var utils = {
+            // Base64加密函数
+            encrypt: function(text) {
+                return btoa(encodeURIComponent(text));
+            },
+            
+            // Base64解密函数
+            decrypt: function(encoded) {
+                return decodeURIComponent(atob(encoded));
+            }
+        };
+
+        // 通用的会话错误处理函数
+        function handleSessionError(message) {
+            switch (message) {
+                case 'Session has expired':
+                    showMessage('会话已过期，请重新登录');
+                    break;
+                case 'Invalid session':
+                    showMessage('无效的会话，请重新登录');
+                    break;
+                case 'No sessionid cookie':
+                    showMessage('未找到会话信息，请重新登录');
+                    break;
+                default:
+                    showMessage('发生未知错误，请重新登录');
+            }
+            
+            // 清除登录信息并跳转到登录页
+            localStorage.removeItem('loginData');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+        }
+
+        // 通用的消息提示函数
+        function showMessage(message, callback) {
+            const messageModal = document.getElementById('messageModal');
+            const messageText = document.getElementById('messageText');
+            const confirmButton = document.getElementById('messageConfirm');
+            
+            messageText.textContent = message;
+            messageModal.style.display = 'block';
+            
+            confirmButton.onclick = () => {
+                messageModal.style.display = 'none';
+                if (callback) callback();
+            };
+        }
+
         // 在 script 标签的开头添加 utils 对象定义
         const utils = {
             // 加密函数
@@ -1425,15 +1525,15 @@
         const BASE_URL = `https://${ip}/api`;
 
         // 定义所有API端点
-        const API_URLS = {
+        var API_URLS = {
             // 用户认证相关接口
             LOGIN: `${BASE_URL}/users/login/`,              // 用户登录
             LOGOUT: `${BASE_URL}/dashboard/logout/`,        // 用户登出
             GET_USER_INFO: `${BASE_URL}/dashboard/get_user_info/`,  // 获取用户信息
             
             // 账户管理相关接口
-            SAVE_PHONE: `${BASE_URL}/dashboard/save_phone_number/`,  // 保存手机号
-            GET_PHONE: `${BASE_URL}/dashboard/get_phone_number/`,    // 获取手机号
+            SAVE_PHONE: `${BASE_URL}/dashboard/savePhoneNumber/`,  // 保存手机号
+            GET_PHONE: `${BASE_URL}/dashboard/getPhoneNumber/`,    // 获取手机号
             CHANGE_PASSWORD: `${BASE_URL}/dashboard/renew_password/`,  // 修改密码
             
             // 订单管理相关接口
@@ -1444,10 +1544,100 @@
             COMPLETE_REPORT: `${BASE_URL}/dashboard/complete_report/`,  // 完成订单
             
             // 天气相关接口
-            WEATHER_API_KEY: `${BASE_URL}/dashboard/get_weather_api_key/`  // 获取天气API密钥
+            WEATHER_API_KEY: `${BASE_URL}/dashboard/getWeatherApiKey/`  // 获取天气API密钥
         };
 
         document.addEventListener('DOMContentLoaded', () => {
+            // 定义统一的数据存储工具
+            const utils = {
+                // 存储数据到 localStorage
+                saveData: function(key, data) {
+                    try {
+                        localStorage.setItem(key, JSON.stringify(data));
+                    } catch (error) {
+                        console.error(`保存${key}数据失败:`, error);
+                    }
+                },
+                
+                // 从 localStorage 获取数据
+                getData: function(key) {
+                    try {
+                        const data = localStorage.getItem(key);
+                        return data ? JSON.parse(data) : null;
+                    } catch (error) {
+                        console.error(`获取${key}数据失败:`, error);
+                        return null;
+                    }
+                },
+                
+                // 从 localStorage 删除数据
+                removeData: function(key) {
+                    try {
+                        localStorage.removeItem(key);
+                    } catch (error) {
+                        console.error(`删除${key}数据失败:`, error);
+                    }
+                }
+            };
+
+            // 修改获取登录数据的函数
+            function getLoginData() {
+                return utils.getData('loginData');
+            }
+
+            // 修改退出登录的处理函数
+            function handleLogout() {
+                // 清除所有相关数据
+                utils.removeData('username');
+                utils.removeData('loginData');
+                utils.removeData('rememberMe');
+
+                // 调用退出登录API
+                $.ajax({
+                    url: API_URLS.LOGOUT,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                }).then(response => {
+                    if (response.message === 'Success') {
+                        window.location.href = 'login.html';
+                    } else {
+                        handleSessionError(response.message);
+                    }
+                }).catch(error => {
+                    console.error('退出登录失败:', error);
+                    showMessage('退出登录失败，请重试');
+                });
+            }
+
+            // 修改显示用户名的函数
+            function displayUsername() {
+                const usernameDisplay = document.getElementById('username-display');
+                if (!usernameDisplay) return;
+
+                fetch(API_URLS.GET_USER_INFO, {
+                    method: 'GET',
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message === 'Success') {
+                        const username = data.username;
+                        utils.saveData('username', username);
+                        usernameDisplay.textContent = username;
+                    } else {
+                        handleSessionError(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('获取用户信息失败:', error);
+                    // 如果API调用失败，尝试从localStorage获取
+                    const username = utils.getData('username');
+                    usernameDisplay.textContent = username || '用户';
+                });
+            }
+
             // 获取气信息顺带验证登录
             fetchWeatherAndLocation();
             
@@ -1473,35 +1663,6 @@
                 }
                 
                 greetingText.textContent = greeting;
-            }
-            
-            // 获取并显示用户名
-            function displayUsername() {
-                const usernameDisplay = document.getElementById('username-display');
-                if (!usernameDisplay) return;
-
-                // 从API获取用户信息
-                fetch(API_URLS.GET_USER_INFO, {
-                    method: 'GET',
-                    credentials: 'include'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message === 'Success') {
-                        // 保存并显示用户名
-                        const username = data.username;
-                        localStorage.setItem('username', username);
-                        usernameDisplay.textContent = username;
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('获取用户信息失败:', error);
-                    // 如果API调用失败，尝试从localStorage获取
-                    const username = localStorage.getItem('username');
-                    usernameDisplay.textContent = username || '用户';
-                });
             }
             
             // 初始化显示
@@ -1560,7 +1721,7 @@
                     const live = weatherData.lives[0];
                     weatherInfoElement.innerHTML = `
                         <p class="weather-location">
-                            <span class="weather-icon">💧</span>
+                            <span class="weather-icon">🌡️</span>
                             ${city}
                         </p>
                         <p class="weather-temp">
@@ -1609,28 +1770,6 @@
                     console.error('获取API Key时出错:', error);
                     throw error;
                 });
-            }
-
-            // 统一的会话错误处理函数
-            function handleSessionError(message) {
-                switch (message) {
-                    case 'Session has expired':
-                        showMessage('会话已过期，请重新登录');
-                        break;
-                    case 'Invalid session':
-                        showMessage('无效的会话，请重新登录');
-                        break;
-                    case 'No sessionid cookie':
-                        showMessage('未找到会话信息，请重新登录');
-                        break;
-                    default:
-                        showMessage('发生未知错误，请重新登录');
-                }
-                
-                localStorage.removeItem('loginData');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
             }
 
             // 用 jQuery 获取数据
@@ -1764,7 +1903,7 @@
                                     }
                                 }).catch(error => {
                                     console.error('获取日历订单数据失败:', error);
-                                    showMessage('获��订单失败，请稍后重试');
+                                    showMessage('获取订单失败，请稍后重试');
                                     failureCallback(error);
                                 });
                             },
@@ -1912,7 +2051,7 @@
                 });
             }
 
-            // 退出登录按钮点击事件
+            // 退出登录按点击事件
             const logoutLink = document.getElementById('logoutLink');
             if (logoutLink) {
                 logoutLink.addEventListener('click', (event) => {
@@ -2028,18 +2167,37 @@
                 `;
             }
 
+            // 添加更健壮的日期格式化函数
             function formatDate(dateString) {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) {
-                    return '时间格式错误';
+                try {
+                    if (!dateString) {
+                        return '无效日期';
+                    }
+                    
+                    // 处理标准格式 YYYY-MM-DD HH:mm
+                    if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)) {
+                        const [datePart, timePart] = dateString.split(' ');
+                        const [year, month, day] = datePart.split('-');
+                        const [hours, minutes] = timePart.split(':');
+                        return `${year}年${parseInt(month)}月${parseInt(day)}日 ${hours}:${minutes}`;
+                    }
+                    
+                    // 处理已经是中文格式的情况
+                    if (typeof dateString === 'string' && dateString.includes('年') && dateString.includes('月')) {
+                        return dateString;
+                    }
+                    
+                    // 处理其他格式
+                    const date = new Date(dateString);
+                    if (isNaN(date.getTime())) {
+                        return '无效日期';
+                    }
+                    
+                    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                } catch (error) {
+                    console.error('日期格式化错误:', error);
+                    return '无效日期';
                 }
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                
-                return `${year}年${month}月${day}日 ${hours}:${minutes}`;
             }
 
             // 更新空状态显示
@@ -2070,7 +2228,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        phone_number: userPhoneNumber,
+                        userPhoneNumber: userPhoneNumber,
                         address: address,
                         issue: issue,
                         date: date
@@ -2082,7 +2240,13 @@
                     throw new Error('网络响应失败');
                 }
 
-                return response.json();
+                const data = await response.json();
+                if (data.message === 'Success') {
+                    return data;
+                } else {
+                    handleSessionError(data.message);
+                    throw new Error(data.message);
+                }
             }
 
             const reportOrderButton = document.querySelector('.tab-button[data-tab="reportOrder"]');
@@ -2196,10 +2360,10 @@
                     
                     const data = await response.json();
                     
-                    if (data.message === 'Success') {
-                        userPhoneNumberInput.value = data.phoneNumber;
+                    if (data.message === 'Success' && data.phoneNumber) {
+                        document.getElementById('userPhoneNumber').value = data.phoneNumber;
                     } else if (data.message === 'No phone number') {
-                        showMessage('还未设置手机号，请先在账户管理设置');
+                        showMessage('您还未设置手机号，请先在账户管理中设置');
                     } else {
                         handleSessionError(data.message);
                     }
@@ -2238,15 +2402,13 @@
             Object.values(accountContents).forEach(content => content.style.display = 'none');
 
             // 修改账号信息表单的提交处理
-            document.getElementById('infoForm').addEventListener('submit', (event) => {
+            document.getElementById('infoForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
                 
                 const phoneNumber = document.getElementById('phone').value;
                 const newName = document.getElementById('username').value;
-                
                 const requestData = {};
                 
-                // 验证手机号（如果填写了）
                 if (phoneNumber.trim()) {
                     if (!/^1[3-9]\d{9}$/.test(phoneNumber)) {
                         showMessage('请输入正确的手机号码格式');
@@ -2255,58 +2417,37 @@
                     requestData.phoneNumber = phoneNumber.trim();
                 }
                 
-                // 验证用户名（如果填写了）
                 if (newName.trim()) {
-                    if (newName.length < 2 || newName.length > 20) {
-                        showMessage('用户名长度应在2-20个字符之间');
-                        return;
-                    }
                     requestData.newName = newName.trim();
                 }
                 
-                // 如果没有任何修改，直接返回
-                if (Object.keys(requestData).length === 0) {
-                    showMessage('请至少填写一项需要修改的信息');
-                    return;
-                }
-                
-                $.ajax({
-                    url: API_URLS.SAVE_PHONE,
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(requestData),
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                }).then(response => {
-                    if (response.message === 'Success') {
-                        // 更新用户名显示和存储
+                try {
+                    const response = await fetch(API_URLS.SAVE_PHONE, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestData),
+                        credentials: 'include'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.message === 'Success') {
+                        showMessage('保存成功');
                         if (requestData.newName) {
-                            localStorage.setItem('username', requestData.newName);
-                            const usernameDisplay = document.getElementById('username-display');
-                            if (usernameDisplay) {
-                                usernameDisplay.textContent = requestData.newName;
-                            }
+                            utils.saveData('username', requestData.newName);
+                            document.getElementById('username-display').textContent = requestData.newName;
                         }
-                        // 根据修改的内容显示不同的成功消息
-                        let successMessage = '';
-                        if (requestData.newName && requestData.phoneNumber) {
-                            successMessage = '用户名和手机号修改成功！';
-                        } else if (requestData.newName) {
-                            successMessage = '用户名修改成功！';
-                        } else {
-                            successMessage = '手机号修改成功！';
-                        }
-                        showMessage(successMessage);
-                    } else if (response.message === 'This user is existed') {
-                        showMessage('用户名��被占用，请更换其他用户名');
+                    } else if (data.message === 'This user is existed') {
+                        showMessage('用户名已被占用');
                     } else {
-                        handleSessionError(response.message);
+                        handleSessionError(data.message);
                     }
-                }).catch(error => {
+                } catch (error) {
                     console.error('保存失败:', error);
                     showMessage('保存失败，请重试');
-                });
+                }
             });
 
             // 添加修改密码表单提交处理
@@ -2343,23 +2484,23 @@
                     const data = await response.json();
                     
                     if (data.message === 'Success') {
-                        showMessage('密码修改成功！请重新登录', () => {
-                            localStorage.removeItem('loginData');
-                            window.location.href = 'login.html';
-                        });
+                        showMessage('密码修改成功');
+                        document.getElementById('passwordForm').reset();
+                    } else if (data.message === 'Password error') {
+                        showMessage('原密码错误');
                     } else {
-                        throw new Error(data.message);
+                        handleSessionError(data.message);
                     }
                 } catch (error) {
-                    console.error('修改密码失败:', error);
-                    showMessage('修改密码失败: ' + error.message);
+                    console.error('密码修改失败:', error);
+                    showMessage('密码修改失败，请重试');
                 }
             }
 
             // 替换为在账号管理标签页切换时加载用户信息
             document.querySelector('.tab-button[data-tab="info"]').addEventListener('click', function() {
                 // 直接从 localStorage 获取用户名
-                const username = localStorage.getItem('username');
+                const username = utils.getData('username');
                 if (username) {
                     const usernameInput = document.getElementById('username');
                     if (usernameInput) {
@@ -2368,21 +2509,6 @@
                 }
             });
         });
-
-        // 统一的消息提示函数
-        function showMessage(message, callback) {
-            const messageModal = document.getElementById('messageModal');
-            const messageText = document.getElementById('messageText');
-            const confirmButton = document.getElementById('messageConfirm');
-            
-            messageText.textContent = message;
-            messageModal.style.display = 'block';
-            
-            confirmButton.onclick = () => {
-                messageModal.style.display = 'none';
-                if (callback) callback();
-            };
-        }
 
         // 添加显示报单消息的函数
         function showReportMessage(message, type) {
@@ -2396,6 +2522,24 @@
                 setTimeout(() => {
                     messageElement.style.display = 'none';
                 }, 3000);
+            }
+        }
+
+        // 添加统一的错误处理函数
+        function handleApiError(error, customMessage) {
+            console.error(error);
+            showMessage(customMessage || '操作失败，请重试');
+        }
+
+        // 添加加载状态管理函数
+        function showLoading(element) {
+            element.innerHTML = '<div class="loading">加载中...</div>';
+        }
+
+        function hideLoading(element) {
+            const loading = element.querySelector('.loading');
+            if (loading) {
+                loading.remove();
             }
         }
     </script>
