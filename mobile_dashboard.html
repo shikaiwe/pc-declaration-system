@@ -203,81 +203,49 @@
         .logout-modal {
             display: none;
             position: fixed;
-            z-index: 2000; /* 确保在其他模态框之上 */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .logout-modal .modal-content {
-            position: fixed;
+            z-index: 2;
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
             background-color: #fff;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 320px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s ease-out;
+            width: 80%;
+            max-width: 400px;
             text-align: center;
+            font-size: 1.2em;
         }
-
         .logout-modal p {
-            margin: 0 0 20px 0;
-            font-size: 16px;
+            margin-bottom: 20px;
             color: #333;
-            line-height: 1.4;
         }
-
-        .logout-modal .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
         .logout-modal button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 100px;
-        }
-
-        /* 确认退出按钮样式 */
-        .logout-modal button#confirmLogout {
-            background-color: #ff4d4f;
+            margin-top: 15px;
+            padding: 15px 30px;
+            background-color: #007BFF;
             color: white;
-            order: 1; /* 确保在左边 */
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.4s ease-in-out, transform 0.3s ease-in-out;
+            display: inline-block;
+            font-size: 1em;
         }
-
+        .logout-modal button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        .logout-modal button#confirmLogout {
+            background-color: orange;
+        }
         .logout-modal button#confirmLogout:hover {
-            background-color: #ff7875;
+            background-color: darkorange;
         }
-
-        /* 取消按钮样式 */
-        .logout-modal button#cancelLogout {
-            background-color: #f0f0f0;
-            color: #333;
-            order: 2; /* 确保在右边 */
-        }
-
-        .logout-modal button#cancelLogout:hover {
-            background-color: #d9d9d9;
-        }
-
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
         }
         .styled-form {
             max-width: 100%;
@@ -1996,169 +1964,12 @@
         .logout-modal {
             display: none;
             position: fixed;
-            z-index: 2000; /* 确保在其他模态框之上 */
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .logout-modal .modal-content {
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 320px;
-            text-align: center;
-        }
-
-        .logout-modal p {
-            margin: 0 0 20px 0;
-            font-size: 16px;
-            color: #333;
-            line-height: 1.4;
-        }
-
-        .logout-modal .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .logout-modal button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 100px;
-        }
-
-        /* 确认退出按钮样式 */
-        .logout-modal button#confirmLogout {
-            background-color: #ff4d4f;
-            color: white;
-            order: 1; /* 确保在左边 */
-        }
-
-        .logout-modal button#confirmLogout:hover {
-            background-color: #ff7875;
-        }
-
-        /* 取消按钮样式 */
-        .logout-modal button#cancelLogout {
-            background-color: #f0f0f0;
-            color: #333;
-            order: 2; /* 确保在右边 */
-        }
-
-        .logout-modal button#cancelLogout:hover {
-            background-color: #d9d9d9;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* 在 dashboard.html 和 mobile_dashboard.html 的 style 标签中添加 */
-        .event-modal {
-            background-color: white;
-            border-radius: 12px;
-            padding: 20px;
-            max-width: 90%;
-            width: 400px;
-        }
-
-        .event-modal-header {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #2196F3;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e8f5e9;
-        }
-
-        .event-modal-content {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .event-detail {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border-radius: 6px;
-        }
-
-        .event-detail-icon {
-            font-size: 1.2em;
-            color: #2196F3;
-            width: 24px;
-            text-align: center;
-        }
-
-        .event-detail-label {
-            font-weight: 500;
-            color: #666;
-            min-width: 70px;
-        }
-
-        .event-detail-value {
-            color: #333;
-            flex: 1;
-        }
-
-        .event-status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .event-status.allocated {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .event-status.pending {
-            background-color: #fff3e0;
-            color: #ef6c00;
-        }
-
-        /* 在 mobile_dashboard.html 的 style 标签中添加 */
-        button, 
-        .tab-button,
-        .navbar a,
-        .event-status,
-        .order-status,
-        .fc-button,                /* 日历按钮 */
-        .fc-button-group button,   /* 日历按钮组 */
-        .fc-toolbar-title,        /* 日历标题 */
-        .fc-col-header-cell-cushion,  /* 日历表头 */
-        .fc-daygrid-day-number,   /* 日期数字 */
-        .fc-event-title,          /* 事件标题 */
-        .fc-event-time {          /* 事件时间 */
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
+            background-color: rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -2236,13 +2047,9 @@
         </div>
     </div>
     <div id="logoutModal" class="logout-modal">
-        <div class="modal-content">
-            <p>确定要退出登录吗？</p>
-            <div class="button-group">
-                <button id="confirmLogout">确认退出</button>
-                <button id="cancelLogout">取消</button>
-            </div>
-        </div>
+        <p>确定要退出登录吗？</p>
+        <button id="confirmLogout">确认</button>
+        <button id="cancelLogout">取消</button>
     </div>
 
     <div id="orderManagementModal" class="modal">
@@ -2448,6 +2255,7 @@
             event.preventDefault();
             const modal = document.getElementById('logoutModal');
             modal.style.display = "block";
+            document.getElementById('overlay').style.display = "block";
             toggleBodyScroll(true);
         });
 
@@ -2482,6 +2290,7 @@
         document.getElementById('cancelLogout').addEventListener('click', function() {
             const modal = document.getElementById('logoutModal');
             modal.style.display = "none";
+            document.getElementById('overlay').style.display = "none";
             toggleBodyScroll(false);
         });
 
@@ -2527,35 +2336,28 @@
         });
 
         // 修改 callReportAPI 函数
-        function callReportAPI(userPhoneNumber, address, issue, preferredTime) {
-            // 从页面标题中获取用户名
-            const username = document.querySelector('.header h1').textContent.split(' - ')[1];
-            
-            return $.ajax({
-                url: reportApiUrl,
+        async function callReportAPI(userPhoneNumber, address, issue, date) {
+            const response = await fetch(reportApiUrl, {
                 method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    username: username,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    // 删除 name 字段
                     userPhoneNumber: userPhoneNumber,
                     address: address,
                     issue: issue,
-                    date: preferredTime
+                    date: date
                 }),
-                dataType: 'json',
-                xhrFields: {
-                    withCredentials: true
-                }
-            }).then(response => {
-                if (response.message === 'Success') {
-                    showMessage('订单提交成功，请留意推送');
-                    return response;
-                } else {
-                    handleSessionError(response.message);
-                }
-            }).catch(error => {
-                console.error('API调用失败:', error);
+                credentials: 'include'
             });
+
+            if (!response.ok) {
+                throw new Error('网络响应失败');
+            }
+
+            return response.json();
         }
 
         // 获取CSRF token的函数（如果需要）
@@ -2693,41 +2495,22 @@
                                     }
                                 }).then(response => {
                                     if (response.message === 'Success') {
-                                        const events = response.report_info.map(order => {
-                                            // 解析日期时间字符串
-                                            let dateStr = order.date;
-                                            if (dateStr.includes('年')) {
-                                                // 处理中文格式的日期
-                                                dateStr = dateStr
-                                                    .replace('年', '-')
-                                                    .replace('月', '-')
-                                                    .replace('日', '')
-                                                    .replace(/\s+/g, 'T');
+                                        const events = response.report_info.map(order => ({
+                                            title: `维修订单: ${order.issue}`,
+                                            start: formatDate(order.date),
+                                            backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
+                                            borderColor: order.allocationState ? '#27ae60' : '#f39c12',
+                                            extendedProps: {
+                                                address: order.address,
+                                                phoneNumber: order.userPhoneNumber,
+                                                status: order.allocationState ? '已分配' : '待分配'
                                             }
-                                            
-                                            // 创建日期对象并设置具体时间
-                                            const date = new Date(dateStr);
-                                            
-                                            return {
-                                                title: `维修订单: ${order.issue}`,
-                                                start: date,
-                                                allDay: false, // 确保事件不是全天事件
-                                                backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
-                                                borderColor: order.allocationState ? '#27ae60' : '#f39c12',
-                                                textColor: '#ffffff',
-                                                extendedProps: {
-                                                    address: order.address,
-                                                    phoneNumber: order.userPhoneNumber,
-                                                    status: order.allocationState ? '已分配' : '待分配',
-                                                    issue: order.issue
-                                                }
-                                            };
-                                        });
+                                        }));
                                         successCallback(events);
                                     } else if (response.message === 'No history report') {
-                                        successCallback([]);
+                                        successCallback([]); // 如果没有订单，显示空日历
                                     } else {
-                                        handleSessionError(response.message);
+                                        showMessage('获取订单失败，请稍后重试');
                                         failureCallback(new Error(response.message));
                                     }
                                 }).catch(error => {
@@ -2736,46 +2519,22 @@
                                     failureCallback(error);
                                 });
                             },
-                            
-                            // 修改事件点击处理函数，使用新的日期格式化
                             eventClick: function(info) {
-                                const event = info.event;
-                                const startDate = event.start;
-                                const formattedDate = formatDate(startDate);
-                                const isAllocated = event.extendedProps.status === '已分配';
-                                
-                                showMessage(`
-                                    <div class="event-modal">
-                                        <div class="event-modal-header">维修订单详情</div>
-                                        <div class="event-modal-content">
-                                            <div class="event-detail">
-                                                <span class="event-detail-icon">🔧</span>
-                                                <span class="event-detail-label">问题：</span>
-                                                <span class="event-detail-value">${event.extendedProps.issue}</span>
-                                            </div>
-                                            <div class="event-detail">
-                                                <span class="event-detail-icon">🕒</span>
-                                                <span class="event-detail-label">时间：</span>
-                                                <span class="event-detail-value">${formattedDate}</span>
-                                            </div>
-                                            <div class="event-detail">
-                                                <span class="event-detail-icon">📍</span>
-                                                <span class="event-detail-label">地址：</span>
-                                                <span class="event-detail-value">${event.extendedProps.address}</span>
-                                            </div>
-                                            <div class="event-detail">
-                                                <span class="event-detail-icon">📱</span>
-                                                <span class="event-detail-label">电话：</span>
-                                                <span class="event-detail-value">${event.extendedProps.phoneNumber}</span>
-                                            </div>
-                                            <div class="event-detail">
-                                                <span class="event-detail-icon">📋</span>
-                                                <span class="event-detail-label">状态：</span>
-                                                <span class="event-status ${isAllocated ? 'allocated' : 'pending'}">${event.extendedProps.status}</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                alert(`
+                                    订单详情:
+                                    问题: ${info.event.title}
+                                    时间: ${info.event.start.toLocaleString()}
+                                    地址: ${info.event.extendedProps.address}
+                                    电话: ${info.event.extendedProps.phoneNumber}
+                                    状态: ${info.event.extendedProps.status}
                                 `.trim());
+                            },
+                            eventDidMount: function(info) {
+                                info.el.title = `
+                                    ${info.event.title}
+                                    地址: ${info.event.extendedProps.address}
+                                    状态: ${info.event.extendedProps.status}
+                                `.trim();
                             }
                         });
                         calendar.render();
@@ -2939,11 +2698,7 @@
         }
 
         // 退出登录功能
-        document.getElementById('confirmLogout').addEventListener('click', function() {
-            const modal = document.getElementById('logoutModal');
-            modal.style.display = "none";
-            toggleBodyScroll(false);
-            
+        document.getElementById('confirmLogout').addEventListener('click', () => {
             $.ajax({
                 url: logoutUrl,
                 method: 'GET',
@@ -2959,95 +2714,51 @@
                 }
             }).catch(error => {
                 console.error('登出失败:', error);
-                showMessage('登出失败，请重试');
+                alert('登出失败，请重试');
             });
         });
 
-        // 修改日期格式化函数
+        // 日期格式化函数
         function formatDate(dateString) {
-            // 检查输入是否有效
-            if (!dateString) {
-                return '时间未指定';
-            }
-
-            try {
-                let date;
-                // 如果输入已经是 Date 对象
-                if (dateString instanceof Date) {
-                    date = dateString;
-                } else if (typeof dateString === 'string') {
-                    // 处理字符串格式的日期
-                    if (dateString.includes('年')) {
-                        // 处理 "2024年3月15日 18:00" 格式
-                        const [datePart, timePart] = dateString.split(' ');
-                        const [year, month, day] = datePart
-                            .replace('年', '-')
-                            .replace('月', '-')
-                            .replace('日', '')
-                            .split('-');
-                        date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${timePart}`);
-                    } else {
-                        // 处理标准 ISO 格式或其他格式
-                        date = new Date(dateString);
-                    }
-                } else {
-                    // 如果是其他格式，尝试转换为 Date 对象
-                    date = new Date(dateString);
-                }
-
-                // 检查日期是否有效
-                if (isNaN(date.getTime())) {
-                    return '无效日期';
-                }
-
-                // 格式化日期
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                
-                return `${year}年${month}月${day}日 ${hours}:${minutes}`;
-            } catch (error) {
-                console.error('日期格式化错误:', error);
-                return '日期格式错误';
-            }
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
         }
 
         // 显示历史订单
         function displayHistoryOrders(orders) {
             const ordersList = Array.isArray(orders) ? orders : [orders];
             
-            const ordersHTML = ordersList.map(order => {
-                // 使用相同的日期格式化函数
-                const formattedDate = formatDate(order.date);
-                
-                return `
-                    <div class="order-card">
-                        <div class="order-info">
-                            <p>
-                                <strong>手机号码</strong>
-                                ${order.userPhoneNumber}
-                                <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
-                                    ${order.allocationState ? '已分配' : '待分配'}
-                                </span>
-                            </p>
-                            <p>
-                                <strong>地址</strong>
-                                ${order.address}
-                            </p>
-                            <p>
-                                <strong>问题描述</strong>
-                                ${order.issue}
-                            </p>
-                            <p>
-                                <strong>预约时间</strong>
-                                ${formattedDate}
-                            </p>
-                        </div>
+            const ordersHTML = ordersList.map(order => `
+                <div class="order-card">
+                    <div class="order-info">
+                        <p>
+                            <strong>手机号码</strong>
+                            ${order.userPhoneNumber}
+                            <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
+                                ${order.allocationState ? '已分配' : '待分配'}
+                            </span>
+                        </p>
+                        <p>
+                            <strong>地址</strong>
+                            ${order.address}
+                        </p>
+                        <p>
+                            <strong>问题描述</strong>
+                            ${order.issue}
+                        </p>
+                        <p>
+                            <strong>预约时间</strong>
+                            ${formatDate(order.date)}
+                        </p>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `).join('');
 
             document.getElementById('orderHistory').innerHTML = `
                 <div class="orders-container">
@@ -3102,22 +2813,17 @@
         document.getElementById('infoForm').addEventListener('submit', (event) => {
             event.preventDefault();
             
-            const phoneNumber = document.getElementById('phone').value.trim();
-            const newName = document.getElementById('username').value.trim();
+            const phoneNumber = document.getElementById('phone').value;
+            const newName = document.getElementById('username').value;
+            const formMessage = document.getElementById('formMessage');
             
-            // 检查是否至少填写了一个字段
-            if (!phoneNumber && !newName) {
-                showFormMessage('请至少填写一项需要修改的信息', 'error');
-                return;
-            }
-            
-            // 如果填写了手机号，则验证格式
-            if (phoneNumber && !/^1[3-9]\d{9}$/.test(phoneNumber)) {
+            // 添加手机号格式验证
+            if(phoneNumber && !/^1[3-9]\d{9}$/.test(phoneNumber)) {
                 showFormMessage('请输入正确的手机号格式', 'error');
                 return;
             }
             
-            // 构建请求数据，只包含已填写的字段
+            // 构建请求数据
             const requestData = {};
             if (phoneNumber) requestData.phoneNumber = phoneNumber;
             if (newName) requestData.newName = newName;
@@ -3136,27 +2842,16 @@
                 }
             }).then(response => {
                 if (response.message === 'Success') {
-                    // 根据更新的字段显示相应的成功消息
-                    let successMessage = '保存成功！已更新';
-                    if (phoneNumber && newName) {
-                        successMessage += '用户名和手机号';
-                    } else if (phoneNumber) {
-                        successMessage += '手机号';
-                    } else {
-                        successMessage += '用户名';
-                    }
-                    showFormMessage(successMessage, 'success');
+                    showFormMessage('保存成功！', 'success');
                     
-                    // 如果更新了用户名，更新页面显示
+                    // 添加这一行来更新标题显示的用户名
                     if (newName) {
                         document.querySelector('.header h1').textContent = `PC志愿者服务队 - ${newName}`;
-                    }
-                    
+                    }                    
                     // 3秒后关闭模态框
                     setTimeout(() => {
                         document.getElementById('editModal').style.display = "none";
                         document.getElementById('overlay').style.display = "none";
-                        toggleBodyScroll(false);
                     }, 3000);
                 } else if (response.message === 'This user is existed') {
                     showFormMessage('用户名已被占用，请更换其他用户名', 'error');
@@ -3167,20 +2862,6 @@
                 console.error('保存失败:', error);
                 showFormMessage('保存失败，请重试', 'error');
             });
-        });
-
-        // 更新表单字段的 placeholder
-        document.addEventListener('DOMContentLoaded', () => {
-            const usernameInput = document.getElementById('username');
-            const phoneInput = document.getElementById('phone');
-            
-            // 更新 placeholder 文本以更清楚地表明可选填
-            usernameInput.placeholder = '输入新用户名';
-            phoneInput.placeholder = '输入新手机号';
-            
-            // 移除 required 属性
-            usernameInput.removeAttribute('required');
-            phoneInput.removeAttribute('required');
         });
 
         // 显示表单提示信息的函数
@@ -3204,15 +2885,7 @@
             const messageText = document.getElementById('messageText');
             const confirmButton = document.getElementById('messageConfirm');
             
-            // 检查消息是否包含 HTML 标签
-            if (message.includes('<div class="event-modal">')) {
-                // 如果是事件详情，直接设置 innerHTML
-                messageText.innerHTML = message;
-            } else {
-                // 如果是普通消息，使用 textContent
-                messageText.textContent = message;
-            }
-            
+            messageText.textContent = message;
             messageModal.style.display = 'block';
             
             confirmButton.onclick = () => {
@@ -3230,29 +2903,73 @@
             }
         }
 
-        // 在现有的 script 标签内添加以下函数
-
+        // 添加订单标签切换函数
         function openOrderTab(event, tabName) {
-            // 隐藏所有标签内容
-            const tabcontent = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
+            const tabcontent = document.querySelectorAll("#orderManagementModal .tab-content");
+            tabcontent.forEach(tab => tab.style.display = "none");
 
-            // 移除所有标签按钮的 active 类
-            const tablinks = document.getElementsByClassName("tab-link");
-            for (let i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
+            const tablinks = document.querySelectorAll("#orderManagementModal .tab-link");
+            tablinks.forEach(link => link.classList.remove("active"));
 
-            // 显示当前标签内容并添加 active 类到按钮
             document.getElementById(tabName).style.display = "block";
-            event.currentTarget.className += " active";
+            event.currentTarget.classList.add("active");
 
-            // 如果是历史订单标签，加载历史订单数据
+            // 如果切换到历史订单标签，则获取历史订单数据
             if (tabName === 'orderHistory') {
                 fetchHistoryOrders();
             }
+        }
+
+        // 添加获取历史订单的函数
+        function fetchHistoryOrders() {
+            const orderHistoryDiv = document.getElementById('orderHistory');
+            orderHistoryDiv.innerHTML = '<p>加载中...</p>';
+
+            fetch(getHistoryCallUrl, {
+                method: 'GET',
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Success') {
+                    const orders = data.report_info;
+                    if (orders.length === 0) {
+                        orderHistoryDiv.innerHTML = '<div class="no-orders">暂无历史订单</div>';
+                        return;
+                    }
+
+                    const ordersHTML = orders.map(order => `
+                        <div class="order-card">
+                            <div class="order-info">
+                                <p><strong>问题描述：</strong>${order.issue}</p>
+                                <p><strong>地址：</strong>${order.address}</p>
+                                <p><strong>联系电话：</strong>${order.userPhoneNumber}</p>
+                                <p><strong>预约时间：</strong>${new Date(order.date).toLocaleString('zh-CN')}</p>
+                                <p>
+                                    <strong>状态：</strong>
+                                    <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
+                                        ${order.allocationState ? '已分配' : '待分配'}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    orderHistoryDiv.innerHTML = `
+                        <div class="orders-container">
+                            ${ordersHTML}
+                        </div>
+                    `;
+                } else if (data.message === 'No history report') {
+                    orderHistoryDiv.innerHTML = '<div class="no-orders">暂无历史订单</div>';
+                } else {
+                    handleSessionError(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('获取历史订单失败:', error);
+                orderHistoryDiv.innerHTML = '<div class="error-message">获取历史订单失败，请稍后重试</div>';
+            });
         }
         </script>
 

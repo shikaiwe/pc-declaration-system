@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气���息样式 */
+        /* 天气信息样式 */
         .weather-info {
             margin-top: auto;
             background: linear-gradient(135deg, #6dd5ed, #2193b0);
@@ -756,93 +756,6 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
-
-        .event-modal {
-            background-color: white;
-            border-radius: 12px;
-            padding: 20px;
-            max-width: 90%;
-            width: 400px;
-        }
-
-        .event-modal-header {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #2196F3;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e8f5e9;
-        }
-
-        .event-modal-content {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .event-detail {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border-radius: 6px;
-        }
-
-        .event-detail-icon {
-            font-size: 1.2em;
-            color: #2196F3;
-            width: 24px;
-            text-align: center;
-        }
-
-        .event-detail-label {
-            font-weight: 500;
-            color: #666;
-            min-width: 70px;
-        }
-
-        .event-detail-value {
-            color: #333;
-            flex: 1;
-        }
-
-        .event-status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .event-status.allocated {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .event-status.pending {
-            background-color: #fff3e0;
-            color: #ef6c00;
-        }
-
-        button, 
-        .tab-button,
-        .navbar a,
-        .sidebar-menu li,
-        .event-status,
-        .order-status,
-        .fc-button,
-        .fc-button-group button,
-        .fc-toolbar-title,
-        .fc-col-header-cell-cushion,
-        .fc-daygrid-day-number,
-        .fc-event-title,
-        .fc-event-time {
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-        }
     </style>
 </head>
 <body>
@@ -995,7 +908,7 @@
             // 天气相关
             WEATHER_API_KEY: `${BASE_URL}/api/dashboard/getWeatherApiKey/`,
             
-            // 页面转
+            // 页面跳转
             MOBILE_DASHBOARD: 'mobile_dashboard.html',
             LOGIN: 'login.html'
         };
@@ -1229,39 +1142,20 @@
                                     }
                                 }).then(response => {
                                     if (response.message === 'Success') {
-                                        const events = response.report_info.map(order => {
-                                            // 解析日期时间字符串
-                                            let dateStr = order.date;
-                                            if (dateStr.includes('年')) {
-                                                // 处理中文格式的日期
-                                                dateStr = dateStr
-                                                    .replace('年', '-')
-                                                    .replace('月', '-')
-                                                    .replace('日', '')
-                                                    .replace(/\s+/g, 'T');
+                                        const events = response.report_info.map(order => ({
+                                            title: `维修订单: ${order.issue}`,
+                                            start: new Date(order.date),
+                                            backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
+                                            borderColor: order.allocationState ? '#27ae60' : '#f39c12',
+                                            extendedProps: {
+                                                address: order.address,
+                                                phoneNumber: order.userPhoneNumber,
+                                                status: order.allocationState ? '已分配' : '待分配'
                                             }
-                                            
-                                            // 创建日期对象并设置具体时间
-                                            const date = new Date(dateStr);
-                                            
-                                            return {
-                                                title: `维修订单: ${order.issue}`,
-                                                start: date,
-                                                allDay: false, // 确保事件不是全天事件
-                                                backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
-                                                borderColor: order.allocationState ? '#27ae60' : '#f39c12',
-                                                textColor: '#ffffff',
-                                                extendedProps: {
-                                                    address: order.address,
-                                                    phoneNumber: order.userPhoneNumber,
-                                                    status: order.allocationState ? '已分配' : '待分配',
-                                                    issue: order.issue
-                                                }
-                                            };
-                                        });
+                                        }));
                                         successCallback(events);
                                     } else if (response.message === 'No history report') {
-                                        successCallback([]);
+                                        successCallback([]); // 如果没有订单，显示空日历
                                     } else {
                                         showMessage('获取订单失败，请稍后重试');
                                         failureCallback(new Error(response.message));
@@ -1273,43 +1167,15 @@
                                 });
                             },
                             eventClick: function(info) {
-                                const event = info.event;
-                                const startDate = event.start;
-                                const formattedDate = formatDate(startDate);
-                                const isAllocated = event.extendedProps.status === '已分配';
-                                
+                                // 点击事件时显示详细信息
                                 showMessage(`
-                                    <div class="event-modal">
-                                        <div class="event-modal-header">维修订单详情</div>
-                                        <div class="event-modal-content">
-                                            <div class="event-detail">
-                                                <span class="event-detail-icon">🔧</span>
-                                                <span class="event-detail-label">问题：</span>
-                                                <span class="event-detail-value">${event.extendedProps.issue}</span>
-                                            </div>
-                                            <div class="event-detail">
-                                                <span class="event-detail-icon">🕒</span>
-                                                <span class="event-detail-label">时间：</span>
-                                                <span class="event-detail-value">${formattedDate}</span>
-                                            </div>
-                                            <div class="event-detail">
-                                                <span class="event-detail-icon">📍</span>
-                                                <span class="event-detail-label">地址：</span>
-                                                <span class="event-detail-value">${event.extendedProps.address}</span>
-                                            </div>
-                                            <div class="event-detail">
-                                                <span class="event-detail-icon">📱</span>
-                                                <span class="event-detail-label">电话：</span>
-                                                <span class="event-detail-value">${event.extendedProps.phoneNumber}</span>
-                                            </div>
-                                            <div class="event-detail">
-                                                <span class="event-detail-icon">📋</span>
-                                                <span class="event-detail-label">状态：</span>
-                                                <span class="event-status ${isAllocated ? 'allocated' : 'pending'}">${event.extendedProps.status}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `);
+                                    订单详情:
+                                    问题: ${info.event.title}
+                                    时间: ${info.event.start.toLocaleString()}
+                                    地址: ${info.event.extendedProps.address}
+                                    电话: ${info.event.extendedProps.phoneNumber}
+                                    状态: ${info.event.extendedProps.status}
+                                `.trim());
                             },
                             eventDidMount: function(info) {
                                 // 添加鼠标悬停提示
@@ -1325,7 +1191,7 @@
                 });
             });
 
-            // 显示首页内容
+            // 认显示首页内容
             contentSections.homeLink.style.display = 'block';
 
             // 返回首页点击事件
@@ -1405,7 +1271,7 @@
                 }
             });
 
-            // 史订单功能
+            // 历史订单功能
             const orderHistoryButton = document.querySelector('.tab-button[data-tab="orderHistory"]');
             const orderHistoryContent = document.getElementById('orderHistory');
 
@@ -1439,10 +1305,6 @@
                     <div class="order-card">
                         <div class="order-info">
                             <p>
-                                <strong>用户名</strong>
-                                ${order.username || '未设置'}
-                            </p>
-                            <p>
                                 <strong>手机号码</strong>
                                 ${order.userPhoneNumber}
                                 <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
@@ -1472,55 +1334,9 @@
                 `;
             }
 
-            // 修改 formatDate 函数
             function formatDate(dateString) {
-                // 检查输入是否有效
-                if (!dateString) {
-                    return '时间未指定';
-                }
-
-                try {
-                    let date;
-                    // 如果输入已经是 Date 对象
-                    if (dateString instanceof Date) {
-                        date = dateString;
-                    } else if (typeof dateString === 'string') {
-                        // 处理字符串格式的日期
-                        if (dateString.includes('年')) {
-                            // 处理 "2024年3月15日 18:00" 格式
-                            const [datePart, timePart] = dateString.split(' ');
-                            const [year, month, day] = datePart
-                                .replace('年', '-')
-                                .replace('月', '-')
-                                .replace('日', '')
-                                .split('-');
-                            date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${timePart}`);
-                        } else {
-                            // 处理标准 ISO 格式或其他格式
-                            date = new Date(dateString);
-                        }
-                    } else {
-                        // 如果是其他格式，尝试转换为 Date 对象
-                        date = new Date(dateString);
-                    }
-
-                    // 检查日期是否有效
-                    if (isNaN(date.getTime())) {
-                        return '无效日期';
-                    }
-
-                    // 格式化日期
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    
-                    return `${year}年${month}月${day}日 ${hours}:${minutes}`;
-                } catch (error) {
-                    console.error('日期格式化错误:', error);
-                    return '日期格式错误';
-                }
+                const date = new Date(dateString);
+                return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
             }
 
             // 更新空状态显示
@@ -1545,15 +1361,11 @@
 
             // 调用报告API的函数
             function callReportAPI(userPhoneNumber, address, issue, preferredTime) {
-                // 获取当前用户名
-                const username = document.getElementById('displayUsername').textContent;
-                
                 return $.ajax({
                     url: API_URLS.REPORT,
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
-                        username: username,
                         userPhoneNumber: userPhoneNumber,
                         address: address,
                         issue: issue,
@@ -1579,7 +1391,7 @@
             const reportOrderForm = document.getElementById('reportOrderForm');
             const reportOrderInfo = document.getElementById('reportOrderInfo');
 
-            // 显���单表单
+            // 显示单表单
             reportOrderButton.addEventListener('click', () => {
                 document.getElementById('reportOrder').style.display = 'block';
                 document.getElementById('orderHistory').style.display = 'none';
@@ -1770,47 +1582,20 @@
             });
         });
 
-        // 修改 showMessage 函数
+        // 在script标签中添加显示消息的函数
         function showMessage(message, callback) {
             const messageModal = document.getElementById('messageModal');
             const messageText = document.getElementById('messageText');
             const confirmButton = document.getElementById('messageConfirm');
             
-            // 检查消息是否包含 HTML 标签
-            if (message.includes('<div class="event-modal">')) {
-                // 如果是事件详情，直接设置 innerHTML
-                messageText.innerHTML = message;
-                // 调整模态框样式以适应事件详情
-                messageModal.querySelector('.message-content').style.maxWidth = '450px';
-                messageModal.querySelector('.message-content').style.width = '90%';
-            } else {
-                // 如果是普通消息，使用 textContent
-                messageText.textContent = message;
-                // 重置模态框样式
-                messageModal.querySelector('.message-content').style.maxWidth = '';
-                messageModal.querySelector('.message-content').style.width = '';
-            }
-            
+            messageText.textContent = message;
             messageModal.style.display = 'block';
             
             confirmButton.onclick = () => {
                 messageModal.style.display = 'none';
-                // 重置模态框样式
-                messageModal.querySelector('.message-content').style.maxWidth = '';
-                messageModal.querySelector('.message-content').style.width = '';
                 if (callback) callback();
             };
         }
-
-        // 添加点击模态框背景关闭功能
-        document.getElementById('messageModal').addEventListener('click', function(event) {
-            if (event.target === this) {
-                this.style.display = 'none';
-                // 重置模态框样式
-                this.querySelector('.message-content').style.maxWidth = '';
-                this.querySelector('.message-content').style.width = '';
-            }
-        });
     </script>
 </body>
 </html> 
