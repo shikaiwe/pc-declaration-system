@@ -1347,29 +1347,31 @@
                 if (!usernameDisplay) return;
 
                 try {
-                    // 直接从 localStorage 获取用户名
+                    // 从 localStorage 获取用户名
                     const username = localStorage.getItem('username');
                     if (username) {
                         usernameDisplay.textContent = username;
-                        return;
-                    }
-
-                    // 如果没有保存的用户名，从 loginData 中获取
-                    const loginData = localStorage.getItem('loginData');
-                    if (loginData && loginData.includes('"username":"')) {
-                        // 使用简单的字符串解析方式获取用户名
-                        const usernameMatch = loginData.match(/"username":"([^"]+)"/);
-                        if (usernameMatch && usernameMatch[1]) {
-                            const extractedUsername = usernameMatch[1];
-                            // 保存用户名到 localStorage
-                            localStorage.setItem('username', extractedUsername);
-                            usernameDisplay.textContent = extractedUsername;
-                            return;
+                    } else {
+                        // 尝试从 loginData 获取
+                        const loginData = localStorage.getItem('loginData');
+                        if (loginData) {
+                            try {
+                                const decodedData = atob(loginData);
+                                const userData = JSON.parse(decodedData);
+                                if (userData.username) {
+                                    localStorage.setItem('username', userData.username);
+                                    usernameDisplay.textContent = userData.username;
+                                } else {
+                                    usernameDisplay.textContent = '用户';
+                                }
+                            } catch (e) {
+                                console.error('解析用户数据失败:', e);
+                                usernameDisplay.textContent = '用户';
+                            }
+                        } else {
+                            usernameDisplay.textContent = '用户';
                         }
                     }
-
-                    // 如果都没有找到，显示默认值
-                    usernameDisplay.textContent = '用户';
                 } catch (error) {
                     console.error('获取用户名失败:', error);
                     usernameDisplay.textContent = '用户';
@@ -2048,7 +2050,7 @@
                     }
                 });
             } else {
-                console.error('找不到期望上门��间的输入框');
+                console.error('找不到期望上门时间的输入框');
             }
 
             const userPhoneNumberInput = document.getElementById('userPhoneNumber');

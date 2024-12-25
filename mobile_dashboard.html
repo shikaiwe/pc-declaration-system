@@ -3477,27 +3477,7 @@
                 try {
                     // 直接从 localStorage 获取用户名
                     const username = localStorage.getItem('username');
-                    if (username) {
-                        usernameDisplay.textContent = username;
-                        return;
-                    }
-
-                    // 如果没有保存的用户名，从 loginData 中获取
-                    const loginData = localStorage.getItem('loginData');
-                    if (loginData && loginData.includes('"username":"')) {
-                        // 使用简单的字符串解析方式获取用户名
-                        const usernameMatch = loginData.match(/"username":"([^"]+)"/);
-                        if (usernameMatch && usernameMatch[1]) {
-                            const extractedUsername = usernameMatch[1];
-                            // 保存用户名到 localStorage
-                            localStorage.setItem('username', extractedUsername);
-                            usernameDisplay.textContent = extractedUsername;
-                            return;
-                        }
-                    }
-
-                    // 如果都没有找到，显示默认值
-                    usernameDisplay.textContent = '用户';
+                    usernameDisplay.textContent = username || '用户';
                 } catch (error) {
                     console.error('获取用户名失败:', error);
                     usernameDisplay.textContent = '用户';
@@ -3522,6 +3502,13 @@
         // 在退出登录时清除用户名
         function clearUsername() {
             localStorage.removeItem('username');
+        }
+
+        // 在退出登录函数中添加
+        function handleLogout() {
+            localStorage.removeItem('username'); // 清除用户名
+            localStorage.removeItem('loginData');
+            window.location.href = 'login.html';
         }
     </script>
 
