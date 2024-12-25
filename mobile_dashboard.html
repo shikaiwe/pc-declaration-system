@@ -2330,6 +2330,8 @@
             font-weight: 500;
             transition: all 0.3s ease;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+            touch-action: manipulation; /* 优化移动端点击体验 */
         }
         
         .picker-cancel {
@@ -2472,6 +2474,11 @@
             .swiper-slide-active .time-item {
                 background: rgba(33, 150, 243, 0.2);
             }
+        }
+
+        /* 添加按钮点击效果 */
+        .picker-header button:active {
+            transform: scale(0.95);
         }
     </style>
 </head>
@@ -4060,7 +4067,7 @@
             }
         });
 
-        // 防止点击���择器内容时关闭
+        // 防止点击选择器内容时关闭
         pickerContainer.querySelector('.picker-container').addEventListener('click', function(e) {
             e.stopPropagation();
         });
@@ -4068,6 +4075,14 @@
         // 点击背景关闭选择器
         pickerContainer.addEventListener('click', function() {
             pickerContainer.classList.remove('active');
+        });
+
+        // 添加键盘事件处理
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && pickerContainer.classList.contains('active')) {
+                pickerContainer.classList.remove('active');
+                document.body.style.overflow = ''; // 恢复背景滚动
+            }
         });
     }
 
