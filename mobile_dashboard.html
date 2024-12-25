@@ -2275,7 +2275,7 @@
             return response.json();
         }
 
-        // 获取天�������和位置信息
+        // 获取天���������和位置信息
         async function fetchWeatherAndLocation() {
             // 使用 jQuery 获取 API Key
             function getApiKeyFromServer() {
@@ -2693,17 +2693,45 @@
                                     }
                                 }).then(response => {
                                     if (response.message === 'Success') {
-                                        const events = response.report_info.map(order => ({
-                                            title: `维修订单: ${order.issue}`,
-                                            start: formatDate(order.date), // 使用formatDate函数格式化日期
-                                            backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
-                                            borderColor: order.allocationState ? '#27ae60' : '#f39c12',
-                                            extendedProps: {
-                                                address: order.address,
-                                                phoneNumber: order.userPhoneNumber,
-                                                status: order.allocationState ? '已分配' : '待分���'
+                                        const events = response.report_info.map(order => {
+                                            // 解析日期字符串
+                                            let eventDate;
+                                            if (order.date.includes('年')) {
+                                                // 处理中文格式的日期
+                                                const matches = order.date.match(/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/);
+                                                if (matches) {
+                                                    const [_, year, month, day, hour, minute] = matches;
+                                                    eventDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${minute}:00`;
+                                                }
+                                            } else if (order.date.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)) {
+                                                // 处理标准格式的日期
+                                                const [datePart, timePart] = order.date.split(' ');
+                                                eventDate = `${datePart}T${timePart}:00`;
+                                            } else {
+                                                // 尝试直接解析日期
+                                                const date = new Date(order.date);
+                                                if (!isNaN(date.getTime())) {
+                                                    eventDate = date.toISOString().slice(0, 16).replace('Z', '');
+                                                } else {
+                                                    console.error('无法解析的日期格式:', order.date);
+                                                    return null;
+                                                }
                                             }
-                                        }));
+
+                                            return {
+                                                title: `维修订单: ${order.issue}`,
+                                                start: eventDate,
+                                                backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
+                                                borderColor: order.allocationState ? '#27ae60' : '#f39c12',
+                                                extendedProps: {
+                                                    address: order.address,
+                                                    phoneNumber: order.userPhoneNumber,
+                                                    status: order.allocationState ? '已分配' : '待分配',
+                                                    originalDate: order.date // 保存原始日期字符串
+                                                }
+                                            };
+                                        }).filter(event => event !== null); // 过滤掉无效的事件
+
                                         successCallback(events);
                                     } else if (response.message === 'No history report') {
                                         successCallback([]); // 如果没有订单，显示空日历
@@ -2723,9 +2751,8 @@
                                 const overlay = document.getElementById('detailOverlay');
                                 const closeBtn = document.getElementById('closeDetail');
                                 
-                                // 格式化日期
-                                const eventDate = new Date(info.event.start);
-                                const formattedDate = formatDate(eventDate); // 使用formatDate函数格式化日期
+                                // 使用原始日期字符串或格式化日期
+                                const displayDate = info.event.extendedProps.originalDate || formatDate(info.event.start);
                                 
                                 // 设置详情内容
                                 detailContent.innerHTML = `
@@ -2743,7 +2770,7 @@
                                     </div>
                                     <div class="detail-row">
                                         <span class="detail-label">预约时间</span>
-                                        <span class="detail-value">${formattedDate}</span>
+                                        <span class="detail-value">${displayDate}</span>
                                     </div>
                                     <div class="detail-row">
                                         <span class="detail-label">地址</span>
@@ -2755,14 +2782,10 @@
                                     </div>
                                 `;
                                 
-                                // 显示详情卡片和遮罩
                                 detailCard.classList.add('show');
                                 overlay.classList.add('show');
                                 
-                                // 关闭按钮事件
                                 closeBtn.onclick = closeDetail;
-                                
-                                // 点击遮罩关闭
                                 overlay.onclick = closeDetail;
                             },
                             eventDidMount: function(info) {
