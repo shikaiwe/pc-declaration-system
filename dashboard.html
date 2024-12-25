@@ -1179,6 +1179,64 @@
                 transform: translateY(0);
             }
         }
+
+        /* 确保日期选择器在移动设备上也能正确显示 */
+        @media screen and (max-width: 480px) {
+            #newOrder .flatpickr-calendar {
+                width: 95% !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                max-height: calc(100vh - 160px);
+            }
+        }
+
+        /* Flatpickr 日期选择器字体优化 */
+        .flatpickr-calendar {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 更新 logout-modal 样式 */
+        .logout-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000; /* 提高z-index确保在其他模态框之上 */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        /* 订单详情卡片样式 */
+        .order-detail-card {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 1005;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        /* 在 body 标签末尾添加以下 HTML */
+        .detail-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1004;
+        }
     </style>
 </head>
 <body>
@@ -1325,6 +1383,28 @@
             </div>
         </div>
     </div>
+
+    <div class="logout-modal" id="logoutModal">
+        <div class="modal-content">
+            <p>您确定要退出登录吗？</p>
+            <button id="confirmLogoutButton">确认</button>
+            <button id="cancelLogoutButton">取消</button>
+        </div>
+    </div>
+
+    <div class="order-detail-card" id="orderDetailCard">
+        <div class="order-detail-header">
+            <h3>订单详情</h3>
+        </div>
+        <div class="order-detail-body" id="orderDetailBody">
+            <!-- 内容将通过 JavaScript 动态填充 -->
+        </div>
+        <div class="order-detail-footer">
+            <button class="close-detail-btn" id="closeDetailBtn">关闭</button>
+        </div>
+    </div>
+
+    <div class="detail-overlay" id="detailOverlay"></div>
 
     <script>
         // 在 script 标签的开头添加 utils 对象定义
@@ -1678,7 +1758,7 @@
                                     }
                                 }).catch(error => {
                                     console.error('获取日历订单数据失败:', error);
-                                    showMessage('获取订单失败，请稍后重试');
+                                    showMessage('获��订单失败，请稍后重试');
                                     failureCallback(error);
                                 });
                             },
