@@ -116,12 +116,18 @@
             position: absolute;
             top: 100%;
             right: 0;
-            width: 200px;
-            background-color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            border-radius: 4px;
+            margin-top: 5px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 0;
             display: none;
             z-index: 1000;
+            min-width: 180px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transform-origin: top right;
+            animation: dropdownFade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
         }
 
         .dropdown-menu.active {
@@ -655,7 +661,7 @@
             margin-right: 12px;
         }
 
-        /* 订单状态样式 */
+        /* 订单状���样式 */
         .order-status {
             display: inline-block;
             padding: 4px 12px;
@@ -971,6 +977,156 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* 更新退出登录按钮样式 */
+        #logoutLink {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 6px;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            background: transparent;
+        }
+
+        #logoutLink::before {
+            content: '🚪';
+            font-size: 16px;
+            margin-right: 8px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #logoutLink::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ff4757;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: -1;
+            border-radius: 6px;
+        }
+
+        #logoutLink:hover {
+            color: white;
+            transform: scale(1.02);
+        }
+
+        #logoutLink:hover::before {
+            transform: rotate(90deg);
+        }
+
+        #logoutLink:hover::after {
+            transform: translateX(0);
+        }
+
+        /* 更新下拉菜单容器样式 */
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 5px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 0;
+            display: none;
+            z-index: 1000;
+            min-width: 180px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transform-origin: top right;
+            animation: dropdownFade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        @keyframes dropdownFade {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* 更新确认退出模态框样式 */
+        #logoutModal .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            margin: 15% auto;
+            position: relative;
+            animation: modalFade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        #logoutModal .modal-content p {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        #logoutModal .modal-content button {
+            padding: 12px 28px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #confirmLogoutButton {
+            background-color: #ff4757;
+            color: white;
+        }
+
+        #confirmLogoutButton:hover {
+            background-color: #ff6b81;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.2);
+        }
+
+        #cancelLogoutButton {
+            background-color: #f1f2f6;
+            color: #333;
+        }
+
+        #cancelLogoutButton:hover {
+            background-color: #dfe4ea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes modalFade {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1004,7 +1160,7 @@
             <h2>订单管理</h2>
             <div class="tabs">
                 <button class="tab-button" data-tab="reportOrder">我要报单</button>
-                <button class="tab-button" data-tab="orderHistory">历��订单</button>
+                <button class="tab-button" data-tab="orderHistory">历史订单</button>
             </div>
             <div class="tab-content" id="reportOrder" style="display: none;">
                 <form id="reportOrderForm" class="styled-form">
@@ -1137,8 +1293,23 @@
             LOGIN: 'login.html'
         };
 
+        const utils = {
+            // 简单的加密解密方法
+            encrypt: function(text) {
+                return btoa(text);
+            },
+            decrypt: function(text) {
+                try {
+                    return atob(text);
+                } catch (e) {
+                    console.error('解密失败:', e);
+                    return null;
+                }
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
-            // 获取天气信息顺带验证登录
+            // 获取气信息顺带验证登录
             fetchWeatherAndLocation();
             
             // 获取问候语元素
@@ -1170,8 +1341,11 @@
                 try {
                     const loginData = localStorage.getItem('loginData');
                     if (loginData) {
-                        const decryptedData = JSON.parse(utils.decrypt(loginData));
-                        usernameDisplay.textContent = decryptedData.username;
+                        const decryptedData = utils.decrypt(loginData);
+                        if (decryptedData) {
+                            const userData = JSON.parse(decryptedData);
+                            usernameDisplay.textContent = userData.username;
+                        }
                     }
                 } catch (error) {
                     console.error('获取用户名失败:', error);
@@ -1301,7 +1475,7 @@
                 window.location.href = 'login.html';
             }
 
-            // 使用 jQuery 获取数据
+            // 用 jQuery 获取数据
             function fetchData(url) {
                 return $.ajax({
                     url: url,
@@ -1527,18 +1701,35 @@
                 });
             });
 
-            // 登出功能
-            const logoutLink = document.getElementById('logoutLink');
-            const logoutModal = document.getElementById('logoutModal');
-            const confirmLogoutButton = document.getElementById('confirmLogoutButton');
-            const cancelLogoutButton = document.getElementById('cancelLogoutButton');
+            // 修改用户名显示和下拉菜单功能
+            const userGreeting = document.querySelector('.user-greeting');
+            
+            // 创建下拉菜单元素
+            const dropdownMenu = document.createElement('div');
+            dropdownMenu.className = 'dropdown-menu';
+            dropdownMenu.id = 'userMenu';
+            dropdownMenu.innerHTML = `
+                <a href="#" id="logoutLink">
+                    退出登录
+                </a>
+            `;
+            userGreeting.appendChild(dropdownMenu);
 
-            logoutLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                logoutModal.style.display = 'block';
+            // 点击问候语区域显示/隐藏下拉菜单
+            userGreeting.addEventListener('click', (event) => {
+                event.stopPropagation();
+                dropdownMenu.classList.toggle('active');
             });
 
-            confirmLogoutButton.addEventListener('click', () => {
+            // 点击页面其他地方隐藏下拉菜单
+            document.addEventListener('click', () => {
+                if (dropdownMenu) {
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+
+            // 实现退出登录功能
+            function handleLogout() {
                 $.ajax({
                     url: API_URLS.LOGOUT,
                     method: 'GET',
@@ -1546,27 +1737,79 @@
                         withCredentials: true
                     }
                 }).then(response => {
-                    if (response.message === 'Success') {
-                        localStorage.removeItem('loginData');
-                        window.location.href = 'login.html';
-                    } else {
-                        handleSessionError(response.message);
+                    switch(response.message) {
+                        case 'Success':
+                            localStorage.removeItem('loginData');
+                            window.location.href = 'login.html';
+                            break;
+                        case 'Session has expired':
+                        case 'Invalid session':
+                        case 'No sessionid cookie':
+                            showMessage(`${response.message}，请重新登录`, () => {
+                                localStorage.removeItem('loginData');
+                                window.location.href = 'login.html';
+                            });
+                            break;
+                        default:
+                            showMessage('退出时发生错误，请重试');
                     }
                 }).catch(error => {
-                    console.error('登出失败:', error);
-                    alert('登出失败，请重试');
+                    console.error('退出登录失败:', error);
+                    showMessage('退出登录失败，请重试');
                 });
-            });
+            }
 
-            cancelLogoutButton.addEventListener('click', () => {
-                logoutModal.style.display = 'none';
-            });
+            // 退出登录按钮点击事件
+            const logoutLink = document.getElementById('logoutLink');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // 显示确认对话框
+                    const logoutModal = document.getElementById('logoutModal');
+                    if (logoutModal) {
+                        logoutModal.style.display = 'block';
+                    }
+                });
+            }
 
-            window.addEventListener('click', (event) => {
-                if (event.target === logoutModal) {
-                    logoutModal.style.display = 'none';
+            // 确认退出按钮事件
+            const confirmLogoutButton = document.getElementById('confirmLogoutButton');
+            if (confirmLogoutButton) {
+                confirmLogoutButton.addEventListener('click', () => {
+                    handleLogout();
+                });
+            }
+
+            // 取消退出按钮事件
+            const cancelLogoutButton = document.getElementById('cancelLogoutButton');
+            if (cancelLogoutButton) {
+                cancelLogoutButton.addEventListener('click', () => {
+                    const logoutModal = document.getElementById('logoutModal');
+                    if (logoutModal) {
+                        logoutModal.style.display = 'none';
+                    }
+                });
+            }
+
+            // 点击模态框外部关闭
+            const logoutModal = document.getElementById('logoutModal');
+            if (logoutModal) {
+                logoutModal.addEventListener('click', (event) => {
+                    if (event.target === logoutModal) {
+                        logoutModal.style.display = 'none';
+                    }
+                });
+            }
+
+            // 修改保存用户信息后的更新逻辑
+            function updateUserDisplay(newName) {
+                const usernameDisplay = document.getElementById('username-display');
+                if (usernameDisplay && newName) {
+                    usernameDisplay.textContent = newName;
                 }
-            });
+            }
 
             // 历史订单功能
             const orderHistoryButton = document.querySelector('.tab-button[data-tab="orderHistory"]');
@@ -1923,60 +2166,27 @@
                 });
             });
 
-            // 修改信息修改模态框打开的事件处理
-            document.getElementById('info-link').addEventListener('click', function(event) {
-                event.preventDefault();
-                const modal = document.getElementById('editModal');
-                
+            // 替换为在账号管理标签页切换时加载用户信息
+            document.querySelector('.tab-button[data-tab="info"]').addEventListener('click', function() {
                 // 从本地存储获取登录数据
                 const loginData = localStorage.getItem('loginData');
                 if (loginData) {
                     try {
-                        const decryptedData = JSON.parse(utils.decrypt(loginData));
-                        // 设置用户名输入框的值
-                        document.getElementById('username').value = decryptedData.username;
+                        const decryptedData = utils.decrypt(loginData);
+                        if (decryptedData) {
+                            const userData = JSON.parse(decryptedData);
+                            // 设置用户名输入框的值
+                            const usernameInput = document.getElementById('username');
+                            if (usernameInput) {
+                                usernameInput.value = userData.username;
+                            }
+                        }
                     } catch (error) {
                         console.error('获取登录数据失败:', error);
+                        showMessage('获取用户信息失败，请重试');
                     }
                 }
-                
-                modal.style.display = "block";
-                document.getElementById('overlay').style.display = "block";
-                toggleBodyScroll(true);
             });
-
-            // 修改用户名显示和下拉菜单功能
-            const userGreeting = document.querySelector('.user-greeting');
-            
-            // 添加下拉菜单到问候语区域
-            userGreeting.innerHTML += `
-                <div class="dropdown-menu" id="userMenu">
-                    <a href="#" id="logoutLink">退出登录</a>
-                </div>
-            `;
-
-            // 点击问候语区域显示/隐藏下拉菜单
-            userGreeting.addEventListener('click', (event) => {
-                const dropdownMenu = userGreeting.querySelector('.dropdown-menu');
-                dropdownMenu.classList.toggle('active');
-                event.stopPropagation();
-            });
-
-            // 点击页面其他地方隐藏下拉菜单
-            document.addEventListener('click', () => {
-                const dropdownMenu = document.querySelector('.user-greeting .dropdown-menu');
-                if (dropdownMenu) {
-                    dropdownMenu.classList.remove('active');
-                }
-            });
-
-            // 修改保存用户信息后的更新逻辑
-            function updateUserDisplay(newName) {
-                const usernameDisplay = document.getElementById('username-display');
-                if (usernameDisplay && newName) {
-                    usernameDisplay.textContent = newName;
-                }
-            }
         });
 
         // 在script标签中添加显示消息的函数

@@ -250,45 +250,67 @@
         .logout-modal {
             display: none;
             position: fixed;
-            z-index: 2;
+            z-index: 2000; /* 提高z-index确保在其他模态框之上 */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .logout-modal-content {
+            position: fixed;
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
             background-color: #fff;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 0.3s ease-out;
-            width: 80%;
-            max-width: 400px;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             text-align: center;
-            font-size: 1.2em;
+            width: 85%;
+            max-width: 320px;
         }
-        .logout-modal p {
-            margin-bottom: 20px;
+
+        .logout-modal-content p {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .logout-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .logout-modal-buttons button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #confirmLogout {
+            background-color: #ff4d4f;
+            color: white;
+        }
+
+        #confirmLogout:hover {
+            background-color: #ff7875;
+        }
+
+        #cancelLogout {
+            background-color: #f0f0f0;
             color: #333;
         }
-        .logout-modal button {
-            margin-top: 15px;
-            padding: 15px 30px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: background-color 0.4s ease-in-out, transform 0.3s ease-in-out;
-            display: inline-block;
-            font-size: 1em;
-        }
-        .logout-modal button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
-        .logout-modal button#confirmLogout {
-            background-color: orange;
-        }
-        .logout-modal button#confirmLogout:hover {
-            background-color: darkorange;
+
+        #cancelLogout:hover {
+            background-color: #d9d9d9;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translate(-50%, -60%); }
@@ -2011,12 +2033,67 @@
         .logout-modal {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 2000; /* 提高z-index确保在其他模态框之上 */
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .logout-modal-content {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 85%;
+            max-width: 320px;
+        }
+
+        .logout-modal-content p {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .logout-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .logout-modal-buttons button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #confirmLogout {
+            background-color: #ff4d4f;
+            color: white;
+        }
+
+        #confirmLogout:hover {
+            background-color: #ff7875;
+        }
+
+        #cancelLogout {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        #cancelLogout:hover {
+            background-color: #d9d9d9;
         }
 
         /* 在现有的 style 标签中添加以下样式 */
@@ -2296,7 +2373,7 @@
         </div>
     </div>
 
-    <!-- 在 body 标签末尾添加以下 HTML -->
+    <!-- 在 body 标签末尾添加���下 HTML -->
     <div class="detail-overlay" id="detailOverlay"></div>
     <div class="order-detail-card" id="orderDetailCard">
         <div class="pull-indicator"></div>
@@ -2457,8 +2534,39 @@
         // 退出确认模态框
         document.getElementById('logout').addEventListener('click', function(event) {
             event.preventDefault();
-            const logoutModal = document.querySelector('.logout-modal');
+            const logoutModal = document.getElementById('logoutModal');
+            const overlay = document.getElementById('overlay');
             logoutModal.style.display = 'block';
+            overlay.style.display = 'block';
+            toggleBodyScroll(true);
+        });
+
+        document.getElementById('cancelLogout').addEventListener('click', function() {
+            const logoutModal = document.getElementById('logoutModal');
+            const overlay = document.getElementById('overlay');
+            logoutModal.style.display = 'none';
+            overlay.style.display = 'none';
+            toggleBodyScroll(false);
+        });
+
+        document.getElementById('confirmLogout').addEventListener('click', function() {
+            $.ajax({
+                url: logoutUrl,
+                method: 'GET',
+                xhrFields: {
+                    withCredentials: true
+                }
+            }).then(response => {
+                if (response.message === 'Success') {
+                    localStorage.removeItem('loginData');
+                    window.location.href = 'login.html';
+                } else {
+                    handleSessionError(response.message);
+                }
+            }).catch(error => {
+                console.error('登出失败:', error);
+                showMessage('登出失败，请重试');
+            });
         });
 
         // 修改所有关闭模态框的事件处理器
@@ -2485,14 +2593,6 @@
             modal.style.display = "none";
             document.getElementById('overlay').style.display = "none";
             document.getElementById('schedule-management').classList.remove('active');
-            toggleBodyScroll(false);
-        });
-
-        // 退出确认模态框关闭
-        document.getElementById('cancelLogout').addEventListener('click', function() {
-            const modal = document.getElementById('logoutModal');
-            modal.style.display = "none";
-            document.getElementById('overlay').style.display = "none";
             toggleBodyScroll(false);
         });
 
@@ -2653,7 +2753,7 @@
                 if (data.message === 'Success' && data.phoneNumber) {
                     userPhoneNumberInput.value = data.phoneNumber;
                 } else if (data.message === 'No phone number') {
-                    showMessage('您还未设置手机号，请先在账户管理中设置');
+                    showMessage('您还未设置手机号，请先在户管理中设置');
                 } else {
                     handleSessionError(data.message);
                 }
@@ -3019,27 +3119,6 @@
             localStorage.removeItem('loginData');
             window.location.href = 'login.html';
         }
-
-        // 退出登录功能
-        document.getElementById('confirmLogout').addEventListener('click', () => {
-            $.ajax({
-                url: logoutUrl,
-                method: 'GET',
-                xhrFields: {
-                    withCredentials: true
-                }
-            }).then(response => {
-                if (response.message === 'Success') {
-                    localStorage.removeItem('loginData');
-                    window.location.href = 'login.html';
-                } else {
-                    handleSessionError(response.message);
-                }
-            }).catch(error => {
-                console.error('登出失败:', error);
-                alert('登出失败，请重试');
-            });
-        });
 
         // 显示历史订单
         function displayHistoryOrders(orders) {
@@ -3410,47 +3489,6 @@
             
             // 每分钟更新一次问候语
             setInterval(updateGreeting, 60000);
-        });
-
-        // 修改用户问候语区域的点击事件
-        const userGreeting = document.querySelector('.user-greeting');
-        
-        // 添加下拉菜单到问候语区域
-        userGreeting.innerHTML += `
-            <div class="submenu">
-                <a href="#" id="account-settings">账户管理</a>
-                <a href="#" id="logout-option">退出登录</a>
-            </div>
-        `;
-        
-        // 点击问候语区域显示/隐藏下拉菜单
-        userGreeting.addEventListener('click', (event) => {
-            const submenu = userGreeting.querySelector('.submenu');
-            submenu.classList.toggle('show');
-            event.stopPropagation();
-        });
-        
-        // 点击页面其他地方隐藏下拉菜单
-        document.addEventListener('click', () => {
-            const submenu = document.querySelector('.user-greeting .submenu');
-            if (submenu) {
-                submenu.classList.remove('show');
-            }
-        });
-        
-        // 账户管理点击事件
-        document.getElementById('account-settings').addEventListener('click', (event) => {
-            event.preventDefault();
-            const modal = document.getElementById('editModal');
-            modal.style.display = "block";
-            document.getElementById('overlay').style.display = "block";
-        });
-        
-        // 退出登录选项点击事件
-        document.getElementById('logout-option').addEventListener('click', (event) => {
-            event.preventDefault();
-            const logoutModal = document.querySelector('.logout-modal');
-            logoutModal.style.display = 'block';
         });
     </script>
 
