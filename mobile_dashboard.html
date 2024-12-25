@@ -543,7 +543,7 @@
             background-color: white;
         }
 
-        /* 优化模态框中的标题样式 */
+        /* 优化模态框中的标���样式 */
         .modal-content h2 {
             margin-bottom: 15px;
             padding-bottom: 10px;
@@ -3474,8 +3474,20 @@
                 try {
                     const loginData = localStorage.getItem('loginData');
                     if (loginData) {
-                        const decryptedData = JSON.parse(utils.decrypt(loginData));
-                        usernameDisplay.textContent = decryptedData.username;
+                        const decryptedData = utils.decrypt(loginData);
+                        if (decryptedData) {
+                            try {
+                                const userData = JSON.parse(decryptedData);
+                                usernameDisplay.textContent = userData.username || '用户';
+                            } catch (error) {
+                                console.error('解析用户数据失败:', error);
+                                usernameDisplay.textContent = '用户';
+                            }
+                        } else {
+                            usernameDisplay.textContent = '用户';
+                        }
+                    } else {
+                        usernameDisplay.textContent = '用户';
                     }
                 } catch (error) {
                     console.error('获取用户名失败:', error);
