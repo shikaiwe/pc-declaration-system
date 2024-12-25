@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气信息样式 */
+        /* 天气���息样式 */
         .weather-info {
             margin-top: auto;
             background: linear-gradient(135deg, #6dd5ed, #2193b0);
@@ -335,7 +335,7 @@
             margin-top: 15px;
         }
 
-        /* 模态框��式 */
+        /* 模态框样式 */
         .modal {
             display: none;
             position: fixed;
@@ -485,7 +485,7 @@
             color: white;
         }
 
-        /* 订单管理内容样式 */
+        /* 订单管理内���样式 */
         #orderContent {
             background-color: #f4f4f4;
             border-radius: 8px;
@@ -1503,7 +1503,16 @@
 
             function formatDate(dateString) {
                 const date = new Date(dateString);
-                return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                if (isNaN(date.getTime())) {
+                    return '时间格式错误';
+                }
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                
+                return `${year}年${month}月${day}日 ${hours}:${minutes}`;
             }
 
             // 更新空状态显示
@@ -1578,7 +1587,7 @@
                         <p>报单信息: ${data.orderDetails}</p>
                     `;
                 }).catch(error => {
-                    reportOrderInfo.innerHTML = '<p>���法获取报单信息</p>';
+                    reportOrderInfo.innerHTML = '<p>无法获取报单信息</p>';
                 });
 
                 document.getElementById('reportOrder').style.display = 'none';
@@ -1628,7 +1637,7 @@
 
                 setPreferredTimeRange();
 
-                // 检查选择的时间是否在允许范围内
+                // 检查选择的时间是否���允许范围内
                 preferredTimeInput.addEventListener('change', () => {
                     const selectedTime = new Date(preferredTimeInput.value);
                     const selectedHour = selectedTime.getHours();
@@ -1784,7 +1793,7 @@
                         handleSessionError(response.message);
                     }
                 }).catch(error => {
-                    console.error('修改密码失败:', error);
+                    console.error('修���密码失败:', error);
                     showMessage('修改密码失败，请重试');
                 });
             });

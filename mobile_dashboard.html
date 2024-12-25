@@ -2934,13 +2934,16 @@
         // 日期格式化函数
         function formatDate(dateString) {
             const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return '时间格式错误';
+            }
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             
-            return `${year}-${month}-${day} ${hours}:${minutes}`;
+            return `${year}年${month}月${day}日 ${hours}:${minutes}`;
         }
 
         // 显示历史订单
@@ -3002,23 +3005,53 @@
 
         // 获取历史订单
         function fetchHistoryOrders() {
-            $.ajax({
-                url: getHistoryCallUrl,
+            const orderHistoryDiv = document.getElementById('orderHistory');
+            orderHistoryDiv.innerHTML = '<p>加载中...</p>';
+
+            fetch(getHistoryCallUrl, {
                 method: 'GET',
-                xhrFields: {
-                    withCredentials: true
-                }
-            }).then(response => {
-                if (response.message === 'Success') {
-                    displayHistoryOrders(response.report_info);
-                } else if (response.message === 'No history report') {
-                    showNoOrders();
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Success') {
+                    const orders = data.report_info;
+                    if (orders.length === 0) {
+                        orderHistoryDiv.innerHTML = '<div class="no-orders">暂无历史订单</div>';
+                        return;
+                    }
+
+                    const ordersHTML = orders.map(order => `
+                        <div class="order-card">
+                            <div class="order-info">
+                                <p><strong>问题描述：</strong>${order.issue}</p>
+                                <p><strong>地址：</strong>${order.address}</p>
+                                <p><strong>联系电话：</strong>${order.userPhoneNumber}</p>
+                                <p><strong>预约时间：</strong>${formatDate(order.date)}</p>
+                                <p>
+                                    <strong>状态：</strong>
+                                    <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
+                                        ${order.allocationState ? '已分配' : '待分配'}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    orderHistoryDiv.innerHTML = `
+                        <div class="orders-container">
+                            ${ordersHTML}
+                        </div>
+                    `;
+                } else if (data.message === 'No history report') {
+                    orderHistoryDiv.innerHTML = '<div class="no-orders">暂无历史订单</div>';
                 } else {
-                    showError();
+                    handleSessionError(data.message);
                 }
-            }).catch(error => {
+            })
+            .catch(error => {
                 console.error('获取历史订单失败:', error);
-                showError();
+                orderHistoryDiv.innerHTML = '<div class="error-message">获取历史订单失败，请稍后重试</div>';
             });
         }
 
@@ -3088,7 +3121,7 @@
             }
         }
 
-        // 添���显示消息的函数
+        // 添显示消息的函数
         function showMessage(message, callback) {
             const messageModal = document.getElementById('messageModal');
             const messageText = document.getElementById('messageText');
@@ -3153,7 +3186,7 @@
                                 <p><strong>问题描述：</strong>${order.issue}</p>
                                 <p><strong>地址：</strong>${order.address}</p>
                                 <p><strong>联系电话：</strong>${order.userPhoneNumber}</p>
-                                <p><strong>预约时间：</strong>${new Date(order.date).toLocaleString('zh-CN')}</p>
+                                <p><strong>预约时间：</strong>${formatDate(order.date)}</p>
                                 <p>
                                     <strong>状态：</strong>
                                     <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
