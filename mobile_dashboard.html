@@ -1168,7 +1168,7 @@
             color: #e65100;
         }
 
-        /* Flatpickr 日期选择器字体优化 */
+        /* Flatpickr 日期选择器��体优化 */
         .flatpickr-calendar {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
@@ -3235,15 +3235,7 @@
             
             const phoneNumber = document.getElementById('phone').value;
             const newName = document.getElementById('username').value;
-            const formMessage = document.getElementById('formMessage');
             
-            // 添加手机号格式验证
-            if(phoneNumber && !/^1[3-9]\d{9}$/.test(phoneNumber)) {
-                showFormMessage('请输入正确的手机号格式', 'error');
-                return;
-            }
-            
-            // 构建请求数据
             const requestData = {};
             if (phoneNumber) requestData.phoneNumber = phoneNumber;
             if (newName) requestData.newName = newName;
@@ -3262,9 +3254,17 @@
                 }
             }).then(response => {
                 if (response.message === 'Success') {
+                    // 更新用户名显示和存储
+                    if (newName) {
+                        localStorage.setItem('username', newName);
+                        const usernameDisplay = document.getElementById('username-display');
+                        if (usernameDisplay) {
+                            usernameDisplay.textContent = newName;
+                        }
+                    }
                     showFormMessage('保存成功！', 'success');
                     
-                    // 3秒关闭模态框
+                    // 3秒后关闭模态框
                     setTimeout(() => {
                         document.getElementById('editModal').style.display = "none";
                         document.getElementById('overlay').style.display = "none";
@@ -3475,27 +3475,32 @@
                 if (!usernameDisplay) return;
 
                 try {
-                    const loginData = localStorage.getItem('loginData');
-                    if (!loginData) {
-                        usernameDisplay.textContent = '用户';
-                        return;
-                    }
-
-                    // 尝试解密数据
-                    const decryptedData = utils.decrypt(loginData);
-                    if (!decryptedData) {
-                        usernameDisplay.textContent = '用户';
-                        return;
-                    }
-
-                    // 尝试解析 JSON
-                    try {
-                        const userData = JSON.parse(decryptedData);
-                        usernameDisplay.textContent = userData.username || '用户';
-                    } catch (jsonError) {
-                        console.error('JSON解析失败:', jsonError);
-                        // 如果解析失败，直接使用解密后的文本（可能是纯用户名）
-                        usernameDisplay.textContent = decryptedData || '用户';
+                    // 从 localStorage 获取用户名
+                    const username = localStorage.getItem('username');
+                    if (username) {
+                        usernameDisplay.textContent = username;
+                    } else {
+                        // 尝试从 loginData 获取
+                        const loginData = localStorage.getItem('loginData');
+                        if (loginData) {
+                            try {
+                                // 简单的 base64 解码
+                                const decodedData = atob(loginData);
+                                const userData = JSON.parse(decodedData);
+                                if (userData.username) {
+                                    // 保存用户名到 localStorage 以便后续使用
+                                    localStorage.setItem('username', userData.username);
+                                    usernameDisplay.textContent = userData.username;
+                                } else {
+                                    usernameDisplay.textContent = '用户';
+                                }
+                            } catch (e) {
+                                console.error('解析用户数据失败:', e);
+                                usernameDisplay.textContent = '用户';
+                            }
+                        } else {
+                            usernameDisplay.textContent = '用户';
+                        }
                     }
                 } catch (error) {
                     console.error('获取用户名失败:', error);
@@ -3510,6 +3515,18 @@
             // 每分钟更新一次问候语
             setInterval(updateGreeting, 60000);
         });
+
+        // 在登录成功时保存用户名
+        function saveUsername(username) {
+            if (username) {
+                localStorage.setItem('username', username);
+            }
+        }
+
+        // 在退出登录时清除用户名
+        function clearUsername() {
+            localStorage.removeItem('username');
+        }
     </script>
 
     </body>

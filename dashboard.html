@@ -1347,27 +1347,30 @@
                 if (!usernameDisplay) return;
 
                 try {
-                    const loginData = localStorage.getItem('loginData');
-                    if (!loginData) {
-                        usernameDisplay.textContent = '用户';
-                        return;
-                    }
-
-                    // 尝试解密数据
-                    const decryptedData = utils.decrypt(loginData);
-                    if (!decryptedData) {
-                        usernameDisplay.textContent = '用户';
-                        return;
-                    }
-
-                    // 尝试解析 JSON
-                    try {
-                        const userData = JSON.parse(decryptedData);
-                        usernameDisplay.textContent = userData.username || '用户';
-                    } catch (jsonError) {
-                        console.error('JSON解析失败:', jsonError);
-                        // 如果解析失败，直接使用解密后的文本
-                        usernameDisplay.textContent = decryptedData || '用户';
+                    // 从 localStorage 获取用户名
+                    const username = localStorage.getItem('username');
+                    if (username) {
+                        usernameDisplay.textContent = username;
+                    } else {
+                        // 尝试从 loginData 获取
+                        const loginData = localStorage.getItem('loginData');
+                        if (loginData) {
+                            try {
+                                const decodedData = atob(loginData);
+                                const userData = JSON.parse(decodedData);
+                                if (userData.username) {
+                                    localStorage.setItem('username', userData.username);
+                                    usernameDisplay.textContent = userData.username;
+                                } else {
+                                    usernameDisplay.textContent = '用户';
+                                }
+                            } catch (e) {
+                                console.error('解析用户数据失败:', e);
+                                usernameDisplay.textContent = '用户';
+                            }
+                        } else {
+                            usernameDisplay.textContent = '用户';
+                        }
                     }
                 } catch (error) {
                     console.error('获取用户名失败:', error);
@@ -1752,6 +1755,7 @@
 
             // 实现退出登录功能
             function handleLogout() {
+                clearUsername(); // 清除用户名
                 $.ajax({
                     url: API_URLS.LOGOUT,
                     method: 'GET',
@@ -2131,11 +2135,15 @@
                     }
                 }).then(response => {
                     if (response.message === 'Success') {
-                        showMessage('保存成功！', () => {
-                            if (newName) {
-                                updateUserDisplay(newName);
+                        // 更新用户名显示和存储
+                        if (newName) {
+                            localStorage.setItem('username', newName);
+                            const usernameDisplay = document.getElementById('username-display');
+                            if (usernameDisplay) {
+                                usernameDisplay.textContent = newName;
                             }
-                        });
+                        }
+                        showMessage('保存成功！');
                     } else if (response.message === 'This user is existed') {
                         showMessage('用户名已被占用，请更换其他用户名');
                     } else {
@@ -2209,6 +2217,16 @@
                     }
                 }
             });
+
+            // 在退出登录时调用
+            function handleLogout() {
+                clearUsername(); // 清除用户名
+                // ... 其他退出登录逻辑 ...
+            }
+
+            function clearUsername() {
+                localStorage.removeItem('username');
+            }
         });
 
         // 在script标签中添加显示消息的函数
