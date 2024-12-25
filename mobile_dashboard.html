@@ -2844,10 +2844,6 @@
                 if (response.message === 'Success') {
                     showFormMessage('保存成功！', 'success');
                     
-                    // 添加这一行来更新标题显示的用户名
-                    if (newName) {
-                        document.querySelector('.header h1').textContent = `PC志愿者服务队 - ${newName}`;
-                    }                    
                     // 3秒后关闭模态框
                     setTimeout(() => {
                         document.getElementById('editModal').style.display = "none";
