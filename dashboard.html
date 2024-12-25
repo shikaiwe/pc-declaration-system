@@ -289,7 +289,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* 天气信息样式 */
+        /* 天气���息样式 */
         .weather-info {
             margin-top: auto;
             background: linear-gradient(135deg, #6dd5ed, #2193b0);
@@ -1100,7 +1100,7 @@
                                 天气：${live.weather}
                             </p>
                             <p>
-                                <span class="weather-icon">💧</span>
+                                <span class="weather-icon">���</span>
                                 湿度：${live.humidity}%
                             </p>
                             <p>
@@ -1578,7 +1578,7 @@
                         <p>报单信息: ${data.orderDetails}</p>
                     `;
                 }).catch(error => {
-                    reportOrderInfo.innerHTML = '<p>无法获取报单信息</p>';
+                    reportOrderInfo.innerHTML = '<p>���法获取报单信息</p>';
                 });
 
                 document.getElementById('reportOrder').style.display = 'none';
@@ -1667,7 +1667,7 @@
                     if (data.message === 'Success') {
                         userPhoneNumberInput.value = data.phoneNumber;
                     } else if (data.message === 'No phone number') {
-                        showMessage('您还未设置手机号，请先在账户管理中设置');
+                        showMessage('您还未设置手机号，请先在账户管理���设置');
                     } else {
                         handleSessionError(data.message);
                     }
@@ -1738,7 +1738,7 @@
                             checkUserPhoneNumber();
                         });
                     } else if (response.message === 'This user is existed') {
-                        showMessage('用户名已被占用，请更换其他用户名');
+                        showMessage('用户名已被占用，请更换其他用户���');
                     } else {
                         handleSessionError(response.message);
                     }
@@ -1774,8 +1774,9 @@
                     }
                 }).then(response => {
                     if (response.message === 'Success') {
-                        showMessage('密码修改成功！', () => {
-                            document.getElementById('passwordForm').reset();
+                        showMessage('密码修改成功！请重新登录', () => {
+                            localStorage.removeItem('loginData');
+                            window.location.href = 'login.html';
                         });
                     } else if (response.message === 'Password error') {
                         showMessage('原密码错误，请重试');

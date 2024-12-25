@@ -3207,14 +3207,12 @@
                 }
             }).then(response => {
                 if (response.message === 'Success') {
-                    showFormMessage('密码修改成功！', 'success');
-                    document.getElementById('passwordForm').reset();
-                    
-                    // 3秒后关闭模态框
+                    showFormMessage('密码修改成功！请重新登录', 'success');
+                    // 2秒后跳转到登录页面
                     setTimeout(() => {
-                        document.getElementById('editModal').style.display = "none";
-                        document.getElementById('overlay').style.display = "none";
-                    }, 3000);
+                        localStorage.removeItem('loginData');
+                        window.location.href = 'login.html';
+                    }, 2000);
                 } else if (response.message === 'Password error') {
                     showFormMessage('原密码错误，请重试', 'error');
                 } else {
