@@ -2275,7 +2275,7 @@
             return response.json();
         }
 
-        // 获取天�����和位置信息
+        // 获取天�������和位置信息
         async function fetchWeatherAndLocation() {
             // 使用 jQuery 获取 API Key
             function getApiKeyFromServer() {
@@ -2490,40 +2490,49 @@
 
         // 修改 formatDate 函数
         function formatDate(dateString) {
-            // 如果是字符串格式的日期，先尝试解析
-            if (typeof dateString === 'string') {
-                // 处理包含中文的日期字符串
-                if (dateString.includes('年') && dateString.includes('月') && dateString.includes('日')) {
-                    const parts = dateString.match(/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/);
-                    if (parts) {
-                        return dateString; // 如果已经是正确格式，直接返回
-                    }
+            try {
+                // 如果是标准格式的日期字符串 (YYYY-MM-DD HH:mm)
+                if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)) {
+                    const [datePart, timePart] = dateString.split(' ');
+                    const [year, month, day] = datePart.split('-');
+                    const [hours, minutes] = timePart.split(':');
+                    return `${year}年${parseInt(month)}月${parseInt(day)}日 ${hours}:${minutes}`;
                 }
-                dateString = new Date(dateString);
-            }
-
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) {
+                
+                // 如果已经是中文格式，直接返回
+                if (typeof dateString === 'string' && dateString.includes('年') && dateString.includes('月')) {
+                    return dateString;
+                }
+                
+                // 处理 Date 对象或其他格式的日期字符串
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    return '时间格式错误';
+                }
+                
+                const year = date.getFullYear();
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                
+                return `${year}年${month}月${day}日 ${hours}:${minutes}`;
+            } catch (error) {
+                console.error('日期格式化错误:', error);
                 return '时间格式错误';
             }
-            
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            
-            return `${year}-${month}-${day} ${hours}:${minutes}`;
         }
 
         // 修改 callReportAPI 函数
         async function callReportAPI(userPhoneNumber, address, issue, date) {
-            // 将中文格式的日期转换为标准格式
-            let formattedDate = date;
-            if (date.includes('年')) {
+            // 使用存储的提交格式，如果没有则尝试转换当前显示的格式
+            let submitDate = document.getElementById('preferredTime').dataset.submitValue;
+            
+            if (!submitDate && date.includes('年')) {
+                // 转换中文格式为标准格式
                 const parts = date.match(/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/);
                 if (parts) {
-                    formattedDate = `${parts[1]}-${parts[2].padStart(2, '0')}-${parts[3].padStart(2, '0')} ${parts[4].padStart(2, '0')}:${parts[5]}`;
+                    submitDate = `${parts[1]}-${String(parts[2]).padStart(2, '0')}-${String(parts[3]).padStart(2, '0')} ${String(parts[4]).padStart(2, '0')}:${parts[5]}`;
                 }
             }
 
@@ -2537,7 +2546,7 @@
                     userPhoneNumber: userPhoneNumber,
                     address: address,
                     issue: issue,
-                    date: formattedDate
+                    date: submitDate || date // 使用转换后的格式，如果转换失败则使用原始值
                 }),
                 credentials: 'include'
             });
@@ -2692,7 +2701,7 @@
                                             extendedProps: {
                                                 address: order.address,
                                                 phoneNumber: order.userPhoneNumber,
-                                                status: order.allocationState ? '已分配' : '待分配'
+                                                status: order.allocationState ? '已分配' : '待分���'
                                             }
                                         }));
                                         successCallback(events);
@@ -2895,9 +2904,15 @@
                         // 解析月和日
                         const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
                         
-                        // 构建标准格式的日期字符串
-                        const formattedDateTime = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${selectedTime}`;
-                        preferredTimeInput.value = formattedDateTime;
+                        // 构建标准格式的日期字符串用于显示
+                        const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
+                        // 构建标准格式的日期字符串用于提交
+                        const submitDateTime = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${selectedTime}`;
+                        
+                        // 存储两种格式
+                        preferredTimeInput.value = displayDateTime;
+                        preferredTimeInput.dataset.submitValue = submitDateTime;
+                        
                         pickerContainer.classList.remove('active');
                     }
                 });
