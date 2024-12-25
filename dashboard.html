@@ -883,6 +883,8 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
             border: 1px solid rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            position: relative;
         }
 
         .user-greeting:hover {
@@ -931,6 +933,44 @@
                 max-width: 100px;
             }
         }
+
+        /* 添加下拉菜单样式 */
+        .user-greeting .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 5px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 8px 0;
+            display: none;
+            z-index: 1000;
+            min-width: 150px;
+        }
+
+        .user-greeting .dropdown-menu.active {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .user-greeting .dropdown-menu a {
+            display: block;
+            padding: 8px 16px;
+            color: #333;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .user-greeting .dropdown-menu a:hover {
+            background-color: #f8f9fa;
+            color: #2196F3;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -953,15 +993,6 @@
             <div class="user-greeting">
                 <span id="greetingText"></span>
                 <span id="username-display"></span>
-            </div>
-            <div class="user-profile" id="userProfile">
-                <div class="user-info">
-                    <span id="displayUsername">用户</span>
-                    <div class="avatar" id="userAvatar">U</div>
-                </div>
-                <div class="dropdown-menu" id="userMenu">
-                    <a href="#" id="logoutLink">退出登录</a>
-                </div>
             </div>
         </div>
 
@@ -1850,14 +1881,9 @@
                 }).then(response => {
                     if (response.message === 'Success') {
                         showMessage('保存成功！', () => {
-                            // 更新显示的用户名
                             if (newName) {
-                                document.getElementById('displayUsername').textContent = newName;
-                                document.getElementById('userAvatar').textContent = newName.charAt(0).toUpperCase();
+                                updateUserDisplay(newName);
                             }
-                            
-                            // 更新一键填充按钮状态
-                            checkUserPhoneNumber();
                         });
                     } else if (response.message === 'This user is existed') {
                         showMessage('用户名已被占用，请更换其他用户名');
@@ -1932,6 +1958,39 @@
                 document.getElementById('overlay').style.display = "block";
                 toggleBodyScroll(true);
             });
+
+            // 修改用户名显示和下拉菜单功能
+            const userGreeting = document.querySelector('.user-greeting');
+            
+            // 添加下拉菜单到问候语区域
+            userGreeting.innerHTML += `
+                <div class="dropdown-menu" id="userMenu">
+                    <a href="#" id="logoutLink">退出登录</a>
+                </div>
+            `;
+
+            // 点击问候语区域显示/隐藏下拉菜单
+            userGreeting.addEventListener('click', (event) => {
+                const dropdownMenu = userGreeting.querySelector('.dropdown-menu');
+                dropdownMenu.classList.toggle('active');
+                event.stopPropagation();
+            });
+
+            // 点击页面其他地方隐藏下拉菜单
+            document.addEventListener('click', () => {
+                const dropdownMenu = document.querySelector('.user-greeting .dropdown-menu');
+                if (dropdownMenu) {
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+
+            // 修改保存用户信息后的更新逻辑
+            function updateUserDisplay(newName) {
+                const usernameDisplay = document.getElementById('username-display');
+                if (usernameDisplay && newName) {
+                    usernameDisplay.textContent = newName;
+                }
+            }
         });
 
         // 在script标签中添加显示消息的函数
