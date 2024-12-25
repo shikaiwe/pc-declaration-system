@@ -928,7 +928,7 @@
             background-color: rgba(0, 0, 0, 0.1);
         }
 
-        /* 响应式调整 */
+        /* 响应调整 */
         @media screen and (max-width: 768px) {
             .user-greeting {
                 padding: 6px 12px;
@@ -1240,9 +1240,27 @@
 
         /* 添加加载状态样式 */
         .loading {
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
             color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* 优化错误消息样式 */
@@ -1273,7 +1291,7 @@
             <li id="orderManagement"><i>📝</i>订单管理</li>
             <li id="scheduleManagement"><i>📅</i>日程管理</li>
             <li id="dataStatistics"><i>📊</i>数据统计</li>
-            <li id="accountManagement"><i>👤</i>账号管理</li>
+            <li id="accountManagement"><i>��</i>账号管理</li>
         </ul>
         <div class="weather-info" id="weatherInfo">
             <p>天气信息加载中...</p>
@@ -1321,7 +1339,7 @@
                         <input type="datetime-local" id="preferredTime" name="preferredTime" required>
                     </div>
                     <div id="timeWarning" style="display: none; color: red; margin-top: 10px;">
-                        该时间非上门时段。正确时间段为18:00-21:00
+                        ���时间非上门时段。正确时间段为18:00-21:00
                     </div>
                     <button type="submit">提交</button>
                 </form>
@@ -1336,7 +1354,7 @@
 
         <div class="content" id="dataStatisticsContent" style="display: none;">
             <h2>数据统计</h2>
-            <p>数据统计功能即将推出��</p>
+            <p>数据统计功能即将推出</p>
         </div>
 
         <div class="content" id="accountSettings" style="display: none;">
@@ -1440,7 +1458,7 @@
             baseUrl: 'https://8.134.178.71/api'
         };
 
-        // API 端点配置
+        // API 端点���置
         const API_URLS = {
             // 用户认证相关接口
             auth: {
@@ -1449,7 +1467,7 @@
                 getUserInfo: `${CONFIG.baseUrl}/dashboard/get_user_info/`
             },
             
-            // 账户管理相关接口
+            // 用户管理相关接口
             account: {
                 savePhone: `${CONFIG.baseUrl}/dashboard/savePhoneNumber/`,
                 getPhone: `${CONFIG.baseUrl}/dashboard/getPhoneNumber/`,
@@ -1473,7 +1491,7 @@
 
         // 工具函数集合
         const utils = {
-            // 加密/解密功能
+            // 加密/解密功���
             crypto: {
                 encrypt: (text) => btoa(encodeURIComponent(text)),
                 decrypt: (encoded) => decodeURIComponent(atob(encoded))
@@ -1523,6 +1541,13 @@
                         if (callback) callback();
                     };
                 }
+            },
+            
+            error: {
+                handle: function(error, customMessage) {
+                    console.error(error);
+                    this.ui.showMessage(customMessage || '操作失败，请重试');
+                }
             }
         };
 
@@ -1569,13 +1594,96 @@
                         utils.ui.showMessage('未找到会话信息，请重新登录');
                         break;
                     default:
-                        utils.ui.showMessage('发生未知错误，请重新登录');
+                        utils.ui.showMessage('发生未知错误，��重新登录');
                 }
                 
                 utils.storage.remove('loginData');
                 setTimeout(() => {
                     window.location.href = 'login.html';
                 }, 2000);
+            }
+        };
+
+        // 天气相关功能
+        const weather = {
+            // 从服务器获取天气 API Key
+            getApiKeyFromServer: async function() {
+                try {
+                    const response = await fetch(API_URLS.weather.getApiKey, {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    const data = await response.json();
+                    if (data.message === 'Success') {
+                        return data.apiKey;
+                    } else {
+                        auth.handleSessionError(data.message);
+                        throw new Error('获取API Key失败');
+                    }
+                } catch (error) {
+                    console.error('获取API Key失败:', error);
+                    throw error;
+                }
+            },
+
+            // 获取天气信息
+            fetchWeatherAndLocation: async function() {
+                const weatherInfoElement = document.getElementById('weatherInfo');
+                try {
+                    const apiKey = await this.getApiKeyFromServer();
+                    
+                    // 获取IP定位信息
+                    const ipResponse = await fetch(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
+                    const ipData = await ipResponse.json();
+                    if (ipData.status !== '1') {
+                        throw new Error(`无法获取IP信息: ${ipData.info}`);
+                    }
+
+                    const cityAdcode = ipData.adcode;
+                    const city = ipData.city.replace('市', '');
+
+                    // 获取天气信息
+                    const weatherResponse = await fetch(
+                        `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`
+                    );
+                    const weatherData = await weatherResponse.json();
+                    if (weatherData.status !== '1') {
+                        throw new Error(`无法获取天气信息: ${weatherData.info}`);
+                    }
+
+                    const live = weatherData.lives[0];
+                    weatherInfoElement.innerHTML = `
+                        <p class="weather-location">
+                            <span class="weather-icon">📍</span>
+                            ${city}
+                        </p>
+                        <p class="weather-temp">
+                            <span class="weather-icon">🌡️</span>
+                            ${live.temperature}°C
+                        </p>
+                        <div class="weather-details">
+                            <p>
+                                <span class="weather-icon">🌤️</span>
+                                天气：${live.weather}
+                            </p>
+                            <p>
+                                <span class="weather-icon">💧</span>
+                                湿度：${live.humidity}%
+                            </p>
+                            <p>
+                                <span class="weather-icon">🌪️</span>
+                                风向：${live.winddirection}
+                            </p>
+                            <p>
+                                <span class="weather-icon">💨</span>
+                                风力：${live.windpower}级
+                            </p>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error('获取天气信息失败:', error);
+                    weatherInfoElement.innerHTML = '<p>暂时无法获取天气信息</p>';
+                }
             }
         };
 
@@ -1611,7 +1719,7 @@
             displayUsername();
             
             // 获取天气信息
-            fetchWeatherAndLocation();
+            weather.fetchWeatherAndLocation();
             
             // 初始化时间显示
             function updateTime() {
@@ -1715,7 +1823,7 @@
                         
                         const data = await response.json();
                         if (data.message === 'Success') {
-                            showReportMessage('报单提交成功！', 'success');
+                            showReportMessage('报单提交成功���', 'success');
                             reportOrderForm.reset();
                         } else {
                             auth.handleSessionError(data.message);
@@ -1830,6 +1938,95 @@
 
             // 默认显示首页
             contentSections.homeLink.style.display = 'block';
+
+            // 在 DOMContentLoaded 事件监听器中添加
+            const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
+            if (fillPhoneNumberButton) {
+                fillPhoneNumberButton.disabled = false;
+                fillPhoneNumberButton.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch(API_URLS.account.getPhone, {
+                            credentials: 'include'
+                        });
+                        const data = await response.json();
+                        
+                        if (data.message === 'Success' && data.phoneNumber) {
+                            document.getElementById('userPhoneNumber').value = data.phoneNumber;
+                        } else if (data.message === 'No phone number') {
+                            utils.ui.showMessage('您还未���置手机号，请先在账户管理中设置');
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    } catch (error) {
+                        console.error('获取手机号失败:', error);
+                        utils.ui.showMessage('获取手机号失败，请重试');
+                    }
+                });
+            }
+
+            // 在 DOMContentLoaded 事件监听器中添加
+            const preferredTimeInput = document.getElementById('preferredTime');
+            if (preferredTimeInput) {
+                function setPreferredTimeRange() {
+                    const now = new Date();
+                    const dayOfWeek = now.getDay();
+                    const startOfWeek = new Date(now);
+                    const endOfWeek = new Date(now);
+
+                    startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
+                    endOfWeek.setDate(now.getDate() + (7 - dayOfWeek));
+
+                    startOfWeek.setHours(18, 0, 0, 0);
+                    endOfWeek.setHours(21, 0, 0, 0);
+
+                    const formatDateTime = (date) => {
+                        return date.toISOString().slice(0, 16);
+                    };
+
+                    preferredTimeInput.min = formatDateTime(startOfWeek);
+                    preferredTimeInput.max = formatDateTime(endOfWeek);
+                }
+
+                setPreferredTimeRange();
+
+                preferredTimeInput.addEventListener('change', () => {
+                    const selectedTime = new Date(preferredTimeInput.value);
+                    const selectedHour = selectedTime.getHours();
+                    const timeWarning = document.getElementById('timeWarning');
+
+                    if (selectedHour < 18 || selectedHour >= 21) {
+                        timeWarning.style.display = 'block';
+                        preferredTimeInput.value = '';
+                    } else {
+                        timeWarning.style.display = 'none';
+                    }
+                });
+            }
+
+            // 处理订单详情模态框关闭按钮
+            const closeDetailBtn = document.getElementById('closeDetailBtn');
+            if (closeDetailBtn) {
+                closeDetailBtn.addEventListener('click', () => {
+                    document.getElementById('orderDetailModal').style.display = 'none';
+                });
+            }
+
+            // 点击模态框外部关闭
+            window.addEventListener('click', (event) => {
+                const modal = document.getElementById('orderDetailModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            // 处理问题文本框自动调整高度
+            const issueTextarea = document.getElementById('issue');
+            if (issueTextarea) {
+                issueTextarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+            }
         });
 
         // 添加显示报单消息的函数
@@ -1863,6 +2060,200 @@
             if (loading) {
                 loading.remove();
             }
+        }
+
+        // 在 script 标签中添加日历初始化函数
+        function initializeCalendar() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'zh-cn',
+                height: 'auto',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                views: {
+                    timeGridWeek: {
+                        slotMinTime: '18:00:00',
+                        slotMaxTime: '22:00:00',
+                        slotDuration: '00:30:00',
+                        titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
+                    },
+                    timeGridDay: {
+                        slotMinTime: '18:00:00',
+                        slotMaxTime: '22:00:00',
+                        slotDuration: '00:30:00',
+                        titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
+                    }
+                },
+                buttonText: {
+                    today: '今天',
+                    month: '月',
+                    week: '周',
+                    day: '日'
+                },
+                events: function(info, successCallback, failureCallback) {
+                    fetch(API_URLS.order.getHistory, {
+                        credentials: 'include'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === 'Success') {
+                            const events = data.report_info.map(order => ({
+                                title: `维修订单: ${order.issue}`,
+                                start: new Date(order.date),
+                                backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
+                                borderColor: order.allocationState ? '#27ae60' : '#f39c12',
+                                extendedProps: {
+                                    address: order.address,
+                                    phoneNumber: order.userPhoneNumber,
+                                    status: order.allocationState ? '已分配' : '待分配'
+                                }
+                            }));
+                            successCallback(events);
+                        } else {
+                            failureCallback(new Error(data.message));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取日历订单数据失败:', error);
+                        failureCallback(error);
+                    });
+                }
+            });
+            calendar.render();
+        }
+
+        // 在 script 标签中添加历史订单功能
+        async function fetchHistoryOrders() {
+            const orderHistoryContent = document.getElementById('orderHistory');
+            showLoading(orderHistoryContent);
+
+            try {
+                const response = await fetch(API_URLS.order.getHistory, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.message === 'Success') {
+                    displayHistoryOrders(data.report_info);
+                } else if (data.message === 'No history report') {
+                    showNoOrders();
+                } else {
+                    auth.handleSessionError(data.message);
+                }
+            } catch (error) {
+                console.error('���取历史订单失败:', error);
+                showError();
+            } finally {
+                hideLoading(orderHistoryContent);
+            }
+        }
+
+        function displayHistoryOrders(orders) {
+            const orderHistoryContent = document.getElementById('orderHistory');
+            if (!Array.isArray(orders) || orders.length === 0) {
+                showNoOrders();
+                return;
+            }
+
+            const ordersHTML = orders.map(order => `
+                <div class="order-card">
+                    <div class="order-info">
+                        <p>
+                            <strong>手机号码：</strong>
+                            ${order.userPhoneNumber}
+                            <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
+                                ${order.allocationState ? '已分配' : '待分配'}
+                            </span>
+                        </p>
+                        <p><strong>地址：</strong>${order.address}</p>
+                        <p><strong>问题：</strong>${order.issue}</p>
+                        <p><strong>预约时间：</strong>${formatDate(order.date)}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            orderHistoryContent.innerHTML = `
+                <div class="orders-container">
+                    ${ordersHTML}
+                </div>
+            `;
+
+            // 添加点击事件处理
+            document.querySelectorAll('.order-card').forEach((card, index) => {
+                card.addEventListener('click', () => {
+                    const order = orders[index];
+                    showOrderDetail(order);
+                });
+            });
+        }
+
+        function showNoOrders() {
+            const orderHistoryContent = document.getElementById('orderHistory');
+            orderHistoryContent.innerHTML = `
+                <div class="no-orders">
+                    <i>📝</i>
+                    <p>暂无历史订单</p>
+                </div>
+            `;
+        }
+
+        function showError() {
+            const orderHistoryContent = document.getElementById('orderHistory');
+            orderHistoryContent.innerHTML = `
+                <div class="error-message">
+                    <i>❌</i>
+                    <p>获取历史订单失败，请稍后重试</p>
+                </div>
+            `;
+        }
+
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+            } catch (error) {
+                console.error('日期格式化错误:', error);
+                return dateString;
+            }
+        }
+
+        // 添加订单详情显示函数
+        function showOrderDetail(order) {
+            const orderDetailBody = document.getElementById('orderDetailBody');
+            const modal = document.getElementById('orderDetailModal');
+            
+            orderDetailBody.innerHTML = `
+                <div class="detail-item">
+                    <span class="detail-label">状态</span>
+                    <span class="detail-value">
+                        <span class="status-badge ${order.allocationState ? 'allocated' : 'pending'}">
+                            ${order.allocationState ? '已分配' : '待分配'}
+                        </span>
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">手机号码</span>
+                    <span class="detail-value">${order.userPhoneNumber}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">地址</span>
+                    <span class="detail-value">${order.address}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">问题描述</span>
+                    <span class="detail-value">${order.issue}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">预约时间</span>
+                    <span class="detail-value">${formatDate(order.date)}</span>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
         }
     </script>
 </body>
