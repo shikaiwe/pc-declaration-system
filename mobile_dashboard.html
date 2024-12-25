@@ -1168,7 +1168,7 @@
             color: #e65100;
         }
 
-        /* Flatpickr 日期选择器��体优化 */
+        /* Flatpickr 日期选择器���体优化 */
         .flatpickr-calendar {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
@@ -2218,6 +2218,60 @@
             border-radius: 2px;
             margin: 0 auto 15px;
         }
+
+        /* 更新按钮样式 */
+        .tab-link, 
+        .picker-cancel,
+        .picker-confirm,
+        .message-content button,
+        .logout-modal-buttons button,
+        #confirmLogout,
+        #cancelLogout {
+            /* 保持现有样式 */
+            
+            /* 添加以下属性 */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        /* 按钮内的文本不可选择 */
+        .tab-link span, 
+        .picker-cancel span,
+        .picker-confirm span,
+        .message-content button span,
+        .logout-modal-buttons button span {
+            pointer-events: none;
+        }
+
+        /* 在现有样式中添加以下内容 */
+        button {
+            cursor: default !important;
+        }
+
+        .tab-link {
+            cursor: default;
+        }
+
+        .close-button {
+            cursor: default;
+        }
+
+        .tab-content button {
+            cursor: default;
+        }
+
+        .message-content button {
+            cursor: default;
+        }
+
+        .picker-cancel,
+        .picker-confirm {
+            cursor: default;
+        }
     </style>
 </head>
 <body>
@@ -2267,13 +2321,12 @@
                 <form id="infoForm">
                     <div>
                         <label for="username">用户名:</label>
-                        <input type="text" id="username" name="username" autocomplete="username" required>
+                        <input type="text" id="username" name="username" autocomplete="username">
                     </div>
                     <div>
                         <label for="phone">手机号码:</label>
-                        <input type="tel" id="phone" name="phone" autocomplete="tel" required pattern="[0-9]{11}" placeholder="请输入11位手机号码">
+                        <input type="tel" id="phone" name="phone" autocomplete="tel" pattern="[0-9]{11}" placeholder="请输入11位手机号码">
                     </div>
-                    <!-- 添加提示信息容器 -->
                     <div id="formMessage" class="form-message"></div>
                     <button type="submit">保存修改</button>
                 </form>
@@ -2408,7 +2461,7 @@
             getHistoryCallUrl: `${BASE_URL}/api/dashboard/user_get_history_report/`,
 
             // 天气相关
-            weatherApiKeyUrl: `${BASE_URL}/api/dashboard/getWeatherApiKey/`
+            WEATHER_API_KEY: `${BASE_URL}/api/dashboard/getWeatherApiKey/`
         };
 
         // 添加 fetchData 函数定义
@@ -2425,7 +2478,7 @@
             // 使用 jQuery 获取 API Key
             function getApiKeyFromServer() {
                 return $.ajax({
-                    url: weatherApiKeyUrl,
+                    url: API_URLS.WEATHER_API_KEY,
                     method: 'GET',
                     dataType: 'json',
                 }).then(data => {
@@ -2516,7 +2569,7 @@
                     // 设置用户名输入框的值
                     document.getElementById('username').value = decryptedData.username;
                 } catch (error) {
-                    console.error('获取登录数据失败:', error);
+                    console.error('���取登录数据失败:', error);
                 }
             }
             
@@ -2586,7 +2639,7 @@
             });
         });
 
-        // 修改所有关闭模态框的事件处理器
+        // 修改���有关闭模态框的事件处理器
         // 信息修改模态框关闭
         document.querySelector('#editModal .close-button').addEventListener('click', function() {
             const modal = document.getElementById('editModal');
@@ -2712,7 +2765,7 @@
                     userPhoneNumber: userPhoneNumber,
                     address: address,
                     issue: issue,
-                    date: submitDate || date // 使用转换后的格式，如果转换失败则使用原始值
+                    date: submitDate || date // ��用转换后的格式，如果转换失败则使用原始值
                 }),
                 credentials: 'include'
             });
@@ -3253,6 +3306,13 @@
             const phoneNumber = document.getElementById('phone').value;
             const newName = document.getElementById('username').value;
             
+            // 如果两个字段都为空,显示提示
+            if (!phoneNumber && !newName) {
+                showFormMessage('请至少填写一项需要修改的信息', 'error');
+                return;
+            }
+            
+            // 只发送用户实际填写的字段
             const requestData = {};
             if (phoneNumber) requestData.phoneNumber = phoneNumber;
             if (newName) requestData.newName = newName;

@@ -1127,6 +1127,26 @@
                 transform: scale(1) translateY(0);
             }
         }
+
+        .tab-button {
+            cursor: default;
+        }
+
+        .tab-content button {
+            cursor: default;
+        }
+
+        .close-detail-btn {
+            cursor: default;
+        }
+
+        #logoutLink {
+            cursor: default;
+        }
+
+        button {
+            cursor: default !important;
+        }
     </style>
 </head>
 <body>
@@ -1862,7 +1882,7 @@
                         showError();
                     }
                 }).catch(error => {
-                    console.error('获取历史订���失败:', error);
+                    console.error('获取历史订单失败:', error);
                     showError();
                 });
             }
@@ -1927,7 +1947,7 @@
                 `;
             }
 
-            // 更��错误状态显示
+            // 更新错误状态显示
             function showError() {
                 document.getElementById('orderHistory').innerHTML = `
                     <div class="error-message">
