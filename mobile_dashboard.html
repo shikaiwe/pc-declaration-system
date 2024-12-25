@@ -2416,14 +2416,24 @@
     </div>
 
     <script>
-        // URL和API配置
-        const ip = '8.134.178.71';
-        const BASE_URL = `https://${ip}`;
+        // 在 script 标签的开头添加以下工具函数定义
+        const utils = {
+            // 加密函数
+            encrypt: function(text) {
+                return btoa(encodeURIComponent(text));
+            },
+            
+            // 解密函数
+            decrypt: function(encoded) {
+                return decodeURIComponent(atob(encoded));
+            }
+        };
 
+        // 修改 API_URLS 对象，添加缺失的 URL
         const API_URLS = {
             // 用户相关
             LOGIN: `${BASE_URL}/api/users/login/`,
-            logoutUrl: `${BASE_URL}/api/dashboard/logout/`,
+            LOGOUT: `${BASE_URL}/api/dashboard/logout/`,
             VALIDATE_SESSION: `${BASE_URL}/api/user/validate-session/`,
             GET_USER_INFO: `${BASE_URL}/api/dashboard/get_user_info/`,
             
@@ -2434,11 +2444,15 @@
             
             // 订单相关
             REPORT: `${BASE_URL}/api/dashboard/call_report/`,
-            getHistoryCallUrl: `${BASE_URL}/api/dashboard/user_get_history_report/`,
+            GET_HISTORY_CALL: `${BASE_URL}/api/dashboard/user_get_history_report/`,
 
             // 天气相关
             WEATHER_API_KEY: `${BASE_URL}/api/dashboard/getWeatherApiKey/`
         };
+
+        // URL和API配置
+        const ip = '8.134.178.71';
+        const BASE_URL = `https://${ip}`;
 
         // 添加 fetchData 函数定义
         async function fetchData(url) {
@@ -2597,7 +2611,7 @@
 
         document.getElementById('confirmLogout').addEventListener('click', function() {
             $.ajax({
-                url: logoutUrl,
+                url: API_URLS.LOGOUT,  // 使用 API_URLS 中定义的 URL
                 method: 'GET',
                 xhrFields: {
                     withCredentials: true
@@ -2891,7 +2905,7 @@
                             },
                             events: function(info, successCallback, failureCallback) {
                                 $.ajax({
-                                    url: getHistoryCallUrl,
+                                    url: API_URLS.GET_HISTORY_CALL,  // 使用 API_URLS 中定义的 URL
                                     method: 'GET',
                                     xhrFields: {
                                         withCredentials: true
@@ -3238,7 +3252,7 @@
             const orderHistoryDiv = document.getElementById('orderHistory');
             orderHistoryDiv.innerHTML = '<p>加载中...</p>';
 
-            fetch(getHistoryCallUrl, {
+            fetch(API_URLS.GET_HISTORY_CALL, {  // 使用 API_URLS 中定义的 URL
                 method: 'GET',
                 credentials: 'include'
             })
@@ -3305,7 +3319,7 @@
             
             // 调用保存API
             $.ajax({
-                url: savePhoneNumberUrl,
+                url: API_URLS.SAVE_PHONE,  // 使用 API_URLS 中定义的 URL
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(requestData),
@@ -3397,58 +3411,6 @@
             if (tabName === 'orderHistory') {
                 fetchHistoryOrders();
             }
-        }
-
-        // 添加获取历史订单的函数
-        function fetchHistoryOrders() {
-            const orderHistoryDiv = document.getElementById('orderHistory');
-            orderHistoryDiv.innerHTML = '<p>加载中...</p>';
-
-            fetch(getHistoryCallUrl, {
-                method: 'GET',
-                credentials: 'include'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message === 'Success') {
-                    const orders = data.report_info;
-                    if (orders.length === 0) {
-                        orderHistoryDiv.innerHTML = '<div class="no-orders">暂无历史订单</div>';
-                        return;
-                    }
-
-                    const ordersHTML = orders.map(order => `
-                        <div class="order-card">
-                            <div class="order-info">
-                                <p><strong>问题描述：</strong>${order.issue}</p>
-                                <p><strong>地址：</strong>${order.address}</p>
-                                <p><strong>联系电话：</strong>${order.userPhoneNumber}</p>
-                                <p><strong>预约时间：</strong>${formatDate(order.date)}</p>
-                                <p>
-                                    <strong>状态：</strong>
-                                    <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
-                                        ${order.allocationState ? '已分配' : '待分配'}
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-                    `).join('');
-
-                    orderHistoryDiv.innerHTML = `
-                        <div class="orders-container">
-                            ${ordersHTML}
-                        </div>
-                    `;
-                } else if (data.message === 'No history report') {
-                    orderHistoryDiv.innerHTML = '<div class="no-orders">暂无历史订单</div>';
-                } else {
-                    handleSessionError(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('获取历史订单失败:', error);
-                orderHistoryDiv.innerHTML = '<div class="error-message">获取历史订单失败，请稍后重试</div>';
-            });
         }
 
         // 添加关闭详情的函数

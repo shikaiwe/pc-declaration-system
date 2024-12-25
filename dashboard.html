@@ -1327,6 +1327,19 @@
     </div>
 
     <script>
+        // 在 script 标签的开头添加 utils 对象定义
+        const utils = {
+            // 加密函数
+            encrypt: function(text) {
+                return btoa(encodeURIComponent(text));
+            },
+            
+            // 解密函数
+            decrypt: function(encoded) {
+                return decodeURIComponent(atob(encoded));
+            }
+        };
+
         // URL和API配置
         const ip = '8.134.178.71';
         const BASE_URL = `https://${ip}`;
@@ -2227,22 +2240,12 @@
 
             // 替换为在账号管理标签页切换时加载用户信息
             document.querySelector('.tab-button[data-tab="info"]').addEventListener('click', function() {
-                // 从本地存储获取登录数据
-                const loginData = localStorage.getItem('loginData');
-                if (loginData) {
-                    try {
-                        const decryptedData = utils.decrypt(loginData);
-                        if (decryptedData) {
-                            const userData = JSON.parse(decryptedData);
-                            // 设置用户名输入框的值
-                            const usernameInput = document.getElementById('username');
-                            if (usernameInput) {
-                                usernameInput.value = userData.username;
-                            }
-                        }
-                    } catch (error) {
-                        console.error('获取登录数据失败:', error);
-                        showMessage('获取用户信息失败，请重试');
+                // 直接从 localStorage 获取用户名
+                const username = localStorage.getItem('username');
+                if (username) {
+                    const usernameInput = document.getElementById('username');
+                    if (usernameInput) {
+                        usernameInput.value = username;
                     }
                 }
             });
