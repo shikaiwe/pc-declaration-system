@@ -2646,7 +2646,7 @@
                                     if (response.message === 'Success') {
                                         const events = response.report_info.map(order => ({
                                             title: `维修订单: ${order.issue}`,
-                                            start: formatDate(order.date),
+                                            start: formatDate(order.date), // 使用formatDate函数格式化日期
                                             backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
                                             borderColor: order.allocationState ? '#27ae60' : '#f39c12',
                                             extendedProps: {
@@ -2676,7 +2676,7 @@
                                 
                                 // 格式化日期
                                 const eventDate = new Date(info.event.start);
-                                const formattedDate = `${eventDate.getFullYear()}年${eventDate.getMonth() + 1}月${eventDate.getDate()}日 ${String(eventDate.getHours()).padStart(2, '0')}:${String(eventDate.getMinutes()).padStart(2, '0')}`;
+                                const formattedDate = formatDate(eventDate); // 使用formatDate函数格式化日期
                                 
                                 // 设置详情内容
                                 detailContent.innerHTML = `
@@ -2715,32 +2715,6 @@
                                 
                                 // 点击遮罩关闭
                                 overlay.onclick = closeDetail;
-                                
-                                // 添加滑动关闭功能
-                                let startY = 0;
-                                let currentY = 0;
-                                
-                                detailCard.addEventListener('touchstart', function(e) {
-                                    startY = e.touches[0].clientY;
-                                });
-                                
-                                detailCard.addEventListener('touchmove', function(e) {
-                                    currentY = e.touches[0].clientY;
-                                    const diff = currentY - startY;
-                                    
-                                    if (diff > 0) { // 只允许向下滑动
-                                        detailCard.style.transform = `translateY(${diff}px)`;
-                                        e.preventDefault();
-                                    }
-                                });
-                                
-                                detailCard.addEventListener('touchend', function() {
-                                    if (currentY - startY > 100) { // 如果滑动距离超过100px
-                                        closeDetail();
-                                    } else {
-                                        detailCard.style.transform = '';
-                                    }
-                                });
                             },
                             eventDidMount: function(info) {
                                 info.el.title = `
