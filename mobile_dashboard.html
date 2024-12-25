@@ -2387,12 +2387,26 @@
     </div>
 
     <script>
+        // URL和API配置
         const ip = '8.134.178.71';
-        var logoutUrl = `https://${ip}/api/dashboard/logout/`;
-        var getHistoryCallUrl = `https://${ip}/api/dashboard/user_get_history_report/`;
-        var weatherApiKeyUrl = `https://${ip}/api/dashboard/getWeatherApiKey/`;
-        var reportApiUrl = `https://${ip}/api/dashboard/call_report/`;
-        var savePhoneNumberUrl = `https://${ip}/api/dashboard/savePhoneNumber/`;
+        const BASE_URL = `https://${ip}`;
+
+        const API_URLS = {
+            // 用户相关
+            LOGIN: `${BASE_URL}/api/users/login/`,
+            LOGOUT: `${BASE_URL}/api/users/logout/`,
+            VALIDATE_SESSION: `${BASE_URL}/api/users/validate-session/`,
+            GET_USER_INFO: `${BASE_URL}/api/users/get_user_info/`,
+            
+            // 账户管理相关
+            SAVE_PHONE: `${BASE_URL}/api/dashboard/save_phone_number/`,
+            GET_PHONE: `${BASE_URL}/api/dashboard/get_phone_number/`,
+            CHANGE_PASSWORD: `${BASE_URL}/api/dashboard/renew_password/`,
+            
+            // 订单相关
+            REPORT: `${BASE_URL}/api/dashboard/report/`,
+            GET_HISTORY: `${BASE_URL}/api/dashboard/get_history_call/`
+        };
 
         // 添加 fetchData 函数定义
         async function fetchData(url) {
@@ -3438,7 +3452,7 @@
                     handleSessionError(response.message);
                 }
             }).catch(error => {
-                console.error('修改密码失败:', error);
+                console.error('修改密码失���:', error);
                 showFormMessage('修改密码失败，请重试', 'error');
             });
         });
@@ -3474,14 +3488,28 @@
                 const usernameDisplay = document.getElementById('username-display');
                 if (!usernameDisplay) return;
 
-                try {
-                    // 直接从 localStorage 获取用户名
+                // 从API获取用户信息
+                fetch(API_URLS.GET_USER_INFO, {
+                    method: 'GET',
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message === 'Success') {
+                        // 保存并显示用户名
+                        const username = data.user_info.name;
+                        localStorage.setItem('username', username);
+                        usernameDisplay.textContent = username;
+                    } else {
+                        handleSessionError(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('获取用户信息失败:', error);
+                    // 如果API调用失败，尝试从localStorage获取
                     const username = localStorage.getItem('username');
                     usernameDisplay.textContent = username || '用户';
-                } catch (error) {
-                    console.error('获取用户名失败:', error);
-                    usernameDisplay.textContent = '用户';
-                }
+                });
             }
             
             // 初始化显示
@@ -3506,8 +3534,10 @@
 
         // 在退出登录函数中添加
         function handleLogout() {
-            localStorage.removeItem('username'); // 清除用户名
+            // 清除用户名和登录数据
+            localStorage.removeItem('username');
             localStorage.removeItem('loginData');
+            localStorage.removeItem('rememberMe');
             window.location.href = 'login.html';
         }
     </script>

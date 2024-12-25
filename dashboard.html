@@ -1273,28 +1273,29 @@
     </div>
 
     <script>
-        // 定义所有的URL
-        const BASE_URL = 'https://8.134.178.71';
+        // URL和API配置
+        const ip = '8.134.178.71';
+        const BASE_URL = `https://${ip}`;
+
         const API_URLS = {
-            // 报单相关
-            REPORT: `${BASE_URL}/api/dashboard/call_report/`,
-            GET_HISTORY: `${BASE_URL}/api/dashboard/user_get_history_report/`,
-            
             // 用户相关
-            LOGOUT: `${BASE_URL}/api/dashboard/logout/`,
-            GET_PHONE: `${BASE_URL}/api/dashboard/getPhoneNumber/`,
-            SAVE_PHONE: `${BASE_URL}/api/dashboard/savePhoneNumber/`,
+            LOGIN: `${BASE_URL}/api/users/login/`,
+            LOGOUT: `${BASE_URL}/api/users/logout/`,
+            VALIDATE_SESSION: `${BASE_URL}/api/users/validate-session/`,
+            GET_USER_INFO: `${BASE_URL}/api/users/get_user_info/`,
             
-            // 天气相关
-            WEATHER_API_KEY: `${BASE_URL}/api/dashboard/getWeatherApiKey/`,
+            // 账户管理相关
+            SAVE_PHONE: `${BASE_URL}/api/dashboard/save_phone_number/`,
+            GET_PHONE: `${BASE_URL}/api/dashboard/get_phone_number/`,
+            CHANGE_PASSWORD: `${BASE_URL}/api/dashboard/renew_password/`,
             
-            // 页面跳转
-            MOBILE_DASHBOARD: 'mobile_dashboard.html',
-            LOGIN: 'login.html'
+            // 订单相关
+            REPORT: `${BASE_URL}/api/dashboard/report/`,
+            GET_HISTORY: `${BASE_URL}/api/dashboard/get_history_call/`
         };
 
         const utils = {
-            // 简单的加密解密方法
+            // 简单的加密方法
             encrypt: function(text) {
                 try {
                     return window.btoa(unescape(encodeURIComponent(text)));
@@ -1329,7 +1330,7 @@
                 if (hour >= 5 && hour < 9) {
                     greeting = '早上好，';
                 } else if (hour >= 9 && hour < 11) {
-                    greeting = '上午好，';
+                    greeting = '上��好，';
                 } else if (hour >= 11 && hour < 13) {
                     greeting = '中午好，';
                 } else if (hour >= 13 && hour < 18) {
@@ -1346,36 +1347,28 @@
                 const usernameDisplay = document.getElementById('username-display');
                 if (!usernameDisplay) return;
 
-                try {
-                    // 从 localStorage 获取用户名
-                    const username = localStorage.getItem('username');
-                    if (username) {
+                // 从API获取用户信息
+                fetch(API_URLS.GET_USER_INFO, {
+                    method: 'GET',
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message === 'Success') {
+                        // 保存并显示用户名
+                        const username = data.user_info.name;
+                        localStorage.setItem('username', username);
                         usernameDisplay.textContent = username;
                     } else {
-                        // 尝试从 loginData 获取
-                        const loginData = localStorage.getItem('loginData');
-                        if (loginData) {
-                            try {
-                                const decodedData = atob(loginData);
-                                const userData = JSON.parse(decodedData);
-                                if (userData.username) {
-                                    localStorage.setItem('username', userData.username);
-                                    usernameDisplay.textContent = userData.username;
-                                } else {
-                                    usernameDisplay.textContent = '用户';
-                                }
-                            } catch (e) {
-                                console.error('解析用户数据失败:', e);
-                                usernameDisplay.textContent = '用户';
-                            }
-                        } else {
-                            usernameDisplay.textContent = '用户';
-                        }
+                        handleSessionError(data.message);
                     }
-                } catch (error) {
-                    console.error('获取用户名失败:', error);
-                    usernameDisplay.textContent = '用户';
-                }
+                })
+                .catch(error => {
+                    console.error('获取用户信息失败:', error);
+                    // 如果API调用失败，尝试从localStorage获取
+                    const username = localStorage.getItem('username');
+                    usernameDisplay.textContent = username || '用户';
+                });
             }
             
             // 初始化显示
@@ -1481,7 +1474,7 @@
                 });
             }
 
-            // 统一的会话错误处理函数
+            // 统一的会话错��处理函数
             function handleSessionError(message) {
                 switch (message) {
                     case 'Session has expired':
@@ -1755,7 +1748,12 @@
 
             // 实现退出登录功能
             function handleLogout() {
-                clearUsername(); // 清除用户名
+                // 清除用户名和登录数据
+                localStorage.removeItem('username');
+                localStorage.removeItem('loginData');
+                localStorage.removeItem('rememberMe');
+
+                // 调用退出登录API
                 $.ajax({
                     url: API_URLS.LOGOUT,
                     method: 'GET',
@@ -1763,21 +1761,10 @@
                         withCredentials: true
                     }
                 }).then(response => {
-                    switch(response.message) {
-                        case 'Success':
-                            localStorage.removeItem('loginData');
-                            window.location.href = 'login.html';
-                            break;
-                        case 'Session has expired':
-                        case 'Invalid session':
-                        case 'No sessionid cookie':
-                            showMessage(`${response.message}，请重新登录`, () => {
-                                localStorage.removeItem('loginData');
-                                window.location.href = 'login.html';
-                            });
-                            break;
-                        default:
-                            showMessage('退出时发生错误，请重试');
+                    if (response.message === 'Success') {
+                        window.location.href = 'login.html';
+                    } else {
+                        handleSessionError(response.message);
                     }
                 }).catch(error => {
                     console.error('退出登录失败:', error);
@@ -1928,7 +1915,7 @@
             function showError() {
                 document.getElementById('orderHistory').innerHTML = `
                     <div class="error-message">
-                        <i>❌</i>
+                        <i>��</i>
                         <p>获取历史订单失败，请稍后重试</p>
                     </div>
                 `;
@@ -2050,7 +2037,7 @@
                     }
                 });
             } else {
-                console.error('找不到期望上门时间的输入框');
+                console.error('找不到期望上门时间输入框');
             }
 
             const userPhoneNumberInput = document.getElementById('userPhoneNumber');
@@ -2075,7 +2062,7 @@
                     if (data.message === 'Success') {
                         userPhoneNumberInput.value = data.phoneNumber;
                     } else if (data.message === 'No phone number') {
-                        showMessage('您还未设置手机号，请先在账户管理设置');
+                        showMessage('还未设置手机号，请先在账户管理设置');
                     } else {
                         handleSessionError(data.message);
                     }
@@ -2085,7 +2072,7 @@
                 }
             }
 
-            // 保留 checkUserPhoneNumber() 的调用
+            // 保存 checkUserPhoneNumber() 的调用
             checkUserPhoneNumber();
 
             const accountTabs = document.querySelectorAll('#accountSettings .tab-button');
@@ -2217,16 +2204,6 @@
                     }
                 }
             });
-
-            // 在退出登录时调用
-            function handleLogout() {
-                clearUsername(); // 清除用户名
-                // ... 其他退出登录逻辑 ...
-            }
-
-            function clearUsername() {
-                localStorage.removeItem('username');
-            }
         });
 
         // 在script标签中添加显示消息的函数

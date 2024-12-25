@@ -282,18 +282,21 @@
 
         // 处理登录成功
         function handleLoginSuccess(response) {
-            const encryptedData = utils.encrypt(JSON.stringify({
-                username: response.username,
-                token: response.token
-            }));
-            localStorage.setItem('loginData', encryptedData);
-            if (document.getElementById('rememberMe').checked) {
-                localStorage.setItem('rememberMe', 'true');
-            }
-            if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                window.location.href = 'mobile_dashboard.html';
-            } else {
-                window.location.href = 'dashboard.html';
+            if (response.message === 'Success') {
+                // 保存用户名
+                localStorage.setItem('username', response.username);
+                
+                // 保存登录状态
+                if (document.getElementById('rememberMe').checked) {
+                    localStorage.setItem('rememberMe', 'true');
+                }
+                
+                // 根据设备类型跳转
+                if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                    window.location.href = 'mobile_dashboard.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
             }
         }
 
