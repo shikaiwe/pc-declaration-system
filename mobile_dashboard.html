@@ -1971,6 +1971,129 @@
             height: 100%;
             background-color: rgba(0,0,0,0.5);
         }
+
+        /* 在现有的 style 标签中添加以下样式 */
+
+        /* 订单详情卡片样式 */
+        .order-detail-card {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 1005;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .order-detail-card.show {
+            transform: translateY(0);
+        }
+
+        .detail-header {
+            position: relative;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+
+        .detail-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .close-detail {
+            position: absolute;
+            right: 0;
+            top: 0;
+            padding: 8px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .detail-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .detail-row {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .detail-label {
+            color: #666;
+            font-size: 14px;
+            min-width: 70px;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 14px;
+            flex: 1;
+            word-break: break-all;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-badge.allocated {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-badge.pending {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+
+        /* 背景遮罩 */
+        .detail-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 1004;
+        }
+
+        .detail-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 下拉指示器 */
+        .pull-indicator {
+            width: 40px;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            margin: 0 auto 15px;
+        }
     </style>
 </head>
 <body>
@@ -2089,7 +2212,7 @@
                     <button type="submit">提交</button>
                 </form>
                 <div id="reportOrderInfo">
-                    <!-- 里将显示报单信息 -->
+                    <!-- 这里将显示报单信息 -->
                 </div>
             </div>
             <div class="tab-content" id="orderHistory" style="display: none;">
@@ -2114,6 +2237,19 @@
         <div class="message-content">
             <p id="messageText"></p>
             <button id="messageConfirm">确定</button>
+        </div>
+    </div>
+
+    <!-- 在 body 标签末尾添加以下 HTML -->
+    <div class="detail-overlay" id="detailOverlay"></div>
+    <div class="order-detail-card" id="orderDetailCard">
+        <div class="pull-indicator"></div>
+        <div class="detail-header">
+            <h3>订单详情</h3>
+            <button class="close-detail" id="closeDetail">&times;</button>
+        </div>
+        <div class="detail-content" id="orderDetailContent">
+            <!-- 内容将通过 JavaScript 动态填充 -->
         </div>
     </div>
 
@@ -2520,14 +2656,78 @@
                                 });
                             },
                             eventClick: function(info) {
-                                alert(`
-                                    订单详情:
-                                    问题: ${info.event.title}
-                                    时间: ${info.event.start.toLocaleString()}
-                                    地址: ${info.event.extendedProps.address}
-                                    电话: ${info.event.extendedProps.phoneNumber}
-                                    状态: ${info.event.extendedProps.status}
-                                `.trim());
+                                const detailCard = document.getElementById('orderDetailCard');
+                                const detailContent = document.getElementById('orderDetailContent');
+                                const overlay = document.getElementById('detailOverlay');
+                                const closeBtn = document.getElementById('closeDetail');
+                                
+                                // 格式化日期
+                                const eventDate = new Date(info.event.start);
+                                const formattedDate = `${eventDate.getFullYear()}年${eventDate.getMonth() + 1}月${eventDate.getDate()}日 ${String(eventDate.getHours()).padStart(2, '0')}:${String(eventDate.getMinutes()).padStart(2, '0')}`;
+                                
+                                // 设置详情内容
+                                detailContent.innerHTML = `
+                                    <div class="detail-row">
+                                        <span class="detail-label">状态</span>
+                                        <span class="detail-value">
+                                            <span class="status-badge ${info.event.extendedProps.status === '已分配' ? 'allocated' : 'pending'}">
+                                                ${info.event.extendedProps.status}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">问题描述</span>
+                                        <span class="detail-value">${info.event.title.replace('维修订单: ', '')}</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">预约时间</span>
+                                        <span class="detail-value">${formattedDate}</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">地址</span>
+                                        <span class="detail-value">${info.event.extendedProps.address}</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">联系电话</span>
+                                        <span class="detail-value">${info.event.extendedProps.phoneNumber}</span>
+                                    </div>
+                                `;
+                                
+                                // 显示详情卡片和遮罩
+                                detailCard.classList.add('show');
+                                overlay.classList.add('show');
+                                
+                                // 关闭按钮事件
+                                closeBtn.onclick = closeDetail;
+                                
+                                // 点击遮罩关闭
+                                overlay.onclick = closeDetail;
+                                
+                                // 添加滑动关闭功能
+                                let startY = 0;
+                                let currentY = 0;
+                                
+                                detailCard.addEventListener('touchstart', function(e) {
+                                    startY = e.touches[0].clientY;
+                                });
+                                
+                                detailCard.addEventListener('touchmove', function(e) {
+                                    currentY = e.touches[0].clientY;
+                                    const diff = currentY - startY;
+                                    
+                                    if (diff > 0) { // 只允许向下滑动
+                                        detailCard.style.transform = `translateY(${diff}px)`;
+                                        e.preventDefault();
+                                    }
+                                });
+                                
+                                detailCard.addEventListener('touchend', function() {
+                                    if (currentY - startY > 100) { // 如果滑动距离超过100px
+                                        closeDetail();
+                                    } else {
+                                        detailCard.style.transform = '';
+                                    }
+                                });
                             },
                             eventDidMount: function(info) {
                                 info.el.title = `
@@ -2966,6 +3166,18 @@
                 console.error('获取历史订单失败:', error);
                 orderHistoryDiv.innerHTML = '<div class="error-message">获取历史订单失败，请稍后重试</div>';
             });
+        }
+
+        // 添加关闭详情的函数
+        function closeDetail() {
+            const detailCard = document.getElementById('orderDetailCard');
+            const overlay = document.getElementById('detailOverlay');
+            
+            detailCard.classList.remove('show');
+            overlay.classList.remove('show');
+            
+            // 重置transform样式
+            detailCard.style.transform = '';
         }
         </script>
 

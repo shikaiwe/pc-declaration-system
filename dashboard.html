@@ -756,6 +756,118 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        /* 订单详情模态框样式 */
+        .order-detail-modal {
+            display: none;
+            position: fixed;
+            z-index: 1004;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .order-detail-content {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            min-width: 320px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .order-detail-header {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .order-detail-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .order-detail-body {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .detail-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .detail-label {
+            min-width: 80px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .detail-value {
+            color: #212529;
+            flex: 1;
+        }
+
+        .order-detail-footer {
+            margin-top: 20px;
+            text-align: right;
+            padding-top: 15px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .close-detail-btn {
+            padding: 8px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .close-detail-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-badge.allocated {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-badge.pending {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
     </style>
 </head>
 <body>
@@ -889,6 +1001,20 @@
         <div class="message-content">
             <p id="messageText"></p>
             <button id="messageConfirm">确定</button>
+        </div>
+    </div>
+
+    <div class="order-detail-modal" id="orderDetailModal">
+        <div class="order-detail-content">
+            <div class="order-detail-header">
+                <h3>订单详情</h3>
+            </div>
+            <div class="order-detail-body" id="orderDetailBody">
+                <!-- 内容将通过 JavaScript 动态填充 -->
+            </div>
+            <div class="order-detail-footer">
+                <button class="close-detail-btn" id="closeDetailBtn">关闭</button>
+            </div>
         </div>
     </div>
 
@@ -1047,7 +1173,7 @@
             // 更新当前时间
             function updateTime() {
                 const now = new Date();
-                const dateString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+                const dateString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}��`;
                 const timeString = `${now.getHours()}时${now.getMinutes()}分${now.getSeconds()}秒`;
                 currentTimeElement.textContent = `${dateString} ${timeString}`;
             }
@@ -1167,15 +1293,56 @@
                                 });
                             },
                             eventClick: function(info) {
-                                // 点击事件时显示详细信息
-                                showMessage(`
-                                    订单详情:
-                                    问题: ${info.event.title}
-                                    时间: ${info.event.start.toLocaleString()}
-                                    地址: ${info.event.extendedProps.address}
-                                    电话: ${info.event.extendedProps.phoneNumber}
-                                    状态: ${info.event.extendedProps.status}
-                                `.trim());
+                                const orderDetailModal = document.getElementById('orderDetailModal');
+                                const orderDetailBody = document.getElementById('orderDetailBody');
+                                const closeDetailBtn = document.getElementById('closeDetailBtn');
+                                
+                                // 格式化日期
+                                const eventDate = new Date(info.event.start);
+                                const formattedDate = `${eventDate.getFullYear()}年${eventDate.getMonth() + 1}月${eventDate.getDate()}日 ${String(eventDate.getHours()).padStart(2, '0')}:${String(eventDate.getMinutes()).padStart(2, '0')}`;
+                                
+                                // 设置详情内容
+                                orderDetailBody.innerHTML = `
+                                    <div class="detail-item">
+                                        <span class="detail-label">状态</span>
+                                        <span class="detail-value">
+                                            <span class="status-badge ${info.event.extendedProps.status === '已分配' ? 'allocated' : 'pending'}">
+                                                ${info.event.extendedProps.status}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">问题描述</span>
+                                        <span class="detail-value">${info.event.title.replace('维修订单: ', '')}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">预约时间</span>
+                                        <span class="detail-value">${formattedDate}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">地址</span>
+                                        <span class="detail-value">${info.event.extendedProps.address}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">联系电话</span>
+                                        <span class="detail-value">${info.event.extendedProps.phoneNumber}</span>
+                                    </div>
+                                `;
+                                
+                                // 显示模态框
+                                orderDetailModal.style.display = 'block';
+                                
+                                // 关闭按钮事件
+                                closeDetailBtn.onclick = function() {
+                                    orderDetailModal.style.display = 'none';
+                                };
+                                
+                                // 点击模态框外部关闭
+                                orderDetailModal.onclick = function(event) {
+                                    if (event.target === orderDetailModal) {
+                                        orderDetailModal.style.display = 'none';
+                                    }
+                                };
                             },
                             eventDidMount: function(info) {
                                 // 添加鼠标悬停提示
@@ -1461,7 +1628,7 @@
 
                 setPreferredTimeRange();
 
-                // 检查选择的时间是否在允许范围内
+                // 检查选择的时间是否在允��范围内
                 preferredTimeInput.addEventListener('change', () => {
                     const selectedTime = new Date(preferredTimeInput.value);
                     const selectedHour = selectedTime.getHours();
@@ -1577,7 +1744,7 @@
                     }
                 }).catch(error => {
                     console.error('保存失败:', error);
-                    showMessage('保存失败，请重试');
+                    showMessage('��存失败，请重试');
                 });
             });
         });
