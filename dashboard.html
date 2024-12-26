@@ -2462,22 +2462,25 @@
         }
 
         /* 时间选择器整体容器 */
-        .flatpickr-time {
-            height: 40px !important;  /* 保持紧凑的高度 */
+         .flatpickr-time {
+            height: 40px !important;
             line-height: 40px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            width: 100% !important;  /* 确保时间选择器填满容器宽度 */
+            max-width: none !important;  /* 移除最大宽度限制 */
         }
 
-        /* 时间输入框容器 */
+/* 时间输入框容器 */
         .numInputWrapper {
-            width: 100px !important;  /* 恢复更宽的输入框 */
+            flex: 1 !important;  /* 让输入框容器自适应填充空间 */
+            min-width: 70px !important;  /* 设置最小宽度 */
             height: 40px !important;
             position: relative !important;
         }
 
-        /* 时间输入框 */
+/* 时间输入框 */
         .flatpickr-time input.flatpickr-hour,
         .flatpickr-time input.flatpickr-minute {
             font-size: 16px !important;
@@ -2486,14 +2489,15 @@
             line-height: 40px !important;
             text-align: center !important;
             padding-right: 35px !important;
-            width: 100% !important;  /* 确保输入框填满容器 */
+            width: 100% !important;
         }
 
-        /* 分隔符样式 */
+/* 分隔符样式 */
         .flatpickr-time .flatpickr-time-separator {
             line-height: 40px !important;
-            padding: 0 8px !important;  /* 增加分隔符两侧间距 */
+            padding: 0 4px !important;  /* 减小分隔符两侧间距 */
             font-size: 16px !important;
+            flex: none !important;  /* 防止分隔符被拉伸 */
         }
 
         /* 箭头容器基础样式 */
@@ -3351,54 +3355,54 @@
         }
 
         /* 箭头容器基础样式 */
-                    .flatpickr-calendar .numInputWrapper span {
-                        width: 35px !important;
-                        height: 20px !important;
-                        position: absolute !important;
-                        right: 0 !important;
-                        display: flex !important;
-                        align-items: center !important;
-                        justify-content: center !important;
-                        background: transparent !important;
-                        cursor: pointer !important;
-                    }
+        .flatpickr-calendar .numInputWrapper span {
+            width: 35px !important;
+            height: 20px !important;
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important;
+            cursor: pointer !important;
+        }
 
-                    /* 其他样式保持不变 */
-                    .flatpickr-calendar .numInputWrapper span.arrowUp {
-                        top: 0 !important;
-                    }
+        /* 其他样式保持不变 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
 
-                    .flatpickr-calendar .numInputWrapper span.arrowUp:after {
-                        content: '▲' !important;
-                        display: block !important;
-                        font-size: 10px !important;
-                        color: #666 !important;
-                    }
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+            content: '▲' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
 
-                    .flatpickr-calendar .numInputWrapper span.arrowDown {
-                        bottom: 0 !important;
-                        top: auto !important;
-                    }
+        .flatpickr-calendar .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
 
-                    .flatpickr-calendar .numInputWrapper span.arrowDown:after {
-                        content: '▼' !important;
-                        display: block !important;
-                        font-size: 10px !important;
-                        color: #666 !important;
-                    }
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: '▼' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
 
-                    .flatpickr-calendar .numInputWrapper span:hover {
-                        background-color: rgba(0, 0, 0, 0.05) !important;
-                    }
+        .flatpickr-calendar .numInputWrapper span:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
 
-                    .flatpickr-calendar .numInputWrapper span:hover:after {
-                        color: #007bff !important;
-                    }
+        .flatpickr-calendar .numInputWrapper span:hover:after {
+            color: #007bff !important;
+        }
 
-                    .flatpickr-calendar .numInputWrapper span.disabled {
-                        opacity: 0.3 !important;
-                        cursor: not-allowed !important;
-                    }
+        .flatpickr-calendar .numInputWrapper span.disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
                 `;
                 document.head.appendChild(style);
 
