@@ -355,6 +355,15 @@
             background-color: rgba(0, 0, 0, 0.5);
         }
 
+        /* 特定模态框的额外样式 */
+        .logout-modal .modal-content {
+            max-width: 400px;
+        }
+
+        .order-detail-modal .modal-content {
+            max-width: 600px;
+        }
+
         .modal-content {
             background-color: #fefefe;
             margin: 10% auto;
@@ -1283,6 +1292,43 @@
             margin: 10px 0;
             color: #52c41a;
         }
+
+        /* 日历错误提示样式 */
+        .calendar-error {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #fff5f5;
+            border-radius: 8px;
+            margin: 20px;
+            border: 1px solid #ffebee;
+        }
+
+        .calendar-error .error-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .calendar-error p {
+            color: #dc3545;
+            margin: 10px 0;
+            font-size: 15px;
+        }
+
+        .calendar-error .retry-button {
+            margin-top: 15px;
+            padding: 8px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-out;
+        }
+
+        .calendar-error .retry-button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -1404,7 +1450,8 @@
             </div>
         </div>
 
-        <div id="logoutModal" class="modal">
+        <!-- 1. 保留一个统一的退出登录模态框 -->
+        <div class="modal logout-modal" id="logoutModal">
             <div class="modal-content">
                 <p>您确定要退出登录吗？</p>
                 <button id="confirmLogoutButton">确认</button>
@@ -1424,8 +1471,9 @@
         </div>
     </div>
 
-    <div class="order-detail-modal" id="orderDetailModal">
-        <div class="order-detail-content">
+    <!-- 2. 保留一个统一的订单详情模态框 -->
+    <div class="modal order-detail-modal" id="orderDetailModal">
+        <div class="modal-content">
             <div class="order-detail-header">
                 <h3>订单详情</h3>
             </div>
@@ -1435,14 +1483,6 @@
             <div class="order-detail-footer">
                 <button class="close-detail-btn" id="closeDetailBtn">关闭</button>
             </div>
-        </div>
-    </div>
-
-    <div class="logout-modal" id="logoutModal">
-        <div class="modal-content">
-            <p>您确定要退出登录吗？</p>
-            <button id="confirmLogoutButton">确认</button>
-            <button id="cancelLogoutButton">取消</button>
         </div>
     </div>
 
@@ -2086,6 +2126,23 @@
                     dropdownMenu.classList.remove('active');
                 });
             }
+
+            // 统一的模态框关闭处理
+            document.querySelectorAll('.modal .close-detail-btn, #cancelLogoutButton').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const modal = btn.closest('.modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', (event) => {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                }
+            });
         });
 
         // 添加显示报单消息的函数
@@ -2154,94 +2211,131 @@
                     day: '日'
                 },
                 events: function(info, successCallback, failureCallback) {
-                    fetch(API_URLS.GET_HISTORY, {
+                    $.ajax({
+                        url: API_URLS.GET_HISTORY,
                         method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json'
+                        xhrFields: {
+                            withCredentials: true
                         },
-                        credentials: 'include'
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.message === 'Success') {
-                            const events = data.report_info.map(order => {
-                                // 根据订单状态设置不同的颜色
-                                let backgroundColor, borderColor;
-                                switch(order.status) {
-                                    case '0':  // 待分配
-                                        backgroundColor = '#f1c40f';
-                                        borderColor = '#f39c12';
-                                        break;
-                                    case '1':  // 已分配
-                                        backgroundColor = '#2ecc71';
-                                        borderColor = '#27ae60';
-                                        break;
-                                    case '2':  // 已完成
-                                        backgroundColor = '#3498db';
-                                        borderColor = '#2980b9';
-                                        break;
-                                    case '3':  // 已撤单
-                                        backgroundColor = '#e74c3c';
-                                        borderColor = '#c0392b';
-                                        break;
-                                    default:
-                                        backgroundColor = '#95a5a6';
-                                        borderColor = '#7f8c8d';
-                                }
+                        success: function(response) {
+                            try {
+                                if (response.message === 'Success') {
+                                    const events = response.report_info.map(order => {
+                                        // 添加错误处理
+                                        if (!order || !order.date) {
+                                            console.warn('无效的订单数据:', order);
+                                            return null;
+                                        }
 
-                                return {
-                                    title: `维修订单: ${order.issue}`,
-                                    start: new Date(order.date.replace(/\//g, '-')),
-                                    backgroundColor: backgroundColor,
-                                    borderColor: borderColor,
-                                    extendedProps: {
-                                        reportId: order.reportId,
-                                        address: order.address,
-                                        phoneNumber: order.userPhoneNumber,
-                                        status: order.status,
-                                        callDate: order.call_date
-                                    }
-                                };
+                                        try {
+                                            // 确保日期格式正确
+                                            const eventDate = new Date(order.date.replace(/\//g, '-'));
+                                            if (isNaN(eventDate.getTime())) {
+                                                console.warn('无效的日期:', order.date);
+                                                return null;
+                                            }
+
+                                            return {
+                                                title: `维修订单: ${order.issue || '未知问题'}`,
+                                                start: eventDate,
+                                                backgroundColor: getStatusColor(order.status).bg,
+                                                borderColor: getStatusColor(order.status).border,
+                                                extendedProps: {
+                                                    reportId: order.reportId,
+                                                    address: order.address || '未知地址',
+                                                    phoneNumber: order.userPhoneNumber || '未知号码',
+                                                    status: order.status,
+                                                    callDate: order.call_date
+                                                }
+                                            };
+                                        } catch (err) {
+                                            console.error('处理订单数据时出错:', err);
+                                            return null;
+                                        }
+                                    }).filter(event => event !== null); // 过滤掉无效的事件
+
+                                    successCallback(events);
+                                } else if (response.message === 'No history report') {
+                                    successCallback([]); // 没有订单时返回空数组
+                                } else {
+                                    // 处理会话错误
+                                    auth.handleSessionError(response.message);
+                                    failureCallback(new Error(response.message));
+                                }
+                            } catch (error) {
+                                console.error('处理响应数据时出错:', error);
+                                failureCallback(error);
+                                showCalendarError();
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('获取日历数据失败:', {
+                                status: status,
+                                error: error,
+                                response: xhr.responseText
                             });
-                            successCallback(events);
-                        } else if (data.message === 'No history report') {
-                            successCallback([]); // 没有订单时返回空数组
-                        } else {
-                            auth.handleSessionError(data.message);
-                            failureCallback(new Error(data.message));
+                            failureCallback(new Error('获取数据失败'));
+                            showCalendarError();
                         }
-                    })
-                    .catch(error => {
-                        console.error('获取日历订单数据失败:', error);
-                        failureCallback(error);
                     });
-                },
-                // 添加事件点击处理
-                eventClick: function(info) {
-                    const event = info.event;
-                    const props = event.extendedProps;
-                    
-                    // 构造订单对象
-                    const order = {
-                        reportId: props.reportId,
-                        userPhoneNumber: props.phoneNumber,
-                        address: props.address,
-                        issue: event.title.replace('维修订单: ', ''),
-                        status: props.status,
-                        date: event.start,
-                        call_date: props.callDate
-                    };
-                    
-                    // 显示订单详情
-                    showOrderDetail(order);
                 }
             });
+            
             calendar.render();
+        }
+
+        // 添加状态颜色获取函数
+        function getStatusColor(status) {
+            const colors = {
+                '0': { // 待分配
+                    bg: '#f1c40f',
+                    border: '#f39c12'
+                },
+                '1': { // 已分配
+                    bg: '#2ecc71',
+                    border: '#27ae60'
+                },
+                '2': { // 已完成
+                    bg: '#3498db',
+                    border: '#2980b9'
+                },
+                '3': { // 已撤单
+                    bg: '#e74c3c',
+                    border: '#c0392b'
+                },
+                'default': {
+                    bg: '#95a5a6',
+                    border: '#7f8c8d'
+                }
+            };
+            
+            return colors[status] || colors.default;
+        }
+
+        // 添加日历错误显示函数
+        function showCalendarError() {
+            const calendarEl = document.getElementById('calendar');
+            if (calendarEl) {
+                const errorHtml = `
+                    <div class="calendar-error">
+                        <i class="error-icon">⚠️</i>
+                        <p>加载日历数据失败</p>
+                        <button onclick="retryLoadCalendar()" class="retry-button">
+                            重新加载
+                        </button>
+                    </div>
+                `;
+                calendarEl.innerHTML = errorHtml;
+            }
+        }
+
+        // 添加重试函数
+        function retryLoadCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            if (calendarEl) {
+                calendarEl.innerHTML = ''; // 清空错误信息
+                initializeCalendar(); // 重新初始化日历
+            }
         }
 
         // 在 script 标签中添加历史订单功能
