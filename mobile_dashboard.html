@@ -2872,6 +2872,7 @@
         ASSIGN_ORDER: `${BASE_URL}/dashboard/assign_order/`,
         GET_REPORT_LIST: `${BASE_URL}/dashboard/worker_get_report_list/`,
         COMPLETE_REPORT: `${BASE_URL}/dashboard/complete_report/`,
+        CANCEL_REPORT: `${BASE_URL}/dashboard/cancel_report/`,
         
         // 天气相关
         WEATHER_API_KEY: `${BASE_URL}/dashboard/getWeatherApiKey/`
@@ -3825,16 +3826,19 @@
             // 根据状态获取对应的显示文本和样式
             let statusText, statusClass;
             let showCompleteButton = false;
+            let showCancelButton = false;  // 添加这行
             switch(order.status) {
                 case '0':
                     statusText = '待分配';
                     statusClass = 'status-pending';
                     showCompleteButton = true;
+                    showCancelButton = true;  // 添加这行
                     break;
                 case '1':
                     statusText = '已分配';
                     statusClass = 'status-allocated';
                     showCompleteButton = true;
+                    showCancelButton = true;  // 添加这行
                     break;
                 case '2':
                     statusText = '已完成';
@@ -3881,11 +3885,18 @@
                             <strong>提交时间：</strong>
                             ${formatDate(order.call_date)}
                         </p>
-                        ${showCompleteButton ? `
-                            <button class="complete-order-btn" onclick="completeOrder('${order.reportId}')">
-                                结单
-                            </button>
-                        ` : ''}
+                        <div class="order-buttons">
+                            ${showCompleteButton ? `
+                                <button class="complete-order-btn" onclick="completeOrder('${order.reportId}')">
+                                    结单
+                                </button>
+                            ` : ''}
+                            ${showCancelButton ? `
+                                <button class="cancel-order-btn" onclick="cancelOrder('${order.reportId}')">
+                                    撤单
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
             `;
@@ -3930,6 +3941,34 @@
         } catch (error) {
             console.error('结单失败:', error);
             showMessage('结单失败，请重试');
+        }
+    }
+
+    // 添加撤单功能函数
+    async function cancelOrder(reportId) {
+        try {
+            const response = await fetch(API_URLS.CANCEL_REPORT, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            switch (data.message) {
+                case 'Success':
+                    showMessage('撤单成功');
+                    // 刷新订单列表
+                    fetchHistoryOrders();
+                    break;
+                default:
+                    handleSessionError(data.message);
+            }
+        } catch (error) {
+            console.error('撤单失败:', error);
+            showMessage('撤单失败，请重试');
         }
     }
 

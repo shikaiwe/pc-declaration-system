@@ -1541,7 +1541,8 @@
             ASSIGN_ORDER: `${CONFIG.baseUrl}/dashboard/assign_order/`,
         // GET_REPORT_LIST: `${CONFIG.baseUrl}/dashboard/worker_get_report_list/`,
             COMPLETE_REPORT: `${CONFIG.baseUrl}/dashboard/complete_report/`,
-            WEATHER_API_KEY: `${CONFIG.baseUrl}/dashboard/getWeatherApiKey/`
+            WEATHER_API_KEY: `${CONFIG.baseUrl}/dashboard/getWeatherApiKey/`,
+            CANCEL_REPORT: `${CONFIG.baseUrl}/dashboard/cancel_report/`
         };
 
         // 工具函数集合
@@ -2410,16 +2411,19 @@
                 // 根据状态获取对应的显示文本和样式
                 let statusText, statusClass;
                 let showCompleteButton = false;
+                let showCancelButton = false;
                 switch(order.status) {
                     case '0':
                         statusText = '待分配';
                         statusClass = 'status-pending';
                         showCompleteButton = true;
+                        showCancelButton = true;
                         break;
                     case '1':
                         statusText = '已分配';
                         statusClass = 'status-allocated';
                         showCompleteButton = true;
+                        showCancelButton = true;
                         break;
                     case '2':
                         statusText = '已完成';
@@ -2448,11 +2452,18 @@
                             <p><strong>问题：</strong>${order.issue || '未知'}</p>
                             <p><strong>预约时间：</strong>${displayDate}</p>
                             <p><strong>提交时间：</strong>${displayCallDate}</p>
-                            ${showCompleteButton ? `
-                                <button class="complete-order-btn" onclick="completeOrder('${order.reportId}')">
-                                    结单
-                                </button>
-                            ` : ''}
+                            <div class="order-buttons">
+                                ${showCompleteButton ? `
+                                    <button class="complete-order-btn" onclick="completeOrder('${order.reportId}')">
+                                        结单
+                                    </button>
+                                ` : ''}
+                                ${showCancelButton ? `
+                                    <button class="cancel-order-btn" onclick="cancelOrder('${order.reportId}')">
+                                        撤单
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -2497,6 +2508,34 @@
             } catch (error) {
                 console.error('结单失败:', error);
                 utils.ui.showMessage('结单失败，请重试');
+            }
+        }
+
+        // 添加撤单功能函数
+        async function cancelOrder(reportId) {
+            try {
+                const response = await fetch(API_URLS.CANCEL_REPORT, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                switch (data.message) {
+                    case 'Success':
+                        utils.ui.showMessage('撤单成功');
+                        // 刷新订单列表
+                        fetchHistoryOrders();
+                        break;
+                    default:
+                        auth.handleSessionError(data.message);
+                }
+            } catch (error) {
+                console.error('撤单失败:', error);
+                utils.ui.showMessage('撤单失败，请重试');
             }
         }
 
