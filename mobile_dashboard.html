@@ -3780,9 +3780,15 @@
 
     // 显示历史订单
     function displayHistoryOrders(orders) {
-        const ordersList = Array.isArray(orders) ? orders : [orders];
-        
-        const ordersHTML = ordersList.map(order => {
+        const historyContent = document.getElementById('orderHistory');
+        if (!historyContent) {
+            console.error('找不到orderHistory元素');
+            return;
+        }
+
+        console.log('准备显示订单数量:', orders.length); // 添加调试日志
+
+        const ordersHTML = orders.map(order => {
             // 根据状态获取对应的显示文本和样式
             let statusText, statusClass;
             switch(order.status) {
@@ -3810,27 +3816,33 @@
             return `
                 <div class="order-card">
                     <div class="order-info">
+                        ${order.reportId ? `
+                            <p>
+                                <strong>订单编号：</strong>
+                                ${order.reportId}
+                            </p>
+                        ` : ''}
                         <p>
-                            <strong>手机号码</strong>
+                            <strong>手机号码：</strong>
                             ${order.userPhoneNumber}
                             <span class="order-status ${statusClass}">
                                 ${statusText}
                             </span>
                         </p>
                         <p>
-                            <strong>地址</strong>
+                            <strong>地址：</strong>
                             ${order.address}
                         </p>
                         <p>
-                            <strong>问题描述</strong>
+                            <strong>问题描述：</strong>
                             ${order.issue}
                         </p>
                         <p>
-                            <strong>预约时间</strong>
+                            <strong>预约时间：</strong>
                             ${formatDate(order.date)}
                         </p>
                         <p>
-                            <strong>提交时间</strong>
+                            <strong>提交时间：</strong>
                             ${formatDate(order.call_date)}
                         </p>
                     </div>
@@ -3838,60 +3850,88 @@
             `;
         }).join('');
 
-        document.getElementById('orderHistory').innerHTML = `
-            <div class="orders-container">
+        // 直接设置内容
+        historyContent.innerHTML = `
+            <div class="orders-container" style="opacity: 1;">
                 ${ordersHTML}
             </div>
         `;
+        
+        console.log('历史订单显示完成'); // 添加调试日志
     }
 
-    // 显示空状态
+    // 显示无订单状态
     function showNoOrders() {
-        document.getElementById('orderHistory').innerHTML = `
-            <div class="no-orders">
-                <i>📝</i>
-                <p>无历史订单</p>
-            </div>
-        `;
+        const historyContent = document.getElementById('orderHistory');
+        if (historyContent) {
+            historyContent.innerHTML = `
+                <div class="no-orders">
+                    <i class="no-orders-icon">📝</i>
+                    <p>暂无历史订单</p>
+                </div>
+            `;
+        }
     }
 
-    // 显示错误状���
+    // 显示错误状态
     function showError() {
-        document.getElementById('orderHistory').innerHTML = `
-            <div class="error-message">
-                <i>❌</i>
-                <p>获取历史订单失败，请稍后重试</p>
-            </div>
-        `;
+        const historyContent = document.getElementById('orderHistory');
+        if (historyContent) {
+            historyContent.innerHTML = `
+                <div class="error-message">
+                    <i class="error-icon">❌</i>
+                    <p>获取历史订单失败，请稍后重试</p>
+                    <button class="retry-button" onclick="fetchHistoryOrders()">重试</button>
+                </div>
+            `;
+        }
     }
 
     // 获取历史订单
     async function fetchHistoryOrders() {
         try {
-            showLoading(true); // 显示加载状态
+            showLoading(true);
             
             const response = await fetch(API_URLS.GET_HISTORY, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'  // 确保包含 cookies
+                credentials: 'include'
             });
             
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
+            console.log('获取到的历史订单数据:', data); // 添加调试日志
             
-            showLoading(false); // 隐藏加载状态
+            showLoading(false);
             
-            if (data.message === 'Success') {
-                if (Array.isArray(data.report_info) && data.report_info.length > 0) {
-                    displayHistoryOrders(data.report_info);
-                } else {
+            switch (data.message) {
+                case 'Success':
+                    if (data.report_info && Array.isArray(data.report_info)) {
+                        if (data.report_info.length > 0) {
+                            displayHistoryOrders(data.report_info);
+                        } else {
+                            showNoOrders();
+                        }
+                    } else {
+                        showNoOrders();
+                    }
+                    break;
+                    
+                case 'No history report':
                     showNoOrders();
-                }
-            } else if (data.message === 'No history report') {
-                showNoOrders();
-            } else {
-                handleSessionError(data.message);
+                    break;
+                    
+                case 'Session has expired':
+                case 'Invalid session':
+                case 'No sessionid cookie':
+                    handleSessionError(data.message);
+                    break;
+                    
+                default:
+                    showError();
+                    break;
             }
         } catch (error) {
             console.error('获取历史订单失败:', error);
@@ -3986,12 +4026,15 @@
         const tablinks = document.querySelectorAll("#orderManagementModal .tab-link");
         tablinks.forEach(link => link.classList.remove("active"));
 
-        document.getElementById(tabName).style.display = "block";
-        event.currentTarget.classList.add("active");
+        const selectedTab = document.getElementById(tabName);
+        if (selectedTab) {
+            selectedTab.style.display = "block";
+            event.currentTarget.classList.add("active");
 
-        // 如果切换到历史订单标签，则获取历史订单数据
-        if (tabName === 'orderHistory') {
-            fetchHistoryOrders();
+            // 如果切换到历史订单标签，则获取历史订单数据
+            if (tabName === 'orderHistory') {
+                fetchHistoryOrders();
+            }
         }
     }
 
