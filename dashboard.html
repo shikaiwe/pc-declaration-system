@@ -2361,6 +2361,98 @@
             opacity: 0.3 !important;
             cursor: not-allowed !important;
         }
+
+        /* 基础样式 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* 时间选择器整体容器 */
+        .flatpickr-time {
+            height: 40px !important;  /* 保持紧凑的高度 */
+            line-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        /* 时间输入框容器 */
+        .numInputWrapper {
+            width: 100px !important;  /* 恢复更宽的输入框 */
+            height: 40px !important;
+            position: relative !important;
+        }
+
+        /* 时间输入框 */
+        .flatpickr-time input.flatpickr-hour,
+        .flatpickr-time input.flatpickr-minute {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            text-align: center !important;
+            padding-right: 35px !important;
+            width: 100% !important;  /* 确保输入框填满容器 */
+        }
+
+        /* 分隔符样式 */
+        .flatpickr-time .flatpickr-time-separator {
+            line-height: 40px !important;
+            padding: 0 8px !important;  /* 增加分隔符两侧间距 */
+            font-size: 16px !important;
+        }
+
+        /* 箭头容器基础样式 */
+        .flatpickr-calendar .numInputWrapper span {
+            width: 35px !important;
+            height: 20px !important;
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important;
+            cursor: pointer !important;
+        }
+
+        /* 其他样式保持不变 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+            content: '▲' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: '▼' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover:after {
+            color: #007bff !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
     </style>
 </head>
 <body>
@@ -2978,10 +3070,13 @@
                         const data = await response.json();
                         if (data.message === 'Success') {
                             utils.ui.showMessage('保存成功');
+                            // 更新本地存储和显示的用户名
                             if (formData.newName) {
                                 utils.storage.save('username', formData.newName);
                                 displayUsername();
                             }
+                            // 清空表单
+                            event.target.reset();
                         } else if (data.message === 'This user is existed') {
                             utils.ui.showMessage('用户名已被占用');
                         } else {
