@@ -1463,8 +1463,8 @@
     <script>
         // 配置常量
         const CONFIG = {
-            ip: '8.134.178.71',
-            baseUrl: 'https://${ip}/api'
+            // 使用实际的 IP 地址，不要使用模板字符串
+            baseUrl: 'https://8.134.178.71/api'
         };
 
         // API 端点配置
@@ -1477,7 +1477,11 @@
             SAVE_PHONE: `${CONFIG.baseUrl}/dashboard/savePhoneNumber/`,
             CHANGE_PASSWORD: `${CONFIG.baseUrl}/dashboard/changePassword/`,
             REPORT: `${CONFIG.baseUrl}/dashboard/report/`,
-            GET_HISTORY: `${CONFIG.baseUrl}/dashboard/get_history/`
+            GET_HISTORY: `${CONFIG.baseUrl}/dashboard/get_history/`,
+            // 添加天气 API 配置
+            weather: {
+                getApiKey: `${CONFIG.baseUrl}/dashboard/get_weather_key/`
+            }
         };
 
         // 工具函数集合
@@ -1604,6 +1608,11 @@
                         method: 'GET',
                         credentials: 'include'
                     });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
                     const data = await response.json();
                     if (data.message === 'Success') {
                         return data.apiKey;
@@ -1613,8 +1622,27 @@
                     }
                 } catch (error) {
                     console.error('获取API Key失败:', error);
+                    // 使用备用的天气显示
+                    this.showDefaultWeather();
                     throw error;
                 }
+            },
+
+            // 添加备用的天气显示方法
+            showDefaultWeather: function() {
+                const weatherInfoElement = document.getElementById('weatherInfo');
+                weatherInfoElement.innerHTML = `
+                    <p class="weather-location">
+                        <span class="weather-icon">📍</span>
+                        位置获取中...
+                    </p>
+                    <div class="weather-details">
+                        <p>
+                            <span class="weather-icon">🌤️</span>
+                            天气信息暂时无法获取
+                        </p>
+                    </div>
+                `;
             },
 
             // 获取天气信息
