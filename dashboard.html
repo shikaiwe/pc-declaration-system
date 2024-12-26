@@ -160,13 +160,14 @@
             text-align: center;
         }
 
-        /* 标签页样式 */
+        /* 标签页导航样式 */
         .tabs {
             margin-bottom: 20px;
             display: flex;
             justify-content: center;
         }
-        
+
+        /* 标签按钮样式 */
         .tab-button {
             padding: 10px 20px;
             margin-right: 10px;
@@ -177,15 +178,15 @@
             border-radius: 4px;
             transition: transform 0.2s ease-out;
         }
-        
+
         .tab-button:hover {
             transform: scale(1.05);
         }
-        
+
         .tab-button.active {
             background-color: #0056b3;
         }
-        
+
         .tab-content {
             padding: 20px;
             background: white;
@@ -196,23 +197,23 @@
             flex-direction: column;
             justify-content: space-between;
         }
-        
+
         .tab-content form div {
             margin-bottom: 15px;
         }
-        
+
         .tab-content label {
             display: block;
             margin-bottom: 5px;
         }
-        
+
         .tab-content input {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
-        
+
         .tab-content button {
             padding: 10px 20px;
             background-color: #007BFF;
@@ -1570,7 +1571,7 @@
                         this.handleSessionError(response.message);
                     }
                 }).catch(error => {
-                    console.error('退出登录失败:', error);
+                    console.error('退出登��失败:', error);
                     utils.ui.showMessage('退出登录失败，请重试');
                 });
             },
@@ -1656,8 +1657,12 @@
                         </p>
                         <div class="weather-details">
                             <p>
-                                <span class="weather-icon">🌤️</span>
+                                <span class="weather-icon">🌤️</span>  <!-- 修���天气图标 -->
                                 天气：${live.weather}
+                            </p>
+                            <p>
+                                <span class="weather-icon">💧️</span>  <!-- 修复风向图标 -->
+                                风向：${live.winddirection}
                             </p>
                             <p>
                                 <span class="weather-icon">💧</span>
@@ -1665,10 +1670,6 @@
                             </p>
                             <p>
                                 <span class="weather-icon">🌪️</span>
-                                ��向：${live.winddirection}
-                            </p>
-                            <p>
-                                <span class="weather-icon">💨</span>
                                 风力：${live.windpower}级
                             </p>
                         </div>
@@ -2154,24 +2155,64 @@
                 },
                 events: function(info, successCallback, failureCallback) {
                     fetch(API_URLS.GET_HISTORY, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
                         credentials: 'include'
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.message === 'Success') {
-                            const events = data.report_info.map(order => ({
-                                title: `维修订单: ${order.issue}`,
-                                start: new Date(order.date),
-                                backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
-                                borderColor: order.allocationState ? '#27ae60' : '#f39c12',
-                                extendedProps: {
-                                    address: order.address,
-                                    phoneNumber: order.userPhoneNumber,
-                                    status: order.allocationState ? '已分配' : '待分配'
+                            const events = data.report_info.map(order => {
+                                // 根据订单状态设置不同的颜色
+                                let backgroundColor, borderColor;
+                                switch(order.status) {
+                                    case '0':  // 待分配
+                                        backgroundColor = '#f1c40f';
+                                        borderColor = '#f39c12';
+                                        break;
+                                    case '1':  // 已分配
+                                        backgroundColor = '#2ecc71';
+                                        borderColor = '#27ae60';
+                                        break;
+                                    case '2':  // 已完成
+                                        backgroundColor = '#3498db';
+                                        borderColor = '#2980b9';
+                                        break;
+                                    case '3':  // 已撤单
+                                        backgroundColor = '#e74c3c';
+                                        borderColor = '#c0392b';
+                                        break;
+                                    default:
+                                        backgroundColor = '#95a5a6';
+                                        borderColor = '#7f8c8d';
                                 }
-                            }));
+
+                                return {
+                                    title: `维修订单: ${order.issue}`,
+                                    start: new Date(order.date.replace(/\//g, '-')),
+                                    backgroundColor: backgroundColor,
+                                    borderColor: borderColor,
+                                    extendedProps: {
+                                        reportId: order.reportId,
+                                        address: order.address,
+                                        phoneNumber: order.userPhoneNumber,
+                                        status: order.status,
+                                        callDate: order.call_date
+                                    }
+                                };
+                            });
                             successCallback(events);
+                        } else if (data.message === 'No history report') {
+                            successCallback([]); // 没有订单时返回空数组
                         } else {
+                            auth.handleSessionError(data.message);
                             failureCallback(new Error(data.message));
                         }
                     })
@@ -2179,6 +2220,25 @@
                         console.error('获取日历订单数据失败:', error);
                         failureCallback(error);
                     });
+                },
+                // 添加事件点击处理
+                eventClick: function(info) {
+                    const event = info.event;
+                    const props = event.extendedProps;
+                    
+                    // 构造订单对象
+                    const order = {
+                        reportId: props.reportId,
+                        userPhoneNumber: props.phoneNumber,
+                        address: props.address,
+                        issue: event.title.replace('维修订单: ', ''),
+                        status: props.status,
+                        date: event.start,
+                        call_date: props.callDate
+                    };
+                    
+                    // 显示订单详情
+                    showOrderDetail(order);
                 }
             });
             calendar.render();
@@ -2191,8 +2251,17 @@
 
             try {
                 const response = await fetch(API_URLS.GET_HISTORY, {
-                    credentials: 'include'
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'  // 确保包含 cookies
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
                 const data = await response.json();
 
                 if (data.message === 'Success') {
