@@ -3686,8 +3686,12 @@
             // 生成时间选项（18:00-21:00，每30分钟）
             function generateTimeSlides() {
                 const times = [];
-                for (let hour = 18; hour < 21; hour++) {
-                    for (let minute = 0; minute < 60; minute += 30) {
+                // 从18:00开始，到21:00结束，每隔5分钟生成一个选项
+                for (let hour = 18; hour <= 21; hour++) {
+                    for (let minute = 0; minute < 60; minute += 5) {
+                        // 如果是21点，则只生成21:00这一个选项
+                        if (hour === 21 && minute > 0) break;
+                        
                         times.push(`
                             <div class="swiper-slide">
                                 <div class="time-item">
@@ -3697,12 +3701,6 @@
                         `);
                     }
                 }
-                // 添加21:00
-                times.push(`
-                    <div class="swiper-slide">
-                        <div class="time-item">21:00</div>
-                    </div>
-                `);
                 return times.join('');
             }
 

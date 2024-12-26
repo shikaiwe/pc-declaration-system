@@ -8,6 +8,10 @@
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
     <style>
         /* 基本样式设置 */
         body {
@@ -1417,6 +1421,946 @@
         .cancel-order-btn {
             -webkit-tap-highlight-color: transparent;
         }
+
+        /* 更新时间警告样式 */
+        #timeWarning {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        /* 隐藏非工作时间选项 */
+        .flatpickr-time .numInputWrapper span.disabled,
+        .flatpickr-time .flatpickr-am-pm.disabled {
+            display: none;
+        }
+
+        /* 禁用的时间选项完全隐藏 */
+        .flatpickr-time .numInputWrapper .disabled,
+        .flatpickr-calendar .flatpickr-day.disabled {
+            display: none;
+        }
+
+        /* 时间选择器容器样式 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* 输入框样式 */
+        #preferredTime {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #fff;
+            caret-color: transparent;
+        }
+
+        /* 添加日历图标 */
+        .time-picker-wrapper::after {
+            content: '📅';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        /* 输入框获得焦点时的样式 */
+        #preferredTime:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+        /* 禁用输入框的文本选择 */
+        #preferredTime {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* 移除移动设备上的默认样式 */
+        #preferredTime::-webkit-calendar-picker-indicator {
+            display: none;
+        }
+
+        #preferredTime::-webkit-inner-spin-button,
+        #preferredTime::-webkit-clear-button {
+            display: none;
+        }
+
+        /* 原有样式保持不变 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        #preferredTime {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #fff;
+            caret-color: transparent;
+        }
+
+        .time-picker-wrapper::after {
+            content: '📅';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        /* 新增和修改的时间选择器样式 */
+        .flatpickr-time {
+            height: 50px !important; /* 增加高度 */
+            line-height: 50px !important;
+        }
+
+        .flatpickr-time input {
+            height: 50px !important;
+            font-size: 16px !important;
+        }
+
+        /* 增大上下箭头按钮的可点击区域 */
+        .numInputWrapper span {
+            width: 30px !important;
+            height: 25px !important;
+            line-height: 25px !important;
+            border: none !important;
+            padding: 0 !important;
+            opacity: 1 !important;
+        }
+
+        .numInputWrapper span:hover {
+            background: rgba(0,0,0,0.1) !important;
+        }
+
+        /* 上箭头 */
+        .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        /* 下箭头 */
+        .numInputWrapper span.arrowDown {
+            top: 25px !important;
+        }
+
+        /* 箭头图标样式 */
+        .numInputWrapper span:after {
+            border-width: 5px !important;
+            margin-left: -5px !important;
+            opacity: 1 !important;
+        }
+
+        /* 时间输入框容器 */
+        .numInputWrapper {
+            width: 70px !important;
+            height: 50px !important;
+        }
+
+        /* 分隔符样式 */
+        .flatpickr-time .flatpickr-time-separator {
+            line-height: 50px !important;
+            font-size: 16px !important;
+            font-weight: bold !important;
+        }
+
+        /* 输入框中的数字样式 */
+        .flatpickr-time input.flatpickr-hour,
+        .flatpickr-time input.flatpickr-minute {
+            font-size: 18px !important;
+            font-weight: bold !important;
+        }
+
+        /* 鼠标悬停效果 */
+        .numInputWrapper:hover {
+            background: rgba(0,0,0,0.05) !important;
+        }
+
+        /* 时间选择器的整体容器 */
+        .flatpickr-calendar {
+            font-size: 14px !important;
+        }
+
+        /* 其他原有样式保持不变 */
+        #preferredTime:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+        #preferredTime {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        #preferredTime::-webkit-calendar-picker-indicator {
+            display: none;
+        }
+
+        #preferredTime::-webkit-inner-spin-button,
+        #preferredTime::-webkit-clear-button {
+            display: none;
+        }
+
+        #timeWarning {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        /* 重置原有的箭头样式 */
+        .numInputWrapper span:before {
+            display: none !important;
+        }
+
+        /* 调整箭头容器和箭头的位置 */
+        .numInputWrapper span {
+            width: 35px !important;
+            height: 30px !important;
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        /* 上箭头位置和样式 */
+        .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        .numInputWrapper span.arrowUp:after {
+            content: "" !important;
+            position: static !important;
+            transform: none !important;
+            border: 7px solid transparent !important;
+            border-bottom-color: #333 !important;
+            margin: 0 !important;
+            display: block !important;
+        }
+
+        /* 下箭头位置和样式 */
+        .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
+
+        .numInputWrapper span.arrowDown:after {
+            content: "" !important;
+            position: static !important;
+            transform: none !important;
+            border: 7px solid transparent !important;
+            border-top-color: #333 !important;
+            margin: 0 !important;
+            display: block !important;
+        }
+
+        /* 悬停效果 */
+        .numInputWrapper span:hover:after {
+            border-top-color: #007bff !important;
+            border-bottom-color: #007bff !important;
+        }
+
+        /* 保持基础样式 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* 重置所有箭头相关样式 */
+        .flatpickr-calendar .numInputWrapper span:before,
+        .flatpickr-calendar .numInputWrapper span:after {
+            display: none !important;
+        }
+
+        /* 箭头容器基础样式 */
+        .flatpickr-calendar .numInputWrapper span {
+            width: 35px !important;
+            height: 30px !important;
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important;
+            border: none !important;
+        }
+
+        /* 上箭头样式 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+            content: "▲" !important;
+            display: block !important;
+            font-size: 14px !important;
+            color: #666 !important;
+        }
+
+        /* 下箭头样式 */
+        .flatpickr-calendar .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: "▼" !important;
+            display: block !important;
+            font-size: 14px !important;
+            color: #666 !important;
+        }
+
+        /* 悬停效果 */
+        .flatpickr-calendar .numInputWrapper span:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover:after {
+            color: #007bff !important;
+        }
+
+        /* 保持其他必要的样式 */
+        .flatpickr-time {
+            height: 60px !important;
+            line-height: 60px !important;
+        }
+
+        .numInputWrapper {
+            width: 85px !important;
+            height: 60px !important;
+        }
+
+        /* 完全清除所有箭头相��的样��和内容 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp:before,
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after,
+        .flatpickr-calendar .numInputWrapper span.arrowDown:before,
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: none !important;
+            display: none !important;
+            border: none !important;
+        }
+
+        /* 箭头容器基础样式 */
+        .flatpickr-calendar .numInputWrapper span {
+            width: 35px !important;
+            height: 30px !important;
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important;
+            border: none !important;
+        }
+
+        /* 上箭头容器 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        /* 下箭头容器 */
+        .flatpickr-calendar .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
+
+        /* 保持其他必要的样式 */
+        .flatpickr-time {
+            height: 60px !important;
+            line-height: 60px !important;
+        }
+
+        .numInputWrapper {
+            width: 85px !important;
+            height: 60px !important;
+        }
+
+        /* 基础样式 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* 时间选择器整体容器 */
+        .flatpickr-time {
+            height: 60px !important;
+            line-height: 60px !important;
+            max-width: 200px !important;  /* 限制最大宽度 */
+            margin: 0 auto !important;    /* 居中显示 */
+        }
+
+        /* 时间输入框容器 */
+        .numInputWrapper {
+            width: 75px !important;       /* 调整宽度 */
+            height: 60px !important;
+            position: relative !important;
+        }
+
+        /* 时间输入框 */
+        .flatpickr-time input.flatpickr-hour,
+        .flatpickr-time input.flatpickr-minute {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            width: 100% !important;
+            text-align: center !important;
+            padding-right: 35px !important;
+        }
+
+        /* 分隔符样式 */
+        .flatpickr-time .flatpickr-time-separator {
+            width: 20px !important;
+            text-align: center !important;
+            font-size: 18px !important;
+            line-height: 60px !important;
+        }
+
+        /* 箭头容器基础样式 */
+        .flatpickr-calendar .numInputWrapper span {
+            width: 35px !important;
+            height: 30px !important;
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important;
+            cursor: pointer !important;
+        }
+
+        /* 上箭头容器和样式 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+            content: '▲' !important;
+            display: block !important;
+            font-size: 12px !important;
+            color: #666 !important;
+        }
+
+        /* 下箭头容器和样式 */
+        .flatpickr-calendar .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: '▼' !important;
+            display: block !important;
+            font-size: 12px !important;
+            color: #666 !important;
+        }
+
+        /* 箭头悬停效果 */
+        .flatpickr-calendar .numInputWrapper span:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover:after {
+            color: #007bff !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
+
+        /* 确保时间选择器内容不会溢出 */
+        .flatpickr-calendar {
+            width: auto !important;
+            min-width: 200px !important;
+            max-width: 300px !important;
+        }
+
+        /* 基础样式 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* 时间选择器整体容器 */
+        .flatpickr-time {
+            height: 40px !important;  /* 减小整体高度 */
+            line-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        /* 时间输入框容器 */
+        .numInputWrapper {
+            width: 85px !important;
+            height: 40px !important;  /* 匹配整体高度 */
+            position: relative !important;
+        }
+
+        /* 时间输入框 */
+        .flatpickr-time input.flatpickr-hour,
+        .flatpickr-time input.flatpickr-minute {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            height: 40px !important;  /* 匹配容器高度 */
+            line-height: 40px !important;
+            text-align: center !important;
+            padding-right: 35px !important;
+        }
+
+        /* 分隔符样式 */
+        .flatpickr-time .flatpickr-time-separator {
+            line-height: 40px !important;  /* 匹配新高度 */
+            padding: 0 5px !important;
+            font-size: 16px !important;
+        }
+
+        /* 箭头容器基础样式 */
+        .flatpickr-calendar .numInputWrapper span {
+            width: 35px !important;
+            height: 20px !important;  /* 减小箭头按钮高度 */
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important;
+            cursor: pointer !important;
+        }
+
+        /* 上箭头容器和样式 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+            content: '▲' !important;
+            display: block !important;
+            font-size: 10px !important;  /* 减小箭头大小 */
+            color: #666 !important;
+        }
+
+        /* 下箭头容器和样式 */
+        .flatpickr-calendar .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: '▼' !important;
+            display: block !important;
+            font-size: 10px !important;  /* 减小箭头大小 */
+            color: #666 !important;
+        }
+
+        /* 箭头悬停效果 */
+        .flatpickr-calendar .numInputWrapper span:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover:after {
+            color: #007bff !important;
+        }
+
+        /* 禁用时的样式 */
+        .flatpickr-calendar .numInputWrapper span.disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
+
+        /* 确保时间选择器内容不会溢出 */
+        .flatpickr-calendar {
+            width: auto !important;
+            min-width: 200px !important;
+            max-width: 300px !important;
+        }
+
+        /* 基础样式 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* 时间选择器整体容器 */
+        .flatpickr-time {
+            height: 40px !important;  /* 保持紧凑的高度 */
+            line-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        /* 时间输入框容器 */
+        .numInputWrapper {
+            width: 100px !important;  /* 恢复更宽的输入框 */
+            height: 40px !important;
+            position: relative !important;
+        }
+
+        /* 时间输入框 */
+        .flatpickr-time input.flatpickr-hour,
+        .flatpickr-time input.flatpickr-minute {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            text-align: center !important;
+            padding-right: 35px !important;
+            width: 100% !important;  /* 确保输入框填满容器 */
+        }
+
+        /* 分隔符样式 */
+        .flatpickr-time .flatpickr-time-separator {
+            line-height: 40px !important;
+            padding: 0 8px !important;  /* 增加分隔符两侧间距 */
+            font-size: 16px !important;
+        }
+
+        /* 箭头容器基础样式 */
+        .flatpickr-calendar .numInputWrapper span {
+            width: 35px !important;
+            height: 20px !important;
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important;
+            cursor: pointer !important;
+        }
+
+        /* 其他样式保持不变 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+            content: '▲' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: '▼' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover:after {
+            color: #007bff !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
+
+        /* 基础样式 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* 时间选择器整体容器 */
+        .flatpickr-time {
+            height: 40px !important;  /* 保持紧凑的高度 */
+            line-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        /* 时间输入框容器 */
+        .numInputWrapper {
+            width: 100px !important;  /* 恢复更宽的输入框 */
+            height: 40px !important;
+            position: relative !important;
+        }
+
+        /* 时间输入框 */
+        .flatpickr-time input.flatpickr-hour,
+        .flatpickr-time input.flatpickr-minute {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            text-align: center !important;
+            padding-right: 35px !important;
+            width: 100% !important;  /* 确保输入框填满容器 */
+        }
+
+        /* 分隔符样式 */
+        .flatpickr-time .flatpickr-time-separator {
+            line-height: 40px !important;
+            padding: 0 8px !important;  /* 增加分隔符两侧间距 */
+            font-size: 16px !important;
+        }
+
+        /* 箭头容器基础样式 */
+        .flatpickr-calendar .numInputWrapper span {
+            width: 35px !important;
+            height: 20px !important;
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important;
+            cursor: pointer !important;
+        }
+
+        /* 其他样式保持不变 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+            content: '▲' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: '▼' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover:after {
+            color: #007bff !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
+
+        /* 基础样式 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* 时间选择器整体容器 */
+        .flatpickr-time {
+            height: 40px !important;  /* 保持紧凑的高度 */
+            line-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        /* 时间输入框容器 */
+        .numInputWrapper {
+            width: 100px !important;  /* 恢复更宽的输入框 */
+            height: 40px !important;
+            position: relative !important;
+        }
+
+        /* 时间输入框 */
+        .flatpickr-time input.flatpickr-hour,
+        .flatpickr-time input.flatpickr-minute {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            text-align: center !important;
+            padding-right: 35px !important;
+            width: 100% !important;  /* 确保输入框填满容器 */
+        }
+
+        /* 分隔符样式 */
+        .flatpickr-time .flatpickr-time-separator {
+            line-height: 40px !important;
+            padding: 0 8px !important;  /* 增加分隔符两侧间距 */
+            font-size: 16px !important;
+        }
+
+        /* 箭头容器基础样式 */
+        .flatpickr-calendar .numInputWrapper span {
+            width: 35px !important;
+            height: 20px !important;
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important;
+            cursor: pointer !important;
+        }
+
+        /* 其他样式保持不变 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+            content: '▲' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: '▼' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover:after {
+            color: #007bff !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
+
+        /* 基础样式 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* 时间选择器整体容器 */
+        .flatpickr-time {
+            height: 40px !important;  /* 保持紧凑的高度 */
+            line-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        /* 时间输入框容器 */
+        .numInputWrapper {
+            width: 100px !important;  /* 恢复更宽的输入框 */
+            height: 40px !important;
+            position: relative !important;
+        }
+
+        /* 时间输入框 */
+        .flatpickr-time input.flatpickr-hour,
+        .flatpickr-time input.flatpickr-minute {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            text-align: center !important;
+            padding-right: 35px !important;
+            width: 100% !important;  /* 确保输入框填满容器 */
+        }
+
+        /* 分隔符样式 */
+        .flatpickr-time .flatpickr-time-separator {
+            line-height: 40px !important;
+            padding: 0 8px !important;  /* 增加分隔符两侧间距 */
+            font-size: 16px !important;
+        }
+
+        /* 箭头容器基础样式 */
+        .flatpickr-calendar .numInputWrapper span {
+            width: 35px !important;
+            height: 20px !important;
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important;
+            cursor: pointer !important;
+        }
+
+        /* 其他样式保持不变 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+            content: '▲' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: '▼' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover:after {
+            color: #007bff !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
     </style>
 </head>
 <body>
@@ -1479,7 +2423,9 @@
                     </div>
                     <div>
                         <label for="preferredTime">期望上门时间:</label>
-                        <input type="datetime-local" id="preferredTime" name="preferredTime" required>
+                        <div class="time-picker-wrapper">
+                            <input type="datetime-local" id="preferredTime" name="preferredTime" required>
+                        </div>
                     </div>
                     <div id="timeWarning" style="display: none; color: red; margin-top: 10px;">
                         该时间非上门时段。正确时间段为18:00-21:00
@@ -1771,7 +2717,7 @@
                     );
                     const weatherData = await weatherResponse.json();
                     if (weatherData.status !== '1') {
-                        throw new Error(`无法获取���气信息: ${weatherData.info}`);
+                        throw new Error(`无法获取天气信息: ${weatherData.info}`);
                     }
 
                     const live = weatherData.lives[0];
@@ -2113,44 +3059,255 @@
                 });
             }
 
-            // 在 DOMContentLoaded 事件监听器中添加
-            const preferredTimeInput = document.getElementById('preferredTime');
-            if (preferredTimeInput) {
-                function setPreferredTimeRange() {
-                    const now = new Date();
-                    const dayOfWeek = now.getDay();
-                    const startOfWeek = new Date(now);
-                    const endOfWeek = new Date(now);
-
-                    startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
-                    endOfWeek.setDate(now.getDate() + (7 - dayOfWeek));
-
-                    startOfWeek.setHours(18, 0, 0, 0);
-                    endOfWeek.setHours(21, 0, 0, 0);
-
-                    const formatDateTime = (date) => {
-                        return date.toISOString().slice(0, 16);
-                    };
-
-                    preferredTimeInput.min = formatDateTime(startOfWeek);
-                    preferredTimeInput.max = formatDateTime(endOfWeek);
+            // 修改初始化逻辑
+            function initializeDateTimePicker() {
+                if (typeof flatpickr === 'undefined') {
+                    console.error('Flatpickr library is not loaded');
+                    return;
                 }
 
-                setPreferredTimeRange();
+                const timeInput = document.getElementById('preferredTime');
+                if (!timeInput) {
+                    console.error('Time input element not found');
+                    return;
+                }
 
-                preferredTimeInput.addEventListener('change', () => {
-                    const selectedTime = new Date(preferredTimeInput.value);
-                    const selectedHour = selectedTime.getHours();
-                    const timeWarning = document.getElementById('timeWarning');
-
-                    if (selectedHour < 18 || selectedHour >= 21) {
-                        timeWarning.style.display = 'block';
-                        preferredTimeInput.value = '';
+                function getDateRange() {
+                    const now = new Date();
+                    const twoWeeksLater = new Date(now);
+                    twoWeeksLater.setDate(now.getDate() + 14);
+                    
+                    let defaultTime = new Date(now);
+                    let startTime = new Date(now);
+                    
+                    const currentHour = now.getHours();
+                    const currentMinutes = now.getMinutes();
+                    
+                    // 处理默认时间
+                    if (currentHour >= 21) {
+                        // 如果当前时间是21:00或之后，设置为明天18:00
+                        defaultTime.setDate(now.getDate() + 1);
+                        defaultTime.setHours(18, 0, 0, 0);
+                        startTime = new Date(defaultTime);
+                    } else if (currentHour < 18) {
+                        // 如果当前时间早于18:00，设置为今天18:00
+                        defaultTime.setHours(18, 0, 0, 0);
+                        startTime = new Date(now);
                     } else {
-                        timeWarning.style.display = 'none';
+                        // 如果在18:00-21:00之间，向后取整到下一个5分钟
+                        const nextFiveMinutes = Math.ceil(currentMinutes / 5) * 5;
+                        if (nextFiveMinutes === 60) {
+                            // 如果取整后是60分钟，进位到下一个小时
+                            defaultTime.setHours(currentHour + 1, 0, 0, 0);
+                        } else {
+                            defaultTime.setMinutes(nextFiveMinutes, 0, 0);
+                        }
+                        
+                        // 如果取整后的时间超过21:00，则设置为21:00
+                        if (defaultTime.getHours() >= 21) {
+                            defaultTime.setHours(21, 0, 0, 0);
+                        }
+                        
+                        startTime = new Date(now);
                     }
-                });
+
+                    return { 
+                        start: startTime, 
+                        end: twoWeeksLater,
+                        default: defaultTime 
+                    };
+                }
+
+                // 添加样式
+                const style = document.createElement('style');
+                style.textContent = `
+                    /* 基础样式 */
+                    .time-picker-wrapper {
+                        position: relative;
+                        width: 100%;
+                        cursor: pointer;
+                    }
+
+                    /* 时间选择器整体容器 */
+                    .flatpickr-time {
+                        height: 40px !important;  /* 保持紧凑的高度 */
+                        line-height: 40px !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                    }
+
+                    /* 时间输入框容器 */
+                    .numInputWrapper {
+                        width: 100px !important;  /* 恢复更宽的输入框 */
+                        height: 40px !important;
+                        position: relative !important;
+                    }
+
+                    /* 时间输入框 */
+                    .flatpickr-time input.flatpickr-hour,
+                    .flatpickr-time input.flatpickr-minute {
+                        font-size: 16px !important;
+                        font-weight: bold !important;
+                        height: 40px !important;
+                        line-height: 40px !important;
+                        text-align: center !important;
+                        padding-right: 35px !important;
+                        width: 100% !important;  /* 确保输入框填满容器 */
+                    }
+
+                    /* 分隔符样式 */
+                    .flatpickr-time .flatpickr-time-separator {
+                        line-height: 40px !important;
+                        padding: 0 8px !important;  /* 增加分隔符两侧间距 */
+                        font-size: 16px !important;
+                    }
+
+                    /* 箭头容器基础样式 */
+                    .flatpickr-calendar .numInputWrapper span {
+                        width: 35px !important;
+                        height: 20px !important;
+                        position: absolute !important;
+                        right: 0 !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        background: transparent !important;
+                        cursor: pointer !important;
+                    }
+
+                    /* 其他样式保持不变 */
+                    .flatpickr-calendar .numInputWrapper span.arrowUp {
+                        top: 0 !important;
+                    }
+
+                    .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+                        content: '▲' !important;
+                        display: block !important;
+                        font-size: 10px !important;
+                        color: #666 !important;
+                    }
+
+                    .flatpickr-calendar .numInputWrapper span.arrowDown {
+                        bottom: 0 !important;
+                        top: auto !important;
+                    }
+
+                    .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+                        content: '▼' !important;
+                        display: block !important;
+                        font-size: 10px !important;
+                        color: #666 !important;
+                    }
+
+                    .flatpickr-calendar .numInputWrapper span:hover {
+                        background-color: rgba(0, 0, 0, 0.05) !important;
+                    }
+
+                    .flatpickr-calendar .numInputWrapper span:hover:after {
+                        color: #007bff !important;
+                    }
+
+                    .flatpickr-calendar .numInputWrapper span.disabled {
+                        opacity: 0.3 !important;
+                        cursor: not-allowed !important;
+                    }
+                `;
+                document.head.appendChild(style);
+
+                // 修改HTML结构
+                const timeInputParent = timeInput.parentElement;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'time-picker-wrapper';
+                timeInputParent.insertBefore(wrapper, timeInput);
+                wrapper.appendChild(timeInput);
+
+                // 确保输入框是只读的
+                timeInput.setAttribute('readonly', 'readonly');
+                timeInput.setAttribute('type', 'text');
+
+                const dateRange = getDateRange();
+
+                // 初始化 flatpickr
+                try {
+                    const fp = flatpickr(timeInput, {
+                        enableTime: true,
+                        dateFormat: "Y-m-d H:i",
+                        locale: "zh",
+                        minDate: dateRange.start,
+                        maxDate: dateRange.end,
+                        minTime: "18:00",
+                        maxTime: "21:00",
+                        minuteIncrement: 5,
+                        time_24hr: true,
+                        defaultDate: dateRange.default,
+                        
+                        // 移除 enable 配置，改用 onChange 来验证时间
+                        onChange: function(selectedDates, dateStr, instance) {
+                            if (selectedDates.length > 0) {
+                                const selected = selectedDates[0];
+                                const hour = selected.getHours();
+                                const minute = selected.getMinutes();
+                                
+                                // 只验证时间范围，不验证日期
+                                if (hour < 18 || (hour === 21 && minute > 0) || hour >= 21) {
+                                    instance.setDate(dateRange.default);
+                                    document.getElementById('timeWarning').textContent = '请选择18:00-21:00之间的时间';
+                                    document.getElementById('timeWarning').style.display = 'block';
+                                } else {
+                                    document.getElementById('timeWarning').style.display = 'none';
+                                }
+                            }
+                        },
+
+                        onOpen: function(selectedDates, dateStr, instance) {
+                            // 更新可选择的日期范围
+                            const newDateRange = getDateRange();
+                            instance.set("minDate", newDateRange.start);
+                            instance.set("maxDate", newDateRange.end);
+                        }
+                    });
+
+                    // 添加点击事件处理
+                    wrapper.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (timeInput._flatpickr) {
+                            timeInput._flatpickr.open();
+                        }
+                    });
+
+                    // 防止输入框获得焦点时显示光标
+                    timeInput.addEventListener('focus', (e) => {
+                        e.preventDefault();
+                        timeInput.blur();
+                        if (timeInput._flatpickr) {
+                            timeInput._flatpickr.open();
+                        }
+                    });
+
+                    console.log('Time picker initialized successfully');
+                } catch (error) {
+                    console.error('Error initializing flatpickr:', error);
+                }
             }
+
+            // 确保在页面加载完成且 flatpickr 可用时初始化
+            function ensureInitialization() {
+                if (document.readyState === 'complete' && typeof flatpickr !== 'undefined') {
+                    initializeDateTimePicker();
+                } else {
+                    window.addEventListener('load', () => {
+                        if (typeof flatpickr !== 'undefined') {
+                            initializeDateTimePicker();
+                        } else {
+                            console.error('Flatpickr library not found after page load');
+                        }
+                    });
+                }
+            }
+
+            // 调用初始化函数
+            ensureInitialization();
 
             // 处理订单详情模态框关闭按钮
             const closeDetailBtn = document.getElementById('closeDetailBtn');
