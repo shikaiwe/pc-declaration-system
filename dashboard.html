@@ -1310,8 +1310,7 @@
                     </div>
                 </div>
                 <div class="dropdown-menu">
-                    <a href="#" id="accountSettingsLink">账号设置</a>
-                    <a href="#" id="logoutLink">退出登录</a>
+                    <a class="dropdown-item" href="#" id="logoutLink">退出登录</a>
                 </div>
             </div>
         </div>
@@ -1666,7 +1665,7 @@
                             </p>
                             <p>
                                 <span class="weather-icon">🌪️</span>
-                                风向：${live.winddirection}
+                                ��向：${live.winddirection}
                             </p>
                             <p>
                                 <span class="weather-icon">💨</span>
@@ -2244,7 +2243,7 @@
                 }
 
                 return `
-                    <div class="order-card">
+                    <div class="order-card" data-report-id="${order.reportId}">
                         <div class="order-info">
                             <p>
                                 <strong>手机号码：</strong>
@@ -2269,10 +2268,13 @@
             `;
 
             // 添加点击事件处理
-            document.querySelectorAll('.order-card').forEach((card, index) => {
+            document.querySelectorAll('.order-card').forEach(card => {
                 card.addEventListener('click', () => {
-                    const order = orders[index];
-                    showOrderDetail(order);
+                    const reportId = card.dataset.reportId;
+                    const order = orders.find(o => o.reportId === reportId);
+                    if (order) {
+                        showOrderDetail(order);
+                    }
                 });
             });
         }
@@ -2312,12 +2314,35 @@
             const orderDetailBody = document.getElementById('orderDetailBody');
             const modal = document.getElementById('orderDetailModal');
             
+            let statusText, statusClass;
+            switch(order.status) {
+                case '0':
+                    statusText = '待分配';
+                    statusClass = 'status-pending';
+                    break;
+                case '1':
+                    statusText = '已分配';
+                    statusClass = 'status-allocated';
+                    break;
+                case '2':
+                    statusText = '已完成';
+                    statusClass = 'status-completed';
+                    break;
+                case '3':
+                    statusText = '已撤单';
+                    statusClass = 'status-cancelled';
+                    break;
+                default:
+                    statusText = '未知状态';
+                    statusClass = 'status-unknown';
+            }
+            
             orderDetailBody.innerHTML = `
                 <div class="detail-item">
                     <span class="detail-label">状态</span>
                     <span class="detail-value">
-                        <span class="status-badge ${order.allocationState ? 'allocated' : 'pending'}">
-                            ${order.allocationState ? '已分配' : '待分配'}
+                        <span class="status-badge ${statusClass}">
+                            ${statusText}
                         </span>
                     </span>
                 </div>
@@ -2336,6 +2361,10 @@
                 <div class="detail-item">
                     <span class="detail-label">预约时间</span>
                     <span class="detail-value">${formatDate(order.date)}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">提交时间</span>
+                    <span class="detail-value">${formatDate(order.call_date)}</span>
                 </div>
             `;
             
