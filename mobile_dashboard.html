@@ -2931,7 +2931,7 @@
                 throw new Error(`无法获取天气信息: ${weatherData.info}`);
             }
 
-            const live = weatherData.lives[0]; // 获取实时���气信息
+            const live = weatherData.lives[0]; // 获取实时����气信息
             document.getElementById('weather-info').innerHTML = `
                 <p class="weather-location">
                     <span class="weather-icon">📍</span>
@@ -3189,6 +3189,8 @@
 
     // 修改 callReportAPI 函数
     async function callReportAPI(userPhoneNumber, address, issue, date) {
+        const call_date = new Date().toISOString().split('T')[0].replace(/-/g, '/');
+        
         const response = await fetch(API_URLS.REPORT, {
             method: 'POST',
             headers: {
@@ -3198,7 +3200,8 @@
                 userPhoneNumber: userPhoneNumber,
                 address: address,
                 issue: issue,
-                date: date
+                date: date.replace(/-/g, '/'), // 确保日期格式正确
+                call_date: call_date
             }),
             credentials: 'include'
         });

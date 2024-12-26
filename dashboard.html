@@ -1801,38 +1801,45 @@
                 });
             });
 
-            // 报单表单提交处理
-            const reportOrderForm = document.getElementById('reportOrderForm');
-            if (reportOrderForm) {
-                reportOrderForm.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-                    const formData = {
-                        userPhoneNumber: document.getElementById('userPhoneNumber').value,
-                        address: document.getElementById('address').value,
-                        issue: document.getElementById('issue').value,
-                        date: document.getElementById('preferredTime').value
-                    };
+            // 修改报单表单提交处理
+            document.getElementById('reportOrderForm').addEventListener('submit', async (event) => {
+                event.preventDefault();
+                
+                const userPhoneNumber = document.getElementById('userPhoneNumber').value;
+                const address = document.getElementById('address').value;
+                const issue = document.getElementById('issue').value;
+                const preferredTime = document.getElementById('preferredTime').value;
+                const call_date = new Date().toISOString().split('T')[0].replace(/-/g, '/');
 
-                    try {
-                        const response = await fetch(API_URLS.order.report, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(formData),
-                            credentials: 'include'
-                        });
-                        
-                        const data = await response.json();
-                        if (data.message === 'Success') {
-                            showReportMessage('报单提交成功！', 'success');
-                            reportOrderForm.reset();
-                        } else {
-                            auth.handleSessionError(data.message);
-                        }
-                    } catch (error) {
-                        showReportMessage('报单提交失败，请重试', 'error');
+                try {
+                    const response = await fetch(API_URLS.order.report, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userPhoneNumber,
+                            address,
+                            issue,
+                            date: preferredTime.replace(/-/g, '/'),
+                            call_date: call_date
+                        }),
+                        credentials: 'include'
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.message === 'Success') {
+                        showReportMessage('报单成功！', 'success');
+                        event.target.reset();
+                    } else {
+                        auth.handleSessionError(data.message);
                     }
-                });
-            }
+                } catch (error) {
+                    console.error('报单失败:', error);
+                    showReportMessage('报单失败，请重试', 'error');
+                }
+            });
 
             // 退出登录处理
             const logoutLink = document.getElementById('logoutLink');
