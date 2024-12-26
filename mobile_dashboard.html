@@ -3868,15 +3868,26 @@
     // 获取历史订单
     async function fetchHistoryOrders() {
         try {
+            showLoading(true); // 显示加载状态
+            
             const response = await fetch(API_URLS.GET_HISTORY, {
                 method: 'GET',
-                credentials: 'include'
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'  // 确保包含 cookies
             });
             
             const data = await response.json();
             
+            showLoading(false); // 隐藏加载状态
+            
             if (data.message === 'Success') {
-                displayHistoryOrders(data.report_info);
+                if (Array.isArray(data.report_info) && data.report_info.length > 0) {
+                    displayHistoryOrders(data.report_info);
+                } else {
+                    showNoOrders();
+                }
             } else if (data.message === 'No history report') {
                 showNoOrders();
             } else {
@@ -3885,6 +3896,7 @@
         } catch (error) {
             console.error('获取历史订单失败:', error);
             showError();
+            showLoading(false);
         }
     }
 
