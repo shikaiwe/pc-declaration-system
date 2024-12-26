@@ -2830,11 +2830,6 @@
     </div>
 </div>
 
-<div class="mobile-dropdown-menu">
-    <!-- 删除以下行 -->
-    <!-- <a class="menu-item" href="/account">账号管理</a> -->
-    <a class="menu-item" href="/logout">退出登录</a>
-</div>
 
 <script>
     // URL和API配置
@@ -2931,7 +2926,7 @@
                     handleSessionError(data.message);
                 }
             }).catch(error => {
-                console.error('获取API Key时���错:', error);
+                console.error('获取API Key时出错:', error);
                 throw error;
             });
         }
@@ -2951,7 +2946,7 @@
                 throw new Error(`无法获取天气信息: ${weatherData.info}`);
             }
 
-            const live = weatherData.lives[0]; // 获取实时����气信息
+            const live = weatherData.lives[0]; // 获取实时天气信息
             document.getElementById('weather-info').innerHTML = `
                 <p class="weather-location">
                     <span class="weather-icon">📍</span>
