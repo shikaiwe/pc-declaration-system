@@ -3117,67 +3117,102 @@
     // 修改报单提交处理
     document.getElementById('newOrderForm').addEventListener('submit', function(event) {
         event.preventDefault();
-
+        
         // 获取表单数据
         const userPhoneNumber = document.getElementById('userPhoneNumber').value;
         const address = document.getElementById('address').value;
         const issue = document.getElementById('issue').value;
         const preferredTimeInput = document.getElementById('preferredTime');
         const preferredTime = preferredTimeInput.dataset.submitValue || preferredTimeInput.value;
-
+        
         // 表单验证
         if (!userPhoneNumber || !/^1[3-9]\d{9}$/.test(userPhoneNumber)) {
             showMessage('请输入正确的手机号码');
             return;
         }
-
+        
         if (!address.trim()) {
             showMessage('请输入地址');
             return;
         }
-
+        
         if (!issue.trim()) {
             showMessage('请输入问题描述');
             return;
         }
-
+        
         if (!preferredTime) {
             showMessage('请选择预约时间');
             return;
         }
-
-        showLoading(true); // 显示加载状态
-
-        $.ajax({
-            url: API_URLS.REPORT,
+        
+        // 构造请求数据
+        const today = new Date();
+        const call_date = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
+        
+        // 转换预约时间格式
+        const [datePart, timePart] = preferredTime.split(' ');
+        const formattedDate = datePart.replace(/-/g, '/');
+        
+        const requestData = {
+            userPhoneNumber,
+            address,
+            issue,
+            date: formattedDate,
+            call_date,
+            status: '0'  // 添加状态字段，0 表示待分配状态
+        };
+        
+        // 显示加载状态
+        showLoading(true);
+        
+        // 发送请求
+        fetch(API_URLS.REPORT, {
             method: 'POST',
-            data: JSON.stringify({
-                userPhoneNumber,
-                address,
-                issue,
-                date: preferredTime
-            }),
-            contentType: 'application/json',
-            xhrFields: {
-                withCredentials: true
+            headers: {
+                'Content-Type': 'application/json'
             },
-            success: function(data) {
-                showLoading(false);
-                if (data.message === 'Success') {
-                    showMessage('报单提交成功', 'success');
-                    document.getElementById('newOrderForm').reset();
-                    preferredTimeInput.dataset.submitValue = ''; // 清除保存的时间值
-                } else {
-                    handleSessionError(data.message);
+            body: JSON.stringify(requestData),
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+            showLoading(false);
+            
+            if (data.message === 'Success') {
+                showMessage('报单提交成功', 'success');
+                // 重置表单
+                document.getElementById('newOrderForm').reset();
+                preferredTimeInput.dataset.submitValue = '';
+                
+                // 如果在历史订单页面，刷新订单列表
+                if (document.getElementById('orderHistory').style.display === 'block') {
+                    fetchHistoryOrders();
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error('报单提交失败:', error);
-                showMessage('报单提交失败，请重试', 'error');
-                showLoading(false);
+            } else {
+                handleSessionError(data.message);
             }
+        })
+        .catch(error => {
+            console.error('报单提交失败:', error);
+            showMessage('报单提交失败，请重试', 'error');
+            showLoading(false);
         });
     });
+
+    // 添加加载状态控制函数
+    function showLoading(show) {
+        const loadingIndicator = document.querySelector('.loading-indicator');
+        if (!loadingIndicator) {
+            return;
+        }
+        
+        if (show) {
+            loadingIndicator.style.display = 'flex';
+        } else {
+            loadingIndicator.style.display = 'none';
+        }
+    }
 
     // 添加显示报单消息的函数
     function showReportMessage(message, type) {
@@ -4169,7 +4204,7 @@
             }
         } catch (error) {
             console.error('密码修改失败:', error);
-            showMessage('密码���改失败，请重试');
+            showMessage('密码修改失败，请重试');
         }
     }
 
