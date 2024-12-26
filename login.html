@@ -282,21 +282,19 @@
 
         // 处理登录成功
         function handleLoginSuccess(response) {
-            if (response.message === 'Success') {
-                // 保存用户名
-                localStorage.setItem('username', response.username);
-                
-                // 保存登录状态
-                if (document.getElementById('rememberMe').checked) {
-                    localStorage.setItem('rememberMe', 'true');
-                }
-                
-                // 根据设备类型跳转
-                if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                    window.location.href = 'mobile_dashboard.html';
-                } else {
-                    window.location.href = 'dashboard.html';
-                }
+            // 保存用户名
+            localStorage.setItem('username', response.username);
+            
+            // 保存登录状态
+            if (document.getElementById('rememberMe').checked) {
+                localStorage.setItem('rememberMe', 'true');
+            }
+            
+            // 根据设备类型跳转
+            if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                window.location.href = 'mobile_dashboard.html';
+            } else {
+                window.location.href = 'dashboard.html';
             }
         }
 
@@ -343,16 +341,26 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
+            
             try {
-                const response = await auth.login(username, password);
-                if (rememberMe) {
-                    auth.saveLoginData(username, password, response.token, response.refreshToken);
-                    localStorage.setItem('rememberMe', 'true');
+                utils.setLoading(true);
+                // 直接调用 loginAPI
+                const response = await auth.loginAPI(username, password);
+                utils.setLoading(false);
+                
+                if (response.success || response.message === 'Success') {  // 添加双重检查
+                    if (rememberMe) {
+                        auth.saveLoginData(username, password, response.token, response.refreshToken);
+                        localStorage.setItem('rememberMe', 'true');
+                    } else {
+                        auth.clearLoginData();
+                    }
+                    handleLoginSuccess(response);
                 } else {
-                    auth.clearLoginData();
+                    utils.showError(response.message || '登录失败');
                 }
-                handleLoginSuccess(response);
             } catch (error) {
+                utils.setLoading(false);
                 utils.showError(error.message);
             }
         });
