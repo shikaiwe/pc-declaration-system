@@ -1350,6 +1350,73 @@
             cursor: not-allowed;
         }
 
+        /* 添加或修改全局样式 */
+        button, 
+        .sidebar-menu li,
+        .navbar a,
+        .dropdown-menu a,
+        .tab-button,
+        .user-greeting,
+        .avatar,
+        .order-status,
+        .complete-order-btn,
+        .cancel-order-btn {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* 修改按钮基础样式 */
+        button {
+            -webkit-tap-highlight-color: transparent;  /* 移除移动设备上的点击高亮 */
+        }
+
+        /* 修改侧边栏菜单项样式 */
+        .sidebar-menu li {
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改导航栏链接样式 */
+        .navbar a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改下拉菜单项样式 */
+        .dropdown-menu a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改标签按钮样式 */
+        .tab-button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改用户问候语样式 */
+        .user-greeting {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改头像样式 */
+        .avatar {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改订单状态标签样式 */
+        .order-status {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改结单按钮样式 */
+        .complete-order-btn {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改撤单按钮样式 */
+        .cancel-order-btn {
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
 </head>
 <body>
@@ -2515,7 +2582,7 @@
         async function cancelOrder(reportId) {
             try {
                 const response = await fetch(API_URLS.CANCEL_REPORT, {
-                    method: 'GET',
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },

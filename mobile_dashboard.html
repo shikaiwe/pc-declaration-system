@@ -2682,6 +2682,79 @@
             background-color: #95a5a6;
             cursor: not-allowed;
         }
+
+        /* 添加或修改全局样式 */
+        button,
+        .navbar a,
+        .submenu a,
+        .tab-link,
+        .user-greeting,
+        .order-status,
+        .complete-order-btn,
+        .cancel-order-btn,
+        .close-button,
+        .card,
+        .retry-button {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* 修改按钮基础样式 */
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改导航栏链接样式 */
+        .navbar a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改子菜单链接样式 */
+        .submenu a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改标签链接样式 */
+        .tab-link {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改用户问候语样式 */
+        .user-greeting {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改卡片样式 */
+        .card {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改订单状态标签样式 */
+        .order-status {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改结单按钮样式 */
+        .complete-order-btn {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改撤单按钮样式 */
+        .cancel-order-btn {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改关闭按钮样式 */
+        .close-button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 修改重试按钮样式 */
+        .retry-button {
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
 </head>
 <body>
@@ -3948,7 +4021,7 @@
     async function cancelOrder(reportId) {
         try {
             const response = await fetch(API_URLS.CANCEL_REPORT, {
-                method: 'GET',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -4370,7 +4443,7 @@
                 handleSessionError(data.message);
             }
         } catch (error) {
-            console.error('密码���改失败:', error);
+            console.error('密码修改失败:', error);
             showMessage('密码修改失败，请重试');
         }
     }
