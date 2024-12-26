@@ -1806,7 +1806,7 @@
                 const call_date = new Date().toISOString().split('T')[0].replace(/-/g, '/');
 
                 try {
-                    const response = await fetch(API_URLS.REPORT, {
+                    const response = await fetch(API_URLS.CALL_REPORT, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -1931,7 +1931,7 @@
                     }
 
                     try {
-                        const response = await fetch(API_URLS.CHANGE_PASSWORD, {
+                        const response = await fetch(API_URLS.RENEW_PASSWORD, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
