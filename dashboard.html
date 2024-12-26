@@ -1329,6 +1329,27 @@
         .calendar-error .retry-button:hover {
             background-color: #0056b3;
         }
+
+        .complete-order-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .complete-order-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .complete-order-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
     </style>
 </head>
 <body>
@@ -1682,7 +1703,7 @@
                     );
                     const weatherData = await weatherResponse.json();
                     if (weatherData.status !== '1') {
-                        throw new Error(`无法获取天气信息: ${weatherData.info}`);
+                        throw new Error(`无法获取���气信息: ${weatherData.info}`);
                     }
 
                     const live = weatherData.lives[0];
@@ -2373,6 +2394,7 @@
             }
         }
 
+        // 修改 displayHistoryOrders 函数
         function displayHistoryOrders(orders) {
             const orderHistoryContent = document.getElementById('orderHistory');
             if (!Array.isArray(orders) || orders.length === 0) {
@@ -2387,14 +2409,17 @@
                 
                 // 根据状态获取对应的显示文本和样式
                 let statusText, statusClass;
+                let showCompleteButton = false;
                 switch(order.status) {
                     case '0':
                         statusText = '待分配';
                         statusClass = 'status-pending';
+                        showCompleteButton = true;
                         break;
                     case '1':
                         statusText = '已分配';
                         statusClass = 'status-allocated';
+                        showCompleteButton = true;
                         break;
                     case '2':
                         statusText = '已完成';
@@ -2423,6 +2448,11 @@
                             <p><strong>问题：</strong>${order.issue || '未知'}</p>
                             <p><strong>预约时间：</strong>${displayDate}</p>
                             <p><strong>提交时间：</strong>${displayCallDate}</p>
+                            ${showCompleteButton ? `
+                                <button class="complete-order-btn" onclick="completeOrder('${order.reportId}')">
+                                    结单
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -2433,17 +2463,41 @@
                     ${ordersHTML}
                 </div>
             `;
+        }
 
-            // 添加点击事件处理
-            document.querySelectorAll('.order-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const reportId = card.dataset.reportId;
-                    const order = orders.find(o => o.reportId === reportId);
-                    if (order) {
-                        showOrderDetail(order);
-                    }
+        // 添加结单功能函数
+        async function completeOrder(reportId) {
+            try {
+                const response = await fetch(API_URLS.COMPLETE_REPORT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reportId }),
+                    credentials: 'include'
                 });
-            });
+
+                const data = await response.json();
+
+                switch (data.message) {
+                    case 'Success':
+                        utils.ui.showMessage('结单成功');
+                        // 刷新订单列表
+                        fetchHistoryOrders();
+                        break;
+                    case 'This report is completed':
+                        utils.ui.showMessage('该订单已结束');
+                        break;
+                    case 'This report is no exist':
+                        utils.ui.showMessage('订单不存在');
+                        break;
+                    default:
+                        auth.handleSessionError(data.message);
+                }
+            } catch (error) {
+                console.error('结单失败:', error);
+                utils.ui.showMessage('结单失败，请重试');
+            }
         }
 
         function showNoOrders() {

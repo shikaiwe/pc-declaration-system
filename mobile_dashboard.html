@@ -2662,6 +2662,26 @@
                 transform: translateY(0);
             }
         }
+
+        .complete-order-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .complete-order-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .complete-order-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -3801,19 +3821,20 @@
             return;
         }
 
-        console.log('准备显示订单数量:', orders.length); // 添加调试日志
-
         const ordersHTML = orders.map(order => {
             // 根据状态获取对应的显示文本和样式
             let statusText, statusClass;
+            let showCompleteButton = false;
             switch(order.status) {
                 case '0':
                     statusText = '待分配';
                     statusClass = 'status-pending';
+                    showCompleteButton = true;
                     break;
                 case '1':
                     statusText = '已分配';
                     statusClass = 'status-allocated';
+                    showCompleteButton = true;
                     break;
                 case '2':
                     statusText = '已完成';
@@ -3860,19 +3881,56 @@
                             <strong>提交时间：</strong>
                             ${formatDate(order.call_date)}
                         </p>
+                        ${showCompleteButton ? `
+                            <button class="complete-order-btn" onclick="completeOrder('${order.reportId}')">
+                                结单
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
             `;
         }).join('');
 
-        // 直接设置内容
         historyContent.innerHTML = `
             <div class="orders-container" style="opacity: 1;">
                 ${ordersHTML}
             </div>
         `;
-        
-        console.log('历史订单显示完成'); // 添加调试日志
+    }
+
+    // 添加结单功能函数
+    async function completeOrder(reportId) {
+        try {
+            const response = await fetch(API_URLS.COMPLETE_REPORT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ reportId }),
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            switch (data.message) {
+                case 'Success':
+                    showMessage('结单成功');
+                    // 刷新订单列表
+                    fetchHistoryOrders();
+                    break;
+                case 'This report is completed':
+                    showMessage('该订单已结束');
+                    break;
+                case 'This report is no exist':
+                    showMessage('订单不存在');
+                    break;
+                default:
+                    handleSessionError(data.message);
+            }
+        } catch (error) {
+            console.error('结单失败:', error);
+            showMessage('结单失败，请重试');
+        }
     }
 
     // 显示无订单状态
