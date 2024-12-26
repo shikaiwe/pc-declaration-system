@@ -1301,9 +1301,18 @@
     <div class="main-content">
         <div class="top-nav">
             <div class="current-time" id="currentTime">00:00:00</div>
-            <div class="user-greeting">
-                <span id="greetingText"></span>
-                <span id="username-display"></span>
+            <div class="user-profile">
+                <div class="user-info">
+                    <div class="avatar">👤</div>
+                    <div class="user-greeting">
+                        <span id="greetingText"></span>
+                        <span id="username-display"></span>
+                    </div>
+                </div>
+                <div class="dropdown-menu">
+                    <a href="#" id="accountSettingsLink">账号设置</a>
+                    <a href="#" id="logoutLink">退出登录</a>
+                </div>
             </div>
         </div>
 
@@ -1461,32 +1470,14 @@
         // API 端点配置
         const API_URLS = {
             // 用户认证相关接口
-            auth: {
-                login: `${CONFIG.baseUrl}/users/login/`,
-                logout: `${CONFIG.baseUrl}/dashboard/logout/`,
-                getUserInfo: `${CONFIG.baseUrl}/dashboard/get_user_info/`
-            },
-            
-            // 用户管理相关接口
-            account: {
-                savePhone: `${CONFIG.baseUrl}/dashboard/savePhoneNumber/`,
-                getPhone: `${CONFIG.baseUrl}/dashboard/getPhoneNumber/`,
-                changePassword: `${CONFIG.baseUrl}/dashboard/renew_password/`
-            },
-            
-            // 订单管理相关接口
-            order: {
-                report: `${CONFIG.baseUrl}/dashboard/call_report/`,
-                getHistory: `${CONFIG.baseUrl}/dashboard/user_get_history_report/`,
-                assign: `${CONFIG.baseUrl}/dashboard/assign_order/`,
-                getReportList: `${CONFIG.baseUrl}/dashboard/worker_get_report_list/`,
-                complete: `${CONFIG.baseUrl}/dashboard/complete_report/`
-            },
-            
-            // 天气相关接口
-            weather: {
-                getApiKey: `${CONFIG.baseUrl}/dashboard/getWeatherApiKey/`
-            }
+            LOGIN: `${CONFIG.baseUrl}/users/login/`,
+            LOGOUT: `${CONFIG.baseUrl}/dashboard/logout/`,
+            GET_USER_INFO: `${CONFIG.baseUrl}/dashboard/get_user_info/`,
+            GET_PHONE: `${CONFIG.baseUrl}/dashboard/getPhoneNumber/`,
+            SAVE_PHONE: `${CONFIG.baseUrl}/dashboard/savePhoneNumber/`,
+            CHANGE_PASSWORD: `${CONFIG.baseUrl}/dashboard/changePassword/`,
+            REPORT: `${CONFIG.baseUrl}/dashboard/report/`,
+            GET_HISTORY: `${CONFIG.baseUrl}/dashboard/get_history/`
         };
 
         // 工具函数集合
@@ -1565,7 +1556,7 @@
 
                 // 调用退出登录API
                 $.ajax({
-                    url: API_URLS.auth.logout,
+                    url: API_URLS.LOGOUT,
                     method: 'GET',
                     xhrFields: {
                         withCredentials: true
@@ -1694,7 +1685,7 @@
                 const usernameDisplay = document.getElementById('username-display');
                 if (!usernameDisplay) return;
 
-                fetch(API_URLS.auth.getUserInfo, {
+                fetch(API_URLS.GET_USER_INFO, {
                     method: 'GET',
                     credentials: 'include'
                 })
@@ -1812,7 +1803,7 @@
                 const call_date = new Date().toISOString().split('T')[0].replace(/-/g, '/');
 
                 try {
-                    const response = await fetch(API_URLS.order.report, {
+                    const response = await fetch(API_URLS.REPORT, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -1840,18 +1831,20 @@
                     showReportMessage('报单失败，请重试', 'error');
                 }
             });
-
             // 退出登录处理
-            const logoutLink = document.getElementById('logoutLink');
+            const logoutBtn = document.getElementById('logoutLink');
             const logoutModal = document.getElementById('logoutModal');
             const confirmLogoutButton = document.getElementById('confirmLogoutButton');
             const cancelLogoutButton = document.getElementById('cancelLogoutButton');
 
-            if (logoutLink) {
-                logoutLink.addEventListener('click', (event) => {
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    if (logoutModal) logoutModal.style.display = 'block';
+                    if (logoutModal) {
+                        logoutModal.style.display = 'block';
+                        dropdownMenu.classList.remove('active');
+                    }
                 });
             }
 
@@ -1863,7 +1856,9 @@
 
             if (cancelLogoutButton) {
                 cancelLogoutButton.addEventListener('click', () => {
-                    if (logoutModal) logoutModal.style.display = 'none';
+                    if (logoutModal) {
+                        logoutModal.style.display = 'none';
+                    }
                 });
             }
 
@@ -1895,7 +1890,7 @@
                     if (newName) formData.newName = newName;
 
                     try {
-                        const response = await fetch(API_URLS.account.savePhone, {
+                        const response = await fetch(API_URLS.SAVE_PHONE, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(formData),
@@ -1933,7 +1928,7 @@
                     }
 
                     try {
-                        const response = await fetch(API_URLS.account.changePassword, {
+                        const response = await fetch(API_URLS.CHANGE_PASSWORD, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -1967,7 +1962,7 @@
                 fillPhoneNumberButton.disabled = false;
                 fillPhoneNumberButton.addEventListener('click', async () => {
                     try {
-                        const response = await fetch(API_URLS.account.getPhone, {
+                        const response = await fetch(API_URLS.GET_PHONE, {
                             credentials: 'include'
                         });
                         const data = await response.json();
@@ -2049,6 +2044,45 @@
                     this.style.height = (this.scrollHeight) + 'px';
                 });
             }
+
+            // 在 DOMContentLoaded 事件监听器中添加
+            // 用户下拉菜单处理
+            const userProfile = document.querySelector('.user-profile');
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+
+            if (userProfile) {
+                userProfile.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    dropdownMenu.classList.toggle('active');
+                });
+            }
+
+            // 点击其他地方关闭下拉菜单
+            document.addEventListener('click', () => {
+                if (dropdownMenu.classList.contains('active')) {
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+
+            // 账号设置链接处理
+            const accountSettingsLink = document.getElementById('accountSettingsLink');
+            if (accountSettingsLink) {
+                accountSettingsLink.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    // 隐藏所有内容区域
+                    Object.values(contentSections).forEach(section => {
+                        if (section) section.style.display = 'none';
+                    });
+                    // 显示账号设置
+                    contentSections.accountManagement.style.display = 'block';
+                    // 移除所有菜单项的激活状态
+                    menuItems.forEach(item => item.classList.remove('active'));
+                    // 激活账号管理菜单项
+                    document.getElementById('accountManagement').classList.add('active');
+                    // 关闭下拉菜单
+                    dropdownMenu.classList.remove('active');
+                });
+            }
         });
 
         // 添加显示报单消息的函数
@@ -2117,7 +2151,7 @@
                     day: '日'
                 },
                 events: function(info, successCallback, failureCallback) {
-                    fetch(API_URLS.order.getHistory, {
+                    fetch(API_URLS.GET_HISTORY, {
                         credentials: 'include'
                     })
                     .then(response => response.json())
@@ -2154,7 +2188,7 @@
             showLoading(orderHistoryContent);
 
             try {
-                const response = await fetch(API_URLS.order.getHistory, {
+                const response = await fetch(API_URLS.GET_HISTORY, {
                     credentials: 'include'
                 });
                 const data = await response.json();
@@ -2181,22 +2215,49 @@
                 return;
             }
 
-            const ordersHTML = orders.map(order => `
-                <div class="order-card">
-                    <div class="order-info">
-                        <p>
-                            <strong>手机号码：</strong>
-                            ${order.userPhoneNumber}
-                            <span class="order-status ${order.allocationState ? 'status-allocated' : 'status-pending'}">
-                                ${order.allocationState ? '已分配' : '待分配'}
-                            </span>
-                        </p>
-                        <p><strong>地址：</strong>${order.address}</p>
-                        <p><strong>问题：</strong>${order.issue}</p>
-                        <p><strong>预约时间：</strong>${formatDate(order.date)}</p>
+            const ordersHTML = orders.map(order => {
+                // 根据状态获取对应的显示文本和样式
+                let statusText, statusClass;
+                switch(order.status) {
+                    case '0':
+                        statusText = '待分配';
+                        statusClass = 'status-pending';
+                        break;
+                    case '1':
+                        statusText = '已分配';
+                        statusClass = 'status-allocated';
+                        break;
+                    case '2':
+                        statusText = '已完成';
+                        statusClass = 'status-completed';
+                        break;
+                    case '3':
+                        statusText = '已撤单';
+                        statusClass = 'status-cancelled';
+                        break;
+                    default:
+                        statusText = '未知状态';
+                        statusClass = 'status-unknown';
+                }
+
+                return `
+                    <div class="order-card">
+                        <div class="order-info">
+                            <p>
+                                <strong>手机号码：</strong>
+                                ${order.userPhoneNumber}
+                                <span class="order-status ${statusClass}">
+                                    ${statusText}
+                                </span>
+                            </p>
+                            <p><strong>地址：</strong>${order.address}</p>
+                            <p><strong>问题：</strong>${order.issue}</p>
+                            <p><strong>预约时间：</strong>${formatDate(order.date)}</p>
+                            <p><strong>提交时间：</strong>${formatDate(order.call_date)}</p>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             orderHistoryContent.innerHTML = `
                 <div class="orders-container">
