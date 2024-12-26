@@ -3148,11 +3148,26 @@
         
         // 构造请求数据
         const today = new Date();
-        const call_date = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
+        const call_date = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')} ${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
+        
+        // 获取预约时间
+        const preferredTimeInput = document.getElementById('preferredTime');
+        const preferredTime = preferredTimeInput.dataset.submitValue || preferredTimeInput.value;
         
         // 转换预约时间格式
-        const [datePart, timePart] = preferredTime.split(' ');
-        const formattedDate = datePart.replace(/-/g, '/');
+        let formattedDate;
+        if (preferredTime.includes('年')) {
+            // 如果是中文格式，转换为标准格式
+            const match = preferredTime.match(/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{2}):(\d{2})/);
+            if (match) {
+                const [_, year, month, day, hour, minute] = match;
+                formattedDate = `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')} ${hour}:${minute}`;
+            }
+        } else {
+            // 如果是标准格式，确保包含时间
+            const [datePart, timePart] = preferredTime.split(' ');
+            formattedDate = `${datePart.replace(/-/g, '/')} ${timePart}`;
+        }
         
         const requestData = {
             userPhoneNumber,
@@ -3160,7 +3175,7 @@
             issue,
             date: formattedDate,
             call_date,
-            status: '0'  // 添加状态字段，0 表示待分配状态
+            status: '0'
         };
         
         // 显示加载状态
@@ -3232,15 +3247,20 @@
     // 修改 formatDate 函数
     function formatDate(dateString) {
         try {
-            // 如果是标准格式的日期字符串 (YYYY-MM-DD HH:mm)
-            if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)) {
+            // 处理带空格的日期时间格式 (YYYY/MM/DD HH:mm 或 YYYY-MM-DD HH:mm)
+            if (typeof dateString === 'string' && dateString.includes(' ')) {
                 const [datePart, timePart] = dateString.split(' ');
-                const [year, month, day] = datePart.split('-');
-                const [hours, minutes] = timePart.split(':');
-                return `${year}年${parseInt(month)}月${parseInt(day)}日 ${hours}:${minutes}`;
+                const [year, month, day] = datePart.replace(/-/g, '/').split('/');
+                return `${year}年${parseInt(month)}月${parseInt(day)}日 ${timePart}`;
             }
             
-            // 如果已经是中文格式，直接返回
+            // 处理不带时间的日期格式 (YYYY/MM/DD 或 YYYY-MM-DD)
+            if (typeof dateString === 'string' && (dateString.includes('/') || dateString.includes('-'))) {
+                const [year, month, day] = dateString.replace(/-/g, '/').split('/');
+                return `${year}年${parseInt(month)}月${parseInt(day)}日`;
+            }
+            
+            // 处理已经是中文格式的日期时间
             if (typeof dateString === 'string' && dateString.includes('年') && dateString.includes('月')) {
                 return dateString;
             }
@@ -3248,7 +3268,7 @@
             // 处理 Date 对象或其他格式的日期字符串
             const date = new Date(dateString);
             if (isNaN(date.getTime())) {
-                return '时间格式错误';
+                throw new Error('无效的日期格式');
             }
             
             const year = date.getFullYear();
@@ -3259,7 +3279,7 @@
             
             return `${year}年${month}月${day}日 ${hours}:${minutes}`;
         } catch (error) {
-            console.error('日期格式化错误:', error);
+            console.error('日期格式化错误:', error, '原始日期:', dateString);
             return '时间格式错误';
         }
     }
@@ -3671,7 +3691,6 @@
 
             pickerContainer.querySelector('.picker-confirm').addEventListener('click', function(e) {
                 e.preventDefault();
-                e.stopPropagation();
                 
                 if (dateSwiper && timeSwiper) {
                     const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
@@ -4258,7 +4277,7 @@
                 handleSessionError(data.message);
             }
         } catch (error) {
-            console.error('密码修改失败:', error);
+            console.error('密码���改失败:', error);
             showMessage('密码修改失败，请重试');
         }
     }
