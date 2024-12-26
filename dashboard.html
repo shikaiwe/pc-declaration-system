@@ -1463,7 +1463,6 @@
     <script>
         // 配置常量
         const CONFIG = {
-            // 使用实际的 IP 地址，不要使用模板字符串
             baseUrl: 'https://8.134.178.71/api'
         };
 
@@ -1475,13 +1474,13 @@
             GET_USER_INFO: `${CONFIG.baseUrl}/dashboard/get_user_info/`,
             GET_PHONE: `${CONFIG.baseUrl}/dashboard/getPhoneNumber/`,
             SAVE_PHONE: `${CONFIG.baseUrl}/dashboard/savePhoneNumber/`,
-            CHANGE_PASSWORD: `${CONFIG.baseUrl}/dashboard/changePassword/`,
-            REPORT: `${CONFIG.baseUrl}/dashboard/report/`,
-            GET_HISTORY: `${CONFIG.baseUrl}/dashboard/get_history/`,
-            // 添加天气 API 配置
-            weather: {
-                getApiKey: `${CONFIG.baseUrl}/dashboard/get_weather_key/`
-            }
+            RENEW_PASSWORD: `${CONFIG.baseUrl}/dashboard/renew_password/`,
+            CALL_REPORT: `${CONFIG.baseUrl}/dashboard/call_report/`,
+            GET_HISTORY: `${CONFIG.baseUrl}/dashboard/user_get_history_report/`,
+            ASSIGN_ORDER: `${CONFIG.baseUrl}/dashboard/assign_order/`,
+        // GET_REPORT_LIST: `${CONFIG.baseUrl}/dashboard/worker_get_report_list/`,
+            COMPLETE_REPORT: `${CONFIG.baseUrl}/dashboard/complete_report/`,
+            WEATHER_API_KEY: `${CONFIG.baseUrl}/dashboard/getWeatherApiKey/`
         };
 
         // 工具函数集合
@@ -1604,15 +1603,10 @@
             // 从服务器获取天气 API Key
             getApiKeyFromServer: async function() {
                 try {
-                    const response = await fetch(API_URLS.weather.getApiKey, {
+                    const response = await fetch(API_URLS.WEATHER_API_KEY, {
                         method: 'GET',
                         credentials: 'include'
                     });
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
                     const data = await response.json();
                     if (data.message === 'Success') {
                         return data.apiKey;
@@ -1622,27 +1616,8 @@
                     }
                 } catch (error) {
                     console.error('获取API Key失败:', error);
-                    // 使用备用的天气显示
-                    this.showDefaultWeather();
                     throw error;
                 }
-            },
-
-            // 添加备用的天气显示方法
-            showDefaultWeather: function() {
-                const weatherInfoElement = document.getElementById('weatherInfo');
-                weatherInfoElement.innerHTML = `
-                    <p class="weather-location">
-                        <span class="weather-icon">📍</span>
-                        位置获取中...
-                    </p>
-                    <div class="weather-details">
-                        <p>
-                            <span class="weather-icon">🌤️</span>
-                            天气信息暂时无法获取
-                        </p>
-                    </div>
-                `;
             },
 
             // 获取天气信息
