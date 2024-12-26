@@ -3150,10 +3150,6 @@
         const today = new Date();
         const call_date = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')} ${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
         
-        // 获取预约时间
-        const preferredTimeInput = document.getElementById('preferredTime');
-        const preferredTime = preferredTimeInput.dataset.submitValue || preferredTimeInput.value;
-        
         // 转换预约时间格式
         let formattedDate;
         if (preferredTime.includes('年')) {

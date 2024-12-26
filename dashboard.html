@@ -1682,7 +1682,7 @@
                     );
                     const weatherData = await weatherResponse.json();
                     if (weatherData.status !== '1') {
-                        throw new Error(`无法获取天���信息: ${weatherData.info}`);
+                        throw new Error(`无法获取天气信息: ${weatherData.info}`);
                     }
 
                     const live = weatherData.lives[0];
@@ -2468,11 +2468,20 @@
 
         function formatDate(dateString) {
             try {
-                const date = new Date(dateString);
+                // 处理包含 '/' 的日期格式
+                const normalizedDate = dateString.replace(/\//g, '-');
+                const date = new Date(normalizedDate);
+                
+                // 检查日期是否有效
+                if (isNaN(date.getTime())) {
+                    throw new Error('Invalid date');
+                }
+
                 return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
             } catch (error) {
-                console.error('日期格式化错误:', error);
-                return dateString;
+                console.error('日期格式化错误:', error, '原始日期字符串:', dateString);
+                // 如果转换失败，返回原始字符串或者一个友好的提示
+                return dateString || '日期未知';
             }
         }
 
