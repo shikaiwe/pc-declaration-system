@@ -3066,7 +3066,8 @@
                 const address = document.getElementById('address').value;
                 const issue = document.getElementById('issue').value;
                 const preferredTime = document.getElementById('preferredTime').value;
-                const call_date = new Date().toISOString().split('T')[0].replace(/-/g, '/');
+                // 修改这里：使用完整的时间戳作为提交时间
+                const call_date = new Date().toISOString();
 
                 try {
                     const response = await fetch(API_URLS.CALL_REPORT, {
@@ -3079,7 +3080,7 @@
                             address,
                             issue,
                             date: preferredTime.replace(/-/g, '/'),
-                            call_date: call_date
+                            call_date: call_date  // 发送完整的时间戳
                         }),
                         credentials: 'include'
                     });
