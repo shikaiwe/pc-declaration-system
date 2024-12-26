@@ -2453,6 +2453,98 @@
             opacity: 0.3 !important;
             cursor: not-allowed !important;
         }
+
+        /* 基础样式 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        /* 时间选择器整体容器 */
+        .flatpickr-time {
+            height: 40px !important;  /* 保持紧凑的高度 */
+            line-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        /* 时间输入框容器 */
+        .numInputWrapper {
+            width: 100px !important;  /* 恢复更宽的输入框 */
+            height: 40px !important;
+            position: relative !important;
+        }
+
+        /* 时间输入框 */
+        .flatpickr-time input.flatpickr-hour,
+        .flatpickr-time input.flatpickr-minute {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            text-align: center !important;
+            padding-right: 35px !important;
+            width: 100% !important;  /* 确保输入框填满容器 */
+        }
+
+        /* 分隔符样式 */
+        .flatpickr-time .flatpickr-time-separator {
+            line-height: 40px !important;
+            padding: 0 8px !important;  /* 增加分隔符两侧间距 */
+            font-size: 16px !important;
+        }
+
+        /* 箭头容器基础样式 */
+        .flatpickr-calendar .numInputWrapper span {
+            width: 35px !important;
+            height: 20px !important;
+            position: absolute !important;
+            right: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: transparent !important;
+            cursor: pointer !important;
+        }
+
+        /* 其他样式保持不变 */
+        .flatpickr-calendar .numInputWrapper span.arrowUp {
+            top: 0 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+            content: '▲' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown {
+            bottom: 0 !important;
+            top: auto !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: '▼' !important;
+            display: block !important;
+            font-size: 10px !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span:hover:after {
+            color: #007bff !important;
+        }
+
+        .flatpickr-calendar .numInputWrapper span.disabled {
+            opacity: 0.3 !important;
+            cursor: not-allowed !important;
+        }
     </style>
 </head>
 <body>
@@ -3216,49 +3308,49 @@
                 // 添加样式
                 const style = document.createElement('style');
                 style.textContent = `
-                    /* 基础样式 */
-                    .time-picker-wrapper {
-                        position: relative;
-                        width: 100%;
-                        cursor: pointer;
-                    }
+        /* 基础样式 */
+        .time-picker-wrapper {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
 
-                    /* 时间选择器整体容器 */
-                    .flatpickr-time {
-                        height: 40px !important;  /* 保持紧凑的高度 */
-                        line-height: 40px !important;
-                        display: flex !important;
-                        align-items: center !important;
-                        justify-content: center !important;
-                    }
+        /* 时间选择器整体容器 */
+        .flatpickr-time {
+            height: 40px !important;  /* 保持紧凑的高度 */
+            line-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
 
-                    /* 时间输入框容器 */
-                    .numInputWrapper {
-                        width: 100px !important;  /* 恢复更宽的输入框 */
-                        height: 40px !important;
-                        position: relative !important;
-                    }
+        /* 时间输入框容器 */
+        .numInputWrapper {
+            width: 100px !important;  /* 恢复更宽的输入框 */
+            height: 40px !important;
+            position: relative !important;
+        }
 
-                    /* 时间输入框 */
-                    .flatpickr-time input.flatpickr-hour,
-                    .flatpickr-time input.flatpickr-minute {
-                        font-size: 16px !important;
-                        font-weight: bold !important;
-                        height: 40px !important;
-                        line-height: 40px !important;
-                        text-align: center !important;
-                        padding-right: 35px !important;
-                        width: 100% !important;  /* 确保输入框填满容器 */
-                    }
+        /* 时间输入框 */
+        .flatpickr-time input.flatpickr-hour,
+        .flatpickr-time input.flatpickr-minute {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            text-align: center !important;
+            padding-right: 35px !important;
+            width: 100% !important;  /* 确保输入框填满容器 */
+        }
 
-                    /* 分隔符样式 */
-                    .flatpickr-time .flatpickr-time-separator {
-                        line-height: 40px !important;
-                        padding: 0 8px !important;  /* 增加分隔符两侧间距 */
-                        font-size: 16px !important;
-                    }
+        /* 分隔符样式 */
+        .flatpickr-time .flatpickr-time-separator {
+            line-height: 40px !important;
+            padding: 0 8px !important;  /* 增加分隔符两侧间距 */
+            font-size: 16px !important;
+        }
 
-                    /* 箭头容器基础样式 */
+        /* 箭头容器基础样式 */
                     .flatpickr-calendar .numInputWrapper span {
                         width: 35px !important;
                         height: 20px !important;
@@ -3832,29 +3924,45 @@
 
         // 添加撤单功能函数
         async function cancelOrder(reportId) {
+            if (!reportId) {
+                utils.ui.showMessage('订单ID无效');
+                return;
+            }
+
             try {
                 const response = await fetch(API_URLS.CANCEL_REPORT, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    body: JSON.stringify({
+                        reportId: reportId
+                    }),
                     credentials: 'include'
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
                 const data = await response.json();
 
                 switch (data.message) {
                     case 'Success':
                         utils.ui.showMessage('撤单成功');
-                        // 刷新订单列表
-                        fetchHistoryOrders();
+                        await fetchHistoryOrders(); // 刷新订单列表
+                        break;
+                    case 'Report not found':
+                        utils.ui.showMessage('订单不存在');
+                        break;
+                    case 'Already cancelled':
+                        utils.ui.showMessage('该订单已经撤销');
                         break;
                     default:
                         auth.handleSessionError(data.message);
                 }
             } catch (error) {
-                console.error('撤单失败:', error);
-                utils.ui.showMessage('撤单失败，请重试');
+                handleApiError(error, '撤单失败，请重试');
             }
         }
 
