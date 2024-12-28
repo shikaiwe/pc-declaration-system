@@ -3079,75 +3079,80 @@
             `;
         }
 
+        // 修改日期格式化函数
         function formatDate(dateString) {
+            // 检查输入是否为 Date 对象
+            if (dateString instanceof Date) {
+                const date = dateString;
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return `${year}年${month}月${day}日 ${hours}:${minutes}`;
+            }
+            
+            // 处理字符串格式的日期
             try {
-                // 处理包含 '/' 的日期格式
-                const normalizedDate = dateString.replace(/\//g, '-');
-                const date = new Date(normalizedDate);
-                
-                // 检查日期是否有效
+                const date = new Date(dateString);
                 if (isNaN(date.getTime())) {
                     throw new Error('Invalid date');
                 }
-
-                return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return `${year}年${month}月${day}日 ${hours}:${minutes}`;
             } catch (error) {
                 console.error('日期格式化错误:', error, '原始日期字符串:', dateString);
-                // 如果转换失败，返回原始字符串或者一个友好的提示
-                return dateString || '日期未知';
+                return '日期格式错误';
             }
         }
 
-        // 添加订单详情显示函数
+        // 修改显示订单详情的函数
         function showOrderDetail(order) {
-            const modal = document.getElementById('orderDetailModal');
-            const detailBody = document.getElementById('orderDetailBody');
-            
-            // 格式化预约时间
-            const appointmentDate = new Date(order.date);
-            const formattedAppointmentDate = `${appointmentDate.getFullYear()}年${appointmentDate.getMonth() + 1}月${appointmentDate.getDate()}日 ${String(appointmentDate.getHours()).padStart(2, '0')}:${String(appointmentDate.getMinutes()).padStart(2, '0')}`;
-            
-            // 格式化报单时间
-            const callDate = new Date(order.call_date);
-            const formattedCallDate = `${callDate.getFullYear()}年${callDate.getMonth() + 1}月${callDate.getDate()}日 ${String(callDate.getHours()).padStart(2, '0')}:${String(callDate.getMinutes()).padStart(2, '0')}`;
+            const orderDetailBody = document.getElementById('orderDetailBody');
+            if (!orderDetailBody) return;
 
-            // 构建详情内容
-            detailBody.innerHTML = `
-                <div class="detail-item">
-                    <span class="detail-label">订单编号：</span>
-                    <span class="detail-value">${order.reportId}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">预约时间：</span>
-                    <span class="detail-value">${formattedAppointmentDate}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">报单时间：</span>
-                    <span class="detail-value">${formattedCallDate}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">联系电话：</span>
-                    <span class="detail-value">${order.userPhoneNumber}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">地址：</span>
-                    <span class="detail-value">${order.address}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">问题描述：</span>
-                    <span class="detail-value">${order.issue}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">订单状态：</span>
-                    <span class="detail-value">
-                        <span class="status-badge ${order.status === 'pending' ? 'pending' : 'allocated'}">
-                            ${order.status === 'pending' ? '待处理' : '已分配'}
+            try {
+                const formattedDate = formatDate(order.date);
+                const formattedCallDate = formatDate(order.call_date);
+                
+                orderDetailBody.innerHTML = `
+                    <div class="detail-item">
+                        <span class="detail-label">订单状态：</span>
+                        <span class="detail-value">
+                            <span class="status-badge ${order.status === 'allocated' ? 'allocated' : 'pending'}">
+                                ${order.status === 'allocated' ? '已分配' : '待分配'}
+                            </span>
                         </span>
-                    </span>
-                </div>
-            `;
-
-            modal.style.display = 'block';
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">预约时间：</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">报单时间：</span>
+                        <span class="detail-value">${formattedCallDate}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">联系电话：</span>
+                        <span class="detail-value">${order.userPhoneNumber}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">服务地址：</span>
+                        <span class="detail-value">${order.address}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">问题描述：</span>
+                        <span class="detail-value">${order.issue}</span>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('显示订单详情时出错:', error);
+                orderDetailBody.innerHTML = '<p class="error-message">加载订单详情失败</p>';
+            }
         }
         </script>
 </body>
