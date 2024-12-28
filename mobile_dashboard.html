@@ -3122,19 +3122,6 @@
         </div>
     </div>
 
-    <!-- 在 body 标签内，其他模态框后面添加订单详情模态框 -->
-    <div id="orderDetailModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>订单详情</h3>
-                <span class="close-button" onclick="closeOrderDetail()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <!-- 内容将通过 JavaScript 动态填充 -->
-            </div>
-        </div>
-    </div>
-
     <script>
         // URL和API配置
         const ip = '8.134.178.71';
@@ -5351,102 +5338,61 @@
 
         // 添加移动端友好的订单详情显示函数
         function showOrderDetail(order) {
-            const modal = document.getElementById('orderDetailModal');
-            const modalContent = modal.querySelector('.modal-content');
+            const detailCard = document.getElementById('orderDetailCard');
+            const detailContent = document.getElementById('orderDetailContent');
+            const overlay = document.getElementById('detailOverlay');
 
             try {
                 const formattedDate = formatDate(order.date);
                 const formattedCallDate = formatDate(order.call_date);
 
-                modalContent.innerHTML = `
-                <div class="modal-header">
-                    <h3>订单详情</h3>
-                    <span class="close-button" onclick="closeOrderDetail()">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <div class="detail-item">
-                        <span class="detail-label">订单状态：</span>
+                detailContent.innerHTML = `
+                    <div class="detail-row">
+                        <span class="detail-label">状态</span>
                         <span class="detail-value">
-                            <span class="status-badge ${order.status === 'allocated' ? 'allocated' : 'pending'}">
-                                ${order.status === 'allocated' ? '已分配' : '待分配'}
+                            <span class="status-badge ${order.status === '1' ? 'allocated' : 'pending'}">
+                                ${getStatusText(order.status)}
                             </span>
                         </span>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">联系电话：</span>
+                    <div class="detail-row">
+                        <span class="detail-label">联系电话</span>
                         <span class="detail-value">${order.userPhoneNumber}</span>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">服务地址：</span>
+                    <div class="detail-row">
+                        <span class="detail-label">服务地址</span>
                         <span class="detail-value">${order.address}</span>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">问题描述：</span>
+                    <div class="detail-row">
+                        <span class="detail-label">问题描述</span>
                         <span class="detail-value">${order.issue}</span>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">报单时间：</span>
+                    <div class="detail-row">
+                        <span class="detail-label">报单时间</span>
                         <span class="detail-value">${formattedCallDate}</span>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">预约时间：</span>
+                    <div class="detail-row">
+                        <span class="detail-label">预约时间</span>
                         <span class="detail-value">${formattedDate}</span>
                     </div>
-                </div>
-            `;
+                `;
 
-                modal.style.display = 'block';
+                detailCard.classList.add('show');
+                overlay.classList.add('show');
             } catch (error) {
                 console.error('显示订单详情时出错:', error);
                 showMessage('加载订单详情失败');
             }
         }
 
-        function closeOrderDetail() {
-            document.getElementById('orderDetailModal').style.display = 'none';
-        }
-        // 添加更新日历事件的函数
-        function updateCalendarEvent(orderId, newStatus) {
-            const calendar = document.querySelector('#mobileCalendar').FullCalendar;
-            if (!calendar) return;
-
-            // 找到对应的事件并更新
-            const event = calendar.getEventById(orderId);
-            if (event) {
-                // 设置新的样式和标题
-                let backgroundColor, borderColor, textColor, title;
-                switch (newStatus) {
-                    case 'allocated':
-                        backgroundColor = '#28a745';
-                        borderColor = '#28a745';
-                        textColor = '#fff';
-                        title = `${event.extendedProps.issue.substring(0, 8)}...`;
-                        break;
-                    case 'completed':
-                        backgroundColor = '#17a2b8';
-                        borderColor = '#17a2b8';
-                        textColor = '#fff';
-                        title = `[已完成] ${event.extendedProps.issue.substring(0, 6)}...`;
-                        break;
-                    case 'cancelled':
-                        backgroundColor = '#dc3545';
-                        borderColor = '#dc3545';
-                        textColor = '#fff';
-                        title = `[已撤单] ${event.extendedProps.issue.substring(0, 6)}...`;
-                        break;
-                    default:
-                        backgroundColor = '#ffc107';
-                        borderColor = '#ffc107';
-                        textColor = '#000';
-                        title = `${event.extendedProps.issue.substring(0, 8)}...`;
-                }
-
-                // 更新事件属性
-                event.setProp('title', title);
-                event.setProp('backgroundColor', backgroundColor);
-                event.setProp('borderColor', borderColor);
-                event.setProp('textColor', textColor);
-                event.setExtendedProp('status', newStatus);
+        // 添加获取状态文本的辅助函数
+        function getStatusText(status) {
+            switch (status) {
+                case '0': return '待分配';
+                case '1': return '已分配';
+                case '2': return '已完成';
+                case '3': return '已撤单';
+                default: return '未知状态';
             }
         }
 

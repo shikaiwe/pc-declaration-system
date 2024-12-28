@@ -1728,6 +1728,200 @@
             background-color: #f5f5f5;
             color: #757575;
         }
+
+        /* 日历容器样式 */
+        .fc {
+            max-width: 100%;
+            height: auto !important;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+        }
+
+        /* 日历头部工具栏 */
+        .fc-header-toolbar {
+            margin-bottom: 1.5rem !important;
+            padding: 1rem;
+            background: #2196F3;
+            border-radius: 6px;
+        }
+
+        .fc-toolbar-title {
+            color: #fff !important;
+            font-size: 1.5em !important;
+            font-weight: 500 !important;
+        }
+
+        /* 导航按钮组 */
+        .fc-button-group {
+            gap: 4px;
+        }
+
+        .fc-button-primary {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            border: none !important;
+            padding: 8px 16px !important;
+            font-weight: 500 !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .fc-button-primary:hover {
+            background-color: rgba(255, 255, 255, 0.25) !important;
+            transform: translateY(-1px);
+        }
+
+        .fc-button-primary:active {
+            transform: translateY(0);
+        }
+
+        .fc-button-primary:disabled {
+            opacity: 0.6 !important;
+            cursor: not-allowed !important;
+        }
+
+        /* 日历主体样式 */
+        .fc-view-harness {
+            min-height: 600px !important;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+
+        /* 日期网格样式 */
+        .fc-daygrid-day {
+            min-height: 120px !important;
+            transition: background-color 0.2s ease;
+        }
+
+        .fc-daygrid-day:hover {
+            background-color: rgba(33, 150, 243, 0.05);
+        }
+
+        .fc-daygrid-day.fc-day-today {
+            background-color: rgba(33, 150, 243, 0.1) !important;
+        }
+
+        .fc-daygrid-day-number {
+            font-size: 1em !important;
+            padding: 8px !important;
+            color: #333;
+        }
+
+        /* 事件样式 */
+        .fc-event {
+            border: none !important;
+            border-radius: 4px !important;
+            padding: 4px 8px !important;
+            margin: 2px 4px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease;
+        }
+
+        .fc-event:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 时间轴视图优化 */
+        .fc-timegrid-slot {
+            height: 48px !important;
+        }
+
+        .fc-timegrid-axis {
+            padding: 8px !important;
+            font-weight: 500;
+        }
+
+        .fc-timegrid-slot-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* 周/日视图时间列 */
+        .fc-timegrid-axis-cushion {
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* 更多事件弹出框 */
+        .fc-more-popover {
+            border: none !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .fc-more-popover .fc-popover-header {
+            background: #2196F3 !important;
+            color: white !important;
+            padding: 8px 12px !important;
+            border-radius: 8px 8px 0 0 !important;
+        }
+
+        /* 状态样式 */
+        .fc-event.status-pending {
+            background-color: #ffc107 !important;
+            border-color: #ffc107 !important;
+            color: #000 !important;
+        }
+
+        .fc-event.status-allocated {
+            background-color: #28a745 !important;
+            border-color: #28a745 !important;
+            color: #fff !important;
+        }
+
+        .fc-event.status-completed {
+            background-color: #17a2b8 !important;
+            border-color: #17a2b8 !important;
+            color: #fff !important;
+        }
+
+        .fc-event.status-cancelled {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: #fff !important;
+        }
+
+        /* 工具提示 */
+        .fc-event-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 响应式布局（针对较小的桌面屏幕） */
+        @media screen and (max-width: 1366px) {
+            .fc {
+                padding: 0.75rem;
+            }
+
+            .fc-view-harness {
+                min-height: 500px !important;
+            }
+
+            .fc-daygrid-day {
+                min-height: 100px !important;
+            }
+        }
+
+        /* 宽屏优化 */
+        @media screen and (min-width: 1920px) {
+            .fc {
+                padding: 1.5rem;
+            }
+
+            .fc-view-harness {
+                min-height: 800px !important;
+            }
+
+            .fc-daygrid-day {
+                min-height: 150px !important;
+            }
+
+            .fc-toolbar-title {
+                font-size: 1.8em !important;
+            }
+        }
     </style>
 </head>
 
