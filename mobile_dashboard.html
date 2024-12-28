@@ -609,7 +609,7 @@
             margin: 10px 0;
         }
 
-        /* 确保日历在模态框中正确显示 */
+        /* 确保日历在模态框中正确显�� */
         .fc {
             height: 100%;
             background-color: white;
@@ -3662,35 +3662,50 @@
                                             // 根据订单状态设置不同的显示样式
                                             let backgroundColor, borderColor, textColor, title;
                                             switch (order.status) {
-                                                case 'allocated':
-                                                    backgroundColor = '#28a745';  // 绿色 - 已分配
-                                                    borderColor = '#28a745';
-                                                    textColor = '#fff';
-                                                    title = `${order.issue.substring(0, 8)}...`;
-                                                    break;
-                                                case 'completed':
-                                                    backgroundColor = '#17a2b8';  // 蓝色 - 已完成
-                                                    borderColor = '#17a2b8';
-                                                    textColor = '#fff';
-                                                    title = `[完] ${order.issue.substring(0, 6)}...`;
-                                                    break;
-                                                case 'cancelled':
-                                                    backgroundColor = '#dc3545';  // 红色 - 已撤单
-                                                    borderColor = '#dc3545';
-                                                    textColor = '#fff';
-                                                    title = `[撤] ${order.issue.substring(0, 6)}...`;
-                                                    break;
-                                                default:
-                                                    backgroundColor = '#ffc107';  // 黄色 - 待分配
+                                                case '0':
+                                                    backgroundColor = '#ffc107';  // 黄色
                                                     borderColor = '#ffc107';
                                                     textColor = '#000';
-                                                    title = `${order.issue.substring(0, 8)}...`;
+                                                    statusText = '待接单';
+                                                    title = `[${statusText}] ${order.issue.substring(0, 8)}...`;
+                                                    break;
+                                                case '1':
+                                                    backgroundColor = '#28a745';  // 绿色
+                                                    borderColor = '#28a745';
+                                                    textColor = '#fff';
+                                                    statusText = '已接单';
+                                                    title = `[${statusText}] ${order.issue.substring(0, 8)}...`;
+                                                    break;
+                                                case '2':
+                                                    backgroundColor = '#17a2b8';  // 蓝色
+                                                    borderColor = '#17a2b8';
+                                                    textColor = '#fff';
+                                                    statusText = '已完成';
+                                                    title = `[${statusText}] ${order.issue.substring(0, 6)}...`;
+                                                    break;
+                                                case '3':
+                                                    backgroundColor = '#dc3545';  // 红色
+                                                    borderColor = '#dc3545';
+                                                    textColor = '#fff';
+                                                    statusText = '已撤单';
+                                                    title = `[${statusText}] ${order.issue.substring(0, 6)}...`;
+                                                    break;
+                                                default:
+                                                    backgroundColor = '#6c757d';  // 灰色
+                                                    borderColor = '#6c757d';
+                                                    textColor = '#fff';
+                                                    statusText = '未知状态';
+                                                    title = `[${statusText}] ${order.issue.substring(0, 8)}...`;
                                             }
 
                                             return {
+                                                id: order.reportId,
                                                 title: title,
                                                 start: new Date(order.date.replace(/-/g, '/')),
-                                                extendedProps: order,
+                                                extendedProps: {
+                                                    ...order,
+                                                    statusText: statusText  // 添加状态文本到扩展属性中
+                                                },
                                                 backgroundColor: backgroundColor,
                                                 borderColor: borderColor,
                                                 textColor: textColor,

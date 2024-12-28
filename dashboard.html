@@ -2811,47 +2811,13 @@
                             },
                             success: function (response) {
                                 if (response.message === 'Success') {
-                                    const events = response.report_info.map(order => {
-                                        // 根据订单状态设置不同的显示样式
-                                        let backgroundColor, borderColor, textColor, title;
-                                        switch (order.status) {
-                                            case 'allocated':
-                                                backgroundColor = '#28a745';  // 绿色 - 已分配
-                                                borderColor = '#28a745';
-                                                textColor = '#fff';
-                                                title = `订单: ${order.issue.substring(0, 10)}...`;
-                                                break;
-                                            case 'completed':
-                                                backgroundColor = '#17a2b8';  // 蓝色 - 已完成
-                                                borderColor = '#17a2b8';
-                                                textColor = '#fff';
-                                                title = `[已完成] ${order.issue.substring(0, 8)}...`;
-                                                break;
-                                            case 'cancelled':
-                                                backgroundColor = '#dc3545';  // 红色 - 已撤单
-                                                borderColor = '#dc3545';
-                                                textColor = '#fff';
-                                                title = `[已撤单] ${order.issue.substring(0, 8)}...`;
-                                                break;
-                                            default:
-                                                backgroundColor = '#ffc107';  // 黄色 - 待分配
-                                                borderColor = '#ffc107';
-                                                textColor = '#000';
-                                                title = `订单: ${order.issue.substring(0, 10)}...`;
-                                        }
-
-                                        return {
-                                            title: title,
-                                            start: new Date(order.date.replace(/-/g, '/')),
-                                            extendedProps: order,
-                                            backgroundColor: backgroundColor,
-                                            borderColor: borderColor,
-                                            textColor: textColor,
-                                            allDay: false,
-                                            displayEventTime: true,
-                                            eventDisplay: 'block'
-                                        };
-                                    });
+                                    const events = response.report_info.map(order => ({
+                                        id: order.reportId, // 使用 reportId 作为事件ID
+                                        title: formatEventTitle(order),
+                                        start: new Date(order.date.replace(/-/g, '/')),
+                                        extendedProps: order,
+                                        ...getEventColors(order.status)
+                                    }));
                                     successCallback(events);
                                 } else if (response.message === 'No history report') {
                                     successCallback([]);
@@ -2865,48 +2831,54 @@
                                 failureCallback(new Error(error));
                             }
                         });
-                    },
-                    eventDidMount: function (info) {
-                        // 根据状态显示不同的提示信息
-                        let statusText;
-                        switch (info.event.extendedProps.status) {
-                            case 'allocated':
-                                statusText = '已分配';
-                                break;
-                            case 'completed':
-                                statusText = '已完成';
-                                break;
-                            case 'cancelled':
-                                statusText = '已撤单';
-                                break;
-                            default:
-                                statusText = '待分配';
-                        }
-
-                        // 使用 Bootstrap 的 Tooltip
-                        new bootstrap.Tooltip(info.el, {
-                            title: `问题描述: ${info.event.extendedProps.issue}
-状态: ${statusText}
-地址: ${info.event.extendedProps.address}`,
-                            placement: 'top',
-                            trigger: 'hover',
-                            container: 'body'
-                        });
-                    },
-                    // 日期和时间格式化
-                    eventTimeFormat: {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                    },
-                    // 添加视图特定的配置
-                    dayMaxEvents: true, // 当一天的事件过多时允许显示更多按钮
-                    slotEventOverlap: false, // 防止事件重叠
-                    nowIndicator: true, // 显示当前时间指示器
-                    scrollTime: '18:00:00' // 默认滚动到18:00
+                    }
                 });
 
                 calendar.render();
+            }
+
+            // 添加辅助函数来格式化事件标题
+            function formatEventTitle(order) {
+                switch (order.status) {
+                    case 'completed':
+                        return `[已完成] ${order.issue.substring(0, 8)}...`;
+                    case 'cancelled':
+                        return `[已撤单] ${order.issue.substring(0, 8)}...`;
+                    case 'allocated':
+                        return `[已分配] ${order.issue.substring(0, 8)}...`;
+                    default:
+                        return `订单: ${order.issue.substring(0, 10)}...`;
+                }
+            }
+
+            // 添加辅助函数来获取事件颜色
+            function getEventColors(status) {
+                switch (status) {
+                    case 'allocated':
+                        return {
+                            backgroundColor: '#28a745',
+                            borderColor: '#28a745',
+                            textColor: '#fff'
+                        };
+                    case 'completed':
+                        return {
+                            backgroundColor: '#17a2b8',
+                            borderColor: '#17a2b8',
+                            textColor: '#fff'
+                        };
+                    case 'cancelled':
+                        return {
+                            backgroundColor: '#dc3545',
+                            borderColor: '#dc3545',
+                            textColor: '#fff'
+                        };
+                    default:
+                        return {
+                            backgroundColor: '#ffc107',
+                            borderColor: '#ffc107',
+                            textColor: '#000'
+                        };
+                }
             }
 
             // 添加状态颜色获取函数
@@ -3365,6 +3337,7 @@
                     showMessage('撤销订单失败，请重试', 'error');
                 });
             }
+
             // 修改日历初始化中的 events 配置，添加事件 ID
             var calendar = new FullCalendar.Calendar(calendarEl, {
                     events: function (fetchInfo, successCallback, failureCallback) {
@@ -3376,48 +3349,13 @@
                             },
                             success: function (response) {
                                 if (response.message === 'Success') {
-                                    const events = response.report_info.map(order => {
-                                        // 根据订单状态设置不同的显示样式
-                                        let backgroundColor, borderColor, textColor, title;
-                                        switch (order.status) {
-                                            case 'allocated':
-                                            backgroundColor = '#28a745';
-                                                borderColor = '#28a745';
-                                                textColor = '#fff';
-                                                title = `订单: ${order.issue.substring(0, 10)}...`;
-                                                break;
-                                            case 'completed':
-                                            backgroundColor = '#17a2b8';
-                                                borderColor = '#17a2b8';
-                                                textColor = '#fff';
-                                                title = `[已完成] ${order.issue.substring(0, 8)}...`;
-                                                break;
-                                            case 'cancelled':
-                                            backgroundColor = '#dc3545';
-                                                borderColor = '#dc3545';
-                                                textColor = '#fff';
-                                                title = `[已撤单] ${order.issue.substring(0, 8)}...`;
-                                                break;
-                                            default:
-                                            backgroundColor = '#ffc107';
-                                                borderColor = '#ffc107';
-                                                textColor = '#000';
-                                                title = `订单: ${order.issue.substring(0, 10)}...`;
-                                        }
-
-                                        return {
-                                        id: order.id, // 添加事件ID
-                                            title: title,
-                                            start: new Date(order.date.replace(/-/g, '/')),
-                                            extendedProps: order,
-                                            backgroundColor: backgroundColor,
-                                            borderColor: borderColor,
-                                            textColor: textColor,
-                                            allDay: false,
-                                            displayEventTime: true,
-                                            eventDisplay: 'block'
-                                        };
-                                    });
+                                    const events = response.report_info.map(order => ({
+                                        id: order.reportId, // 使用 reportId 作为事件ID
+                                        title: formatEventTitle(order),
+                                        start: new Date(order.date.replace(/-/g, '/')),
+                                        extendedProps: order,
+                                        ...getEventColors(order.status)
+                                    }));
                                     successCallback(events);
                                 } else if (response.message === 'No history report') {
                                     successCallback([]);
