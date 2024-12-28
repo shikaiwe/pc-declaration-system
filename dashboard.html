@@ -1543,58 +1543,60 @@
             padding: 0 5px !important;
             font-size: 16px !important;
         }
-        /* 箭头容器基础样式 */
+        /* 箭头控件基础样式 */
         
         .flatpickr-calendar .numInputWrapper span {
-            width: 35px !important;
-            height: 20px !important;
             position: absolute !important;
-            right: 0 !important;
+            right: 2px !important;
+            width: 16px !important;
+            height: 16px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            background: transparent !important;
             cursor: pointer !important;
+            background: transparent !important;
+            transition: all 0.15s ease !important;
         }
-        /* 上箭头容器和样式 */
+        /* 上箭头 */
         
         .flatpickr-calendar .numInputWrapper span.arrowUp {
-            top: 0 !important;
+            top: 4px !important;
         }
         
-        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+        .flatpickr-calendar .numInputWrapper span.arrowUp:before {
             content: '▲' !important;
-            display: block !important;
             font-size: 10px !important;
             color: #666 !important;
+            line-height: 1 !important;
         }
-        /* 下箭头容器和样式 */
+        /* 下箭头 */
         
         .flatpickr-calendar .numInputWrapper span.arrowDown {
-            bottom: 0 !important;
-            top: auto !important;
+            bottom: 4px !important;
         }
         
-        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+        .flatpickr-calendar .numInputWrapper span.arrowDown:before {
             content: '▼' !important;
-            display: block !important;
             font-size: 10px !important;
             color: #666 !important;
+            line-height: 1 !important;
         }
-        /* 箭头悬停效果 */
+        /* 悬停效果 */
         
-        .flatpickr-calendar .numInputWrapper span:hover {
-            background-color: rgba(0, 0, 0, 0.05) !important;
-        }
-        
-        .flatpickr-calendar .numInputWrapper span:hover:after {
+        .flatpickr-calendar .numInputWrapper span:hover:before {
             color: #007bff !important;
+            transform: scale(1.2) !important;
         }
-        /* 禁用时的样式 */
         
         .flatpickr-calendar .numInputWrapper span.disabled {
-            opacity: 0.3 !important;
+            opacity: 0.4 !important;
             cursor: not-allowed !important;
+            background-color: transparent !important;
+        }
+        
+        .flatpickr-calendar .numInputWrapper span.disabled:hover:after {
+            border-bottom-color: #888 !important;
+            border-top-color: #888 !important;
         }
         /* 确保时间选择器内容不会溢出 */
         
@@ -2953,7 +2955,7 @@
                             <p><strong>地址：</strong>${order.address || '未知'}</p>
                             <p><strong>问题：</strong>${order.issue || '未知'}</p>
                             <p><strong>预约时间：</strong>${displayDate}</p>
-                            <p><strong>提交时间：</strong>${displayCallDate}</p>
+                            <p><strong>提交时间���</strong>${displayCallDate}</p>
                             <div class="order-buttons">
                                 ${showCompleteButton ? `
                                     <button class="complete-order-btn" onclick="completeOrder('${order.reportId}')">
@@ -3098,63 +3100,53 @@
 
         // 添加订单详情显示函数
         function showOrderDetail(order) {
-            const orderDetailBody = document.getElementById('orderDetailBody');
             const modal = document.getElementById('orderDetailModal');
+            const detailBody = document.getElementById('orderDetailBody');
             
-            let statusText, statusClass;
-            switch(order.status) {
-                case '0':
-                    statusText = '待分配';
-                    statusClass = 'status-pending';
-                    break;
-                case '1':
-                    statusText = '已分配';
-                    statusClass = 'status-allocated';
-                    break;
-                case '2':
-                    statusText = '已完成';
-                    statusClass = 'status-completed';
-                    break;
-                case '3':
-                    statusText = '已撤单';
-                    statusClass = 'status-cancelled';
-                    break;
-                default:
-                    statusText = '未知状态';
-                    statusClass = 'status-unknown';
-            }
+            // 格式化预约时间
+            const appointmentDate = new Date(order.date);
+            const formattedAppointmentDate = `${appointmentDate.getFullYear()}年${appointmentDate.getMonth() + 1}月${appointmentDate.getDate()}日 ${String(appointmentDate.getHours()).padStart(2, '0')}:${String(appointmentDate.getMinutes()).padStart(2, '0')}`;
             
-            orderDetailBody.innerHTML = `
+            // 格式化报单时间
+            const callDate = new Date(order.call_date);
+            const formattedCallDate = `${callDate.getFullYear()}年${callDate.getMonth() + 1}月${callDate.getDate()}日 ${String(callDate.getHours()).padStart(2, '0')}:${String(callDate.getMinutes()).padStart(2, '0')}`;
+
+            // 构建详情内容
+            detailBody.innerHTML = `
                 <div class="detail-item">
-                    <span class="detail-label">状态</span>
-                    <span class="detail-value">
-                        <span class="status-badge ${statusClass}">
-                            ${statusText}
-                        </span>
-                    </span>
+                    <span class="detail-label">订单编号：</span>
+                    <span class="detail-value">${order.reportId}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">手机号码</span>
+                    <span class="detail-label">预约时间：</span>
+                    <span class="detail-value">${formattedAppointmentDate}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">报单时间：</span>
+                    <span class="detail-value">${formattedCallDate}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">联系电话：</span>
                     <span class="detail-value">${order.userPhoneNumber}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">地址</span>
+                    <span class="detail-label">地址：</span>
                     <span class="detail-value">${order.address}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">问题描述</span>
+                    <span class="detail-label">问题描述：</span>
                     <span class="detail-value">${order.issue}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">预约时间</span>
-                    <span class="detail-value">${formatDate(order.date)}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">提交时间</span>
-                    <span class="detail-value">${formatDate(order.call_date)}</span>
+                    <span class="detail-label">订单状态：</span>
+                    <span class="detail-value">
+                        <span class="status-badge ${order.status === 'pending' ? 'pending' : 'allocated'}">
+                            ${order.status === 'pending' ? '待处理' : '已分配'}
+                        </span>
+                    </span>
                 </div>
             `;
-            
+
             modal.style.display = 'block';
         }
         </script>
