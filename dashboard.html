@@ -1694,41 +1694,6 @@
             color: rgba(255, 255, 255, 0.9);
         }
 
-        /* 订单状态样式 */
-        .order-status {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-left: 8px;
-            display: inline-block;
-        }
-
-        .status-pending {
-            background-color: #fff3e0;
-            color: #f57c00;
-        }
-
-        .status-allocated {
-            background-color: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .status-completed {
-            background-color: #e8f5e9;
-            color: #388e3c;
-        }
-
-        .status-cancelled {
-            background-color: #ffebee;
-            color: #d32f2f;
-        }
-
-        .status-unknown {
-            background-color: #f5f5f5;
-            color: #757575;
-        }
-
         /* 日历容器样式 */
         .fc {
             max-width: 100%;
@@ -3266,24 +3231,16 @@
 
                     const data = await response.json();
 
-                    switch (data.message) {
-                        case 'Success':
-                            utils.ui.showMessage('结单成功');
-                            // 刷新订单列表
-                            fetchHistoryOrders();
-                            break;
-                        case 'This report is completed':
-                            utils.ui.showMessage('该订单已结束');
-                            break;
-                        case 'This report is no exist':
-                            utils.ui.showMessage('订单不存在');
-                            break;
-                        default:
-                            auth.handleSessionError(data.message);
+                    if (data.message === 'Success') {
+                        utils.ui.showMessage('订单已完成');
+                        updateCalendarEvent(reportId, 'completed'); // 更新日历显示
+                        fetchHistoryOrders(); // 刷新订单列表
+                    } else {
+                        auth.handleSessionError(data.message);
                     }
                 } catch (error) {
-                    console.error('结单失败:', error);
-                    utils.ui.showMessage('结单失败，请重试');
+                    console.error('完成订单失败:', error);
+                    utils.ui.showMessage('完成订单失败，请重试');
                 }
             }
 
@@ -3300,34 +3257,21 @@
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({
-                            reportId: reportId
-                        }),
+                        body: JSON.stringify({ reportId }),
                         credentials: 'include'
                     });
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
                     const data = await response.json();
 
-                    switch (data.message) {
-                        case 'Success':
-                            utils.ui.showMessage('撤单成功');
-                            await fetchHistoryOrders(); // 刷新订单列表
-                            break;
-                        case 'Report not found':
-                            utils.ui.showMessage('订单不存在');
-                            break;
-                        case 'Already cancelled':
-                            utils.ui.showMessage('该订单已经撤销');
-                            break;
-                        default:
-                            auth.handleSessionError(data.message);
+                    if (data.message === 'Success') {
+                        utils.ui.showMessage('订单已撤销');
+                        updateCalendarEvent(reportId, 'cancelled'); // 更新日历显示
+                        await fetchHistoryOrders(); // 刷新订单列表
+                    } else {
+                        auth.handleSessionError(data.message);
                     }
                 } catch (error) {
-                    handleApiError(error, '撤单失败，请重试');
+                    handleApiError(error, '撤销订单失败，请重试');
                 }
             }
 
