@@ -101,21 +101,14 @@
             gap: 10px;
         }
         
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #4CAF50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            transition: transform 0.2s ease-out, background-color 0.2s ease-out;
-        }
-        
-        .avatar:hover {
-            background-color: #45a049;
-            transform: scale(1.1);
+        .user-greeting {
+            font-size: 18px;
+            color: #007BFF;
+            font-weight: bold;
+            background-color: #f0f8ff;
+            padding: 5px 10px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         /* 下拉菜单样式 */
         
@@ -1378,7 +1371,6 @@
         .dropdown-menu a,
         .tab-button,
         .user-greeting,
-        .avatar,
         .order-status,
         .complete-order-btn,
         .cancel-order-btn {
@@ -1417,11 +1409,6 @@
         /* 修改用户问���语样式 */
         
         .user-greeting {
-            -webkit-tap-highlight-color: transparent;
-        }
-        /* 修改头像样式 */
-        
-        .avatar {
             -webkit-tap-highlight-color: transparent;
         }
         /* 修改订单状态标签样式 */
@@ -1635,7 +1622,6 @@
             <div class="current-time" id="currentTime">00:00:00</div>
             <div class="user-profile">
                 <div class="user-info">
-                    <div class="avatar">👤</div>
                     <div class="user-greeting">
                         <span id="greetingText"></span>
                         <span id="username-display"></span>
@@ -2333,7 +2319,7 @@
                             }
                         } catch (error) {
                             console.error('获取手机号失败:', error);
-                            utils.ui.showMessage('获取手机号失败，请重试');
+                            utils.ui.showMessage('获取手机���失败，请重���');
                         }
                     });
                 }
