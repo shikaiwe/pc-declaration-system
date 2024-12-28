@@ -1605,6 +1605,14 @@
             min-width: 200px !important;
             max-width: 300px !important;
         }
+
+        .weather-update-time {
+            margin-top: 8px !important;
+            padding-top: 8px !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9em !important;
+            color: rgba(255, 255, 255, 0.9);
+        }
     </style>
 </head>
 
@@ -1965,7 +1973,8 @@
                             throw new Error(`无法获取天气信息: ${weatherData.info}`);
                         }
 
-                        const live = weatherData.lives[0];
+                        const live = weatherData.lives[0]; // 获取实时天气信息
+                        const updateTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
                         weatherInfoElement.innerHTML = `
                         <p class="weather-location">
                             <span class="weather-icon">📍</span>
@@ -1977,12 +1986,8 @@
                         </p>
                         <div class="weather-details">
                             <p>
-                                <span class="weather-icon">🌤️</span>  <!-- 修复天气图标 -->
+                                <span class="weather-icon">🌤️</span>
                                 天气：${live.weather}
-                            </p>
-                            <p>
-                                <span class="weather-icon">💧️</span>  <!-- 修复风向图标 -->
-                                风向：${live.winddirection}
                             </p>
                             <p>
                                 <span class="weather-icon">💧</span>
@@ -1990,7 +1995,15 @@
                             </p>
                             <p>
                                 <span class="weather-icon">🌪️</span>
+                                风向：${live.winddirection}
+                            </p>
+                            <p>
+                                <span class="weather-icon">💨</span>
                                 风力：${live.windpower}级
+                            </p>
+                            <p class="weather-update-time">
+                                <span class="weather-icon">🕒</span>
+                                更新时间：${updateTime}
                             </p>
                         </div>
                     `;

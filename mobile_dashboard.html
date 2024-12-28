@@ -2755,6 +2755,15 @@
         .retry-button {
             -webkit-tap-highlight-color: transparent;
         }
+
+        /* 添加到两个页面的 style 标签中 */
+        .weather-update-time {
+            margin-top: 8px !important;
+            padding-top: 8px !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9em !important;
+            color: rgba(255, 255, 255, 0.9);
+        }
     </style>
 </head>
 <body>
@@ -3041,6 +3050,7 @@
             }
 
             const live = weatherData.lives[0]; // 获取实时天气信息
+            const updateTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
             document.getElementById('weather-info').innerHTML = `
                 <p class="weather-location">
                     <span class="weather-icon">📍</span>
@@ -3066,6 +3076,10 @@
                     <p>
                         <span class="weather-icon">💨</span>
                         风力：${live.windpower}级
+                    </p>
+                    <p class="weather-update-time">
+                        <span class="weather-icon">🕒</span>
+                        更新时间：${updateTime}
                     </p>
                 </div>
             `; // 显示天气信息
