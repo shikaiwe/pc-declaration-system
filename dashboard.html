@@ -2955,7 +2955,7 @@
                             <p><strong>地址：</strong>${order.address || '未知'}</p>
                             <p><strong>问题：</strong>${order.issue || '未知'}</p>
                             <p><strong>预约时间：</strong>${displayDate}</p>
-                            <p><strong>提交时间���</strong>${displayCallDate}</p>
+                            <p><strong>提交时间：</strong>${displayCallDate}</p>
                             <div class="order-buttons">
                                 ${showCompleteButton ? `
                                     <button class="complete-order-btn" onclick="completeOrder('${order.reportId}')">
@@ -3112,8 +3112,9 @@
 
         // 修改显示订单详情的函数
         function showOrderDetail(order) {
+            const orderDetailModal = document.getElementById('orderDetailModal');
             const orderDetailBody = document.getElementById('orderDetailBody');
-            if (!orderDetailBody) return;
+            if (!orderDetailModal || !orderDetailBody) return;
 
             try {
                 const formattedDate = formatDate(order.date);
@@ -3149,6 +3150,24 @@
                         <span class="detail-value">${order.issue}</span>
                     </div>
                 `;
+
+                // 显示模态框
+                orderDetailModal.style.display = 'block';
+
+                // 添加关闭按钮事件监听
+                const closeDetailBtn = document.getElementById('closeDetailBtn');
+                if (closeDetailBtn) {
+                    closeDetailBtn.onclick = function() {
+                        orderDetailModal.style.display = 'none';
+                    };
+                }
+
+                // 点击模态框外部关闭
+                window.onclick = function(event) {
+                    if (event.target === orderDetailModal) {
+                        orderDetailModal.style.display = 'none';
+                    }
+                };
             } catch (error) {
                 console.error('显示订单详情时出错:', error);
                 orderDetailBody.innerHTML = '<p class="error-message">加载订单详情失败</p>';
