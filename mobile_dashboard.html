@@ -2955,6 +2955,39 @@
             background-color: #ffc107;
             color: #000;
         }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .status-allocated {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .status-completed {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+
+        .status-cancelled {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .status-unknown {
+            background-color: #6c757d;
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -5322,13 +5355,37 @@
             try {
                 const formattedDate = formatDate(order.date);
                 const formattedCallDate = formatDate(order.call_date);
+                
+                // 根据状态获取对应的样式类和文本
+                let statusClass, statusText;
+                switch (order.status) {
+                    case '0':
+                        statusClass = 'status-pending';
+                        statusText = '待分配';
+                        break;
+                    case '1':
+                        statusClass = 'status-allocated';
+                        statusText = '已分配';
+                        break;
+                    case '2':
+                        statusClass = 'status-completed';
+                        statusText = '已完成';
+                        break;
+                    case '3':
+                        statusClass = 'status-cancelled';
+                        statusText = '已撤单';
+                        break;
+                    default:
+                        statusClass = 'status-unknown';
+                        statusText = '未知状态';
+                }
 
                 detailContent.innerHTML = `
                     <div class="detail-row">
                         <span class="detail-label">状态</span>
                         <span class="detail-value">
-                            <span class="order-status ${getStatusClass(order.status)}">
-                                ${getStatusText(order.status)}
+                            <span class="status-badge ${statusClass}">
+                                ${statusText}
                             </span>
                         </span>
                     </div>
@@ -5442,11 +5499,10 @@
                 day: '日'
             },
             
-            // 标题格式化
+            // 修改标题格式化配置
             titleFormat: {
-                year: 'numeric年',
-                month: 'long',
-                day: 'numeric日'
+                year: 'numeric',
+                month: 'long'
             },
             
             // 列头格式化
@@ -5456,7 +5512,7 @@
             
             // 日期单元格格式化
             dayCellContent: function(info) {
-                return info.date.getDate() + '日';
+                return info.date.getDate();
             },
             
             // 更多事件显示文本

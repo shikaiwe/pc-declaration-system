@@ -1774,6 +1774,13 @@
             color: #212529 !important;
         }
 
+        .fc-button-primary:not(:disabled):active,
+        .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #e9ecef !important;
+            border-color: #dee2e6 !important;
+            color: #212529 !important;
+        }
+
         /* 日历表格样式 */
         .fc-scrollgrid {
             border: none !important;
@@ -1796,20 +1803,14 @@
             color: #495057;
         }
 
-        /* 周末日期样式 */
-        .fc-day-sun .fc-daygrid-day-number,
-        .fc-day-sat .fc-daygrid-day-number {
-            color: #dc3545;
-        }
-
         /* 今天日期样式 */
         .fc-day-today {
-            background-color: rgba(33, 150, 243, 0.05) !important;
+            background-color: rgba(0, 0, 0, 0.02) !important;
         }
 
         .fc-day-today .fc-daygrid-day-number {
             font-weight: bold;
-            color: #2196F3;
+            color: #212529;
         }
 
         /* 非本月日期样式 */
@@ -1824,18 +1825,13 @@
             padding: 4px 8px !important;
             margin: 2px 4px !important;
             font-size: 0.9em !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         /* 更多事件提示 */
         .fc-daygrid-more-link {
-            color: #2196F3 !important;
+            color: #495057 !important;
             font-size: 0.9em !important;
-        }
-
-        /* 视图切换按钮 */
-        .fc-button {
-            text-transform: capitalize !important;
-            font-size: 14px !important;
         }
 
         /* 响应式调整 */
