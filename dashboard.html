@@ -698,22 +698,37 @@
         /* 订单状态样式 */
 
         .order-status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 13px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
             font-weight: 500;
-            margin-left: auto;
-        }
-
-        .status-allocated {
-            background-color: #e8f5e9;
-            color: #2e7d32;
+            margin-left: 8px;
+            display: inline-block;
         }
 
         .status-pending {
             background-color: #fff3e0;
-            color: #ef6c00;
+            color: #f57c00;
+        }
+
+        .status-allocated {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-completed {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-cancelled {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+
+        .status-unknown {
+            background-color: #f5f5f5;
+            color: #757575;
         }
 
         /* 空状态和错误状态样式 */
@@ -1677,6 +1692,41 @@
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             font-size: 0.9em !important;
             color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 订单状态样式 */
+        .order-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-allocated {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-completed {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-cancelled {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+
+        .status-unknown {
+            background-color: #f5f5f5;
+            color: #757575;
         }
     </style>
 </head>
@@ -3339,42 +3389,20 @@
             }
 
             // 修改日历初始化中的 events 配置，添加事件 ID
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                    events: function (fetchInfo, successCallback, failureCallback) {
-                        $.ajax({
-                            url: API_URLS.GET_HISTORY,
-                            method: 'GET',
-                            xhrFields: {
-                                withCredentials: true
-                            },
-                            success: function (response) {
-                                if (response.message === 'Success') {
-                                    const events = response.report_info.map(order => ({
-                                        id: order.reportId, // 使用 reportId 作为事件ID
-                                        title: formatEventTitle(order),
-                                        start: new Date(order.date.replace(/-/g, '/')),
-                                        extendedProps: order,
-                                        ...getEventColors(order.status)
-                                    }));
-                                    successCallback(events);
-                                } else if (response.message === 'No history report') {
-                                    successCallback([]);
-                                } else {
-                                    auth.handleSessionError(response.message);
-                                    failureCallback(new Error(response.message));
-                                }
-                            },
-                            error: function (xhr, status, error) {
-                                console.error('获取历史订单失败:', error);
-                                failureCallback(new Error(error));
-                            }
-                        });
-                }
-            }); // 添加这个闭合括号
+            var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                // 配置保持不变
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                // ... 其他配置保持不变
+            });
 
-                // 渲染日历
-                calendar.render();
+            // 渲染日历
+            calendar.render();
         </script>
+        
 </body>
 
 </html>
