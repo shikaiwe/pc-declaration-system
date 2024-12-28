@@ -2824,26 +2824,46 @@
             function initializeCalendar() {
                 var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                     initialView: 'dayGridMonth',
-                    locale: 'zh-cn',
+                    locale: 'zh-cn', // 设置中文
                     height: 'auto',
                     headerToolbar: {
                         left: 'prev,next today',
                         center: 'title',
                         right: 'dayGridMonth,timeGridWeek,timeGridDay'
                     },
+                    buttonText: { // 自定义按钮文字
+                        today: '今天',
+                        month: '月',
+                        week: '周',
+                        day: '日'
+                    },
                     views: {
                         timeGridWeek: {
                             slotMinTime: '18:00:00',
                             slotMaxTime: '21:00:00',
                             slotDuration: '00:30:00',
-                            allDaySlot: false
+                            allDaySlot: false,
+                            slotLabelFormat: {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false
+                            }
                         },
                         timeGridDay: {
                             slotMinTime: '18:00:00',
                             slotMaxTime: '21:00:00',
                             slotDuration: '00:30:00',
-                            allDaySlot: false
+                            allDaySlot: false,
+                            slotLabelFormat: {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false
+                            }
                         }
+                    },
+                    // 添加事件点击处理
+                    eventClick: function(info) {
+                        showOrderDetail(info.event.extendedProps);
                     },
                     events: function(fetchInfo, successCallback, failureCallback) {
                         $.ajax({
@@ -2919,7 +2939,21 @@
                     },
                     slotEventOverlap: false,
                     nowIndicator: true,
-                    scrollTime: '18:00:00'
+                    scrollTime: '18:00:00',
+                    // 添加日历样式相关配置
+                    eventDidMount: function(info) {
+                        // 添加鼠标悬停效果
+                        info.el.style.cursor = 'pointer';
+                        info.el.style.transition = 'transform 0.2s ease';
+                        
+                        info.el.addEventListener('mouseover', function() {
+                            this.style.transform = 'scale(1.02)';
+                        });
+                        
+                        info.el.addEventListener('mouseout', function() {
+                            this.style.transform = 'scale(1)';
+                        });
+                    }
                 });
 
                 // 添加响应式处理
@@ -2943,6 +2977,44 @@
                 // 初始化和窗口大小改变时调用
                 handleResize();
                 window.addEventListener('resize', handleResize);
+
+                // 添加自定义样式
+                const style = document.createElement('style');
+                style.textContent = `
+                    .fc {
+                        background: white;
+                        padding: 20px;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    }
+                    .fc-button-primary {
+                        background-color: #2196F3 !important;
+                        border-color: #2196F3 !important;
+                    }
+                    .fc-button-primary:hover {
+                        background-color: #1976D2 !important;
+                        border-color: #1976D2 !important;
+                    }
+                    .fc-button-primary:not(:disabled):active,
+                    .fc-button-primary:not(:disabled).fc-button-active {
+                        background-color: #1565C0 !important;
+                        border-color: #1565C0 !important;
+                    }
+                    .fc-daygrid-day:hover {
+                        background-color: #f8f9fa;
+                    }
+                    .fc-event {
+                        border-radius: 4px;
+                        padding: 2px 4px;
+                        margin: 1px 0;
+                        border: none;
+                    }
+                    .fc-toolbar-title {
+                        font-size: 1.2em !important;
+                        font-weight: 600;
+                    }
+                `;
+                document.head.appendChild(style);
 
                 calendar.render();
             }
