@@ -2691,8 +2691,10 @@
 
             // 在 script 标签中添加日历初始化函数
             function initializeCalendar() {
-                var calendarEl = document.getElementById('calendar');
-                var calendar = new FullCalendar.Calendar(calendarEl, {
+                const calendarEl = document.getElementById('calendar');
+                if (!calendarEl) return;
+
+                const calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'dayGridMonth',
                     locale: 'zh-cn',
                     height: 'auto',
@@ -2704,32 +2706,22 @@
                     views: {
                         timeGridWeek: {
                             slotMinTime: '18:00:00',
-                            slotMaxTime: '22:00:00',
+                            slotMaxTime: '21:00:00',
                             slotDuration: '00:30:00',
-                            titleFormat: {
-                                year: 'numeric',
-                                month: 'short',
-                                day: '2-digit'
-                            }
+                            allDaySlot: false
                         },
                         timeGridDay: {
                             slotMinTime: '18:00:00',
-                            slotMaxTime: '22:00:00',
+                            slotMaxTime: '21:00:00',
                             slotDuration: '00:30:00',
-                            titleFormat: {
-                                year: 'numeric',
-                                month: 'short',
-                                day: '2-digit'
-                            }
+                            allDaySlot: false
                         }
                     },
-                    buttonText: {
-                        today: '今天',
-                        month: '月',
-                        week: '周',
-                        day: '日'
+                    eventClick: function(info) {
+                        const order = info.event.extendedProps;
+                        showOrderDetail(order);
                     },
-                    events: function(info, successCallback, failureCallback) {
+                    events: function(fetchInfo, successCallback, failureCallback) {
                         $.ajax({
                             url: API_URLS.GET_HISTORY,
                             method: 'GET',
@@ -2737,86 +2729,99 @@
                                 withCredentials: true
                             },
                             success: function(response) {
-                                try {
-                                    if (response.message === 'Success') {
-                                        const events = response.report_info.map(order => {
-                                            // 添加错误处理
-                                            if (!order || !order.date) {
-                                                console.warn('无效的订单数据:', order);
-                                                return null;
-                                            }
+                                if (response.message === 'Success') {
+                                    const events = response.report_info.map(order => {
+                                        // 根据订单状态设置不同的显示样式
+                                        let backgroundColor, borderColor, textColor, title;
+                                        switch(order.status) {
+                                            case 'allocated':
+                                                backgroundColor = '#28a745';  // 绿色 - 已分配
+                                                borderColor = '#28a745';
+                                                textColor = '#fff';
+                                                title = `订单: ${order.issue.substring(0, 10)}...`;
+                                                break;
+                                            case 'completed':
+                                                backgroundColor = '#17a2b8';  // 蓝色 - 已完成
+                                                borderColor = '#17a2b8';
+                                                textColor = '#fff';
+                                                title = `[已完成] ${order.issue.substring(0, 8)}...`;
+                                                break;
+                                            case 'cancelled':
+                                                backgroundColor = '#dc3545';  // 红色 - 已撤单
+                                                borderColor = '#dc3545';
+                                                textColor = '#fff';
+                                                title = `[已撤单] ${order.issue.substring(0, 8)}...`;
+                                                break;
+                                            default:
+                                                backgroundColor = '#ffc107';  // 黄色 - 待分配
+                                                borderColor = '#ffc107';
+                                                textColor = '#000';
+                                                title = `订单: ${order.issue.substring(0, 10)}...`;
+                                        }
 
-                                            try {
-                                                // 确保日期格式正确
-                                                const eventDate = new Date(order.date.replace(/\//g, '-'));
-                                                if (isNaN(eventDate.getTime())) {
-                                                    console.warn('无效的日期:', order.date);
-                                                    return null;
-                                                }
-
-                                                return {
-                                                    title: `维修订单: ${order.issue || '未知问题'}`,
-                                                    start: eventDate,
-                                                    backgroundColor: getStatusColor(order.status).bg,
-                                                    borderColor: getStatusColor(order.status).border,
-                                                    extendedProps: {
-                                                        reportId: order.reportId,
-                                                        address: order.address || '未知地址',
-                                                        phoneNumber: order.userPhoneNumber || '未知号码',
-                                                        status: order.status,
-                                                        callDate: order.call_date
-                                                    }
-                                                };
-                                            } catch (err) {
-                                                console.error('处理订单数据时出错:', err);
-                                                return null;
-                                            }
-                                        }).filter(event => event !== null); // 过滤掉无效的事件
-
-                                        successCallback(events);
-                                    } else if (response.message === 'No history report') {
-                                        successCallback([]); // 没有订单时返回空数组
-                                    } else {
-                                        // 处理会话错误
-                                        auth.handleSessionError(response.message);
-                                        failureCallback(new Error(response.message));
-                                    }
-                                } catch (error) {
-                                    console.error('处理响应数据时出错:', error);
-                                    failureCallback(error);
-                                    showCalendarError();
+                                        return {
+                                            title: title,
+                                            start: new Date(order.date.replace(/-/g, '/')),
+                                            extendedProps: order,
+                                            backgroundColor: backgroundColor,
+                                            borderColor: borderColor,
+                                            textColor: textColor,
+                                            allDay: false,
+                                            displayEventTime: true,
+                                            eventDisplay: 'block'
+                                        };
+                                    });
+                                    successCallback(events);
+                                } else if (response.message === 'No history report') {
+                                    successCallback([]);
+                                } else {
+                                    auth.handleSessionError(response.message);
+                                    failureCallback(new Error(response.message));
                                 }
                             },
                             error: function(xhr, status, error) {
-                                console.error('获取日历数据失败:', {
-                                    status: status,
-                                    error: error,
-                                    response: xhr.responseText
-                                });
-                                failureCallback(new Error('获取数据失败'));
-                                showCalendarError();
+                                console.error('获取历史订单失败:', error);
+                                failureCallback(new Error(error));
                             }
                         });
                     },
-                    // 添加事件点击处理
-                    eventClick: function(info) {
-                        const event = info.event;
-                        const props = event.extendedProps;
+                    eventDidMount: function(info) {
+                        // 根据状态显示不同的提示信息
+                        let statusText;
+                        switch(info.event.extendedProps.status) {
+                            case 'allocated':
+                                statusText = '已分配';
+                                break;
+                            case 'completed':
+                                statusText = '已完成';
+                                break;
+                            case 'cancelled':
+                                statusText = '已撤单';
+                                break;
+                            default:
+                                statusText = '待分配';
+                        }
 
-                        // 构造订单对象
-                        const order = {
-                            reportId: props.reportId,
-                            status: props.status,
-                            userPhoneNumber: props.phoneNumber,
-                            address: props.address,
-                            issue: event.title.replace('维修订单: ', ''),
-                            date: event.start,
-                            call_date: props.callDate
-                        };
-
-                        // 显示订单详情
-                        showOrderDetail(order);
+                        const tooltip = new Tooltip(info.el, {
+                            title: `问题描述: ${info.event.extendedProps.issue}
+状态: ${statusText}
+地址: ${info.event.extendedProps.address}`,
+                            placement: 'top',
+                            trigger: 'hover',
+                            container: 'body'
+                        });
                     },
+                    // 日期和时间格式化
+                    eventTimeFormat: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    },
+                    // 添加视图特定的配置
+                    dayMaxEvents: true, // 当一天的事件过多时允许显示更多按钮
+                    slotEventOverlap: false, // 防止事件重叠
+                    nowIndicator: true, // 显示当前时间指示器
+                    scrollTime: '18:00:00' // 默认滚动到18:00
                 });
 
                 calendar.render();

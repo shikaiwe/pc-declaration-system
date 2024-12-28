@@ -3545,7 +3545,7 @@
                             minute: '2-digit',
                             hour12: false
                         },
-                        events: function(info, successCallback, failureCallback) {
+                        events: function(fetchInfo, successCallback, failureCallback) {
                             $.ajax({
                                 url: API_URLS.GET_HISTORY,  // 使用 API_URLS 中定义的 URL
                                 method: 'GET',
@@ -3555,41 +3555,44 @@
                             }).then(response => {
                                 if (response.message === 'Success') {
                                     const events = response.report_info.map(order => {
-                                        // 解析日期字符串
-                                        let eventDate;
-                                        if (order.date.includes('年')) {
-                                            // 处理中文格式的日期
-                                            const matches = order.date.match(/(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/);
-                                            if (matches) {
-                                                const [_, year, month, day, hour, minute] = matches;
-                                                eventDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${minute}:00`;
-                                            }
-                                        } else if (order.date.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)) {
-                                            // 处理标准格式的日期
-                                            const [datePart, timePart] = order.date.split(' ');
-                                            eventDate = `${datePart}T${timePart}:00`;
-                                        } else {
-                                            // 尝试直接解析日期
-                                            const date = new Date(order.date);
-                                            if (!isNaN(date.getTime())) {
-                                                eventDate = date.toISOString().slice(0, 16).replace('Z', '');
-                                            } else {
-                                                console.error('无法解析的日期格式:', order.date);
-                                                return null;
-                                            }
+                                        // 根据订单状态设置不同的显示样式
+                                        let backgroundColor, borderColor, textColor, title;
+                                        switch(order.status) {
+                                            case 'allocated':
+                                                backgroundColor = '#28a745';  // 绿色 - 已分配
+                                                borderColor = '#28a745';
+                                                textColor = '#fff';
+                                                title = `${order.issue.substring(0, 8)}...`;
+                                                break;
+                                            case 'completed':
+                                                backgroundColor = '#17a2b8';  // 蓝色 - 已完成
+                                                borderColor = '#17a2b8';
+                                                textColor = '#fff';
+                                                title = `[完] ${order.issue.substring(0, 6)}...`;
+                                                break;
+                                            case 'cancelled':
+                                                backgroundColor = '#dc3545';  // 红色 - 已撤单
+                                                borderColor = '#dc3545';
+                                                textColor = '#fff';
+                                                title = `[撤] ${order.issue.substring(0, 6)}...`;
+                                                break;
+                                            default:
+                                                backgroundColor = '#ffc107';  // 黄色 - 待分配
+                                                borderColor = '#ffc107';
+                                                textColor = '#000';
+                                                title = `${order.issue.substring(0, 8)}...`;
                                         }
 
                                         return {
-                                            title: `维修订单: ${order.issue}`,
-                                            start: eventDate,
-                                            backgroundColor: order.allocationState ? '#2ecc71' : '#f1c40f',
-                                            borderColor: order.allocationState ? '#27ae60' : '#f39c12',
-                                            extendedProps: {
-                                                address: order.address,
-                                                phoneNumber: order.userPhoneNumber,
-                                                status: order.allocationState ? '已分配' : '待分配',
-                                                originalDate: order.date // 保存原始日期字符串
-                                            }
+                                            title: title,
+                                            start: new Date(order.date.replace(/-/g, '/')),
+                                            extendedProps: order,
+                                            backgroundColor: backgroundColor,
+                                            borderColor: borderColor,
+                                            textColor: textColor,
+                                            allDay: false,
+                                            displayEventTime: true,
+                                            eventDisplay: 'block'
                                         };
                                     }).filter(event => event !== null); // 过滤掉无效的件
 
@@ -4979,22 +4982,213 @@
 
     // 日历初始化函数 - 抽取为独立函数
     function initCalendar() {
-        var calendarEl = document.getElementById('mobileCalendar');
+        const calendarEl = document.getElementById('mobileCalendar');
         if (!calendarEl) return;
-        
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth', // 默认月视图
             locale: 'zh-cn',
             height: 'auto',
-            // ... 其他日历配置保持不变 ...
+            headerToolbar: {
+                left: 'prev,next',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            // 针对移动端的视图配置
+            views: {
+                dayGridMonth: {
+                    titleFormat: { year: 'numeric', month: 'short' }, // 简化标题显示
+                    dayHeaderFormat: { weekday: 'narrow' } // 使用单字符表示星期
+                },
+                timeGridWeek: {
+                    slotMinTime: '18:00:00',
+                    slotMaxTime: '21:00:00',
+                    slotDuration: '00:30:00',
+                    allDaySlot: false,
+                    dayHeaderFormat: { weekday: 'narrow', day: 'numeric' }, // 简化头部显示
+                    slotLabelFormat: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    }
+                },
+                timeGridDay: {
+                    slotMinTime: '18:00:00',
+                    slotMaxTime: '21:00:00',
+                    slotDuration: '00:30:00',
+                    allDaySlot: false,
+                    slotLabelFormat: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    }
+                }
+            },
+            // 移动端触摸支持
+            eventClick: function(info) {
+                const order = info.event.extendedProps;
+                showOrderDetail(order);
+            },
+            // 移动端手势支持
+            editable: false, // 禁用拖动以避免与滑动冲突
+            eventDragStart: function() { return false; }, // 禁用拖动
+            events: function(fetchInfo, successCallback, failureCallback) {
+                $.ajax({
+                    url: API_URLS.GET_HISTORY,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(response) {
+                        if (response.message === 'Success') {
+                            const events = response.report_info.map(order => ({
+                                title: `${order.issue.substring(0, 8)}...`, // 移动端显示更短的标题
+                                start: new Date(order.date.replace(/-/g, '/')),
+                                extendedProps: order,
+                                backgroundColor: order.status === 'allocated' ? '#2ecc71' : '#f1c40f',
+                                borderColor: order.status === 'allocated' ? '#27ae60' : '#f39c12',
+                                textColor: order.status === 'allocated' ? '#fff' : '#000',
+                                allDay: false,
+                                displayEventTime: true,
+                                eventDisplay: 'block'
+                            }));
+                            successCallback(events);
+                        } else if (response.message === 'No history report') {
+                            successCallback([]);
+                        } else {
+                            handleSessionError(response.message);
+                            failureCallback(new Error(response.message));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('获取历史订单失败:', error);
+                        failureCallback(new Error(error));
+                    }
+                });
+            },
+            // 移动端优化的事件渲染
+            eventDidMount: function(info) {
+                // 使用移动端友好的触摸提示
+                info.el.addEventListener('click', function() {
+                    showOrderDetail(info.event.extendedProps);
+                });
+            },
+            // 移动端友好的时间格式
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            },
+            // 移动端特定配置
+            dayMaxEvents: 2, // 限制每天显示的事件数量
+            moreLinkContent: function(args) {
+                return '+' + args.num; // 简化"更多"链接的显示
+            },
+            slotEventOverlap: false,
+            nowIndicator: true,
+            scrollTime: '18:00:00'
         });
-        
+
+        // 添加移动端手势支持
+        let touchStartX = 0;
+        calendarEl.addEventListener('touchstart', function(e) {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        calendarEl.addEventListener('touchend', function(e) {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > 50) { // 最小滑动距离
+                if (diff > 0) {
+                    calendar.next();
+                } else {
+                    calendar.prev();
+                }
+            }
+        });
+
         calendar.render();
+
+        // 添加响应式处理
+        function handleResize() {
+            const width = window.innerWidth;
+            if (width < 768) {
+                calendar.setOption('headerToolbar', {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridDay' // 在小屏幕上只显示月视图和日视图
+                });
+            } else {
+                calendar.setOption('headerToolbar', {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                });
+            }
+        }
+
+        // 初始化时和窗口大小改变时调用
+        handleResize();
+        window.addEventListener('resize', handleResize);
     }
 
-    // 移除重复的样式注入代码
-    // 移除重复的事件监听器注册
-    // 移除未使用的函数定义
+    // 添加移动端友好的订单详情显示函数
+    function showOrderDetail(order) {
+        const modal = document.getElementById('orderDetailModal');
+        const modalContent = modal.querySelector('.modal-content');
+        
+        try {
+            const formattedDate = formatDate(order.date);
+            const formattedCallDate = formatDate(order.call_date);
+            
+            modalContent.innerHTML = `
+                <div class="modal-header">
+                    <h3>订单详情</h3>
+                    <span class="close-button" onclick="closeOrderDetail()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="detail-item">
+                        <span class="detail-label">订单状态：</span>
+                        <span class="detail-value">
+                            <span class="status-badge ${order.status === 'allocated' ? 'allocated' : 'pending'}">
+                                ${order.status === 'allocated' ? '已分配' : '待分配'}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">联系电话：</span>
+                        <span class="detail-value">${order.userPhoneNumber}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">服务地址：</span>
+                        <span class="detail-value">${order.address}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">问题描述：</span>
+                        <span class="detail-value">${order.issue}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">报单时间：</span>
+                        <span class="detail-value">${formattedCallDate}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">预约时间：</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        } catch (error) {
+            console.error('显示订单详情时出错:', error);
+            showMessage('加载订单详情失败');
+        }
+    }
+
+    function closeOrderDetail() {
+        document.getElementById('orderDetailModal').style.display = 'none';
+    }
 </script>
 
 </body>
