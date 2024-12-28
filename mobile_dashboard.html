@@ -5456,7 +5456,7 @@
             },
             // ... 其他配置保持不变
             events: function (fetchInfo, successCallback, failureCallback) {
-                $.ajax({
+                fetch(API_URLS.GET_HISTORY, {
                     url: API_URLS.GET_HISTORY,
                     method: 'GET',
                     xhrFields: {
