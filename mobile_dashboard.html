@@ -5214,7 +5214,7 @@
                 views: {
                     dayGridMonth: {
                         titleFormat: { year: 'numeric', month: 'short' }, // 简化标题显示
-                        dayHeaderFormat: { weekday: 'narrow' } // 使用单字符表示星期
+                        dayHeaderFormat: { weekday: 'narrow' } // 使用单��符表示星期
                     },
                     timeGridWeek: {
                         slotMinTime: '18:00:00',
@@ -5498,8 +5498,17 @@
             });
         }
 
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            // 修改日历初始化中的 events 配置，添加事件 ID
+        var calendar = new FullCalendar.Calendar(document.getElementById('mobileCalendar'), {
+            // 保持原有配置
+            initialView: 'dayGridMonth',
+            locale: 'zh-cn',
+            height: 'auto',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            // ... 其他配置保持不变
             events: function (fetchInfo, successCallback, failureCallback) {
                 $.ajax({
                     url: API_URLS.GET_HISTORY,
@@ -5539,7 +5548,7 @@
                                 }
 
                                 return {
-                                    id: order.id, // 添加事件ID
+                                    id: order.id,
                                     title: title,
                                     start: new Date(order.date.replace(/-/g, '/')),
                                     extendedProps: order,
@@ -5566,8 +5575,11 @@
                 });
             }
         });
+
         // 渲染日历
         calendar.render();
+
+        // ... rest of the code ...
     </script>
 
 </body>

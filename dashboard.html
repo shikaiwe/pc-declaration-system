@@ -2822,10 +2822,7 @@
 
             // 在 script 标签中添加日历初始化函数
             function initializeCalendar() {
-                const calendarEl = document.getElementById('calendar');
-                if (!calendarEl) return;
-
-                const calendar = new FullCalendar.Calendar(calendarEl, {
+                var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                     initialView: 'dayGridMonth',
                     locale: 'zh-cn',
                     height: 'auto',
@@ -2848,141 +2845,106 @@
                             allDaySlot: false
                         }
                     },
-                    eventClick: function (info) {
-                        const order = info.event.extendedProps;
-                        showOrderDetail(order);
-                    },
-                    events: function (fetchInfo, successCallback, failureCallback) {
+                    events: function(fetchInfo, successCallback, failureCallback) {
                         $.ajax({
                             url: API_URLS.GET_HISTORY,
                             method: 'GET',
                             xhrFields: {
                                 withCredentials: true
                             },
-                            success: function (response) {
+                            success: function(response) {
                                 if (response.message === 'Success') {
-                                    const events = response.report_info.map(order => ({
-                                        id: order.reportId, // 使用 reportId 作为事件ID
-                                        title: formatEventTitle(order),
-                                        start: new Date(order.date.replace(/-/g, '/')),
-                                        extendedProps: order,
-                                        ...getEventColors(order.status)
-                                    }));
+                                    const events = response.report_info.map(order => {
+                                        let backgroundColor, borderColor, textColor, title;
+                                        switch (order.status) {
+                                            case 'allocated':
+                                                backgroundColor = '#28a745';
+                                                borderColor = '#28a745';
+                                                textColor = '#fff';
+                                                title = `${order.issue.substring(0, 8)}...`;
+                                                break;
+                                            case 'completed':
+                                                backgroundColor = '#17a2b8';
+                                                borderColor = '#17a2b8';
+                                                textColor = '#fff';
+                                                title = `[已完成] ${order.issue.substring(0, 6)}...`;
+                                                break;
+                                            case 'cancelled':
+                                                backgroundColor = '#dc3545';
+                                                borderColor = '#dc3545';
+                                                textColor = '#fff';
+                                                title = `[已撤单] ${order.issue.substring(0, 6)}...`;
+                                                break;
+                                            default:
+                                                backgroundColor = '#ffc107';
+                                                borderColor = '#ffc107';
+                                                textColor = '#000';
+                                                title = `${order.issue.substring(0, 8)}...`;
+                                        }
+                                        return {
+                                            id: order.id,
+                                            title: title,
+                                            start: new Date(order.date.replace(/-/g, '/')),
+                                            extendedProps: order,
+                                            backgroundColor: backgroundColor,
+                                            borderColor: borderColor,
+                                            textColor: textColor,
+                                            allDay: false,
+                                            displayEventTime: true,
+                                            eventDisplay: 'block'
+                                        };
+                                    });
                                     successCallback(events);
                                 } else if (response.message === 'No history report') {
                                     successCallback([]);
                                 } else {
-                                    auth.handleSessionError(response.message);
+                                    handleSessionError(response.message);
                                     failureCallback(new Error(response.message));
                                 }
                             },
-                            error: function (xhr, status, error) {
+                            error: function(xhr, status, error) {
                                 console.error('获取历史订单失败:', error);
                                 failureCallback(new Error(error));
                             }
                         });
-                    }
+                    },
+                    eventTimeFormat: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    },
+                    dayMaxEvents: 2,
+                    moreLinkContent: function(args) {
+                        return '+' + args.num;
+                    },
+                    slotEventOverlap: false,
+                    nowIndicator: true,
+                    scrollTime: '18:00:00'
                 });
 
-                calendar.render();
-            }
-
-            // 添加辅助函数来格式化事件标题
-            function formatEventTitle(order) {
-                switch (order.status) {
-                    case 'completed':
-                        return `[已完成] ${order.issue.substring(0, 8)}...`;
-                    case 'cancelled':
-                        return `[已撤单] ${order.issue.substring(0, 8)}...`;
-                    case 'allocated':
-                        return `[已分配] ${order.issue.substring(0, 8)}...`;
-                    default:
-                        return `订单: ${order.issue.substring(0, 10)}...`;
-                }
-            }
-
-            // 添加辅助函数来获取事件颜色
-            function getEventColors(status) {
-                switch (status) {
-                    case 'allocated':
-                        return {
-                            backgroundColor: '#28a745',
-                            borderColor: '#28a745',
-                            textColor: '#fff'
-                        };
-                    case 'completed':
-                        return {
-                            backgroundColor: '#17a2b8',
-                            borderColor: '#17a2b8',
-                            textColor: '#fff'
-                        };
-                    case 'cancelled':
-                        return {
-                            backgroundColor: '#dc3545',
-                            borderColor: '#dc3545',
-                            textColor: '#fff'
-                        };
-                    default:
-                        return {
-                            backgroundColor: '#ffc107',
-                            borderColor: '#ffc107',
-                            textColor: '#000'
-                        };
-                }
-            }
-
-            // 添加状态颜色获取函数
-            function getStatusColor(status) {
-                const colors = {
-                    '0': { // 待分配
-                        bg: '#f1c40f',
-                        border: '#f39c12'
-                    },
-                    '1': { // 已分配
-                        bg: '#2ecc71',
-                        border: '#27ae60'
-                    },
-                    '2': { // 已完成
-                        bg: '#3498db',
-                        border: '#2980b9'
-                    },
-                    '3': { // 已撤单
-                        bg: '#e74c3c',
-                        border: '#c0392b'
-                    },
-                    'default': {
-                        bg: '#95a5a6',
-                        border: '#7f8c8d'
+                // 添加响应式处理
+                function handleResize() {
+                    const width = window.innerWidth;
+                    if (width < 768) {
+                        calendar.setOption('headerToolbar', {
+                            left: 'prev,next',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridDay'
+                        });
+                    } else {
+                        calendar.setOption('headerToolbar', {
+                            left: 'prev,next',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                        });
                     }
-                };
-
-                return colors[status] || colors.default;
-            }
-
-            // 添加日历错误显示函数
-            function showCalendarError() {
-                const calendarEl = document.getElementById('calendar');
-                if (calendarEl) {
-                    const errorHtml = `
-                    <div class="calendar-error">
-                        <i class="error-icon">⚠️</i>
-                        <p>加载日历数据失败</p>
-                        <button onclick="retryLoadCalendar()" class="retry-button">
-                            重新加载
-                        </button>
-                    </div>
-                `;
-                    calendarEl.innerHTML = errorHtml;
                 }
-            }
 
-            // 添加重试函数
-            function retryLoadCalendar() {
-                const calendarEl = document.getElementById('calendar');
-                if (calendarEl) {
-                    calendarEl.innerHTML = ''; // 清空错误信息
-                    initializeCalendar(); // 重新初始化日历
-                }
+                // 初始化和窗口大小改变时调用
+                handleResize();
+                window.addEventListener('resize', handleResize);
+
+                calendar.render();
             }
 
             // 在 script 标签中添加历史订单功能
