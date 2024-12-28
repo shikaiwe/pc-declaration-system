@@ -1810,6 +1810,109 @@
                 font-size: 13px !important;
             }
         }
+
+        /* 更新日历容器样式 */
+        .fc {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 更新按钮样式 */
+        .fc-button-primary {
+            background-color: #2196F3 !important;
+            border-color: #2196F3 !important;
+        }
+
+        .fc-button-primary:hover {
+            background-color: #1976D2 !important;
+            border-color: #1976D2 !important;
+        }
+
+        .fc-button-primary:not(:disabled):active,
+        .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #1565C0 !important;
+            border-color: #1565C0 !important;
+        }
+
+        /* 更新日期单元格样式 */
+        .fc-daygrid-day:hover {
+            background-color: #f8f9fa;
+        }
+
+        .fc-event {
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin: 1px 0;
+            border: none;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .fc-event:hover {
+            transform: scale(1.02);
+        }
+
+        /* 更新标题样式 */
+        .fc-toolbar-title {
+            font-size: 1.2em !important;
+            font-weight: 600;
+        }
+
+        /* 更新时间网格视图样式 */
+        .fc-timegrid-slot {
+            height: 40px !important;
+        }
+
+        .fc-timegrid-axis {
+            padding: 8px !important;
+        }
+
+        /* 更新事件样式 */
+        .fc-event-main {
+            padding: 4px 6px;
+        }
+
+        /* 添加滚动条样式 */
+        .fc-scroller {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(33, 150, 243, 0.5) rgba(0, 0, 0, 0.1);
+        }
+
+        .fc-scroller::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .fc-scroller::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+        }
+
+        .fc-scroller::-webkit-scrollbar-thumb {
+            background: rgba(33, 150, 243, 0.5);
+            border-radius: 2px;
+        }
+
+        /* 暗色模式支持 */
+        @media (prefers-color-scheme: dark) {
+            .fc {
+                background: #333;
+                color: #fff;
+            }
+
+            .fc-day {
+                background: #444;
+            }
+
+            .fc-day-today {
+                background: #2c3e50 !important;
+            }
+
+            .fc-button-primary {
+                background-color: #1976D2 !important;
+            }
+        }
     </style>
 </head>
 
@@ -2904,16 +3007,17 @@
 
             // 在 script 标签中添加日历初始化函数
             function initializeCalendar() {
-                var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                const calendarEl = document.getElementById('calendar');
+                const calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'dayGridMonth',
-                    locale: 'zh-cn', // 设置中文
+                    locale: 'zh-cn',
                     height: 'auto',
                     headerToolbar: {
                         left: 'prev,next today',
                         center: 'title',
                         right: 'dayGridMonth,timeGridWeek,timeGridDay'
                     },
-                    buttonText: { // 自定义按钮文字
+                    buttonText: {
                         today: '今天',
                         month: '月',
                         week: '周',
@@ -2943,7 +3047,6 @@
                             }
                         }
                     },
-                    // 添加事件点击处理
                     eventClick: function(info) {
                         showOrderDetail(info.event.extendedProps);
                     },
@@ -3015,16 +3118,14 @@
                         minute: '2-digit',
                         hour12: false
                     },
-                    dayMaxEvents: 2,
+                    dayMaxEvents: 3,
                     moreLinkContent: function(args) {
                         return '+' + args.num;
                     },
                     slotEventOverlap: false,
                     nowIndicator: true,
                     scrollTime: '18:00:00',
-                    // 添加日历样式相关配置
                     eventDidMount: function(info) {
-                        // 添加鼠标悬停效果
                         info.el.style.cursor = 'pointer';
                         info.el.style.transition = 'transform 0.2s ease';
                         
@@ -3049,55 +3150,15 @@
                         });
                     } else {
                         calendar.setOption('headerToolbar', {
-                            left: 'prev,next',
+                            left: 'prev,next today',
                             center: 'title',
                             right: 'dayGridMonth,timeGridWeek,timeGridDay'
                         });
                     }
                 }
 
-                // 初始化和窗口大小改变时调用
                 handleResize();
                 window.addEventListener('resize', handleResize);
-
-                // 添加自定义样式
-                const style = document.createElement('style');
-                style.textContent = `
-                    .fc {
-                        background: white;
-                        padding: 20px;
-                        border-radius: 10px;
-                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                    }
-                    .fc-button-primary {
-                        background-color: #2196F3 !important;
-                        border-color: #2196F3 !important;
-                    }
-                    .fc-button-primary:hover {
-                        background-color: #1976D2 !important;
-                        border-color: #1976D2 !important;
-                    }
-                    .fc-button-primary:not(:disabled):active,
-                    .fc-button-primary:not(:disabled).fc-button-active {
-                        background-color: #1565C0 !important;
-                        border-color: #1565C0 !important;
-                    }
-                    .fc-daygrid-day:hover {
-                        background-color: #f8f9fa;
-                    }
-                    .fc-event {
-                        border-radius: 4px;
-                        padding: 2px 4px;
-                        margin: 1px 0;
-                        border: none;
-                    }
-                    .fc-toolbar-title {
-                        font-size: 1.2em !important;
-                        font-weight: 600;
-                    }
-                `;
-                document.head.appendChild(style);
-
                 calendar.render();
             }
 
