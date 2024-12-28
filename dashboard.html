@@ -13,16 +13,19 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         /* 基本样式设置 */
-        
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             display: flex;
         }
+
         /* 侧边栏样式 */
-        
+
         .sidebar {
             width: 250px;
             background: linear-gradient(180deg, #333, #555);
@@ -38,27 +41,28 @@
             flex-direction: column;
             justify-content: space-between;
         }
-        
+
         .sidebar-menu {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-        
+
         .sidebar-menu li {
             padding: 15px 25px;
             cursor: pointer;
             transition: transform 0.2s ease-out, background-color 0.2s ease-out;
         }
-        
+
         .sidebar-menu li:hover,
         .sidebar-menu li.active {
             background-color: #007BFF;
             transform: translateX(10px);
             color: white;
         }
+
         /* 主内容样式 */
-        
+
         .main-content {
             flex: 1;
             display: flex;
@@ -72,8 +76,9 @@
             box-sizing: border-box;
             text-align: center;
         }
+
         /* 顶部导航栏样式 */
-        
+
         .top-nav {
             position: fixed;
             top: 0;
@@ -88,19 +93,20 @@
             border-bottom: 1px solid #eee;
             z-index: 1000;
         }
+
         /* 用户信息样式 */
-        
+
         .user-profile {
             position: relative;
             cursor: pointer;
         }
-        
+
         .user-info {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
+
         .user-greeting {
             font-size: 18px;
             color: #007BFF;
@@ -110,9 +116,14 @@
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
+
         /* 下拉菜单样式 */
-        
-        .dropdown-menu {
+
+        .dropdown-menu,
+        #logoutLink {
+            display: none;
+            z-index: 1000;
+            min-width: 150px;
             position: absolute;
             top: 100%;
             right: 0;
@@ -121,33 +132,34 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             padding: 0;
-            display: none;
-            z-index: 1000;
-            min-width: 180px;
             border: 1px solid rgba(0, 0, 0, 0.1);
             transform-origin: top right;
             animation: dropdownFade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
         }
-        
-        .dropdown-menu.active {
+
+        .dropdown-menu.active,
+        #logoutLink:hover {
             display: block;
         }
-        
-        .dropdown-menu a {
+
+        .dropdown-menu a,
+        #logoutLink a {
             display: block;
             padding: 15px 20px;
             text-decoration: none;
             color: #333;
             transition: background-color 0.2s ease-out, color 0.2s ease-out;
         }
-        
-        .dropdown-menu a:hover {
+
+        .dropdown-menu a:hover,
+        #logoutLink a:hover {
             background-color: #007BFF;
             color: white;
         }
+
         /* 内容样式 */
-        
+
         .content {
             padding: 20px;
             background-color: #f4f4f4;
@@ -159,15 +171,17 @@
             margin: 20px;
             text-align: center;
         }
+
         /* 标签页导航样式 */
-        
+
         .tabs {
             margin-bottom: 20px;
             display: flex;
             justify-content: center;
         }
+
         /* 标签按钮样式 */
-        
+
         .tab-button {
             padding: 10px 20px;
             margin-right: 10px;
@@ -178,15 +192,15 @@
             border-radius: 4px;
             transition: transform 0.2s ease-out;
         }
-        
+
         .tab-button:hover {
             transform: scale(1.05);
         }
-        
+
         .tab-button.active {
             background-color: #0056b3;
         }
-        
+
         .tab-content {
             padding: 20px;
             background: white;
@@ -197,23 +211,23 @@
             flex-direction: column;
             justify-content: space-between;
         }
-        
+
         .tab-content form div {
             margin-bottom: 15px;
         }
-        
+
         .tab-content label {
             display: block;
             margin-bottom: 5px;
         }
-        
+
         .tab-content input {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
-        
+
         .tab-content button {
             padding: 10px 20px;
             background-color: #007BFF;
@@ -223,13 +237,14 @@
             cursor: pointer;
             transition: background-color 0.2s ease-out, transform 0.2s ease-out;
         }
-        
+
         .tab-content button:hover {
             background-color: #0056b3;
             transform: scale(1.05);
         }
+
         /* 账号设置样式 */
-        
+
         #accountSettings {
             background-color: #f4f4f4;
             border-radius: 8px;
@@ -240,8 +255,9 @@
             margin: 20px auto;
             display: none;
         }
+
         /* 表单样式 */
-        
+
         .tab-content form {
             max-width: 600px;
             margin: 0 auto;
@@ -249,17 +265,17 @@
             flex-direction: column;
             align-items: center;
         }
-        
+
         .tab-content form div {
             width: 100%;
             margin-bottom: 15px;
         }
-        
+
         .tab-content label {
             display: block;
             margin-bottom: 5px;
         }
-        
+
         .tab-content input {
             width: 100%;
             padding: 8px;
@@ -267,7 +283,7 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
-        
+
         .tab-content button {
             padding: 10px 20px;
             background-color: #007BFF;
@@ -279,13 +295,14 @@
             margin-top: 10px;
             align-self: center;
         }
-        
+
         .tab-content button:hover {
             background-color: #0056b3;
             transform: scale(1.05);
         }
+
         /* 当前时间样式 */
-        
+
         .current-time {
             font-size: 18px;
             color: #007BFF;
@@ -295,8 +312,9 @@
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
+
         /* 天气信息样式 */
-        
+
         .weather-info {
             margin-top: auto;
             background: linear-gradient(135deg, #6dd5ed, #2193b0);
@@ -307,7 +325,7 @@
             z-index: 1000;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
-        
+
         .weather-info p {
             margin: 12px 0;
             font-size: 1.1em;
@@ -315,12 +333,12 @@
             align-items: center;
             line-height: 1.5;
         }
-        
+
         .weather-icon {
             margin-right: 10px;
             font-size: 1.2em;
         }
-        
+
         .weather-location {
             font-size: 1.3em !important;
             font-weight: bold;
@@ -328,21 +346,22 @@
             padding-bottom: 8px;
             margin-bottom: 15px !important;
         }
-        
+
         .weather-temp {
             font-size: 2em !important;
             font-weight: bold;
             margin: 15px 0 !important;
         }
-        
+
         .weather-details {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 6px;
             padding: 10px;
             margin-top: 15px;
         }
+
         /* 模态框样式 */
-        
+
         .modal {
             display: none;
             position: fixed;
@@ -354,16 +373,17 @@
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.5);
         }
+
         /* 特定模态框的额外样式 */
-        
+
         .logout-modal .modal-content {
             max-width: 400px;
         }
-        
+
         .order-detail-modal .modal-content {
             max-width: 600px;
         }
-        
+
         .modal-content {
             background-color: #fefefe;
             margin: 10% auto;
@@ -375,12 +395,12 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
             text-align: center;
         }
-        
+
         .modal-content p {
             font-size: 18px;
             margin-bottom: 20px;
         }
-        
+
         .modal-content button {
             margin: 15px;
             padding: 15px 30px;
@@ -392,21 +412,21 @@
             cursor: pointer;
             transition: background-color 0.2s ease-out, transform 0.2s ease-out;
         }
-        
+
         .modal-content button:hover {
             background-color: #0056b3;
             transform: scale(1.05);
         }
-        
+
         #confirmLogoutButton {
             background-color: #FFA500;
         }
-        
+
         #confirmLogoutButton:hover {
             background-color: #FF8C00;
             transform: scale(1.05);
         }
-        
+
         .submenu {
             list-style: none;
             padding: 0;
@@ -423,13 +443,13 @@
             transform-origin: top;
             opacity: 0;
         }
-        
+
         .submenu.active {
             display: block;
             transform: scaleY(1);
             opacity: 1;
         }
-        
+
         .submenu li {
             padding: 10px 20px;
             height: 49px;
@@ -440,26 +460,26 @@
             display: flex;
             align-items: center;
         }
-        
+
         .submenu li:last-child {
             border-bottom: none;
         }
-        
+
         .submenu li:hover {
             background-color: #007BFF;
             transform: translateX(5px);
             color: white;
         }
-        
+
         .sidebar-menu li {
             transition: background-color 0.3s ease-out;
         }
-        
+
         .sidebar-menu li.active {
             background-color: #007BFF;
             color: white;
         }
-        
+
         .order-submenu {
             display: none;
             background-color: #222;
@@ -472,19 +492,19 @@
             overflow: hidden;
             opacity: 0;
         }
-        
+
         .order-submenu.active {
             display: block;
             max-height: 120px;
             opacity: 1;
         }
-        
+
         .order-submenu ul {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-        
+
         .order-submenu li {
             height: 60px;
             cursor: pointer;
@@ -494,14 +514,15 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .order-submenu li:hover {
             background-color: #007BFF;
             transform: translateX(5px);
             color: white;
         }
+
         /* 订单管理内容样式 */
-        
+
         #orderContent {
             background-color: #f4f4f4;
             border-radius: 8px;
@@ -511,13 +532,13 @@
             width: 100%;
             margin: 20px auto;
         }
-        
+
         .tabs {
             margin-bottom: 20px;
             display: flex;
             justify-content: center;
         }
-        
+
         .tab-button {
             padding: 10px 20px;
             margin-right: 10px;
@@ -527,12 +548,12 @@
             border-radius: 4px;
             transition: background-color 0.2s ease-out, transform 0.2s ease-out;
         }
-        
+
         .tab-button.active {
             background-color: #007BFF;
             color: white;
         }
-        
+
         .tab-content {
             padding: 20px;
             background: white;
@@ -543,8 +564,9 @@
             flex-direction: column;
             justify-content: space-between;
         }
+
         /* 表单样式 */
-        
+
         .styled-form {
             max-width: 800px;
             margin: 0 auto;
@@ -556,19 +578,19 @@
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        
+
         .styled-form div {
             width: 100%;
             margin-bottom: 20px;
         }
-        
+
         .styled-form label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
             color: #333;
         }
-        
+
         .styled-form input,
         .styled-form textarea {
             width: 100%;
@@ -578,7 +600,7 @@
             box-sizing: border-box;
             font-size: 16px;
         }
-        
+
         .styled-form button {
             padding: 12px 24px;
             background-color: #007BFF;
@@ -590,13 +612,14 @@
             margin-top: 15px;
             align-self: center;
         }
-        
+
         .styled-form button:hover {
             background-color: #0056b3;
             transform: scale(1.05);
         }
+
         /* 手机号码输入框和一键填充按钮 */
-        
+
         .fill-button {
             padding: 10px 20px;
             border: none;
@@ -604,35 +627,36 @@
             cursor: pointer;
             transition: background-color 0.2s ease-out, transform 0.2s ease-out;
         }
-        
+
         .fill-button:disabled {
             background-color: #ccc;
             color: #666;
             cursor: not-allowed;
         }
-        
+
         .fill-button:not(:disabled) {
             background-color: #007BFF;
             color: white;
         }
-        
+
         .fill-button:not(:disabled):hover {
             background-color: #0056b3;
             transform: scale(1.05);
         }
-        
+
         .fill-button:disabled:hover {
             background-color: #ccc;
             transform: none;
         }
+
         /* 历史订单样式 */
-        
+
         .orders-container {
             padding: 15px;
             max-width: 800px;
             margin: 0 auto;
         }
-        
+
         .order-card {
             background-color: white;
             border-radius: 12px;
@@ -642,18 +666,18 @@
             transition: all 0.3s ease;
             border-left: 4px solid #2196F3;
         }
-        
+
         .order-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
         }
-        
+
         .order-info {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
-        
+
         .order-info p {
             margin: 0;
             line-height: 1.5;
@@ -662,7 +686,7 @@
             font-size: 15px;
             color: #444;
         }
-        
+
         .order-info strong {
             color: #333;
             min-width: 80px;
@@ -670,8 +694,9 @@
             position: relative;
             margin-right: 12px;
         }
+
         /* 订单状态样式 */
-        
+
         .order-status {
             display: inline-block;
             padding: 4px 12px;
@@ -680,18 +705,19 @@
             font-weight: 500;
             margin-left: auto;
         }
-        
+
         .status-allocated {
             background-color: #e8f5e9;
             color: #2e7d32;
         }
-        
+
         .status-pending {
             background-color: #fff3e0;
             color: #ef6c00;
         }
+
         /* 空状态和错误状态样式 */
-        
+
         .no-orders {
             text-align: center;
             padding: 40px 20px;
@@ -701,14 +727,14 @@
             border-radius: 12px;
             margin: 20px;
         }
-        
+
         .no-orders i {
             display: block;
             font-size: 40px;
             margin-bottom: 10px;
             color: #999;
         }
-        
+
         .error-message {
             text-align: center;
             padding: 20px;
@@ -719,7 +745,7 @@
             margin: 20px;
             border: 1px solid #ffebee;
         }
-        
+
         .message-modal {
             display: none;
             position: fixed;
@@ -731,7 +757,7 @@
             background-color: rgba(0, 0, 0, 0.5);
             animation: fadeIn 0.3s ease-out;
         }
-        
+
         .message-content {
             position: fixed;
             left: 50%;
@@ -745,14 +771,14 @@
             min-width: 280px;
             max-width: 90%;
         }
-        
+
         .message-content p {
             margin: 0 0 20px 0;
             font-size: 16px;
             color: #333;
             line-height: 1.4;
         }
-        
+
         .message-content button {
             padding: 8px 24px;
             background-color: #2196F3;
@@ -763,21 +789,23 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-        
+
         .message-content button:hover {
             background-color: #1976D2;
         }
-        
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
             }
+
             to {
                 opacity: 1;
             }
         }
+
         /* 订单详情模态框样式 */
-        
+
         .order-detail-modal {
             display: none;
             position: fixed;
@@ -789,7 +817,7 @@
             background-color: rgba(0, 0, 0, 0.5);
             animation: fadeIn 0.3s ease-out;
         }
-        
+
         .order-detail-content {
             position: fixed;
             left: 50%;
@@ -804,25 +832,25 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-        
+
         .order-detail-header {
             border-bottom: 2px solid #f0f0f0;
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
-        
+
         .order-detail-header h3 {
             margin: 0;
             color: #333;
             font-size: 1.5em;
         }
-        
+
         .order-detail-body {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
-        
+
         .detail-item {
             display: flex;
             align-items: flex-start;
@@ -831,29 +859,29 @@
             border-radius: 8px;
             transition: background-color 0.2s ease;
         }
-        
+
         .detail-item:hover {
             background-color: #e9ecef;
         }
-        
+
         .detail-label {
             min-width: 80px;
             font-weight: 600;
             color: #495057;
         }
-        
+
         .detail-value {
             color: #212529;
             flex: 1;
         }
-        
+
         .order-detail-footer {
             margin-top: 20px;
             text-align: right;
             padding-top: 15px;
             border-top: 2px solid #f0f0f0;
         }
-        
+
         .close-detail-btn {
             padding: 8px 20px;
             background-color: #007bff;
@@ -864,12 +892,12 @@
             font-size: 14px;
             transition: all 0.2s ease;
         }
-        
+
         .close-detail-btn:hover {
             background-color: #0056b3;
             transform: translateY(-2px);
         }
-        
+
         .status-badge {
             display: inline-block;
             padding: 6px 12px;
@@ -878,18 +906,19 @@
             font-weight: 500;
             text-align: center;
         }
-        
+
         .status-badge.allocated {
             background-color: #e8f5e9;
             color: #2e7d32;
         }
-        
+
         .status-badge.pending {
             background-color: #fff3e0;
             color: #ef6c00;
         }
+
         /* 添加问候语样式 */
-        
+
         .user-greeting {
             font-size: 0.9em;
             display: flex;
@@ -906,13 +935,13 @@
             cursor: pointer;
             position: relative;
         }
-        
+
         .user-greeting:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background: linear-gradient(135deg, #ffffff, #f8f9fa);
         }
-        
+
         #username-display {
             font-weight: 600;
             max-width: 120px;
@@ -923,14 +952,15 @@
             position: relative;
             padding-left: 5px;
         }
-        
+
         #greetingText {
             color: #555;
             font-weight: 500;
             position: relative;
         }
+
         /* 添加分隔符 */
-        
+
         #username-display::before {
             content: '';
             position: absolute;
@@ -941,19 +971,22 @@
             width: 1px;
             background-color: rgba(0, 0, 0, 0.1);
         }
+
         /* 响应调整 */
-        
+
         @media screen and (max-width: 768px) {
             .user-greeting {
                 padding: 6px 12px;
                 font-size: 0.85em;
             }
+
             #username-display {
                 max-width: 100px;
             }
         }
+
         /* 添加下拉菜单样式 */
-        
+
         .user-greeting .dropdown-menu {
             position: absolute;
             top: 100%;
@@ -967,12 +1000,12 @@
             z-index: 1000;
             min-width: 150px;
         }
-        
+
         .user-greeting .dropdown-menu.active {
             display: block;
             animation: fadeIn 0.2s ease-out;
         }
-        
+
         .user-greeting .dropdown-menu a {
             display: block;
             padding: 8px 16px;
@@ -980,24 +1013,26 @@
             text-decoration: none;
             transition: background-color 0.2s ease;
         }
-        
+
         .user-greeting .dropdown-menu a:hover {
             background-color: #f8f9fa;
             color: #2196F3;
         }
-        
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
         /* 更新退出登录按钮样式 */
-        
+
         #logoutLink {
             display: flex;
             align-items: center;
@@ -1013,14 +1048,14 @@
             width: 100%;
             background: transparent;
         }
-        
+
         #logoutLink::before {
             content: '🚪';
             font-size: 16px;
             margin-right: 8px;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         #logoutLink::after {
             content: '';
             position: absolute;
@@ -1034,21 +1069,22 @@
             z-index: -1;
             border-radius: 6px;
         }
-        
+
         #logoutLink:hover {
             color: white;
             transform: scale(1.02);
         }
-        
+
         #logoutLink:hover::before {
             transform: rotate(90deg);
         }
-        
+
         #logoutLink:hover::after {
             transform: translateX(0);
         }
+
         /* 更新下拉菜单容器样式 */
-        
+
         .dropdown-menu {
             position: absolute;
             top: 100%;
@@ -1066,23 +1102,25 @@
             animation: dropdownFade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
         }
-        
+
         .dropdown-menu.active {
             display: block;
         }
-        
+
         @keyframes dropdownFade {
             from {
                 opacity: 0;
                 transform: scale(0.95) translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: scale(1) translateY(0);
             }
         }
+
         /* 更新确认退出模态框样式 */
-        
+
         #logoutModal .modal-content {
             background-color: white;
             padding: 30px;
@@ -1094,13 +1132,13 @@
             animation: modalFade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
         }
-        
+
         #logoutModal .modal-content p {
             font-size: 16px;
             color: #333;
             margin-bottom: 25px;
         }
-        
+
         #logoutModal .modal-content button {
             padding: 12px 28px;
             margin: 0 10px;
@@ -1113,61 +1151,63 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         #confirmLogoutButton {
             background-color: #ff4757;
             color: white;
         }
-        
+
         #confirmLogoutButton:hover {
             background-color: #ff6b81;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(255, 71, 87, 0.2);
         }
-        
+
         #cancelLogoutButton {
             background-color: #f1f2f6;
             color: #333;
         }
-        
+
         #cancelLogoutButton:hover {
             background-color: #dfe4ea;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        
+
         @keyframes modalFade {
             from {
                 opacity: 0;
                 transform: scale(0.95) translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: scale(1) translateY(0);
             }
         }
-        
+
         .tab-button {
             cursor: default;
         }
-        
+
         .tab-content button {
             cursor: default;
         }
-        
+
         .close-detail-btn {
             cursor: default;
         }
-        
+
         #logoutLink {
             cursor: default;
         }
-        
+
         button {
             cursor: default !important;
         }
+
         /* 在现有的 style 标签中添加表单提示信息样式 */
-        
+
         .form-message {
             padding: 12px;
             margin: 10px 0;
@@ -1175,31 +1215,33 @@
             animation: slideIn 0.3s ease-out;
             display: none;
         }
-        
+
         .form-message.success {
             background-color: #e8f5e9;
             color: #2e7d32;
             border: 1px solid #c8e6c9;
         }
-        
+
         .form-message.error {
             background-color: #ffebee;
             color: #c62828;
             border: 1px solid #ffcdd2;
         }
-        
+
         @keyframes slideIn {
             from {
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
         /* 确保日期选择器在移动设备上也能正确显示 */
-        
+
         @media screen and (max-width: 480px) {
             #newOrder .flatpickr-calendar {
                 width: 95% !important;
@@ -1208,15 +1250,17 @@
                 max-height: calc(100vh - 160px);
             }
         }
+
         /* Flatpickr 日期选择器字体优化 */
-        
+
         .flatpickr-calendar {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
+
         /* 更新 logout-modal 样式 */
-        
+
         .logout-modal {
             display: none;
             position: fixed;
@@ -1228,8 +1272,9 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
         }
+
         /* 订单详情卡片样式 */
-        
+
         .order-detail-card {
             position: fixed;
             bottom: 0;
@@ -1245,8 +1290,9 @@
             max-height: 80vh;
             overflow-y: auto;
         }
+
         /* 在 body 标签末尾添加以下 HTML */
-        
+
         .detail-overlay {
             position: fixed;
             top: 0;
@@ -1257,8 +1303,9 @@
             display: none;
             z-index: 1004;
         }
+
         /* 添加加载状态样式 */
-        
+
         .loading {
             display: flex;
             justify-content: center;
@@ -1266,7 +1313,7 @@
             padding: 20px;
             color: #666;
         }
-        
+
         .loading::after {
             content: '';
             width: 20px;
@@ -1277,17 +1324,19 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
             0% {
                 transform: rotate(0deg);
             }
+
             100% {
                 transform: rotate(360deg);
             }
         }
+
         /* 优化错误消息样式 */
-        
+
         .error-message {
             background-color: #fff2f0;
             border: 1px solid #ffccc7;
@@ -1296,8 +1345,9 @@
             margin: 10px 0;
             color: #ff4d4f;
         }
+
         /* 优化成功消息样式 */
-        
+
         .success-message {
             background-color: #f6ffed;
             border: 1px solid #b7eb8f;
@@ -1306,8 +1356,9 @@
             margin: 10px 0;
             color: #52c41a;
         }
+
         /* 日历错误提示样式 */
-        
+
         .calendar-error {
             text-align: center;
             padding: 40px 20px;
@@ -1316,19 +1367,19 @@
             margin: 20px;
             border: 1px solid #ffebee;
         }
-        
+
         .calendar-error .error-icon {
             font-size: 24px;
             margin-bottom: 10px;
             display: block;
         }
-        
+
         .calendar-error p {
             color: #dc3545;
             margin: 10px 0;
             font-size: 15px;
         }
-        
+
         .calendar-error .retry-button {
             margin-top: 15px;
             padding: 8px 20px;
@@ -1339,11 +1390,11 @@
             cursor: pointer;
             transition: background-color 0.2s ease-out;
         }
-        
+
         .calendar-error .retry-button:hover {
             background-color: #0056b3;
         }
-        
+
         .complete-order-btn {
             background-color: #2ecc71;
             color: white;
@@ -1354,17 +1405,18 @@
             margin-top: 10px;
             transition: background-color 0.3s;
         }
-        
+
         .complete-order-btn:hover {
             background-color: #27ae60;
         }
-        
+
         .complete-order-btn:disabled {
             background-color: #95a5a6;
             cursor: not-allowed;
         }
+
         /* 添加或修改全局样式 */
-        
+
         button,
         .sidebar-menu li,
         .navbar a,
@@ -1379,82 +1431,96 @@
             -ms-user-select: none;
             user-select: none;
         }
+
         /* 修改按钮基础样式 */
-        
+
         button {
             -webkit-tap-highlight-color: transparent;
             /* 移除移动设备上的点击高亮 */
         }
+
         /* 修改侧边栏菜单项样式 */
-        
+
         .sidebar-menu li {
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
+
         /* 修改导航栏链接样式 */
-        
+
         .navbar a {
             -webkit-tap-highlight-color: transparent;
         }
+
         /* 修改下拉菜单项样式 */
-        
+
         .dropdown-menu a {
             -webkit-tap-highlight-color: transparent;
         }
+
         /* 修改标签按钮样式 */
-        
+
         .tab-button {
             -webkit-tap-highlight-color: transparent;
         }
-        /* 修改用户问���语样式 */
-        
+
+        /* 修改用户问候语样式 */
+
         .user-greeting {
             -webkit-tap-highlight-color: transparent;
         }
+
         /* 修改订单状态标签样式 */
-        
+
         .order-status {
             -webkit-tap-highlight-color: transparent;
         }
+
         /* 修改结单按钮样式 */
-        
+
         .complete-order-btn {
             -webkit-tap-highlight-color: transparent;
         }
+
         /* 修改撤单按钮样式 */
-        
+
         .cancel-order-btn {
             -webkit-tap-highlight-color: transparent;
         }
+
         /* 更新时间警告样式 */
-        
+
         #timeWarning {
             color: #dc3545;
             font-size: 0.875rem;
             margin-top: 0.25rem;
             display: none;
         }
+
         /* 隐藏非工作时间选项 */
-        
+
         .flatpickr-time .numInputWrapper span.disabled,
         .flatpickr-time .flatpickr-am-pm.disabled {
             display: none;
         }
+
         /* 禁用的时间选项完全隐藏 */
-        
+
         .flatpickr-time .numInputWrapper .disabled,
         .flatpickr-calendar .flatpickr-day.disabled {
             display: none;
         }
+
         /* 时间选择器容器样式 */
-        
+
         .time-picker-wrapper {
             position: relative;
             width: 100%;
             cursor: pointer;
         }
+
         /* 输入框样式 */
-        
+
         #preferredTime {
             width: 100%;
             padding: 8px 12px;
@@ -1469,8 +1535,9 @@
             -moz-user-select: none;
             -ms-user-select: none;
         }
+
         /* 添加日历图标 */
-        
+
         .time-picker-wrapper::after {
             content: '📅';
             position: absolute;
@@ -1479,25 +1546,28 @@
             transform: translateY(-50%);
             pointer-events: none;
         }
+
         /* 输入框获得焦点时的样式 */
-        
+
         #preferredTime:focus {
             outline: none;
             border-color: #007bff;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
         }
+
         /* 移除移动设备上的默认样式 */
-        
+
         #preferredTime::-webkit-calendar-picker-indicator {
             display: none;
         }
-        
+
         #preferredTime::-webkit-inner-spin-button,
         #preferredTime::-webkit-clear-button {
             display: none;
         }
+
         /* 时间选择器整体容器 */
-        
+
         .flatpickr-time {
             height: 40px !important;
             line-height: 40px !important;
@@ -1505,15 +1575,17 @@
             align-items: center !important;
             justify-content: center !important;
         }
+
         /* 时间输入框容器 */
-        
+
         .numInputWrapper {
             width: 85px !important;
             height: 40px !important;
             position: relative !important;
         }
+
         /* 时间输入框 */
-        
+
         .flatpickr-time input.flatpickr-hour,
         .flatpickr-time input.flatpickr-minute {
             font-size: 16px !important;
@@ -1523,15 +1595,17 @@
             text-align: center !important;
             padding-right: 35px !important;
         }
+
         /* 分隔符样式 */
-        
+
         .flatpickr-time .flatpickr-time-separator {
             line-height: 40px !important;
             padding: 0 5px !important;
             font-size: 16px !important;
         }
+
         /* 箭头控件基础样式 */
-        
+
         .flatpickr-calendar .numInputWrapper span {
             position: absolute !important;
             right: 2px !important;
@@ -1544,49 +1618,53 @@
             background: transparent !important;
             transition: all 0.15s ease !important;
         }
+
         /* 上箭头 */
-        
+
         .flatpickr-calendar .numInputWrapper span.arrowUp {
             top: 4px !important;
         }
-        
+
         .flatpickr-calendar .numInputWrapper span.arrowUp:before {
             content: '▲' !important;
             font-size: 10px !important;
             color: #666 !important;
             line-height: 1 !important;
         }
+
         /* 下箭头 */
-        
+
         .flatpickr-calendar .numInputWrapper span.arrowDown {
             bottom: 4px !important;
         }
-        
+
         .flatpickr-calendar .numInputWrapper span.arrowDown:before {
             content: '▼' !important;
             font-size: 10px !important;
             color: #666 !important;
             line-height: 1 !important;
         }
+
         /* 悬停效果 */
-        
+
         .flatpickr-calendar .numInputWrapper span:hover:before {
             color: #007bff !important;
             transform: scale(1.2) !important;
         }
-        
+
         .flatpickr-calendar .numInputWrapper span.disabled {
             opacity: 0.4 !important;
             cursor: not-allowed !important;
             background-color: transparent !important;
         }
-        
+
         .flatpickr-calendar .numInputWrapper span.disabled:hover:after {
             border-bottom-color: #888 !important;
             border-top-color: #888 !important;
         }
+
         /* 确保时间选择器内容不会溢出 */
-        
+
         .flatpickr-calendar {
             width: auto !important;
             min-width: 200px !important;
@@ -1649,7 +1727,8 @@
                     <div id="reportOrderMessage" class="form-message" style="display: none;"></div>
                     <div>
                         <label for="userPhoneNumber">手机号码:</label>
-                        <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}" placeholder="请输入11位手机号码">
+                        <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}"
+                            placeholder="请输入11位手机号码">
                         <button type="button" id="fillPhoneNumberButton" class="fill-button" disabled>一键填充</button>
                     </div>
                     <div>
@@ -1658,7 +1737,8 @@
                     </div>
                     <div>
                         <label for="issue">问题:</label>
-                        <textarea id="issue" name="issue" required rows="1" style="resize: none; overflow: hidden;"></textarea>
+                        <textarea id="issue" name="issue" required rows="1"
+                            style="resize: none; overflow: hidden;"></textarea>
                     </div>
                     <div>
                         <label for="preferredTime">期望上门时间:</label>
@@ -1699,7 +1779,8 @@
                     </div>
                     <div>
                         <label for="phone">手机号码:</label>
-                        <input type="tel" id="phone" name="phone" autocomplete="tel" pattern="[0-9]{11}" placeholder="请输入11位手机号码">
+                        <input type="tel" id="phone" name="phone" autocomplete="tel" pattern="[0-9]{11}"
+                            placeholder="请输入11位手机号码">
                     </div>
                     <button type="submit">保存更改</button>
                 </form>
@@ -1807,7 +1888,7 @@
 
                 // localStorage 操作功能
                 storage: {
-                    save: function(key, data) {
+                    save: function (key, data) {
                         try {
                             localStorage.setItem(key, JSON.stringify(data));
                         } catch (error) {
@@ -1815,7 +1896,7 @@
                         }
                     },
 
-                    get: function(key) {
+                    get: function (key) {
                         try {
                             const data = localStorage.getItem(key);
                             return data ? JSON.parse(data) : null;
@@ -1825,7 +1906,7 @@
                         }
                     },
 
-                    remove: function(key) {
+                    remove: function (key) {
                         try {
                             localStorage.removeItem(key);
                         } catch (error) {
@@ -1836,7 +1917,7 @@
 
                 // UI相关工具函数
                 ui: {
-                    showMessage: function(message, callback) {
+                    showMessage: function (message, callback) {
                         const messageModal = document.getElementById('messageModal');
                         const messageText = document.getElementById('messageText');
                         const confirmButton = document.getElementById('messageConfirm');
@@ -1852,7 +1933,7 @@
                 },
 
                 error: {
-                    handle: function(error, customMessage) {
+                    handle: function (error, customMessage) {
                         console.error(error);
                         this.ui.showMessage(customMessage || '操作失败，请重试');
                     }
@@ -1861,11 +1942,11 @@
 
             // 用户认证相关功能
             const auth = {
-                getLoginData: function() {
+                getLoginData: function () {
                     return utils.storage.get('loginData');
                 },
 
-                handleLogout: function() {
+                handleLogout: function () {
                     // 清除所有相关数据
                     utils.storage.remove('username');
                     utils.storage.remove('loginData');
@@ -1890,7 +1971,7 @@
                     });
                 },
 
-                handleSessionError: function(message) {
+                handleSessionError: function (message) {
                     switch (message) {
                         case 'Session has expired':
                             utils.ui.showMessage('会话已过期，请重新登录');
@@ -1915,7 +1996,7 @@
             // 天气相关功能
             const weather = {
                 // 从服务器获取天气 API Key
-                getApiKeyFromServer: async function() {
+                getApiKeyFromServer: async function () {
                     try {
                         const response = await fetch(API_URLS.WEATHER_API_KEY, {
                             method: 'GET',
@@ -1935,7 +2016,7 @@
                 },
 
                 // 获取天气信息
-                fetchWeatherAndLocation: async function() {
+                fetchWeatherAndLocation: async function () {
                     const weatherInfoElement = document.getElementById('weatherInfo');
                     try {
                         const apiKey = await this.getApiKeyFromServer();
@@ -2008,9 +2089,9 @@
                     if (!usernameDisplay) return;
 
                     fetch(API_URLS.GET_USER_INFO, {
-                            method: 'GET',
-                            credentials: 'include'
-                        })
+                        method: 'GET',
+                        credentials: 'include'
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.message === 'Success') {
@@ -2115,7 +2196,7 @@
                 });
 
                 // 修改报单表单提交处理
-                document.getElementById('reportOrderForm').addEventListener('submit', async(event) => {
+                document.getElementById('reportOrderForm').addEventListener('submit', async (event) => {
                     event.preventDefault();
 
                     const userPhoneNumber = document.getElementById('userPhoneNumber').value;
@@ -2190,7 +2271,7 @@
                 const passwordForm = document.getElementById('passwordForm');
 
                 if (infoForm) {
-                    infoForm.addEventListener('submit', async(event) => {
+                    infoForm.addEventListener('submit', async (event) => {
                         event.preventDefault();
                         const phoneNumber = document.getElementById('phone').value.trim();
                         const newName = document.getElementById('username').value.trim();
@@ -2244,7 +2325,7 @@
                 }
 
                 if (passwordForm) {
-                    passwordForm.addEventListener('submit', async(event) => {
+                    passwordForm.addEventListener('submit', async (event) => {
                         event.preventDefault();
                         const oldPassword = document.getElementById('currentPassword').value;
                         const newPassword = document.getElementById('newPassword').value;
@@ -2275,7 +2356,7 @@
                                     utils.storage.remove('username');
                                     utils.storage.remove('loginData');
                                     utils.storage.remove('rememberMe');
-                                    
+
                                     // 调用退出登录API清除服务器端session
                                     fetch(API_URLS.LOGOUT, {
                                         method: 'GET',
@@ -2303,7 +2384,7 @@
                 const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
                 if (fillPhoneNumberButton) {
                     fillPhoneNumberButton.disabled = false;
-                    fillPhoneNumberButton.addEventListener('click', async() => {
+                    fillPhoneNumberButton.addEventListener('click', async () => {
                         try {
                             const response = await fetch(API_URLS.GET_PHONE, {
                                 credentials: 'include'
@@ -2319,7 +2400,7 @@
                             }
                         } catch (error) {
                             console.error('获取手机号失败:', error);
-                            utils.ui.showMessage('获取手机���失败，请重���');
+                            utils.ui.showMessage('获取手机号失败，请重试');
                         }
                     });
                 }
@@ -2508,7 +2589,7 @@
                             defaultDate: dateRange.default,
 
                             // 移除 enable 配置，改用 onChange 来验证时间
-                            onChange: function(selectedDates, dateStr, instance) {
+                            onChange: function (selectedDates, dateStr, instance) {
                                 if (selectedDates.length > 0) {
                                     const selected = selectedDates[0];
                                     const hour = selected.getHours();
@@ -2525,7 +2606,7 @@
                                 }
                             },
 
-                            onOpen: function(selectedDates, dateStr, instance) {
+                            onOpen: function (selectedDates, dateStr, instance) {
                                 // 更新可选择的日期范围
                                 const newDateRange = getDateRange();
                                 instance.set("minDate", newDateRange.start);
@@ -2582,7 +2663,7 @@
                     });
                 }
 
-                // 点击模态框外部关闭
+                // 点击模态框外��关闭
                 window.addEventListener('click', (event) => {
                     const modal = document.getElementById('orderDetailModal');
                     if (event.target === modal) {
@@ -2593,7 +2674,7 @@
                 // 处理问题文本框自动调整高度
                 const issueTextarea = document.getElementById('issue');
                 if (issueTextarea) {
-                    issueTextarea.addEventListener('input', function() {
+                    issueTextarea.addEventListener('input', function () {
                         this.style.height = 'auto';
                         this.style.height = (this.scrollHeight) + 'px';
                     });
@@ -2717,23 +2798,23 @@
                             allDaySlot: false
                         }
                     },
-                    eventClick: function(info) {
+                    eventClick: function (info) {
                         const order = info.event.extendedProps;
                         showOrderDetail(order);
                     },
-                    events: function(fetchInfo, successCallback, failureCallback) {
+                    events: function (fetchInfo, successCallback, failureCallback) {
                         $.ajax({
                             url: API_URLS.GET_HISTORY,
                             method: 'GET',
                             xhrFields: {
                                 withCredentials: true
                             },
-                            success: function(response) {
+                            success: function (response) {
                                 if (response.message === 'Success') {
                                     const events = response.report_info.map(order => {
                                         // 根据订单状态设置不同的显示样式
                                         let backgroundColor, borderColor, textColor, title;
-                                        switch(order.status) {
+                                        switch (order.status) {
                                             case 'allocated':
                                                 backgroundColor = '#28a745';  // 绿色 - 已分配
                                                 borderColor = '#28a745';
@@ -2779,16 +2860,16 @@
                                     failureCallback(new Error(response.message));
                                 }
                             },
-                            error: function(xhr, status, error) {
+                            error: function (xhr, status, error) {
                                 console.error('获取历史订单失败:', error);
                                 failureCallback(new Error(error));
                             }
                         });
                     },
-                    eventDidMount: function(info) {
+                    eventDidMount: function (info) {
                         // 根据状态显示不同的提示信息
                         let statusText;
-                        switch(info.event.extendedProps.status) {
+                        switch (info.event.extendedProps.status) {
                             case 'allocated':
                                 statusText = '已分配';
                                 break;
@@ -2802,7 +2883,8 @@
                                 statusText = '待分配';
                         }
 
-                        const tooltip = new Tooltip(info.el, {
+                        // 使用 Bootstrap 的 Tooltip
+                        new bootstrap.Tooltip(info.el, {
                             title: `问题描述: ${info.event.extendedProps.issue}
 状态: ${statusText}
 地址: ${info.event.extendedProps.address}`,
@@ -2905,7 +2987,7 @@
                         displayHistoryOrders(data.report_info);
                     } else if (data.message === 'No history report') {
                         showNoOrders();
-                    } else {
+                                } else {
                         auth.handleSessionError(data.message);
                     }
                 } catch (error) {
@@ -2921,45 +3003,45 @@
                 const orderHistoryContent = document.getElementById('orderHistory');
                 if (!Array.isArray(orders) || orders.length === 0) {
                     showNoOrders();
-                    return;
-                }
+                            return;
+                        }
 
                 const ordersHTML = orders.map(order => {
-                            // 检查并确保日期存在
-                            const displayDate = order.date ? formatDate(order.date) : '日期未知';
-                            const displayCallDate = order.call_date ? formatDate(order.call_date) : '日期未知';
+                    // 检查并确保日期存在
+                    const displayDate = order.date ? formatDate(order.date) : '日期未知';
+                    const displayCallDate = order.call_date ? formatDate(order.call_date) : '日期未知';
 
-                            // 根据状态获取对应的显示文本和样式
-                            let statusText, statusClass;
-                            let showCompleteButton = false;
-                            let showCancelButton = false;
-                            switch (order.status) {
-                                case '0':
-                                    statusText = '待分配';
-                                    statusClass = 'status-pending';
-                                    showCompleteButton = true;
-                                    showCancelButton = true;
-                                    break;
-                                case '1':
-                                    statusText = '已分配';
-                                    statusClass = 'status-allocated';
-                                    showCompleteButton = true;
-                                    showCancelButton = true;
-                                    break;
-                                case '2':
-                                    statusText = '已完成';
-                                    statusClass = 'status-completed';
-                                    break;
-                                case '3':
-                                    statusText = '已撤单';
-                                    statusClass = 'status-cancelled';
-                                    break;
-                                default:
-                                    statusText = '未知状态';
-                                    statusClass = 'status-unknown';
-                            }
+                    // 根据状态获取对应的显示文本和样式
+                    let statusText, statusClass;
+                    let showCompleteButton = false;
+                    let showCancelButton = false;
+                    switch (order.status) {
+                        case '0':
+                            statusText = '待分配';
+                            statusClass = 'status-pending';
+                            showCompleteButton = true;
+                            showCancelButton = true;
+                            break;
+                        case '1':
+                            statusText = '已分配';
+                            statusClass = 'status-allocated';
+                            showCompleteButton = true;
+                            showCancelButton = true;
+                            break;
+                        case '2':
+                            statusText = '已完成';
+                            statusClass = 'status-completed';
+                            break;
+                        case '3':
+                            statusText = '已撤单';
+                            statusClass = 'status-cancelled';
+                            break;
+                        default:
+                            statusText = '未知状态';
+                            statusClass = 'status-unknown';
+                    }
 
-                            return `
+                    return `
                     <div class="order-card" data-report-id="${order.reportId}">
                         <div class="order-info">
                             <p>
@@ -2988,156 +3070,156 @@
                         </div>
                     </div>
                 `;
-            }).join('');
+                }).join('');
 
-            orderHistoryContent.innerHTML = `
+                orderHistoryContent.innerHTML = `
                 <div class="orders-container">
                     ${ordersHTML}
                 </div>
             `;
-        }
-
-        // 添加结单功能函数
-        async function completeOrder(reportId) {
-            try {
-                const response = await fetch(API_URLS.COMPLETE_REPORT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ reportId }),
-                    credentials: 'include'
-                });
-
-                const data = await response.json();
-
-                switch (data.message) {
-                    case 'Success':
-                        utils.ui.showMessage('结单成功');
-                        // 刷新订单列表
-                        fetchHistoryOrders();
-                        break;
-                    case 'This report is completed':
-                        utils.ui.showMessage('该订单已结束');
-                        break;
-                    case 'This report is no exist':
-                        utils.ui.showMessage('订单不存在');
-                        break;
-                    default:
-                        auth.handleSessionError(data.message);
-                }
-            } catch (error) {
-                console.error('结单失败:', error);
-                utils.ui.showMessage('结单失败，请重试');
-            }
-        }
-
-        // 添加撤单功能函数
-        async function cancelOrder(reportId) {
-            if (!reportId) {
-                utils.ui.showMessage('订单ID无效');
-                return;
             }
 
-            try {
-                const response = await fetch(API_URLS.CANCEL_REPORT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        reportId: reportId
-                    }),
-                    credentials: 'include'
-                });
+            // 添加结单功能函数
+            async function completeOrder(reportId) {
+                try {
+                    const response = await fetch(API_URLS.COMPLETE_REPORT, {
+                            method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ reportId }),
+                        credentials: 'include'
+                    });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+
+                    switch (data.message) {
+                        case 'Success':
+                            utils.ui.showMessage('结单成功');
+                            // 刷新订单列表
+                            fetchHistoryOrders();
+                            break;
+                        case 'This report is completed':
+                            utils.ui.showMessage('该订单已结束');
+                            break;
+                        case 'This report is no exist':
+                            utils.ui.showMessage('订单不存在');
+                            break;
+                        default:
+                            auth.handleSessionError(data.message);
+                    }
+                } catch (error) {
+                    console.error('结单失败:', error);
+                    utils.ui.showMessage('结单失败，请重试');
                 }
-
-                const data = await response.json();
-
-                switch (data.message) {
-                    case 'Success':
-                        utils.ui.showMessage('撤单成功');
-                        await fetchHistoryOrders(); // 刷新订单列表
-                        break;
-                    case 'Report not found':
-                        utils.ui.showMessage('订单不存在');
-                        break;
-                    case 'Already cancelled':
-                        utils.ui.showMessage('该订单已经撤销');
-                        break;
-                    default:
-                        auth.handleSessionError(data.message);
-                }
-            } catch (error) {
-                handleApiError(error, '撤单失败，请重试');
             }
-        }
 
-        function showNoOrders() {
-            const orderHistoryContent = document.getElementById('orderHistory');
-            orderHistoryContent.innerHTML = `
+            // 添加撤单功能函数
+            async function cancelOrder(reportId) {
+                if (!reportId) {
+                    utils.ui.showMessage('订单ID无效');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(API_URLS.CANCEL_REPORT, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            reportId: reportId
+                        }),
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    switch (data.message) {
+                        case 'Success':
+                            utils.ui.showMessage('撤单成功');
+                            await fetchHistoryOrders(); // 刷新订单列表
+                            break;
+                        case 'Report not found':
+                            utils.ui.showMessage('订单不存在');
+                            break;
+                        case 'Already cancelled':
+                            utils.ui.showMessage('该订单已经撤销');
+                            break;
+                        default:
+                            auth.handleSessionError(data.message);
+                    }
+                } catch (error) {
+                    handleApiError(error, '撤单失败，请重试');
+                }
+            }
+
+            function showNoOrders() {
+                const orderHistoryContent = document.getElementById('orderHistory');
+                orderHistoryContent.innerHTML = `
                 <div class="no-orders">
                     <i>📝</i>
                     <p>暂无历史订单</p>
                 </div>
             `;
-        }
+            }
 
-        function showError() {
-            const orderHistoryContent = document.getElementById('orderHistory');
-            orderHistoryContent.innerHTML = `
+            function showError() {
+                const orderHistoryContent = document.getElementById('orderHistory');
+                orderHistoryContent.innerHTML = `
                 <div class="error-message">
                     <i>❌</i>
                     <p>获取历史订单失败，请稍后重试</p>
                 </div>
             `;
-        }
-
-        // 修改日期格式化函数
-        function formatDate(dateString) {
-            // 检查输入是否为 Date 对象
-            if (dateString instanceof Date) {
-                const date = dateString;
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                return `${year}年${month}月${day}日 ${hours}:${minutes}`;
             }
-            
-            // 处理字符串格式的日期
-            try {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) {
-                    throw new Error('Invalid date');
+
+            // 修改日期格式化函数
+            function formatDate(dateString) {
+                // 检查输入是否为 Date 对象
+                if (dateString instanceof Date) {
+                    const date = dateString;
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    return `${year}年${month}月${day}日 ${hours}:${minutes}`;
                 }
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                return `${year}年${month}月${day}日 ${hours}:${minutes}`;
-            } catch (error) {
-                console.error('日期格式化错误:', error, '原始日期字符串:', dateString);
-                return '日期格式错误';
+
+                // 处理字符串格式的日期
+                try {
+                    const date = new Date(dateString);
+                    if (isNaN(date.getTime())) {
+                        throw new Error('Invalid date');
+                    }
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    return `${year}年${month}月${day}日 ${hours}:${minutes}`;
+                } catch (error) {
+                    console.error('日期格式化错误:', error, '原始日期字符串:', dateString);
+                    return '日期格式错误';
+                }
             }
-        }
 
-        // 修改显示订单详情的函数
-        function showOrderDetail(order) {
-            const orderDetailModal = document.getElementById('orderDetailModal');
-            const orderDetailBody = document.getElementById('orderDetailBody');
-            if (!orderDetailModal || !orderDetailBody) return;
+            // 修改显示订单详情的函数
+            function showOrderDetail(order) {
+                const orderDetailModal = document.getElementById('orderDetailModal');
+                const orderDetailBody = document.getElementById('orderDetailBody');
+                if (!orderDetailModal || !orderDetailBody) return;
 
-            try {
-                const formattedDate = formatDate(order.date);
-                const formattedCallDate = formatDate(order.call_date);
-                
-                orderDetailBody.innerHTML = `
+                try {
+                    const formattedDate = formatDate(order.date);
+                    const formattedCallDate = formatDate(order.call_date);
+
+                    orderDetailBody.innerHTML = `
                     <div class="detail-item">
                         <span class="detail-label">订单状态：</span>
                         <span class="detail-value">
@@ -3168,28 +3250,192 @@
                     </div>
                 `;
 
-                // 显示模态框
-                orderDetailModal.style.display = 'block';
+                    // 显示模态框
+                    orderDetailModal.style.display = 'block';
 
-                // 添加关闭按钮事件监听
-                const closeDetailBtn = document.getElementById('closeDetailBtn');
-                if (closeDetailBtn) {
-                    closeDetailBtn.onclick = function() {
-                        orderDetailModal.style.display = 'none';
-                    };
-                }
-
-                // 点击模态框外部关闭
-                window.onclick = function(event) {
-                    if (event.target === orderDetailModal) {
-                        orderDetailModal.style.display = 'none';
+                    // 添加关闭按钮事件监听
+                    const closeDetailBtn = document.getElementById('closeDetailBtn');
+                    if (closeDetailBtn) {
+                        closeDetailBtn.onclick = function () {
+                            orderDetailModal.style.display = 'none';
+                        };
                     }
-                };
-            } catch (error) {
-                console.error('显示订单详情时出错:', error);
-                orderDetailBody.innerHTML = '<p class="error-message">加载订单详情失败</p>';
+
+                    // 点击模态框外部关闭
+                    window.onclick = function (event) {
+                        if (event.target === orderDetailModal) {
+                            orderDetailModal.style.display = 'none';
+                        }
+                    };
+                } catch (error) {
+                    console.error('显示订单详情时出错:', error);
+                    orderDetailBody.innerHTML = '<p class="error-message">加载订单详情失败</p>';
+                }
             }
-        }
+
+            // 添加更新日历事件的函数
+            function updateCalendarEvent(orderId, newStatus) {
+                const calendar = document.querySelector('#calendar').FullCalendar;
+                if (!calendar) return;
+
+                // 找到对应的事件并更新
+                const event = calendar.getEventById(orderId);
+                if (event) {
+                    // 设置新的样式和标题
+                    let backgroundColor, borderColor, textColor, title;
+                    switch (newStatus) {
+                        case 'allocated':
+                            backgroundColor = '#28a745';
+                            borderColor = '#28a745';
+                            textColor = '#fff';
+                            title = `订单: ${event.extendedProps.issue.substring(0, 10)}...`;
+                            break;
+                        case 'completed':
+                            backgroundColor = '#17a2b8';
+                            borderColor = '#17a2b8';
+                            textColor = '#fff';
+                            title = `[已完成] ${event.extendedProps.issue.substring(0, 8)}...`;
+                            break;
+                        case 'cancelled':
+                            backgroundColor = '#dc3545';
+                            borderColor = '#dc3545';
+                            textColor = '#fff';
+                            title = `[已撤单] ${event.extendedProps.issue.substring(0, 8)}...`;
+                            break;
+                        default:
+                            backgroundColor = '#ffc107';
+                            borderColor = '#ffc107';
+                            textColor = '#000';
+                            title = `订单: ${event.extendedProps.issue.substring(0, 10)}...`;
+                    }
+
+                    // 更新事件属性
+                    event.setProp('title', title);
+                    event.setProp('backgroundColor', backgroundColor);
+                    event.setProp('borderColor', borderColor);
+                    event.setProp('textColor', textColor);
+                    event.setExtendedProp('status', newStatus);
+                }
+            }
+
+            // 修改订单状态变化的处理函数（在订单完成时）
+            function completeOrder(orderId) {
+                $.ajax({
+                    url: API_URLS.COMPLETE_REPORT,
+                    method: 'POST',
+                    data: JSON.stringify({ report_id: orderId }),
+                    contentType: 'application/json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                }).then(response => {
+                    if (response.message === 'Success') {
+                        showMessage('订单已完成', 'success');
+                        updateCalendarEvent(orderId, 'completed'); // 更新日历显示
+                        fetchHistoryOrders(); // 刷新订单列表
+                    } else {
+                        handleSessionError(response.message);
+                    }
+                }).catch(error => {
+                    console.error('完成订单失败:', error);
+                    showMessage('完成订单失败，请重试', 'error');
+                });
+            }
+
+            // 修改订单状态变化的处理函数（在订单撤销时）
+            function cancelOrder(orderId) {
+                $.ajax({
+                    url: API_URLS.CANCEL_REPORT,
+                    method: 'POST',
+                    data: JSON.stringify({ report_id: orderId }),
+                    contentType: 'application/json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                }).then(response => {
+                    if (response.message === 'Success') {
+                        showMessage('订单已撤销', 'success');
+                        updateCalendarEvent(orderId, 'cancelled'); // 更新日历显示
+                        fetchHistoryOrders(); // 刷新订单列表
+                    } else {
+                        handleSessionError(response.message);
+                    }
+                }).catch(error => {
+                    console.error('撤销订单失败:', error);
+                    showMessage('撤销订单失败，请重试', 'error');
+                });
+            }
+            // 修改日历初始化中的 events 配置，添加事件 ID
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                    events: function (fetchInfo, successCallback, failureCallback) {
+                        $.ajax({
+                            url: API_URLS.GET_HISTORY,
+                            method: 'GET',
+                            xhrFields: {
+                                withCredentials: true
+                            },
+                            success: function (response) {
+                                if (response.message === 'Success') {
+                                    const events = response.report_info.map(order => {
+                                        // 根据订单状态设置不同的显示样式
+                                        let backgroundColor, borderColor, textColor, title;
+                                        switch (order.status) {
+                                            case 'allocated':
+                                            backgroundColor = '#28a745';
+                                                borderColor = '#28a745';
+                                                textColor = '#fff';
+                                                title = `订单: ${order.issue.substring(0, 10)}...`;
+                                                break;
+                                            case 'completed':
+                                            backgroundColor = '#17a2b8';
+                                                borderColor = '#17a2b8';
+                                                textColor = '#fff';
+                                                title = `[已完成] ${order.issue.substring(0, 8)}...`;
+                                                break;
+                                            case 'cancelled':
+                                            backgroundColor = '#dc3545';
+                                                borderColor = '#dc3545';
+                                                textColor = '#fff';
+                                                title = `[已撤单] ${order.issue.substring(0, 8)}...`;
+                                                break;
+                                            default:
+                                            backgroundColor = '#ffc107';
+                                                borderColor = '#ffc107';
+                                                textColor = '#000';
+                                                title = `订单: ${order.issue.substring(0, 10)}...`;
+                                        }
+
+                                        return {
+                                        id: order.id, // 添加事件ID
+                                            title: title,
+                                            start: new Date(order.date.replace(/-/g, '/')),
+                                            extendedProps: order,
+                                            backgroundColor: backgroundColor,
+                                            borderColor: borderColor,
+                                            textColor: textColor,
+                                            allDay: false,
+                                            displayEventTime: true,
+                                            eventDisplay: 'block'
+                                        };
+                                    });
+                                    successCallback(events);
+                                } else if (response.message === 'No history report') {
+                                    successCallback([]);
+                                } else {
+                                    auth.handleSessionError(response.message);
+                                    failureCallback(new Error(response.message));
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('获取历史订单失败:', error);
+                                failureCallback(new Error(error));
+                            }
+                        });
+                }
+            }); // 添加这个闭合括号
+
+                // 渲染日历
+                calendar.render();
         </script>
 </body>
 
