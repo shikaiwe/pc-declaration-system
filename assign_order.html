@@ -206,7 +206,7 @@
 
     <script>
         const API_URL = 'https://8.134.178.71/api/dashboard/assign_order/';
-        const ORDERS_API_URL = 'https://8.134.178.71/api/dashboard/today_orders/';
+        const ORDERS_API_URL = 'https://8.134.178.71/api/dashboard/user_get_history_report/';
         const WORKERS_API_URL = 'https://8.134.178.71/api/dashboard/today_workers/';
         const form = document.getElementById('assignForm');
         const messageDiv = document.getElementById('message');
@@ -255,14 +255,37 @@
                 });
                 const data = await response.json();
 
-                if (data.message === 'Success' && Array.isArray(data.orders)) {
+                if (data.message === 'Success' && Array.isArray(data.report_info)) {
                     reportSelect.innerHTML = '<option value="">请选择订单</option>';
-                    data.orders.forEach(order => {
+
+                    // 获取今天的日期（格式：YYYY-MM-DD）
+                    const today = new Date().toISOString().split('T')[0];
+
+                    // 筛选今天的未分配订单
+                    const todayOrders = data.report_info.filter(order =>
+                        order.date === today && order.status === '0'
+                    );
+
+                    if (todayOrders.length === 0) {
                         const option = document.createElement('option');
-                        option.value = order.reportId;
-                        option.textContent = `订单号: ${order.reportId} - ${order.customerName} - ${order.appointmentTime}`;
+                        option.value = "";
+                        option.textContent = "今日没有待分配的订单";
+                        option.disabled = true;
                         reportSelect.appendChild(option);
-                    });
+                    } else {
+                        todayOrders.forEach(order => {
+                            const option = document.createElement('option');
+                            option.value = order.reportId;
+                            option.textContent = `订单号: ${order.reportId} - 电话: ${order.userPhoneNumber} - 地址: ${order.address} - 问题: ${order.issue}`;
+                            reportSelect.appendChild(option);
+                        });
+                    }
+                } else if (data.message === 'No history report') {
+                    const option = document.createElement('option');
+                    option.value = "";
+                    option.textContent = "没有任何订单记录";
+                    option.disabled = true;
+                    reportSelect.appendChild(option);
                 } else {
                     handleSessionError(data.message);
                 }
