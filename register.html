@@ -181,6 +181,34 @@
             background-color: rgba(76, 175, 80, 0.1);
             font-size: 14px;
         }
+        
+        .email-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .send-code-btn {
+            width: auto;
+            padding: 12px 20px;
+            white-space: nowrap;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .send-code-btn:hover {
+            background-color: #1976D2;
+        }
+        
+        .send-code-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -194,7 +222,10 @@
             </div>
             <div class="form-group">
                 <label for="email">邮箱:</label>
-                <input type="email" id="email" name="email" required>
+                <div class="email-group">
+                    <input type="email" id="email" name="email" required>
+                    <button type="button" id="sendCodeBtn" class="send-code-btn">发送验证码</button>
+                </div>
             </div>
             <div class="form-group">
                 <label for="password">密码:</label>
@@ -206,6 +237,10 @@
             <div class="form-group">
                 <label for="confirm-password">确认密码:</label>
                 <input type="password" id="confirm-password" name="confirm-password" required>
+            </div>
+            <div class="form-group">
+                <label for="verificationCode">验证码:</label>
+                <input type="text" id="verificationCode" name="verificationCode" required maxlength="6">
             </div>
             <button type="submit">注册</button>
             <div class="loading">注册中...</div>
@@ -221,6 +256,7 @@
         // const ip = 'localhost:8000';
         const ip = '8.134.178.71';
         const url = `https://${ip}/api/users/register/`;
+        const verifyCodeUrl = `https://${ip}/api/users/register_send_code/`;
 
         const utils = {
             showError: (message) => {
@@ -253,8 +289,61 @@
                 setTimeout(() => {
                     window.location.href = 'login.html';
                 }, 2000);
+            },
+
+            startCountdown: (button) => {
+                let countdown = 60;
+                button.disabled = true;
+                const timer = setInterval(() => {
+                    button.textContent = `${countdown}秒后重试`;
+                    countdown--;
+                    if (countdown < 0) {
+                        clearInterval(timer);
+                        button.disabled = false;
+                        button.textContent = '发送验证码';
+                    }
+                }, 1000);
             }
         };
+
+        // 发送验证码按钮点击事件
+        document.getElementById('sendCodeBtn').addEventListener('click', async function() {
+            const email = document.getElementById('email').value;
+            const button = this;
+
+            if (!email) {
+                utils.showError('邮箱不能为空');
+                return;
+            }
+
+            try {
+                button.disabled = true;
+                
+                $.ajax({
+                    url: verifyCodeUrl,
+                    type: "POST",
+                    data: JSON.stringify({
+                        email: email
+                    }),
+                    success: function(data) {
+                        if (data['message'] === '验证码已发送') {
+                            utils.showSuccess("验证码已发送到您的邮箱");
+                            utils.startCountdown(button);
+                        } else {
+                            utils.showError(data['message']);
+                            button.disabled = false;
+                        }
+                    },
+                    error: function() {
+                        utils.showError('发送失败');
+                        button.disabled = false;
+                    }
+                });
+            } catch (error) {
+                utils.showError(error.message);
+                button.disabled = false;
+            }
+        });
 
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -263,8 +352,12 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
+            const verificationCode = document.getElementById('verificationCode').value;
 
             try {
+                if (!email || !verificationCode) {
+                    throw new Error('邮箱和验证码不能为空');
+                }
 
                 if (!utils.validatePassword(password)) {
                     throw new Error('密码必须至少包含8个字符，且包含字母和数字');
@@ -282,21 +375,28 @@
                     data: JSON.stringify({
                         name: username,
                         email: email,
-                        password: password
+                        password: password,
+                        code: verificationCode
                     }),
                     success: function(data) {
                         if (data['message'] === 'Success') {
                             utils.showSuccess("注册成功！2秒后自动跳转到登录页面...");
                         } else if (data['message'] === 'Existed') {
                             utils.showError("该昵称已存在，请更换昵称或前往登录");
+                        } else if (data['message'] === '邮箱已被注册') {
+                            utils.showError("该邮箱已被注册，请更换邮箱或前往登录");
+                        } else if (data['message'] === '验证码已过期') {
+                            utils.showError("验证码已过期，请重新获取");
+                        } else if (data['message'] === '验证码错误') {
+                            utils.showError("验证码错误，请重新输入");
+                        } else {
+                            utils.showError(data['message']);
                         }
                     },
                     error: function() {
                         utils.showError('后端服务器错误！');
                     }
                 })
-
-
             } catch (error) {
                 utils.showError(error.message);
             } finally {
