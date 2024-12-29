@@ -618,23 +618,53 @@
             transition: all 0.3s ease;
             padding: 0 10px;
             border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
-        
+
         .swiper-slide {
             transition: all 0.3s ease;
+            cursor: pointer;
         }
-        
-        .swiper-slide:hover .date-item,
-        .swiper-slide:hover .time-item {
-            background: rgba(33, 150, 243, 0.05);
+
+        .swiper-slide:active .date-item,
+        .swiper-slide:active .time-item {
+            background: rgba(33, 150, 243, 0.1);
+            transform: scale(0.95);
         }
-        
+
         .swiper-slide-active .date-item,
         .swiper-slide-active .time-item {
             color: #2196F3;
             font-weight: bold;
             background: rgba(33, 150, 243, 0.1);
             transform: scale(1.05);
+        }
+
+        .swiper-slide:not(.swiper-slide-active) .date-item:hover,
+        .swiper-slide:not(.swiper-slide-active) .time-item:hover {
+            background: rgba(33, 150, 243, 0.05);
+            transform: scale(1.02);
+        }
+
+        .datetime-picker .swiper-container {
+            overflow: hidden;
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .datetime-picker .swiper-wrapper {
+            transition-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .datetime-picker .swiper-scrollbar {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .datetime-picker .swiper-container:hover .swiper-scrollbar {
+            opacity: 1;
         }
         /* 订单状态样式 */
         
@@ -2374,14 +2404,35 @@
                     spaceBetween: 10,
                     scrollbar: {
                         el: '.date-swiper .swiper-scrollbar',
+                        draggable: true
                     },
-                    touchRatio: 1.5,
-                    resistance: false,
-                    freeMode: true,
-                    freeModeSticky: true,
-                    mousewheel: true,
-                    touchAngle: 45,
-                    touchReleaseOnEdges: true,
+                    mousewheel: {
+                        sensitivity: 0.5,
+                        releaseOnEdges: true
+                    },
+                    freeMode: {
+                        enabled: true,
+                        sticky: true,
+                        momentumRatio: 0.2,
+                        momentumBounce: true,
+                        momentumBounceRatio: 0.2,
+                        minimumVelocity: 0.02
+                    },
+                    touchRatio: 0.8,
+                    resistance: true,
+                    resistanceRatio: 0.9,
+                    speed: 400,
+                    observer: true,
+                    observeParents: true,
+                    on: {
+                        init: function() {
+                            this.slides.forEach((slide, index) => {
+                                slide.addEventListener('click', () => {
+                                    this.slideTo(index, 400);
+                                });
+                            });
+                        }
+                    }
                 });
 
                 timeSwiper = new Swiper('.time-swiper', {
@@ -2391,47 +2442,120 @@
                     spaceBetween: 10,
                     scrollbar: {
                         el: '.time-swiper .swiper-scrollbar',
+                        draggable: true
                     },
-                    touchRatio: 1.5,
-                    resistance: false,
-                    freeMode: true,
-                    freeModeSticky: true,
-                    mousewheel: true,
-                    touchAngle: 45,
-                    touchReleaseOnEdges: true,
+                    mousewheel: {
+                        sensitivity: 0.5,
+                        releaseOnEdges: true
+                    },
+                    freeMode: {
+                        enabled: true,
+                        sticky: true,
+                        momentumRatio: 0.2,
+                        momentumBounce: true,
+                        momentumBounceRatio: 0.2,
+                        minimumVelocity: 0.02
+                    },
+                    touchRatio: 0.8,
+                    resistance: true,
+                    resistanceRatio: 0.9,
+                    speed: 400,
+                    observer: true,
+                    observeParents: true,
+                    on: {
+                        init: function() {
+                            this.slides.forEach((slide, index) => {
+                                slide.addEventListener('click', () => {
+                                    this.slideTo(index, 400);
+                                });
+                            });
+                        }
+                    }
                 });
 
-                // 阻止时间选择器内的触摸事件传播
+                // 为所有日期和时间项添加点击事件
+                const dateItems = pickerContainer.querySelectorAll('.date-swiper .swiper-slide');
+                const timeItems = pickerContainer.querySelectorAll('.time-swiper .swiper-slide');
+
+                dateItems.forEach((item, index) => {
+                    item.addEventListener('click', () => {
+                        dateSwiper.slideTo(index, 400);
+                    });
+                });
+
+                timeItems.forEach((item, index) => {
+                    item.addEventListener('click', () => {
+                        timeSwiper.slideTo(index, 400);
+                    });
+                });
+
+                // 添加活动项样式
+                function updateActiveItems() {
+                    dateItems.forEach(item => item.classList.remove('swiper-slide-active'));
+                    timeItems.forEach(item => item.classList.remove('swiper-slide-active'));
+
+                    if (dateSwiper && dateSwiper.slides[dateSwiper.activeIndex]) {
+                        dateSwiper.slides[dateSwiper.activeIndex].classList.add('swiper-slide-active');
+                    }
+                    if (timeSwiper && timeSwiper.slides[timeSwiper.activeIndex]) {
+                        timeSwiper.slides[timeSwiper.activeIndex].classList.add('swiper-slide-active');
+                    }
+                }
+
+                dateSwiper.on('slideChange', updateActiveItems);
+                timeSwiper.on('slideChange', updateActiveItems);
+                updateActiveItems();
+
+                // 简化触摸事件处理
                 const pickerContent = pickerContainer.querySelector('.picker-container');
-                pickerContent.addEventListener('touchmove', (e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                }, { passive: false });
-
-                // 阻止整个选择器的触摸事件传播
+                
+                // 阻止背景滚动和点击穿透
                 pickerContainer.addEventListener('touchmove', (e) => {
-                    e.stopPropagation();
                     e.preventDefault();
                 }, { passive: false });
 
-                // 为日期和时间选择器添加触摸事件处理
-                const dateSwipeArea = pickerContainer.querySelector('.date-swiper');
-                const timeSwipeArea = pickerContainer.querySelector('.time-swiper');
-
-                dateSwipeArea.addEventListener('touchmove', (e) => {
+                pickerContainer.addEventListener('click', (e) => {
                     e.stopPropagation();
-                }, { passive: false });
+                });
 
-                timeSwipeArea.addEventListener('touchmove', (e) => {
+                // 取消按钮
+                pickerContainer.querySelector('.picker-cancel').addEventListener('click', () => {
+                    this.hide(pickerContainer);
+                });
+
+                // 确认按钮
+                pickerContainer.querySelector('.picker-confirm').addEventListener('click', (e) => {
+                    e.preventDefault();
                     e.stopPropagation();
-                }, { passive: false });
+
+                    if (dateSwiper && timeSwiper) {
+                        const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
+                        const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
+
+                        const [hours, minutes] = selectedTime.split(':').map(Number);
+                        if (hours < 18 || (hours === 21 && minutes > 0) || hours > 21) {
+                            utils.ui.showMessage('请选择18:00-21:00之间的时间');
+                            return;
+                        }
+
+                        const year = new Date().getFullYear();
+                        const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
+
+                        const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
+                        const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
+
+                        preferredTimeInput.value = displayDateTime;
+                        preferredTimeInput.dataset.submitValue = submitDateTime;
+
+                        this.hide(pickerContainer);
+                    }
+                });
             }, 0);
 
-            // 事件处理
+            // 打开选择器
             preferredTimeInput.addEventListener('click', () => {
                 pickerContainer.classList.add('active');
                 utils.ui.toggleBodyScroll(true);
-                // 添加阻止页面滚动的类
                 document.body.style.overflow = 'hidden';
                 document.body.style.position = 'fixed';
                 document.body.style.width = '100%';
@@ -2445,6 +2569,7 @@
             // 确认按钮
             pickerContainer.querySelector('.picker-confirm').addEventListener('click', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
 
                 if (dateSwiper && timeSwiper) {
                     const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
@@ -2482,10 +2607,16 @@
             const pickerContent = pickerContainer.querySelector('.picker-container');
 
             pickerContent.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.swiper-container')) {
+                    return;
+                }
                 startY = e.touches[0].clientY;
             }, { passive: true });
 
             pickerContent.addEventListener('touchmove', (e) => {
+                if (e.target.closest('.swiper-container')) {
+                    return;
+                }
                 currentY = e.touches[0].clientY;
                 const deltaY = currentY - startY;
 
@@ -2494,7 +2625,10 @@
                 }
             }, { passive: true });
 
-            pickerContent.addEventListener('touchend', () => {
+            pickerContent.addEventListener('touchend', (e) => {
+                if (e.target.closest('.swiper-container')) {
+                    return;
+                }
                 if (currentY - startY > 100) {
                     this.hide(pickerContainer);
                 } else {
@@ -2514,7 +2648,6 @@
         hide(pickerContainer) {
             pickerContainer.classList.remove('active');
             utils.ui.toggleBodyScroll(false);
-            // 恢复页面滚动
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.width = '';
