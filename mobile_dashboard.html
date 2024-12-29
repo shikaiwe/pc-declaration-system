@@ -81,33 +81,38 @@
         
         .card {
             background-color: white;
-            margin: 10px 15px;
-            padding: 12px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
         }
         
         .card h2 {
-            margin: 0 0 8px 0;
-            font-size: 16px;
+            margin: 0 0 15px 0;
+            font-size: 24px;
             color: #333;
+            font-weight: 600;
         }
         
         .card p {
             margin: 0;
-            font-size: 14px;
+            font-size: 18px;
             color: #666;
+            flex-grow: 1;
         }
         
         .card.hover:hover {
             transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         
         .card.no-hover:hover {
             transform: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
         
         .card.active {
@@ -387,7 +392,7 @@
             border-radius: 12px;
             padding: 15px;
             color: white;
-            margin: 15px;
+            margin: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
@@ -479,7 +484,7 @@
         @media (max-width: 360px) {
             .weather-container {
                 padding: 12px;
-                margin: 8px 12px;
+                margin: 15px;
             }
             .weather-temp {
                 font-size: 28px;
@@ -1042,7 +1047,7 @@
             border-radius: 12px;
             padding: 15px;
             color: white;
-            margin: 15px;
+            margin: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
@@ -1134,7 +1139,7 @@
         @media (max-width: 360px) {
             .weather-container {
                 padding: 12px;
-                margin: 8px 12px;
+                margin: 15px;
             }
             .weather-temp {
                 font-size: 28px;
