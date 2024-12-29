@@ -182,6 +182,10 @@
                 <input type="text" id="username" name="username" required>
             </div>
             <div class="form-group">
+                <label for="email">邮箱:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
                 <label for="password">密码:</label>
                 <input type="password" id="password" name="password" required>
                 <div class="password-requirements">
@@ -235,6 +239,7 @@
             e.preventDefault();
 
             const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
 
@@ -255,6 +260,7 @@
                     type: "POST",
                     data: JSON.stringify({
                         name: username,
+                        email: email,
                         password: password
                     }),
                     success: function(data) {
