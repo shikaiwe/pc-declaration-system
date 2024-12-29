@@ -843,319 +843,6 @@
         }
         /* 订单详情卡片样式 */
         
-        .detail-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1004;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease;
-        }
-        
-        .detail-overlay.show {
-            opacity: 1;
-            visibility: visible;
-            display: block;
-        }
-        
-        .order-detail-card {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-radius: 20px 20px 0 0;
-            padding: 20px;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-            transform: translateY(100%);
-            transition: transform 0.3s ease-out;
-            z-index: 1005;
-            max-height: 80vh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .order-detail-card.show {
-            transform: translateY(0);
-        }
-        /* 禁止滚动时的样式 */
-        
-        body.modal-open {
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            padding-right: 15px;
-            /* 防止滚动条消失导致页面抖动 */
-        }
-        
-        .tab-content textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 1em;
-            color: #333;
-            background: #fff;
-            transition: all 0.3s ease;
-            min-height: 100px;
-            resize: none;
-            font-family: inherit;
-        }
-        
-        .tab-content textarea:hover {
-            border-color: #2196F3;
-        }
-        
-        .tab-content textarea:focus {
-            outline: none;
-            border-color: #2196F3;
-            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-        }
-        
-        .orders-container {
-            padding: 15px;
-            max-width: 100%;
-            margin: 0 auto;
-        }
-        
-        .order-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .order-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .order-info {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .order-info p {
-            margin: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1em;
-            line-height: 1.5;
-            color: #333;
-        }
-        
-        .order-info p strong {
-            color: #666;
-            font-weight: 500;
-            min-width: 80px;
-        }
-        
-        .order-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 500;
-            margin-left: auto;
-        }
-        
-        .order-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            justify-content: flex-end;
-        }
-        
-        .complete-order-btn,
-        .cancel-order-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.9em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .complete-order-btn {
-            background-color: #2196F3;
-            color: white;
-        }
-        
-        .complete-order-btn:hover {
-            background-color: #1976D2;
-        }
-        
-        .cancel-order-btn {
-            background-color: #ff4d4f;
-            color: white;
-        }
-        
-        .cancel-order-btn:hover {
-            background-color: #ff7875;
-        }
-        
-        .no-orders {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-        }
-        
-        .no-orders-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-            display: block;
-        }
-        
-        .error-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: #ff4d4f;
-        }
-        
-        .error-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-            display: block;
-        }
-        
-        .retry-button {
-            margin-top: 15px;
-            padding: 8px 20px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        
-        .retry-button:hover {
-            background-color: #1976D2;
-        }
-        /* 在现有的style标签内添加天气样式 */
-        
-        .weather-container {
-            background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%);
-            border-radius: 15px;
-            padding: 15px;
-            color: white;
-            margin: 15px 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            min-height: 140px;
-            display: flex;
-        }
-        
-        .weather-content {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-        }
-        
-        .weather-main {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .weather-location {
-            font-size: 16px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .weather-temp {
-            font-size: 42px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            justify-content: center;
-            padding: 5px 0;
-        }
-        
-        .weather-info-details {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex-grow: 1;
-        }
-        
-        .weather-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 15px;
-        }
-        
-        .weather-icon {
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
-        }
-        
-        .weather-temp .weather-icon {
-            font-size: 32px;
-            width: 32px;
-            height: 32px;
-        }
-        
-        .weather-update {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.8);
-            margin-top: 6px;
-            padding-top: 8px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        @media (max-width: 360px) {
-            .weather-container {
-                padding: 12px;
-                margin: 12px 15px;
-                min-height: 130px;
-            }
-            .weather-temp {
-                font-size: 36px;
-            }
-            .weather-row {
-                font-size: 14px;
-            }
-            .weather-location {
-                font-size: 15px;
-            }
-            .weather-temp .weather-icon {
-                font-size: 28px;
-                width: 28px;
-                height: 28px;
-            }
-            .card {
-                margin: 12px 15px;
-                min-height: 130px;
-            }
-        }
-        /* 在现有的style标签内添加订单详情样式 */
-        
         .order-detail-card {
             position: fixed;
             bottom: 0;
@@ -1466,16 +1153,11 @@
         </div>
     </div>
 
-    <!-- 在 body 标签末尾添加下 HTML -->
+    <!-- 订单详情卡片 -->
     <div class="detail-overlay" id="detailOverlay"></div>
     <div class="order-detail-card" id="orderDetailCard">
-        <div class="pull-indicator"></div>
-        <div class="detail-header">
-            <h3>订单详情</h3>
-            <button class="close-detail" id="closeDetail">&times;</button>
-        </div>
-        <div class="detail-content" id="orderDetailContent">
-            <!-- 内容将通过 JavaScript 动填充 -->
+        <div id="orderDetailContent">
+            <!-- 内容将通过JavaScript动态填充 -->
         </div>
     </div>
 
@@ -2228,8 +1910,15 @@
                 ` : ''}
             `;
 
-            detailCard.classList.add('show');
-            overlay.classList.add('show');
+            // 重置transform样式
+            detailCard.style.transform = '';
+            
+            // 显示遮罩层和详情卡片
+            overlay.style.display = 'block';
+            setTimeout(() => {
+                detailCard.classList.add('show');
+                overlay.classList.add('show');
+            }, 10);
 
             // 添加滑动关闭功能
             let touchStartY = 0;
@@ -2257,14 +1946,23 @@
                 }
             };
 
+            // 移除之前的事件监听器
+            detailCard.removeEventListener('touchstart', handleTouchStart);
+            detailCard.removeEventListener('touchmove', handleTouchMove);
+            detailCard.removeEventListener('touchend', handleTouchEnd);
+
+            // 添加新的事件监听器
             detailCard.addEventListener('touchstart', handleTouchStart);
             detailCard.addEventListener('touchmove', handleTouchMove);
             detailCard.addEventListener('touchend', handleTouchEnd);
 
             // 点击关闭按钮
-            document.getElementById('closeDetail').onclick = () => {
-                this.hideEventDetail();
-            };
+            const closeButton = document.getElementById('closeDetail');
+            if (closeButton) {
+                closeButton.onclick = () => {
+                    this.hideEventDetail();
+                };
+            }
 
             // 点击遮罩层关闭
             overlay.onclick = () => {
@@ -2281,6 +1979,8 @@
             
             setTimeout(() => {
                 detailCard.classList.remove('show');
+                overlay.style.display = 'none';
+                detailCard.style.transform = '';  // 重置transform样式
             }, 300);
         },
 
@@ -2596,14 +2296,6 @@
             // 消息确认按钮
             document.getElementById('messageConfirm')?.addEventListener('click', () => {
                 document.getElementById('messageModal').style.display = 'none';
-            });
-
-            // 关闭详情按钮
-            document.getElementById('closeDetail')?.addEventListener('click', () => {
-                const detailCard = document.getElementById('orderDetailCard');
-                const overlay = document.getElementById('detailOverlay');
-                detailCard.classList.remove('show');
-                overlay.classList.remove('show');
             });
 
             // 信息管理链接
