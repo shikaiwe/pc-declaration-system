@@ -3346,7 +3346,7 @@
                 $.ajax({
                     url: API_URLS.COMPLETE_REPORT,
                     method: 'POST',
-                    data: JSON.stringify({ report_id: orderId }),
+                    data: JSON.stringify({ reportId: orderId }),
                     contentType: 'application/json',
                     xhrFields: {
                         withCredentials: true
@@ -3370,7 +3370,7 @@
                 $.ajax({
                     url: API_URLS.CANCEL_REPORT,
                     method: 'POST',
-                    data: JSON.stringify({ report_id: orderId }),
+                    data: JSON.stringify({ reportId: orderId }),
                     contentType: 'application/json',
                     xhrFields: {
                         withCredentials: true
