@@ -3174,7 +3174,8 @@
                     views: {
                         dayGridMonth: {
                             titleFormat: {
-                                year: 'numeric', month: 'short'
+                                year: 'numeric',
+                                month: 'short'
                             }
                             , // 简化标题显示
                             dayHeaderFormat: {
@@ -3365,56 +3366,54 @@
                 }
             }
             // 修改订单状态变化的处理函数（在订单完成时）
-            function completeOrder(orderId) {
-                $.ajax( {
-                    url: API_URLS.COMPLETE_REPORT, method: 'POST', data: JSON.stringify( {
-                        report_id: orderid
-                    }
-                    ), contentType: 'application/json', xhrFields: {
+            function completeOrder(reportId) {  // 修改参数名为 reportId
+                $.ajax({
+                    url: API_URLS.COMPLETE_REPORT,
+                    method: 'POST',
+                    data: JSON.stringify({
+                        reportId: reportId  // 使用正确的参数名
+                    }),
+                    contentType: 'application/json',
+                    xhrFields: {
                         withCredentials: true
                     }
-                }
-                ).then(response=> {
-                    if (response.message==='Success') {
+                }).then(response => {
+                    if (response.message === 'Success') {
                         showMessage('订单已完成');
-                        updateCalendarEvent(orderid, 'completed'); // 更新日历显示
+                        updateCalendarEvent(reportId, 'completed'); // 更新日历显示
                         fetchHistoryOrders(); // 刷新订单列表
-                    }
-                    else {
+                    } else {
                         handleSessionError(response.message);
                     }
-                }
-                ).catch(error=> {
+                }).catch(error => {
                     console.error('完成订单失败:', error);
                     showMessage('完成订单失败，请重试');
-                }
-                );
+                });
             }
             // 修改订单状态变化的处理函数（在订单撤销时）
-            function cancelOrder(orderId) {
-                $.ajax( {
-                    url: API_URLS.CANCEL_REPORT, method: 'POST', data: JSON.stringify( {
-                        report_id: orderid
-                    }
-                    ), contentType: 'application/json', xhrFields: {
+            function cancelOrder(reportId) {  // 修改参数名为 reportId
+                $.ajax({
+                    url: API_URLS.CANCEL_REPORT,
+                    method: 'POST',
+                    data: JSON.stringify({
+                        reportId: reportId  // 使用正确的参数名
+                    }),
+                    contentType: 'application/json',
+                    xhrFields: {
                         withCredentials: true
                     }
-                }
-                ).then(response=> {
-                    if (response.message==='Success') {
+                }).then(response => {
+                    if (response.message === 'Success') {
                         showMessage('订单已撤销');
-                        updateCalendarEvent(orderid, 'cancelled'); // 更新日历显示
+                        updateCalendarEvent(reportId, 'cancelled'); // 更新日历显示
                         fetchHistoryOrders(); // 刷新订单列表
-                    }
-                    else {
+                    } else {
                         handleSessionError(response.message);
                     }
-                }
-                ).catch(error=> {
+                }).catch(error => {
                     console.error('撤销订单失败:', error);
                     showMessage('撤销订单失败，请重试');
-                }
-                );
+                });
             }
             var calendar=new FullCalendar.Calendar(document.getElementById('mobileCalendar'), {
                 // 基础配置
