@@ -1229,6 +1229,12 @@
         <p>打开日历</p>
     </div>
 
+    <div class="card hover" id="assign-order" style="display: none;">
+        <h2>分配订单</h2>
+        <p>分配待处理订单...</p>
+    </div>
+
+
     <div class="navbar">
         <a href="#info" id="info-link">信息管理</a>
         <a href="#logout" id="logout">退出登录</a>
@@ -1336,6 +1342,14 @@
             <span class="close-button">&times;</span>
             <h2>日程管理</h2>
             <div id="mobileCalendar" style="max-width: 100%; height: 400px;"></div>
+        </div>
+    </div>
+
+    <div id="assignOrderModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>分配订单</h2>
+            <div id="assignOrderContent"></div>
         </div>
     </div>
 
@@ -2479,6 +2493,74 @@
         weatherManager.fetchWeatherAndLocation();
         calendarManager.init();
 
+        // 检查用户身份并显示/隐藏分配订单卡片
+        const checkUserRole = async () => {
+            try {
+                const response = await fetch(API_URLS.GET_USER_INFO, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.message === 'Success') {
+                    // 保存用户名
+                    utils.storage.save('username', data.username);
+                    document.getElementById('username-display').textContent = data.username;
+
+                    // 根据用户身份显示不同功能
+                    const orderManagement = document.getElementById('order-management');
+                    const assignOrder = document.getElementById('assign-order');
+
+                    switch (data.label) {
+                        case 'customer':
+                            // 普通用户只显示报修功能
+                            if (orderManagement) {
+                                orderManagement.style.display = 'block';
+                            }
+                            if (assignOrder) {
+                                assignOrder.style.display = 'none';
+                            }
+                            break;
+                        case 'worker':
+                            // 维修人员显示报修和查看自己的订单
+                            if (orderManagement) {
+                                orderManagement.style.display = 'block';
+                            }
+                            if (assignOrder) {
+                                assignOrder.style.display = 'none';
+                            }
+                            break;
+                        case 'admin':
+                            // 管理员显示所有功能
+                            if (orderManagement) {
+                                orderManagement.style.display = 'block';
+                            }
+                            if (assignOrder) {
+                                assignOrder.style.display = 'block';
+                            }
+                            break;
+                        default:
+                            console.error('未知的用户身份:', data.label);
+                    }
+                } else {
+                    auth.handleSessionError(data.message);
+                }
+            } catch (error) {
+                console.error('获取用户信息失败:', error);
+            }
+        };
+
+        // 加载分配订单页面内容
+        const loadAssignOrderContent = async () => {
+            try {
+                const response = await fetch('assign_order.html');
+                const html = await response.text();
+                document.getElementById('assignOrderContent').innerHTML = html;
+            } catch (error) {
+                console.error('加载分配订单页面失败:', error);
+                utils.ui.showMessage('加载分配订单页面失败，请重试');
+            }
+        };
+
         // 绑定事件监听器
         const bindEvents = () => {
             // 模态框关闭按钮
@@ -2659,11 +2741,19 @@
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
             });
+
+            // 分配订单卡片点击事件
+            document.getElementById('assign-order')?.addEventListener('click', function() {
+                utils.ui.showModal('assignOrderModal');
+                this.classList.add('active');
+                loadAssignOrderContent();
+            });
         };
 
         // 初始化问候语和用户名
         updateGreeting();
         displayUsername();
+        checkUserRole();  // 检查用户身份
         
         // 每分钟更新一次问候语
         setInterval(updateGreeting, 60000);

@@ -1776,6 +1776,7 @@
         <ul class="sidebar-menu">
             <li id="homeLink"><i>🏠</i>首页</li>
             <li id="orderManagement"><i>📝</i>订单管理</li>
+            <li id="assignOrder" style="display: none;"><i>📋</i>分配订单</li>
             <li id="scheduleManagement"><i>📅</i>日程管理</li>
             <li id="dataStatistics"><i>📊</i>数据统计</li>
             <li id="accountManagement"><i>👤</i>账号管理</li>
@@ -1846,6 +1847,10 @@
             <div class="tab-content" id="orderHistory" style="display: none;">
                 <p>历史订单内容...</p>
             </div>
+        </div>
+
+        <div class="content" id="assignOrderContent" style="display: none;">
+            <!-- 这里将通过JavaScript动态加载assign_order.html的内容 -->
         </div>
 
         <div class="content" id="dataStatisticsContent" style="display: none;">
@@ -2240,11 +2245,75 @@
                 const contentSections = {
                     homeLink: document.getElementById('contentArea'),
                     orderManagement: document.getElementById('orderContent'),
+                    assignOrder: document.getElementById('assignOrderContent'),
                     scheduleManagement: document.getElementById('scheduleContent'),
                     dataStatistics: document.getElementById('dataStatisticsContent'),
                     accountManagement: document.getElementById('accountSettings')
                 };
 
+                // 检查用户身份并显示/隐藏分配订单选项
+                function checkUserRole() {
+                    fetch(API_URLS.GET_USER_INFO, {
+                            method: 'GET',
+                            credentials: 'include'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.message === 'Success') {
+                                const isAdmin = data.label === 'admin';
+                                const assignOrderLink = document.getElementById('assignOrder');
+                                if (assignOrderLink) {
+                                    assignOrderLink.style.display = isAdmin ? 'block' : 'none';
+                                }
+
+                                // 根据用户身份调整订单管理界面
+                                const orderManagementLink = document.getElementById('orderManagement');
+                                const reportOrderTab = document.querySelector('[data-tab="reportOrder"]');
+                                const orderHistoryTab = document.querySelector('[data-tab="orderHistory"]');
+
+                                if (orderManagementLink && reportOrderTab && orderHistoryTab) {
+                                    switch (data.label) {
+                                        case 'customer':
+                                            // 普通用户只显示报修界面
+                                            orderHistoryTab.style.display = 'none';
+                                            reportOrderTab.classList.add('active');
+                                            document.getElementById('reportOrder').style.display = 'block';
+                                            break;
+                                        case 'worker':
+                                        case 'admin':
+                                            // 维修人员和管理员显示所有界面
+                                            orderHistoryTab.style.display = 'block';
+                                            break;
+                                    }
+                                }
+                            } else {
+                                auth.handleSessionError(data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('获取用户信息失败:', error);
+                        });
+                }
+
+                // 调用检查用户角色函数
+                checkUserRole();
+
+                // 加载分配订单页面内容的函数
+                function loadAssignOrderContent() {
+                    const assignOrderContent = document.getElementById('assignOrderContent');
+                    fetch('assign_order.html')
+                        .then(response => response.text())
+                        .then(html => {
+                            assignOrderContent.innerHTML = html;
+                            // 这里可以添加任何需要的初始化代码
+                        })
+                        .catch(error => {
+                            console.error('加载分配订单页面失败:', error);
+                            assignOrderContent.innerHTML = '<p>加载页面失败，请刷新重试</p>';
+                        });
+                }
+
+                // 修改菜单点击事件处理
                 menuItems.forEach(item => {
                     item.addEventListener('click', (event) => {
                         event.stopPropagation();
@@ -2256,11 +2325,16 @@
                         });
 
                         const sectionToShow = contentSections[item.id];
-                        if (sectionToShow) sectionToShow.style.display = 'block';
-
-                        // 日程管理特殊处理
-                        if (item.id === 'scheduleManagement') {
-                            initializeCalendar();
+                        if (sectionToShow) {
+                            sectionToShow.style.display = 'block';
+                            // 如果点击的是分配订单，加载其内容
+                            if (item.id === 'assignOrder') {
+                                loadAssignOrderContent();
+                            }
+                            // 如果是日程管理，初始化日历
+                            else if (item.id === 'scheduleManagement') {
+                                initializeCalendar();
+                            }
                         }
                     });
                 });
@@ -2755,7 +2829,7 @@
                     });
                 }
 
-                // 点击模态框外��关闭
+                // 点击模态框外关闭
                 window.addEventListener('click', (event) => {
                     const modal = document.getElementById('orderDetailModal');
                     if (event.target === modal) {
