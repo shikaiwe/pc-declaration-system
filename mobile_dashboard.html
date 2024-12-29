@@ -14,6 +14,7 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <style>
         /* 全局样式 */
+        
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -21,7 +22,7 @@
             background-color: #f4f4f9;
             padding-bottom: 60px;
         }
-
+        
         .header {
             background-color: #2196F3;
             color: white;
@@ -36,12 +37,12 @@
             padding-left: 15px;
             padding-right: 15px;
         }
-
+        
         .header h1 {
             margin: 0;
             font-size: 1.2em;
         }
-
+        
         .user-greeting {
             font-size: 0.9em;
             display: flex;
@@ -56,12 +57,12 @@
             -webkit-backdrop-filter: blur(5px);
             transition: all 0.3s ease;
         }
-
+        
         .user-greeting:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: translateY(-1px);
         }
-
+        
         #username-display {
             font-weight: 600;
             max-width: 120px;
@@ -72,12 +73,12 @@
             position: relative;
             padding-left: 5px;
         }
-
+        
         #greetingText {
             color: rgba(255, 255, 255, 0.9);
             font-weight: 500;
         }
-
+        
         .card {
             background-color: white;
             margin: 15px;
@@ -88,22 +89,22 @@
             will-change: transform, box-shadow;
             backface-visibility: hidden;
         }
-
+        
         .card:hover {
             transform: translateY(-10px);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
         }
-
+        
         .card.no-hover:hover {
             transform: none;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-
+        
         .card.active {
             transform: translateY(-10px);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
         }
-
+        
         .navbar {
             position: fixed;
             bottom: 0;
@@ -114,7 +115,7 @@
             box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
             z-index: 1000;
         }
-
+        
         .navbar a {
             flex: 1;
             color: white;
@@ -123,23 +124,23 @@
             text-decoration: none;
             transition: background-color 0.4s ease-in-out;
         }
-
+        
         .navbar a#info-link {
             background-color: lightgreen;
         }
-
+        
         .navbar a#info-link:hover {
             background-color: darkgreen;
         }
-
+        
         .navbar a#logout {
             background-color: orange;
         }
-
+        
         .navbar a#logout:hover {
             background-color: darkorange;
         }
-
+        
         .submenu {
             visibility: hidden;
             position: absolute;
@@ -155,13 +156,13 @@
             z-index: 1000;
             width: 150px;
         }
-
+        
         .submenu.show {
             visibility: visible;
             opacity: 1;
             transform: translateY(0);
         }
-
+        
         .submenu a {
             display: block;
             padding: 12px 16px;
@@ -170,12 +171,13 @@
             font-size: 14px;
             transition: all 0.2s ease;
         }
-
+        
         .submenu a:hover {
             background-color: rgba(33, 150, 243, 0.1);
             color: #2196F3;
         }
-
+        /* 模态框样式 */
+        
         .modal {
             display: none;
             position: fixed;
@@ -184,47 +186,63 @@
             top: 0;
             width: 100%;
             height: 100%;
-            overflow-y: auto;
             background-color: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
         }
-
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
         .modal-content {
             background-color: #fefefe;
             margin: 5% auto;
-            padding: 15px;
-            border: 1px solid #888;
+            padding: 20px;
+            border: none;
             width: 90%;
             max-width: 800px;
-            border-radius: 10px;
-            height: auto;
-            max-height: 90vh;
-            overflow-y: auto;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.3s ease;
         }
-
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
         .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
             position: absolute;
             right: 15px;
             top: 10px;
-        }
-
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-            text-decoration: none;
+            color: #666;
+            font-size: 28px;
+            font-weight: bold;
             cursor: pointer;
+            padding: 5px;
+            line-height: 20px;
+            z-index: 1;
         }
-
+        
+        .close-button:hover {
+            color: #333;
+        }
+        /* 标签菜单样式 */
+        
         .tab-menu {
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
         }
-
+        
         .tab-link {
             padding: 12px 24px;
             margin: 0 10px;
@@ -236,11 +254,12 @@
             transition: background-color 0.4s ease-in-out;
             font-size: 1.1em;
         }
-
+        
         .tab-link.active {
             background-color: #0056b3;
         }
-
+        /* 表单样式 */
+        
         .tab-content form {
             max-width: 500px;
             margin: 0 auto;
@@ -248,18 +267,18 @@
             flex-direction: column;
             align-items: center;
         }
-
+        
         .tab-content form div {
             width: 100%;
             margin-bottom: 20px;
         }
-
+        
         .tab-content label {
             display: block;
             margin-bottom: 8px;
             font-size: 1.1em;
         }
-
+        
         .tab-content input {
             width: 100%;
             padding: 10px;
@@ -268,7 +287,7 @@
             box-sizing: border-box;
             font-size: 1em;
         }
-
+        
         .tab-content button {
             padding: 12px 24px;
             background-color: #007BFF;
@@ -280,23 +299,23 @@
             margin-top: 15px;
             font-size: 1em;
         }
-
+        
         .tab-content button:hover {
             background-color: #0056b3;
         }
-
+        /* 退出确认模态框样式 */
+        
         .logout-modal {
             display: none;
             position: fixed;
             z-index: 2000;
-            /* 提高z-index确保在其他模态框之上 */
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
         }
-
+        
         .logout-modal-content {
             position: fixed;
             left: 50%;
@@ -310,20 +329,20 @@
             width: 85%;
             max-width: 320px;
         }
-
+        
         .logout-modal-content p {
             margin: 0 0 20px 0;
             font-size: 16px;
             color: #333;
             line-height: 1.4;
         }
-
+        
         .logout-modal-buttons {
             display: flex;
             gap: 12px;
             justify-content: center;
         }
-
+        
         .logout-modal-buttons button {
             padding: 12px 24px;
             border: none;
@@ -333,403 +352,26 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
+        
         #confirmLogout {
             background-color: #ff4d4f;
             color: white;
         }
-
+        
         #confirmLogout:hover {
             background-color: #ff7875;
         }
-
+        
         #cancelLogout {
             background-color: #f0f0f0;
             color: #333;
         }
-
+        
         #cancelLogout:hover {
             background-color: #d9d9d9;
         }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -60%);
-            }
-
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%);
-            }
-        }
-
-        .styled-form {
-            max-width: 100%;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .styled-form div {
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .styled-form label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .styled-form input,
-        .styled-form textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        .styled-form button {
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s ease-out, transform 0.2s ease-out;
-            will-change: background-color, transform;
-            margin-top: 10px;
-            align-self: center;
-        }
-
-        .styled-form button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
-
-        .fill-button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s ease-out, transform 0.2s ease-out;
-            will-change: background-color, transform;
-        }
-
-        .fill-button:disabled {
-            background-color: #ccc;
-            color: #666;
-            cursor: not-allowed;
-            transition: none;
-        }
-
-        .fill-button:not(:disabled) {
-            background-color: #007BFF;
-            color: white;
-        }
-
-        .fill-button:not(:disabled):hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
-
-        .fill-button:disabled:hover {
-            background-color: #ccc;
-            transform: none;
-        }
-
-        #mobileCalendar {
-            max-width: 100%;
-            height: auto !important;
-            min-height: 500px;
-            margin: 10px 0;
-        }
-
-        .order-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: transform 0.2s ease-out;
-        }
-
-        .order-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .order-info p {
-            margin: 8px 0;
-            line-height: 1.4;
-        }
-
-        .order-info strong {
-            color: #333;
-            margin-right: 8px;
-        }
-
-        .no-orders,
-        .error-message {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        .error-message {
-            color: #dc3545;
-        }
-
-        .orders-container {
-            padding: 15px;
-            max-width: 100%;
-            margin: 0 auto;
-        }
-
-        /* 订单展示相关样式 */
-        .orders-container {
-            padding: 15px;
-            max-width: 100%;
-            margin: 0 auto;
-        }
-
-        .order-card {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-            border-left: 4px solid #2196F3;
-        }
-
-        .order-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-        }
-
-        .order-info {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .order-info p {
-            margin: 0;
-            line-height: 1.5;
-            display: flex;
-            align-items: baseline;
-            font-size: 15px;
-            color: #444;
-        }
-
-        .order-info strong {
-            color: #333;
-            min-width: 80px;
-            font-size: 14px;
-            position: relative;
-            margin-right: 12px;
-        }
-
-        /* 统一状态标签样式 */
-        .status-badge, .order-status {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .order-status {
-            font-size: 12px;  /* 特殊调整订单列表中的大小 */
-            margin-left: 8px;
-        }
-
-        /* 统一状态颜色 */
-        .status-pending {
-            background-color: #ffc107;
-            color: #000;
-        }
-
-        .status-allocated {
-            background-color: #28a745;
-            color: #fff;
-        }
-
-        .status-completed {
-            background-color: #17a2b8;
-            color: #fff;
-        }
-
-        .status-cancelled {
-            background-color: #dc3545;
-            color: #fff;
-        }
-
-        .status-unknown {
-            background-color: #6c757d;
-            color: #fff;
-        }
-
-        /* 空状态和错误状态样式 */
-        .no-orders {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-            font-size: 15px;
-            background-color: #f8f9fa;
-            border-radius: 12px;
-            margin: 20px;
-        }
-
-        .no-orders i {
-            display: block;
-            font-size: 40px;
-            margin-bottom: 10px;
-            color: #999;
-        }
-
-        .error-message {
-            text-align: center;
-            padding: 20px;
-            color: #dc3545;
-            font-size: 15px;
-            background-color: #fff5f5;
-            border-radius: 12px;
-            margin: 20px;
-            border: 1px solid #ffebee;
-        }
-
-        /* 日历容器样式优化 */
-        #mobileCalendar {
-            max-width: 100%;
-            height: auto !important;
-            min-height: 500px;
-            margin: 10px 0;
-        }
-
-        /* 确保日历在模态框中正确显示 */
-        .fc {
-            height: 100%;
-            background-color: white;
-        }
-
-        /* 优化模态框中的标题样式 */
-        .modal-content h2 {
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        /* 响应式调整 */
-        @media screen and (max-width: 768px) {
-            .modal-content {
-                margin: 2% auto;
-                width: 95%;
-                padding: 10px;
-            }
-
-            #mobileCalendar {
-                min-height: 400px;
-            }
-        }
-
-        /* 日期选择器样式优化 */
-        input[type="datetime-local"] {
-            appearance: none;
-            -webkit-appearance: none;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-            font-size: 16px;
-            width: 100%;
-            color: #333;
-            cursor: pointer;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        input[type="datetime-local"]:hover {
-            border-color: #2196F3;
-        }
-
-        input[type="datetime-local"]:focus {
-            outline: none;
-            border-color: #2196F3;
-            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
-        }
-
-        /* 针对iOS设备的特殊样式 */
-        @supports (-webkit-touch-callout: none) {
-            input[type="datetime-local"] {
-                min-height: 44px;
-                /* iOS建议的最小触摸区域 */
-                line-height: 1.3;
-            }
-        }
-
-        /* 日期选择器容器样式 */
-        .datetime-container {
-            position: relative;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .datetime-container label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        /* 时间警告提示样式优化 */
-        #timeWarning {
-            margin-top: 8px;
-            padding: 8px 12px;
-            background-color: #fff3e0;
-            border-left: 4px solid #ff9800;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #e65100;
-            display: none;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* 响应式调整 */
-        @media screen and (max-width: 480px) {
-            input[type="datetime-local"] {
-                font-size: 14px;
-                padding: 8px;
-            }
-
-            #timeWarning {
-                font-size: 12px;
-                padding: 6px 10px;
-            }
-        }
-
-        /* 天气卡片样式调整 */
+        /* 天气卡片样式 */
+        
         .weather-container {
             padding: 10px;
             border-radius: 8px;
@@ -737,7 +379,7 @@
             color: white;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
-
+        
         .weather-container p {
             margin: 8px 0;
             font-size: 1em;
@@ -745,7 +387,7 @@
             align-items: center;
             line-height: 1.3;
         }
-
+        
         .weather-location {
             font-size: 1.1em !important;
             font-weight: bold;
@@ -753,1111 +395,29 @@
             padding-bottom: 5px;
             margin-bottom: 10px !important;
         }
-
+        
         .weather-temp {
             font-size: 1.5em !important;
             font-weight: bold;
             margin: 10px 0 !important;
         }
-
+        
         .weather-details {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 6px;
             padding: 8px;
             margin-top: 10px;
         }
-
-        /* 调整内容区域的样式 */
-        .content-container {
-            padding-bottom: 60px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+        
+        .weather-update-time {
+            margin-top: 8px !important;
+            padding-top: 8px !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9em !important;
+            color: rgba(255, 255, 255, 0.9);
         }
-
-        /* 日期选择器样式优化 */
-        .flatpickr-calendar {
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-            width: 320px;
-            padding: 20px;
-            border: none;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        /* 月份导航区域 */
-        .flatpickr-months {
-            position: relative;
-            margin-bottom: 15px;
-        }
-
-        .flatpickr-month {
-            background: transparent;
-            color: #1a1a1a;
-            height: 40px;
-        }
-
-        .flatpickr-current-month {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            padding: 0;
-        }
-
-        .flatpickr-monthDropdown-months {
-            font-weight: 600;
-            font-size: 16px;
-            color: #1a1a1a;
-            padding: 5px;
-            border-radius: 8px;
-        }
-
-        .flatpickr-monthDropdown-months:hover {
-            background: #f5f5f5;
-        }
-
-        .numInputWrapper {
-            width: 70px;
-        }
-
-        .numInputWrapper input {
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        /* 月份切换按钮 */
-        .flatpickr-months .flatpickr-prev-month,
-        .flatpickr-months .flatpickr-next-month {
-            top: 0;
-            height: 40px;
-            padding: 8px;
-        }
-
-        .flatpickr-months .flatpickr-prev-month svg,
-        .flatpickr-months .flatpickr-next-month svg {
-            fill: #666;
-            width: 16px;
-            height: 16px;
-        }
-
-        .flatpickr-months .flatpickr-prev-month:hover svg,
-        .flatpickr-months .flatpickr-next-month:hover svg {
-            fill: #2196F3;
-        }
-
-        /* 星期显示 */
-        .flatpickr-weekdays {
-            background: transparent;
-            margin: 15px 0 10px;
-        }
-
-        .flatpickr-weekday {
-            color: #999 !important;
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        /* 日期网格 */
-        .dayContainer {
-            padding: 0;
-            min-width: 280px;
-        }
-
-        .flatpickr-day {
-            margin: 2px;
-            height: 38px;
-            line-height: 38px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #333;
-            border: none;
-        }
-
-        .flatpickr-day.selected {
-            background: #2196F3;
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
-        }
-
-        .flatpickr-day.today {
-            border: 2px solid #2196F3;
-            color: #2196F3;
-        }
-
-        .flatpickr-day:hover {
-            background: #f0f7ff;
-        }
-
-        .flatpickr-day.prevMonthDay,
-        .flatpickr-day.nextMonthDay {
-            color: #ddd;
-        }
-
-        .flatpickr-day.disabled {
-            color: #eee;
-            cursor: not-allowed;
-        }
-
-        /* 时间选择器 */
-        .flatpickr-time {
-            height: 50px;
-            line-height: 50px;
-            margin-top: 15px;
-            border-top: 1px solid #eee;
-        }
-
-        .flatpickr-time input {
-            font-size: 15px;
-            font-weight: 500;
-            color: #333;
-            height: 50px;
-            background: transparent;
-        }
-
-        .flatpickr-time input:hover,
-        .flatpickr-time input:focus {
-            background: #f5f5f5;
-        }
-
-        .flatpickr-time .numInputWrapper {
-            height: 50px;
-            position: relative;
-        }
-
-        .flatpickr-time .numInputWrapper span {
-            border: none;
-            opacity: 0.7;
-            padding: 0 8px;
-        }
-
-        .flatpickr-time .numInputWrapper span:hover {
-            background: #f0f7ff;
-            opacity: 1;
-        }
-
-        /* 移动设备适配 */
-        @media screen and (max-width: 480px) {
-            .flatpickr-calendar {
-                width: 300px;
-                padding: 15px;
-            }
-
-            .flatpickr-day {
-                height: 35px;
-                line-height: 35px;
-                font-size: 13px;
-            }
-
-            .flatpickr-current-month {
-                font-size: 15px;
-            }
-
-            .flatpickr-time {
-                height: 45px;
-                line-height: 45px;
-            }
-
-            .flatpickr-time input {
-                height: 45px;
-                font-size: 14px;
-            }
-        }
-
-        /* 输入框样式 */
-        input[type="text"]#preferredTime {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 15px;
-            color: #333;
-            background: #fff;
-            transition: all 0.3s ease;
-        }
-
-        input[type="text"]#preferredTime:hover {
-            border-color: #2196F3;
-        }
-
-        input[type="text"]#preferredTime:focus {
-            outline: none;
-            border-color: #2196F3;
-            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-        }
-
-        /* 警告提示样式 */
-        #timeWarning {
-            margin-top: 8px;
-            padding: 10px 15px;
-            background: #fff4e5;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #ff6b00;
-            display: none;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* 针对iOS设备的特殊样式 */
-        @supports (-webkit-touch-callout: none) {
-            input[type="text"]#preferredTime {
-                min-height: 44px;
-                /* iOS建议的最小触摸区域 */
-                line-height: 1.3;
-            }
-        }
-
-        /* 添加或更新相关样式 */
-        .flatpickr-calendar {
-            position: static !important;
-            margin: 0 auto !important;
-        }
-
-        .datetime-container {
-            position: relative;
-            width: 100%;
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* 日期选择器相关样式 */
-        .datetime-container {
-            position: relative;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .datetime-container label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        input[type="text"]#preferredTime {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            color: #333;
-            background-color: #fff;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        input[type="text"]#preferredTime:hover {
-            border-color: #2196F3;
-        }
-
-        input[type="text"]#preferredTime:focus {
-            outline: none;
-            border-color: #2196F3;
-            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
-        }
-
-        #timeWarning {
-            margin-top: 8px;
-            padding: 8px 12px;
-            background-color: #fff3e0;
-            border-left: 4px solid #ff9800;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #e65100;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        /* Flatpickr 自定义样式 */
-        .flatpickr-calendar {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            border: none;
-            width: 100%;
-            max-width: 320px;
-            font-family: inherit;
-            margin: 8px auto;
-        }
-
-        .flatpickr-months {
-            background-color: #2196F3;
-            border-radius: 8px 8px 0 0;
-            padding: 8px 0;
-        }
-
-        .flatpickr-month {
-            color: #fff !important;
-        }
-
-        .flatpickr-current-month {
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .flatpickr-monthDropdown-months,
-        .numInputWrapper {
-            color: #fff !important;
-        }
-
-        .flatpickr-weekday {
-            color: #2196F3 !important;
-            font-weight: 500;
-        }
-
-        .flatpickr-day {
-            border-radius: 4px;
-            margin: 2px;
-            height: 36px;
-            line-height: 36px;
-        }
-
-        .flatpickr-day.selected,
-        .flatpickr-day.selected:hover {
-            background-color: #2196F3;
-            border-color: #2196F3;
-        }
-
-        .flatpickr-day:hover {
-            background-color: #e3f2fd;
-        }
-
-        .flatpickr-time {
-            border-top: 1px solid #eee;
-            background: #f8f9fa;
-            border-radius: 0 0 8px 8px;
-        }
-
-        .flatpickr-time input {
-            color: #333;
-            font-size: 15px;
-        }
-
-        .flatpickr-time .flatpickr-am-pm {
-            color: #333;
-        }
-
-        /* 响应式调整 */
-        @media screen and (max-width: 480px) {
-            .flatpickr-calendar {
-                width: 95%;
-                margin: 8px auto;
-            }
-
-            .flatpickr-day {
-                height: 32px;
-                line-height: 32px;
-            }
-
-            input[type="text"]#preferredTime {
-                padding: 10px;
-                font-size: 15px;
-            }
-        }
-
-        /* 确保日期选择器在模态框中正确显示 */
-        #newOrder .flatpickr-calendar {
-            position: absolute !important;
-            margin: 0 !important;
-            max-height: calc(100vh - 200px);
-            /* 限制最大高度 */
-            overflow-y: auto;
-            /* 如果内容过多允许滚动 */
-        }
-
-        /* 确保模态框内容可以滚动 */
-        #orderManagementModal .modal-content {
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        /* 优化滚动条样式 */
-        #orderManagementModal .modal-content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        #orderManagementModal .modal-content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        #orderManagementModal .modal-content::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 3px;
-        }
-
-        #orderManagementModal .modal-content::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        /* 确保日期选择器在移动设备上也能正确显示 */
-        @media screen and (max-width: 480px) {
-            #newOrder .flatpickr-calendar {
-                width: 95% !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                max-height: calc(100vh - 160px);
-            }
-        }
-
-        /* 优化字体显示效果 */
-        .datetime-container {
-            position: relative;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .datetime-container label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-            font-size: 15px;
-            letter-spacing: 0.3px;
-        }
-
-        input[type="text"]#preferredTime {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 15px;
-            font-weight: normal;
-            color: #333;
-            letter-spacing: 0.5px;
-            background-color: #fff;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        #timeWarning {
-            margin-top: 8px;
-            padding: 8px 12px;
-            background-color: #fff3e0;
-            border-left: 4px solid #ff9800;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: normal;
-            letter-spacing: 0.3px;
-            line-height: 1.4;
-            color: #e65100;
-        }
-
-        /* Flatpickr 日期选择器整体优化 */
-        .flatpickr-calendar {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        .flatpickr-current-month {
-            font-size: 15px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-
-        .flatpickr-current-month .cur-month {
-            font-weight: 600;
-        }
-
-        .flatpickr-monthDropdown-months {
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .numInputWrapper span {
-            font-size: 14px;
-        }
-
-        .flatpickr-weekday {
-            font-size: 13px;
-            font-weight: 500;
-            letter-spacing: 0.3px;
-            color: #666 !important;
-        }
-
-        .flatpickr-day {
-            font-size: 14px;
-            font-weight: normal;
-            letter-spacing: 0.3px;
-            color: #333;
-        }
-
-        .flatpickr-day.selected {
-            font-weight: 500;
-        }
-
-        .flatpickr-time {
-            font-size: 14px;
-        }
-
-        .flatpickr-time input {
-            font-size: 14px;
-            font-weight: normal;
-            letter-spacing: 0.3px;
-        }
-
-        .flatpickr-time .flatpickr-am-pm {
-            font-size: 14px;
-            font-weight: normal;
-            letter-spacing: 0.3px;
-        }
-
-        /* 移动设备适配 */
-        @media screen and (max-width: 480px) {
-            .datetime-container label {
-                font-size: 14px;
-            }
-
-            input[type="text"]#preferredTime {
-                font-size: 14px;
-                padding: 10px;
-            }
-
-            #timeWarning {
-                font-size: 12px;
-            }
-
-            .flatpickr-current-month,
-            .flatpickr-monthDropdown-months {
-                font-size: 14px;
-            }
-
-            .flatpickr-weekday {
-                font-size: 12px;
-            }
-
-            .flatpickr-day {
-                font-size: 13px;
-            }
-
-            .flatpickr-time,
-            .flatpickr-time input,
-            .flatpickr-time .flatpickr-am-pm {
-                font-size: 13px;
-            }
-        }
-
-        /* 高分辨率屏幕优化 */
-        @media (-webkit-min-device-pixel-ratio: 2),
-        (min-resolution: 192dpi) {
-            .flatpickr-calendar {
-                text-rendering: optimizeLegibility;
-            }
-        }
-
-        /* 优化日期选择器内部显示效果 */
-        .flatpickr-calendar {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-            padding: 12px;
-            width: 320px;
-        }
-
-        /* 月份选择区域 */
-        .flatpickr-months {
-            background-color: #2196F3;
-            border-radius: 8px;
-            padding: 12px 0;
-            margin: -12px -12px 12px -12px;
-        }
-
-        .flatpickr-month {
-            height: 36px;
-        }
-
-        .flatpickr-current-month {
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .flatpickr-monthDropdown-months {
-            background-color: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-            padding: 2px 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .flatpickr-monthDropdown-months:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-
-        /* 月份切换按钮 */
-        .flatpickr-months .flatpickr-prev-month,
-        .flatpickr-months .flatpickr-next-month {
-            top: 12px;
-            height: 36px;
-            padding: 0 10px;
-            transition: all 0.2s ease;
-        }
-
-        .flatpickr-months .flatpickr-prev-month:hover,
-        .flatpickr-months .flatpickr-next-month:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-        }
-
-        .flatpickr-months .flatpickr-prev-month svg,
-        .flatpickr-months .flatpickr-next-month svg {
-            fill: #fff;
-            width: 16px;
-            height: 16px;
-        }
-
-        /* 星期显示 */
-        .flatpickr-weekdays {
-            margin: 8px 0;
-        }
-
-        .flatpickr-weekday {
-            color: #666 !important;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        /* 日期网格 */
-        .flatpickr-days {
-            border-top: 1px solid #eee;
-            padding-top: 8px;
-        }
-
-        .dayContainer {
-            padding: 0 4px;
-            min-width: 280px;
-        }
-
-        .flatpickr-day {
-            margin: 2px;
-            height: 36px;
-            line-height: 36px;
-            border-radius: 8px;
-            color: #333;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .flatpickr-day.selected {
-            background-color: #2196F3;
-            border-color: #2196F3;
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .flatpickr-day:hover {
-            background-color: #e3f2fd;
-            border-color: transparent;
-        }
-
-        .flatpickr-day.today {
-            border-color: #2196F3;
-            color: #2196F3;
-            font-weight: 600;
-        }
-
-        .flatpickr-day.prevMonthDay,
-        .flatpickr-day.nextMonthDay {
-            color: #bbb;
-        }
-
-        /* 时间选择器 */
-        .flatpickr-time {
-            border-top: 1px solid #eee;
-            margin-top: 12px;
-            padding-top: 12px;
-            height: 44px;
-        }
-
-        .flatpickr-time input {
-            font-size: 15px;
-            font-weight: 500;
-            color: #333;
-            height: 32px;
-            background: transparent;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .flatpickr-time input:hover {
-            background-color: #f5f5f5;
-        }
-
-        .flatpickr-time input:focus {
-            background-color: #e3f2fd;
-            border-color: #2196F3;
-        }
-
-        .numInputWrapper {
-            position: relative;
-            height: 32px;
-        }
-
-        .numInputWrapper span {
-            border: none;
-            padding: 0 4px;
-            height: 16px;
-            opacity: 0.7;
-            transition: all 0.2s ease;
-        }
-
-        .numInputWrapper span:hover {
-            opacity: 1;
-            background-color: #e3f2fd;
-        }
-
-        .numInputWrapper span.arrowUp {
-            border-bottom: 1px solid #eee;
-        }
-
-        /* 移动设备适配 */
-        @media screen and (max-width: 480px) {
-            .flatpickr-calendar {
-                width: 300px;
-                padding: 8px;
-            }
-
-            .flatpickr-months {
-                padding: 8px 0;
-                margin: -8px -8px 8px -8px;
-            }
-
-            .flatpickr-day {
-                height: 32px;
-                line-height: 32px;
-                margin: 1px;
-            }
-
-            .flatpickr-time {
-                margin-top: 8px;
-                padding-top: 8px;
-                height: 40px;
-            }
-
-            .flatpickr-time input {
-                height: 28px;
-                font-size: 14px;
-            }
-
-            .numInputWrapper {
-                height: 28px;
-            }
-        }
-
-        /* 高对比度模式支持 */
-        @media (prefers-contrast: more) {
-            .flatpickr-day.selected {
-                background-color: #1976D2;
-                border: 2px solid #000;
-            }
-
-            .flatpickr-day.today {
-                border-width: 2px;
-            }
-        }
-
-        /* 优化日期选择器 UI */
-        .flatpickr-calendar {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-            padding: 16px;
-            width: 330px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* 月份选择区域优化 */
-        .flatpickr-months {
-            background-color: #2196F3;
-            border-radius: 8px;
-            padding: 16px 0;
-            margin: -16px -16px 16px -16px;
-        }
-
-        .flatpickr-month {
-            height: 40px;
-        }
-
-        .flatpickr-current-month {
-            font-size: 17px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            color: #fff;
-        }
-
-        .flatpickr-monthDropdown-months {
-            font-size: 17px;
-            font-weight: 600;
-            height: 32px;
-            padding: 0 12px;
-        }
-
-        /* 星期显示优化 */
-        .flatpickr-weekdays {
-            margin: 12px 0;
-        }
-
-        .flatpickr-weekday {
-            font-size: 14px;
-            font-weight: 600;
-            color: #2196F3 !important;
-            letter-spacing: 0.5px;
-            opacity: 1;
-        }
-
-        /* 日期网格优化 */
-        .dayContainer {
-            padding: 0 4px;
-            min-width: 290px;
-        }
-
-        .flatpickr-day {
-            font-size: 15px;
-            font-weight: 500;
-            height: 40px;
-            line-height: 40px;
-            margin: 2px;
-            border-radius: 8px;
-            color: #333;
-            transition: all 0.2s ease;
-        }
-
-        .flatpickr-day.selected {
-            background-color: #2196F3;
-            border-color: #2196F3;
-            color: #fff;
-            font-weight: 600;
-            box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
-        }
-
-        .flatpickr-day.today {
-            border-color: #2196F3;
-            color: #2196F3;
-            font-weight: 600;
-            background-color: #e3f2fd;
-        }
-
-        .flatpickr-day:hover {
-            background-color: #e3f2fd;
-            border-color: transparent;
-        }
-
-        .flatpickr-day.prevMonthDay,
-        .flatpickr-day.nextMonthDay {
-            color: #bbb;
-            font-weight: 400;
-        }
-
-        .flatpickr-day.disabled {
-            color: #ddd;
-            font-weight: 400;
-            cursor: not-allowed;
-        }
-
-        /* 时间选择器优化 */
-        .flatpickr-time {
-            border-top: 1px solid #eee;
-            margin-top: 16px;
-            padding-top: 16px;
-            height: 48px;
-        }
-
-        .flatpickr-time input {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            height: 36px;
-            background: #f5f5f5;
-            border-radius: 6px;
-            padding: 0 8px;
-        }
-
-        .flatpickr-time input:hover {
-            background-color: #e3f2fd;
-        }
-
-        .flatpickr-time input:focus {
-            background-color: #e3f2fd;
-            color: #2196F3;
-        }
-
-        .numInputWrapper {
-            height: 36px;
-        }
-
-        .numInputWrapper span {
-            border: none;
-            height: 18px;
-            line-height: 18px;
-            font-size: 12px;
-            padding: 0 8px;
-            opacity: 0.8;
-        }
-
-        .numInputWrapper span:hover {
-            background-color: #e3f2fd;
-            opacity: 1;
-        }
-
-        /* 移动设备适配优化 */
-        @media screen and (max-width: 480px) {
-            .flatpickr-calendar {
-                width: 310px;
-                padding: 12px;
-            }
-
-            .flatpickr-months {
-                padding: 12px 0;
-                margin: -12px -12px 12px -12px;
-            }
-
-            .flatpickr-current-month {
-                font-size: 16px;
-            }
-
-            .flatpickr-monthDropdown-months {
-                font-size: 16px;
-            }
-
-            .flatpickr-weekday {
-                font-size: 13px;
-            }
-
-            .flatpickr-day {
-                font-size: 14px;
-                height: 36px;
-                line-height: 36px;
-            }
-
-            .flatpickr-time input {
-                font-size: 15px;
-                height: 32px;
-            }
-        }
-
-        /* 高清屏幕优化 */
-        @media (-webkit-min-device-pixel-ratio: 2),
-        (min-resolution: 192dpi) {
-            .flatpickr-calendar {
-                text-rendering: optimizeLegibility;
-            }
-
-            .flatpickr-day,
-            .flatpickr-current-month,
-            .flatpickr-weekday {
-                -webkit-font-smoothing: subpixel-antialiased;
-            }
-        }
-
-        /* 深色模式支持 */
-        @media (prefers-color-scheme: dark) {
-            .flatpickr-calendar {
-                background: #333;
-                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-            }
-
-            .flatpickr-day {
-                color: #fff;
-            }
-
-            .flatpickr-day.disabled {
-                color: #666;
-            }
-
-            .flatpickr-time {
-                border-top-color: #444;
-            }
-
-            .flatpickr-time input {
-                background: #444;
-                color: #fff;
-            }
-        }
-
-        /* 输入框样式 */
-        input[type="text"]#preferredTime {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 15px;
-            color: #333;
-            background: #fff;
-            transition: all 0.3s ease;
-        }
-
-        input[type="text"]#preferredTime:hover {
-            border-color: #2196F3;
-        }
-
-        input[type="text"]#preferredTime:focus {
-            outline: none;
-            border-color: #2196F3;
-            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-        }
-
-        /* 警告提示样式 */
-        #timeWarning {
-            margin-top: 8px;
-            padding: 10px 15px;
-            background: #fff4e5;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #ff6b00;
-            display: none;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* 移动设备优化 */
-        @media screen and (max-width: 480px) {
-            .mbsc-ios.mbsc-calendar-cell-text {
-                font-size: 13px;
-            }
-
-            input[type="text"]#preferredTime {
-                font-size: 14px;
-                padding: 10px 12px;
-            }
-        }
-
         /* 日期时间选择器样式 */
+        
         .datetime-picker {
             display: none;
             position: fixed;
@@ -1866,9 +426,16 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            z-index: 2000;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            will-change: opacity;
         }
-
+        
+        .datetime-picker.active {
+            display: block;
+        }
+        
         .picker-container {
             position: fixed;
             left: 0;
@@ -1879,138 +446,309 @@
             transform: translateY(100%);
             transition: transform 0.3s ease;
             box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
-            /* 添加全区域适配 */
             padding-bottom: env(safe-area-inset-bottom);
+            -webkit-transform: translateZ(0);
+            will-change: transform;
         }
-
+        
+        .datetime-picker.active .picker-container {
+            transform: translateY(0);
+        }
+        
+        .picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid rgba(33, 150, 243, 0.1);
+            background: rgba(33, 150, 243, 0.05);
+        }
+        
+        .picker-header button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        .picker-cancel {
+            background-color: #f5f5f5;
+            color: #666;
+        }
+        
+        .picker-cancel:hover {
+            background-color: #eeeeee;
+        }
+        
+        .picker-confirm {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .picker-confirm:hover {
+            background-color: #1976D2;
+        }
+        
+        .picker-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
         .picker-content {
             display: flex;
             height: 250px;
             padding: 20px;
-            overflow: hidden;
-            /* 防止内容溢出 */
+            background: #fff;
         }
-
-        /* Swiper 容器样式更新 */
+        /* Swiper 相关样式 */
+        
         .swiper-container {
             flex: 1;
             height: 100%;
+            position: relative;
             overflow: hidden;
-            /* 防止滑动内容溢出 */
         }
-
-        .swiper-wrapper {
-            height: 100%;
+        
+        .swiper-scrollbar {
+            width: 4px !important;
+            right: 4px !important;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
         }
-
-        .swiper-slide {
-            height: auto !important;
-            /* 确保滑块高度正确 */
+        
+        .swiper-scrollbar-drag {
+            background: rgba(33, 150, 243, 0.5);
+            border-radius: 2px;
+        }
+        
+        .date-item,
+        .time-item {
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .date-item,
-        .time-item {
+            height: 40px;
             font-size: 16px;
-            color: #333;
-            padding: 10px;
-            white-space: nowrap;
-            /* 防止文本换行 */
-            overflow: hidden;
-            /* 防止溢出 */
-            text-overflow: ellipsis;
-            /* 文本溢出时显示省略号 */
-            width: 100%;
-            /* 确保宽度填充 */
-            text-align: center;
-            /* 优化移动端触摸体验 */
-            touch-action: pan-y;
-            /* 添加移动端振动反馈 */
-            user-select: none;
-            -webkit-user-select: none;
+            color: #666;
+            transition: all 0.3s ease;
+            padding: 0 10px;
+            border-radius: 8px;
         }
-
-        /* 活动滑块样式 */
+        
+        .swiper-slide {
+            transition: all 0.3s ease;
+        }
+        
+        .swiper-slide:hover .date-item,
+        .swiper-slide:hover .time-item {
+            background: rgba(33, 150, 243, 0.05);
+        }
+        
         .swiper-slide-active .date-item,
         .swiper-slide-active .time-item {
-            font-size: 18px;
-            font-weight: 500;
             color: #2196F3;
-            /* 添加移动端振动反馈 */
+            font-weight: bold;
+            background: rgba(33, 150, 243, 0.1);
             transform: scale(1.05);
         }
-
-        /* 滚动条样式优化 */
-        .swiper-scrollbar {
-            width: 4px !important;
-            right: 0 !important;
-            opacity: 0.3;
+        /* 订单状态样式 */
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
         }
-
-        /* 响应式调整 */
-        @media screen and (max-width: 480px) {
-            .picker-container {
-                max-height: 70vh;
+        
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .status-allocated {
+            background-color: #28a745;
+            color: #fff;
+        }
+        
+        .status-completed {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+        
+        .status-cancelled {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        
+        .status-unknown {
+            background-color: #6c757d;
+            color: #fff;
+        }
+        /* 加载状态指示器 */
+        
+        .loading-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loading-text {
+            margin-top: 10px;
+            color: #333;
+        }
+        
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
             }
-
-            .picker-content {
-                height: 200px;
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        /* 移动端适配 */
+        
+        @media screen and (max-width: 480px) {
+            .modal-content {
+                margin: 2% auto;
+                width: 95%;
                 padding: 15px;
             }
-
+            .datetime-picker .picker-container {
+                width: 95% !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                max-height: calc(100vh - 160px);
+            }
             .date-item,
             .time-item {
                 font-size: 14px;
                 padding: 8px;
             }
-
-            .swiper-slide-active .date-item,
-            .swiper-slide-active .time-item {
-                font-size: 16px;
+            .picker-header button {
+                font-size: 14px;
+                padding: 8px 12px;
             }
         }
-
-        /* 添加显示状态的样式 */
-        .datetime-picker.active {
-            display: block;
-            background-color: rgba(0, 0, 0, 0.5);
+        /* 深色模式支持 */
+        
+        @media (prefers-color-scheme: dark) {
+            .datetime-picker .picker-container {
+                background: #333;
+            }
+            .picker-header {
+                background: rgba(33, 150, 243, 0.1);
+                border-bottom-color: rgba(255, 255, 255, 0.1);
+            }
+            .picker-title {
+                color: #fff;
+            }
+            .date-item,
+            .time-item {
+                color: #bbb;
+            }
+            .swiper-slide:hover .date-item,
+            .swiper-slide:hover .time-item {
+                background: rgba(255, 255, 255, 0.05);
+            }
+            .swiper-slide-active .date-item,
+            .swiper-slide-active .time-item {
+                background: rgba(33, 150, 243, 0.2);
+            }
         }
-
-        .picker-content {
-            display: flex;
-            height: 250px;
-            padding: 20px;
-            overflow: hidden;
-            /* 防止内容溢出 */
+        /* 动画 */
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-
-        .swiper-container {
-            flex: 1;
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* 遮罩层样式 */
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
-            overflow: hidden;
-            /* 防止滑动内容溢出 */
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
         }
-
-        /* 在已有的style标签中添加 */
+        
+        .overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        /* 消息提示模态框样式 */
+        
         .message-modal {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 2000;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s ease-out;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
         }
-
+        
+        .message-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
         .message-content {
             position: fixed;
             left: 50%;
             top: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(0.9);
             background-color: #fff;
             padding: 20px;
             border-radius: 12px;
@@ -2018,179 +756,36 @@
             text-align: center;
             min-width: 280px;
             max-width: 90%;
-        }
-
-        .message-content p {
-            margin: 0 0 20px 0;
-            font-size: 16px;
-            color: #333;
-            line-height: 1.4;
-        }
-
-        .message-content button {
-            padding: 8px 24px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .message-content button:hover {
-            background-color: #1976D2;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* 添加表单提示信息样式 */
-        .form-message {
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 8px;
-            animation: slideIn 0.3s ease-out;
-            display: none;
-        }
-
-        .form-message.success {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border: 1px solid #c8e6c9;
-        }
-
-        .form-message.error {
-            background-color: #ffebee;
-            color: #c62828;
-            border: 1px solid #ffcdd2;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* 添加或更新 body 样式 */
-        body.modal-open {
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* 更新 modal 样式 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* 更新 modal-content 样式 */
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15px auto;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            position: relative;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        /* 更新 logout-modal 样式 */
-        .logout-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            /* 提高z-index确保在其他模态框之上 */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .logout-modal-content {
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 85%;
-            max-width: 320px;
-        }
-
-        .logout-modal-content p {
-            margin: 0 0 20px 0;
-            font-size: 16px;
-            color: #333;
-            line-height: 1.4;
-        }
-
-        .logout-modal-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .logout-modal-buttons button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
+            opacity: 0;
             transition: all 0.3s ease;
         }
-
-        #confirmLogout {
-            background-color: #ff4d4f;
-            color: white;
+        
+        .message-modal.show .message-content {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
         }
-
-        #confirmLogout:hover {
-            background-color: #ff7875;
+        /* 订单详情卡片样式 */
+        
+        .detail-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1004;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
         }
-
-        #cancelLogout {
-            background-color: #f0f0f0;
-            color: #333;
+        
+        .detail-overlay.show {
+            opacity: 1;
+            visibility: visible;
+            display: block;
         }
-
-        #cancelLogout:hover {
-            background-color: #d9d9d9;
-        }
-
-        /* 在现有的 style 标签中添加以下样式 */
-
-        /* 订详情卡片样式 */
+        
         .order-detail-card {
             position: fixed;
             bottom: 0;
@@ -2205,794 +800,46 @@
             z-index: 1005;
             max-height: 80vh;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
-
+        
         .order-detail-card.show {
             transform: translateY(0);
         }
-
-        .detail-header {
-            position: relative;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            text-align: center;
-        }
-
-        .detail-header h3 {
-            margin: 0;
-            font-size: 18px;
-            color: #333;
-        }
-
-        .close-detail {
-            position: absolute;
-            right: 0;
-            top: 0;
-            padding: 8px;
-            background: none;
-            border: none;
-            font-size: 20px;
-            color: #666;
-            cursor: pointer;
-        }
-
-        .detail-content {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .detail-row {
-            background: #f8f9fa;
-            padding: 12px 15px;
-            border-radius: 10px;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .detail-label {
-            color: #666;
-            font-size: 14px;
-            min-width: 70px;
-        }
-
-        .detail-value {
-            color: #333;
-            font-size: 14px;
-            flex: 1;
-            word-break: break-all;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .status-badge.allocated {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .status-badge.pending {
-            background-color: #fff3e0;
-            color: #ef6c00;
-        }
-
-        /* 背景遮罩 */
-        .detail-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease;
-            z-index: 1004;
-        }
-
-        .detail-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* 下拉指示器 */
-        .pull-indicator {
-            width: 40px;
-            height: 4px;
-            background: #ddd;
-            border-radius: 2px;
-            margin: 0 auto 15px;
-        }
-
-        /* 更新按钮样式 */
-        .tab-link,
-        .picker-cancel,
-        .picker-confirm,
-        .message-content button,
-        .logout-modal-buttons button,
-        #confirmLogout,
-        #cancelLogout {
-            /* 保持现有样式 */
-
-            /* 添加以下属性 */
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            pointer-events: auto;
-            cursor: pointer;
-        }
-
-        /* 按钮内的文本不可选择 */
-        .tab-link span,
-        .picker-cancel span,
-        .picker-confirm span,
-        .message-content button span,
-        .logout-modal-buttons button span {
-            pointer-events: none;
-        }
-
-        /* 在现有样式中添加以下内容 */
-        button {
-            cursor: default !important;
-        }
-
-        .tab-link {
-            cursor: default;
-        }
-
-        .close-button {
-            cursor: default;
-        }
-
-        .tab-content button {
-            cursor: default;
-        }
-
-        .message-content button {
-            cursor: default;
-        }
-
-        .picker-cancel,
-        .picker-confirm {
-            cursor: default;
-        }
-
-        /* 添加加载状态指示器 */
-        .loading-indicator {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #2196F3;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .loading-text {
-            margin-top: 10px;
-            color: #333;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* 修改日期选择器的样式部分 */
-        .datetime-picker {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-        }
-
-        .datetime-picker.active {
-            display: block;
-        }
-
-        .picker-container {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: white;
-            border-radius: 16px 16px 0 0;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
-        }
-
-        .datetime-picker.active .picker-container {
-            transform: translateY(0);
-        }
-
-        .picker-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px;
-            border-bottom: 1px solid rgba(33, 150, 243, 0.1);
-            background: rgba(33, 150, 243, 0.05);
-        }
-
-        .picker-header button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            /* 移除移动端点击高亮 */
-            touch-action: manipulation;
-            /* 优化移动端点击体验 */
-            /* 增大移动端点击区域 */
-            min-height: 44px;
-            min-width: 44px;
-        }
-
-        .picker-cancel {
-            background-color: #f5f5f5;
-            color: #666;
-        }
-
-        .picker-cancel:hover {
-            background-color: #eeeeee;
-        }
-
-        .picker-confirm {
-            background-color: #2196F3;
-            color: white;
-        }
-
-        .picker-confirm:hover {
-            background-color: #1976D2;
-        }
-
-        .picker-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .picker-content {
-            display: flex;
-            height: 250px;
-            padding: 20px;
-            background: #fff;
-        }
-
-        .swiper-container {
-            flex: 1;
-            height: 100%;
-            position: relative;
+        /* 禁止滚动时的样式 */
+        
+        body.modal-open {
             overflow: hidden;
-        }
-
-        .swiper-scrollbar {
-            width: 4px !important;
-            right: 4px !important;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 2px;
-        }
-
-        .swiper-scrollbar-drag {
-            background: rgba(33, 150, 243, 0.5);
-            border-radius: 2px;
-        }
-
-        .date-item,
-        .time-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 40px;
-            font-size: 16px;
-            color: #666;
-            transition: all 0.3s ease;
-            padding: 0 10px;
-            border-radius: 8px;
-        }
-
-        .swiper-slide {
-            transition: all 0.3s ease;
-        }
-
-        .swiper-slide:hover .date-item,
-        .swiper-slide:hover .time-item {
-            background: rgba(33, 150, 243, 0.05);
-        }
-
-        .swiper-slide-active .date-item,
-        .swiper-slide-active .time-item {
-            color: #2196F3;
-            font-weight: bold;
-            background: rgba(33, 150, 243, 0.1);
-            transform: scale(1.05);
-        }
-
-        /* 添加滑动指示器 */
-        .picker-content::before,
-        .picker-content::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 40px;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .picker-content::before {
-            top: 0;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
-        }
-
-        .picker-content::after {
-            bottom: 0;
-            background: linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
-        }
-
-        /* 适配深色模式 */
-        @media (prefers-color-scheme: dark) {
-            .picker-container {
-                background: #333;
-            }
-
-            .picker-header {
-                background: rgba(33, 150, 243, 0.1);
-                border-bottom-color: rgba(255, 255, 255, 0.1);
-            }
-
-            .picker-title {
-                color: #fff;
-            }
-
-            .picker-cancel {
-                background-color: #424242;
-                color: #fff;
-            }
-
-            .picker-cancel:hover {
-                background-color: #505050;
-            }
-
-            .date-item,
-            .time-item {
-                color: #bbb;
-            }
-
-            .swiper-slide:hover .date-item,
-            .swiper-slide:hover .time-item {
-                background: rgba(255, 255, 255, 0.05);
-            }
-
-            .swiper-slide-active .date-item,
-            .swiper-slide-active .time-item {
-                background: rgba(33, 150, 243, 0.2);
-            }
-        }
-
-        /* 添加按钮点击效果 */
-        .picker-header button:active {
-            transform: scale(0.95);
-        }
-
-        /* 添加硬件加速 */
-        .datetime-picker {
-            display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-            will-change: opacity;
-        }
-
-        .picker-container {
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-            will-change: transform;
-        }
-
-        /* 日期时间选择器样式 */
-        .datetime-picker {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-            will-change: opacity;
-        }
-
-        .datetime-picker.active {
-            display: block;
-        }
-
-        .picker-container {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: white;
-            border-radius: 16px 16px 0 0;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
-            padding-bottom: env(safe-area-inset-bottom);
-            -webkit-transform: translateZ(0);
-            will-change: transform;
-        }
-
-        .datetime-picker.active .picker-container {
-            transform: translateY(0);
-        }
-
-        /* 其他相关样式保持不变... */
-
-        /* 加载动画样式 */
-        .loading-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            color: #666;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #2196F3;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* 订单容器动画 */
-        .orders-container {
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        /* 空状态样式 */
-        .no-orders {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .no-orders-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .no-orders p {
-            margin: 0;
-            font-size: 16px;
-            color: #666;
-        }
-
-        /* 错误状态样式 */
-        .error-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: #dc3545;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .error-icon {
-            font-size: 32px;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .error-message p {
-            margin: 0 0 15px;
-            font-size: 16px;
-            color: #dc3545;
-        }
-
-        .retry-button {
-            padding: 8px 24px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .retry-button:hover {
-            background-color: #1976D2;
-            transform: translateY(-1px);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .complete-order-btn {
-            background-color: #2ecc71;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s;
-        }
-
-        .complete-order-btn:hover {
-            background-color: #27ae60;
-        }
-
-        .complete-order-btn:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        /* 合并重复的选择器 */
-        button,
-        .navbar a,
-        .submenu a,
-        .tab-link,
-        .user-greeting,
-        .order-status,
-        .complete-order-btn,
-        .cancel-order-btn,
-        .close-button,
-        .card,
-        .retry-button {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            /* 合并此行 */
-        }
-
-        /* 修改按钮基础样式 */
-        button {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 修改导航栏链接样式 */
-        .navbar a {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 修改子菜单链接样式 */
-        .submenu a {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 修改标签链接样式 */
-        .tab-link {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 修改用户问候语样式 */
-        .user-greeting {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 修改卡片样式 */
-        .card {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 修改订单状态标签样式 */
-        .order-status {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 修改结单按钮样式 */
-        .complete-order-btn {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 修改撤单按钮样式 */
-        .cancel-order-btn {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 修改关闭按钮样式 */
-        .close-button {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 修改重试按钮样式 */
-        .retry-button {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 添加到两个页面的 style 标签中 */
-        .weather-update-time {
-            margin-top: 8px !important;
-            padding-top: 8px !important;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 0.9em !important;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        /* 订单详情模态框样式 */
-        #orderDetailModal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
+            padding-right: 15px;
+            /* 防止滚动条消失导致页面抖动 */
         }
-
-        #orderDetailModal .modal-content {
-            position: fixed;
-            bottom: 0;
-            left: 0;
+        
+        .tab-content textarea {
             width: 100%;
-            max-height: 90vh;
-            background-color: #fff;
-            border-radius: 20px 20px 0 0;
-            padding: 20px;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-            transform: translateY(0);
-            transition: transform 0.3s ease-out;
-        }
-
-        #orderDetailModal .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        #orderDetailModal .modal-header h3 {
-            margin: 0;
-            font-size: 18px;
-        }
-
-        #orderDetailModal .close-button {
-            font-size: 24px;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        #orderDetailModal .modal-body {
-            overflow-y: auto;
-            max-height: calc(90vh - 80px);
-        }
-
-        #orderDetailModal .detail-item {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        #orderDetailModal .detail-label {
-            color: #666;
-            font-size: 14px;
-            margin-right: 10px;
-        }
-
-        #orderDetailModal .detail-value {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1em;
             color: #333;
-            font-size: 16px;
-            word-break: break-all;
+            background: #fff;
+            transition: all 0.3s ease;
+            min-height: 100px;
+            resize: none;
+            font-family: inherit;
         }
-
-        #orderDetailModal .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            color: #fff;
+        
+        .tab-content textarea:hover {
+            border-color: #2196F3;
         }
-
-        #orderDetailModal .status-badge.allocated {
-            background-color: #28a745;
-        }
-
-        #orderDetailModal .status-badge.pending {
-            background-color: #ffc107;
-            color: #000;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .status-pending {
-            background-color: #ffc107;
-            color: #000;
-        }
-
-        .status-allocated {
-            background-color: #28a745;
-            color: #fff;
-        }
-
-        .status-completed {
-            background-color: #17a2b8;
-            color: #fff;
-        }
-
-        .status-cancelled {
-            background-color: #dc3545;
-            color: #fff;
-        }
-
-        .status-unknown {
-            background-color: #6c757d;
-            color: #fff;
+        
+        .tab-content textarea:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
         }
     </style>
 </head>
@@ -3048,8 +895,7 @@
                     </div>
                     <div>
                         <label for="phone">手机号码:</label>
-                        <input type="tel" id="phone" name="phone" autocomplete="tel" pattern="[0-9]{11}"
-                            placeholder="请输入11位手机号码">
+                        <input type="tel" id="phone" name="phone" autocomplete="tel" pattern="[0-9]{11}" placeholder="请输入11位手机号码">
                     </div>
                     <div id="formMessage" class="form-message"></div>
                     <button type="submit">保存修改</button>
@@ -3097,8 +943,7 @@
                 <form id="newOrderForm" class="styled-form">
                     <div>
                         <label for="userPhoneNumber">手机号码:</label>
-                        <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}"
-                            placeholder="请输入11位手机号">
+                        <input type="tel" id="userPhoneNumber" name="userPhoneNumber" required pattern="[0-9]{11}" placeholder="请输入11位手机号">
                         <button type="button" id="fillPhoneNumberButton" class="fill-button" disabled>一键填充</button>
                     </div>
                     <div>
@@ -3107,13 +952,11 @@
                     </div>
                     <div>
                         <label for="issue">问题:</label>
-                        <textarea id="issue" name="issue" required rows="1"
-                            style="resize: none; overflow: hidden;"></textarea>
+                        <textarea id="issue" name="issue" required rows="1" style="resize: none; overflow: hidden;"></textarea>
                     </div>
                     <div class="datetime-container">
                         <label for="preferredTime">期望上门时间:</label>
-                        <input type="text" id="preferredTime" name="preferredTime" placeholder="点击选择上门时间" required
-                            readonly inputmode="none">
+                        <input type="text" id="preferredTime" name="preferredTime" placeholder="点击选择上门时间" required readonly inputmode="none">
                         <div id="timeWarning" style="display: none;">该时间非上门段。上门时段为18:00-21:00</div>
                     </div>
                     <div id="reportOrderMessage" class="form-message" style="display: none;"></div>
@@ -3157,7 +1000,7 @@
             <button class="close-detail" id="closeDetail">&times;</button>
         </div>
         <div class="detail-content" id="orderDetailContent">
-            <!-- 内容将通过 JavaScript 动��填充 -->
+            <!-- 内容将通过 JavaScript 动填充 -->
         </div>
     </div>
 
@@ -3192,17 +1035,17 @@
         // 在 script 标签的开头添加以下工具函数定义
         const utils = {
             // 加密函数
-            encrypt: function (text) {
+            encrypt: function(text) {
                 return btoa(encodeURIComponent(text));
             },
 
             // 解密函数
-            decrypt: function (encoded) {
+            decrypt: function(encoded) {
                 return decodeURIComponent(atob(encoded));
             },
 
             // 存储数据到 localStorage
-            saveData: function (key, data) {
+            saveData: function(key, data) {
                 try {
                     localStorage.setItem(key, JSON.stringify(data));
                 } catch (error) {
@@ -3211,7 +1054,7 @@
             },
 
             // 从 localStorage 获取数据
-            getData: function (key) {
+            getData: function(key) {
                 try {
                     const data = localStorage.getItem(key);
                     return data ? JSON.parse(data) : null;
@@ -3222,7 +1065,7 @@
             },
 
             // 从 localStorage 删除数据
-            removeData: function (key) {
+            removeData: function(key) {
                 try {
                     localStorage.removeItem(key);
                 } catch (error) {
@@ -3278,7 +1121,10 @@
                 }
 
                 const live = weatherData.lives[0]; // 获取实时天气信息
-                const updateTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                const updateTime = new Date().toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
                 document.getElementById('weather-info').innerHTML = `
                 <p class="weather-location">
                     <span class="weather-icon">📍</span>
@@ -3331,7 +1177,7 @@
         }
 
         // 修改信息管理链接的点击事件
-        document.getElementById('info-link').addEventListener('click', function (event) {
+        document.getElementById('info-link').addEventListener('click', function(event) {
             event.preventDefault();
             const modal = document.getElementById('editModal');
 
@@ -3341,7 +1187,7 @@
         });
 
         // 订单管理模态框
-        document.getElementById('order-management').addEventListener('click', function () {
+        document.getElementById('order-management').addEventListener('click', function() {
             const modal = document.getElementById('orderManagementModal');
             modal.style.display = "block";
             document.getElementById('overlay').style.display = "block";
@@ -3354,7 +1200,7 @@
         });
 
         // 日程管理模态框
-        document.getElementById('schedule-management').addEventListener('click', function () {
+        document.getElementById('schedule-management').addEventListener('click', function() {
             const modal = document.getElementById('scheduleModal');
             modal.style.display = "block";
             document.getElementById('overlay').style.display = "block";
@@ -3364,7 +1210,7 @@
         });
 
         // 退出确认态框
-        document.getElementById('logout').addEventListener('click', function (event) {
+        document.getElementById('logout').addEventListener('click', function(event) {
             event.preventDefault();
             const logoutModal = document.getElementById('logoutModal');
             const overlay = document.getElementById('overlay');
@@ -3373,7 +1219,7 @@
             toggleBodyScroll(true);
         });
 
-        document.getElementById('cancelLogout').addEventListener('click', function () {
+        document.getElementById('cancelLogout').addEventListener('click', function() {
             const logoutModal = document.getElementById('logoutModal');
             const overlay = document.getElementById('overlay');
             logoutModal.style.display = 'none';
@@ -3381,9 +1227,9 @@
             toggleBodyScroll(false);
         });
 
-        document.getElementById('confirmLogout').addEventListener('click', function () {
+        document.getElementById('confirmLogout').addEventListener('click', function() {
             $.ajax({
-                url: API_URLS.LOGOUT,  // 使用 API_URLS 中定义的 URL
+                url: API_URLS.LOGOUT, // 使用 API_URLS 中定义的 URL
                 method: 'GET',
                 xhrFields: {
                     withCredentials: true
@@ -3405,7 +1251,7 @@
 
         // 修改有关闭模态框的事件处理器
         // 信息修改模态框关闭
-        document.querySelector('#editModal .close-button').addEventListener('click', function () {
+        document.querySelector('#editModal .close-button').addEventListener('click', function() {
             const modal = document.getElementById('editModal');
             modal.style.display = "none";
             document.getElementById('overlay').style.display = "none";
@@ -3413,7 +1259,7 @@
         });
 
         // 订单管理模态框关闭
-        document.querySelector('#orderManagementModal .close-button').addEventListener('click', function () {
+        document.querySelector('#orderManagementModal .close-button').addEventListener('click', function() {
             const modal = document.getElementById('orderManagementModal');
             modal.style.display = "none";
             document.getElementById('overlay').style.display = "none";
@@ -3422,7 +1268,7 @@
         });
 
         // 日程管理模态框关闭
-        document.querySelector('#scheduleModal .close-button').addEventListener('click', function () {
+        document.querySelector('#scheduleModal .close-button').addEventListener('click', function() {
             const modal = document.getElementById('scheduleModal');
             modal.style.display = "none";
             document.getElementById('overlay').style.display = "none";
@@ -3445,7 +1291,7 @@
         }
 
         // 修改报单提交处理
-        document.getElementById('newOrderForm').addEventListener('submit', function (event) {
+        document.getElementById('newOrderForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
             // 获取表单数据
@@ -3509,13 +1355,13 @@
 
             // 发送请求
             fetch(API_URLS.REPORT, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestData),
-                credentials: 'include'
-            })
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData),
+                    credentials: 'include'
+                })
                 .then(response => response.json())
                 .then(data => {
                     showLoading(false);
@@ -3659,7 +1505,7 @@
         }
 
         // 自动调整textarea高度
-        document.getElementById('issue').addEventListener('input', function () {
+        document.getElementById('issue').addEventListener('input', function() {
             this.style.height = 'auto'; // 重置高度
             this.style.height = (this.scrollHeight) + 'px'; // 设置为内容高度
         });
@@ -3685,7 +1531,7 @@
                 xhrFields: {
                     withCredentials: true
                 },
-                success: function (data) {
+                success: function(data) {
                     showLoading(false);
                     if (data.message === 'Success' && data.phoneNumber) {
                         document.getElementById('userPhoneNumber').value = data.phoneNumber;
@@ -3695,7 +1541,7 @@
                         handleSessionError(data.message);
                     }
                 },
-                error: function (xhr, status, error) {
+                error: function(xhr, status, error) {
                     console.error('获取手机号失败:', error);
                     showMessage('获取手机号失败，请重试');
                     showLoading(false);
@@ -3704,7 +1550,7 @@
         }
 
         // 在文档加载完成后设置按钮事件
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             // ... existing code ...
 
             // 按钮始终可用，移除disabled属性
@@ -3716,10 +1562,10 @@
             // ... existing code ...
         });
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const scheduleManagementButton = document.getElementById('schedule-management');
             if (scheduleManagementButton) {
-                scheduleManagementButton.addEventListener('click', function () {
+                scheduleManagementButton.addEventListener('click', function() {
                     const modal = document.getElementById('scheduleModal');
                     modal.style.display = "block";
                     document.getElementById('overlay').style.display = "block";
@@ -3742,16 +1588,27 @@
                                     slotMinTime: '18:00:00',
                                     slotMaxTime: '22:00:00',
                                     slotDuration: '00:30:00',
-                                    titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
+                                    titleFormat: {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: '2-digit'
+                                    }
                                 },
                                 timeGridDay: {
                                     slotMinTime: '18:00:00',
                                     slotMaxTime: '22:00:00',
                                     slotDuration: '00:30:00',
-                                    titleFormat: { year: 'numeric', month: 'short', day: '2-digit' }
+                                    titleFormat: {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: '2-digit'
+                                    }
                                 },
                                 dayGridMonth: {
-                                    titleFormat: { year: 'numeric', month: 'short' }
+                                    titleFormat: {
+                                        year: 'numeric',
+                                        month: 'short'
+                                    }
                                 }
                             },
                             slotLabelFormat: {
@@ -3765,7 +1622,9 @@
                                 week: '周',
                                 day: '日'
                             },
-                            dayHeaderFormat: { weekday: 'short' },
+                            dayHeaderFormat: {
+                                weekday: 'short'
+                            },
                             allDayText: '全天',
                             noEventsText: '暂无事件',
                             eventTimeFormat: {
@@ -3773,9 +1632,9 @@
                                 minute: '2-digit',
                                 hour12: false
                             },
-                            events: function (fetchInfo, successCallback, failureCallback) {
+                            events: function(fetchInfo, successCallback, failureCallback) {
                                 $.ajax({
-                                    url: API_URLS.GET_HISTORY,  // 使用 API_URLS 中定义的 URL
+                                    url: API_URLS.GET_HISTORY, // 使用 API_URLS 中定义的 URL
                                     method: 'GET',
                                     xhrFields: {
                                         withCredentials: true
@@ -3787,31 +1646,31 @@
                                             let backgroundColor, borderColor, textColor, statusText;
                                             switch (order.status) {
                                                 case '0':
-                                                    backgroundColor = '#ffc107';  // 黄色
+                                                    backgroundColor = '#ffc107'; // 黄色
                                                     borderColor = '#ffc107';
                                                     textColor = '#000';
                                                     statusText = '待接单';
                                                     break;
                                                 case '1':
-                                                    backgroundColor = '#28a745';  // 绿色
+                                                    backgroundColor = '#28a745'; // 绿色
                                                     borderColor = '#28a745';
                                                     textColor = '#fff';
                                                     statusText = '已接单';
                                                     break;
                                                 case '2':
-                                                    backgroundColor = '#17a2b8';  // 蓝色
+                                                    backgroundColor = '#17a2b8'; // 蓝色
                                                     borderColor = '#17a2b8';
                                                     textColor = '#fff';
                                                     statusText = '已完成';
                                                     break;
                                                 case '3':
-                                                    backgroundColor = '#dc3545';  // 红色
+                                                    backgroundColor = '#dc3545'; // 红色
                                                     borderColor = '#dc3545';
                                                     textColor = '#fff';
                                                     statusText = '已撤单';
                                                     break;
                                                 default:
-                                                    backgroundColor = '#6c757d';  // 灰色
+                                                    backgroundColor = '#6c757d'; // 灰色
                                                     borderColor = '#6c757d';
                                                     textColor = '#fff';
                                                     statusText = '未知状态';
@@ -3822,7 +1681,7 @@
                                                 start: new Date(order.date.replace(/-/g, '/')),
                                                 extendedProps: {
                                                     ...order,
-                                                    statusText: statusText,  // 状态文本保存在扩展属性中
+                                                    statusText: statusText, // 状态文本保存在扩展属性中
                                                     backgroundColor: backgroundColor,
                                                     borderColor: borderColor,
                                                     textColor: textColor
@@ -3848,7 +1707,7 @@
                                     failureCallback(error);
                                 });
                             },
-                            eventClick: function (info) {
+                            eventClick: function(info) {
                                 const order = info.event.extendedProps;
                                 const detailCard = document.getElementById('orderDetailCard');
                                 const detailContent = document.getElementById('orderDetailContent');
@@ -3895,9 +1754,9 @@
                                 closeBtn.onclick = closeDetail;
                                 overlay.onclick = closeDetail;
                             },
-                            eventDidMount: function (info) {
+                            eventDidMount: function(info) {
                                 // 使用移动端友好的触摸提示
-                                info.el.addEventListener('click', function () {
+                                info.el.addEventListener('click', function() {
                                     showOrderDetail(info.event.extendedProps);
                                 });
                             }
@@ -3908,7 +1767,7 @@
             }
 
             // 关闭日程管理模态框
-            document.querySelector('#scheduleModal .close-button').addEventListener('click', function () {
+            document.querySelector('#scheduleModal .close-button').addEventListener('click', function() {
                 const modal = document.getElementById('scheduleModal');
                 modal.style.display = "none";
                 document.getElementById('overlay').style.display = "none"; // 隐藏遮罩层
@@ -4022,15 +1881,15 @@
                 }, 0);
 
                 // 事件处理
-                preferredTimeInput.addEventListener('click', function () {
+                preferredTimeInput.addEventListener('click', function() {
                     pickerContainer.classList.add('active');
                 });
 
-                pickerContainer.querySelector('.picker-cancel').addEventListener('click', function () {
+                pickerContainer.querySelector('.picker-cancel').addEventListener('click', function() {
                     pickerContainer.classList.remove('active');
                 });
 
-                pickerContainer.querySelector('.picker-confirm').addEventListener('click', function (e) {
+                pickerContainer.querySelector('.picker-confirm').addEventListener('click', function(e) {
                     e.preventDefault();
 
                     if (dateSwiper && timeSwiper) {
@@ -4061,19 +1920,21 @@
 
                 // 防止点击选择器内容时关闭
                 const pickerContainerElement = pickerContainer.querySelector('.picker-container');
-                pickerContainerElement.addEventListener('click', function (e) {
+                pickerContainerElement.addEventListener('click', function(e) {
                     e.stopPropagation();
                 });
 
                 // 点击背景关闭选择器
-                pickerContainer.addEventListener('click', function (e) {
+                pickerContainer.addEventListener('click', function(e) {
                     if (e.target === this) {
                         hidePicker();
                     }
-                }, { once: false });
+                }, {
+                    once: false
+                });
 
                 // 添加键盘事件处理
-                document.addEventListener('keydown', function (e) {
+                document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape' && pickerContainer.classList.contains('active')) {
                         hidePicker();
                     }
@@ -4147,37 +2008,37 @@
             }
 
             const ordersHTML = orders.map(order => {
-                // 根据状态获取对应的显示文本和样式
-                let statusText, statusClass;
-                let showCompleteButton = false;
-                let showCancelButton = false;  // 添加这行
-                switch (order.status) {
-                    case '0':
-                        statusText = '待分配';
-                        statusClass = 'status-pending';
-                        showCompleteButton = true;
-                        showCancelButton = true;  // 添加这行
-                        break;
-                    case '1':
-                        statusText = '已分配';
-                        statusClass = 'status-allocated';
-                        showCompleteButton = true;
-                        showCancelButton = true;  // 添加这行
-                        break;
-                    case '2':
-                        statusText = '已完成';
-                        statusClass = 'status-completed';
-                        break;
-                    case '3':
-                        statusText = '已撤单';
-                        statusClass = 'status-cancelled';
-                        break;
-                    default:
-                        statusText = '未知状态';
-                        statusClass = 'status-unknown';
-                }
+                        // 根据状态获取对应的显示文本和样式
+                        let statusText, statusClass;
+                        let showCompleteButton = false;
+                        let showCancelButton = false; // 添加这行
+                        switch (order.status) {
+                            case '0':
+                                statusText = '待分配';
+                                statusClass = 'status-pending';
+                                showCompleteButton = true;
+                                showCancelButton = true; // 添加这行
+                                break;
+                            case '1':
+                                statusText = '已分配';
+                                statusClass = 'status-allocated';
+                                showCompleteButton = true;
+                                showCancelButton = true; // 添加这行
+                                break;
+                            case '2':
+                                statusText = '已完成';
+                                statusClass = 'status-completed';
+                                break;
+                            case '3':
+                                statusText = '已撤单';
+                                statusClass = 'status-cancelled';
+                                break;
+                            default:
+                                statusText = '未知状态';
+                                statusClass = 'status-unknown';
+                        }
 
-                return `
+                        return `
                 <div class="order-card">
                     <div class="order-info">
                         ${order.reportId ? `
@@ -4665,7 +2526,7 @@
                 }
             });
 
-            // 触摸结束时判断是否关闭详��卡片
+            // 触摸结束时判断是否关闭详卡片
             detailCard.addEventListener('touchend', () => {
                 if (currentY - startY > 100) {
                     closeDetail();
@@ -4914,633 +2775,735 @@
             margin-top: 10px;
             color: #333;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    `;
-
-        // 在文档加载完成后初始化日期时间选择器
-        document.addEventListener('DOMContentLoaded', function () {
-            // 初始化日期时间选择器
-            const preferredTimeInput = document.getElementById('preferredTime');
-            if (preferredTimeInput) {
-                initDateTimePicker(preferredTimeInput);
-            }
-        });
-
-        // 在已有的 DOMContentLoaded 事件监听器中添加样式注入代码
-        document.addEventListener('DOMContentLoaded', function () {
-            // 注入日期时间选择器样式
-            const pickerStyles = `
-            .datetime-picker {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 2000;
-            }
-            
-            .datetime-picker.active {
-                display: block;
-            }
-            
-            // ... 其余样式保持不变 ...
-        `;
-
-            // 创建并添加样式到文档头部
-            const styleElement = document.createElement('style');
-            styleElement.textContent = pickerStyles;
-            document.head.appendChild(styleElement);
-
-            // 其余现有的初始化代码...
-            const scheduleManagementButton = document.getElementById('schedule-management');
-            if (scheduleManagementButton) {
-                // ... 现有的日程管理代码 ...
-            }
-
-            // ... 其他现有的初始化代码 ...
-        });
-
-        // 保留一个统一的初始化函数
-        document.addEventListener('DOMContentLoaded', function () {
-            // 初始化网络检测
-            initNetworkDetection();
-
-            // 初始化日期时间选择器
-            const preferredTimeInput = document.getElementById('preferredTime');
-            if (preferredTimeInput) {
-                initDateTimePicker(preferredTimeInput);
-            }
-
-            // 初始化日程管理
-            const scheduleManagementButton = document.getElementById('schedule-management');
-            if (scheduleManagementButton) {
-                // 日程管理相关代码
-            }
-
-            // 初始化用户信息显示
-            updateGreeting();
-            displayUsername();
-
-            // 每分钟更新一次问候语
-            setInterval(updateGreeting, 60000);
-        });
-
-        // 获取并显示用户名
-        function displayUsername() {
-            const usernameDisplay = document.getElementById('username-display');
-            if (!usernameDisplay) return;
-
-            $.ajax({
-                url: API_URLS.GET_USER_INFO,
-                method: 'GET',
-                xhrFields: {
-                    withCredentials: true
-                },
-                success: function (data) {
-                    if (data.message === 'Success') {
-                        const username = data.username;
-                        utils.saveData('username', username);
-                        usernameDisplay.textContent = username;
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error('获取用户信息失败:', error);
-                    const username = utils.getData('username');
-                    usernameDisplay.textContent = username || '用户';
+        
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
                 }
-            });
-        }
-
-        // 重置触摸状态的函数
-        function resetTouchState() {
-            startY = 0;
-            currentY = 0;
-            pickerContent.style.transform = '';
-        }
-
-        // 修改获取历史订单的函数
-        function fetchHistoryOrders() {
-            $.ajax({
-                url: API_URLS.GET_HISTORY,
-                method: 'GET',
-                xhrFields: {
-                    withCredentials: true
-                },
-                success: function (data) {
-                    if (data.message === 'Success') {
-                        displayHistoryOrders(data.report_info);
-                    } else if (data.message === 'No history report') {
-                        showNoOrders();
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error('获取历史订单失败:', error);
-                    showError();
+                100% {
+                    transform: rotate(360deg);
                 }
-            });
-        }
-
-        // 修改日期选择器的相关 JavaScript 代码
-        function initDateTimePicker() {
-            const picker = document.querySelector('.datetime-picker');
-            const container = picker.querySelector('.picker-container');
-            const cancelBtn = picker.querySelector('.picker-cancel');
-
-            // 点击遮罩层关闭
-            picker.addEventListener('click', (e) => {
-                if (e.target === picker) {
+            }
+            `;
+            // 在文档加载完成后初始化日期时间选择器
+            document.addEventListener('DOMContentLoaded', function () {
+                // 初始化日期时间选择器
+                const preferredTimeInput=document.getElementById('preferredTime');
+                if (preferredTimeInput) {
+                    initDateTimePicker(preferredTimeInput);
+                }
+            }
+            );
+            // 在已有的 DOMContentLoaded 事件监听器中添加样式注入代码
+            document.addEventListener('DOMContentLoaded', function () {
+                // 注入日期时间选择器样式
+                const pickerStyles=` .datetime-picker {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.5);
+                    z-index: 2000;
+                }
+                .datetime-picker.active {
+                    display: block;
+                }
+                // ... 其余样式保持不变 ...
+                `;
+                // 创建并添加样式到文档头部
+                const styleElement=document.createElement('style');
+                styleElement.textContent=pickerStyles;
+                document.head.appendChild(styleElement);
+                // 其余现有的初始化代码...
+                const scheduleManagementButton=document.getElementById('schedule-management');
+                if (scheduleManagementButton) {
+                    // ... 现有的日程管理代码 ...
+                }
+                // ... 其他现有的初始化代码 ...
+            }
+            );
+            // 保留一个统一的初始化函数
+            document.addEventListener('DOMContentLoaded', function () {
+                // 初始化网络检测
+                initNetworkDetection();
+                // 初始化日期时间选择器
+                const preferredTimeInput=document.getElementById('preferredTime');
+                if (preferredTimeInput) {
+                    initDateTimePicker(preferredTimeInput);
+                }
+                // 初始化日程管理
+                const scheduleManagementButton=document.getElementById('schedule-management');
+                if (scheduleManagementButton) {
+                    // 日程管理相关代码
+                }
+                // 初始化用户信息显示
+                updateGreeting();
+                displayUsername();
+                // 每分钟更新一次问候语
+                setInterval(updateGreeting, 60000);
+            }
+            );
+            // 获取并显示用户名
+            function displayUsername() {
+                const usernameDisplay=document.getElementById('username-display');
+                if (!usernameDisplay) return;
+                $.ajax( {
+                    url: API_URLS.GET_USER_INFO, method: 'GET', xhrFields: {
+                        withCredentials: true
+                    }
+                    , success: function (data) {
+                        if (data.message==='Success') {
+                            const username=data.username;
+                            utils.saveData('username', username);
+                            usernameDisplay.textContent=username;
+                        }
+                        else {
+                            handleSessionError(data.message);
+                        }
+                    }
+                    , error: function (xhr, status, error) {
+                        console.error('获取用户信息失败:', error);
+                        const username=utils.getData('username');
+                        usernameDisplay.textContent=username || '用户';
+                    }
+                }
+                );
+            }
+            // 重置触摸状态的函数
+            function resetTouchState() {
+                startY=0;
+                currentY=0;
+                pickerContent.style.transform='';
+            }
+            // 修改获取历史订单的函数
+            function fetchHistoryOrders() {
+                $.ajax( {
+                    url: API_URLS.GET_HISTORY, method: 'GET', xhrFields: {
+                        withCredentials: true
+                    }
+                    , success: function (data) {
+                        if (data.message==='Success') {
+                            displayHistoryOrders(data.report_info);
+                        }
+                        else if (data.message==='No history report') {
+                            showNoOrders();
+                        }
+                        else {
+                            handleSessionError(data.message);
+                        }
+                    }
+                    , error: function (xhr, status, error) {
+                        console.error('获取历史订单失败:', error);
+                        showError();
+                    }
+                }
+                );
+            }
+            // 修改日期选择器的相关 JavaScript 代码
+            function initDateTimePicker() {
+                const picker=document.querySelector('.datetime-picker');
+                const container=picker.querySelector('.picker-container');
+                const cancelBtn=picker.querySelector('.picker-cancel');
+                // 点击遮罩层关闭
+                picker.addEventListener('click', (e)=> {
+                    if (e.target===picker) {
+                        closeDateTimePicker();
+                    }
+                }
+                );
+                // 阻止容器的点击事件冒泡
+                container.addEventListener('click', (e)=> {
+                    e.stopPropagation();
+                }
+                );
+                // 取消按钮关闭
+                cancelBtn.addEventListener('click', ()=> {
                     closeDateTimePicker();
                 }
-            });
-
-            // 阻止容器的点击事件冒泡
-            container.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
-
-            // 取消按钮关闭
-            cancelBtn.addEventListener('click', () => {
-                closeDateTimePicker();
-            });
-        }
-
-        function closeDateTimePicker() {
-            const picker = document.querySelector('.datetime-picker');
-            const container = picker.querySelector('.picker-container');
-
-            // 先执行动画
-            container.style.transform = 'translateY(100%)';
-
-            // 等待动画完成后隐藏整个选择器
-            setTimeout(() => {
-                picker.classList.remove('active');
-                container.style.transform = ''; // 重置transform
-            }, 300); // 与 CSS transition 时间相匹配
-        }
-
-        function showDateTimePicker() {
-            const picker = document.querySelector('.datetime-picker');
-            picker.classList.add('active');
-
-            // 确保容器动画正确显示
-            const container = picker.querySelector('.picker-container');
-            // 强制重排后执行动画
-            requestAnimationFrame(() => {
-                container.style.transform = 'translateY(0)';
-            });
-        }
-
-        // 确保在页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            initDateTimePicker();
-        });
-
-        // 统一的初始化函数
-        document.addEventListener('DOMContentLoaded', function () {
-            // 初始化网络检测
-            initNetworkDetection();
-
-            // 初始化日期时间选择器
-            const preferredTimeInput = document.getElementById('preferredTime');
-            if (preferredTimeInput) {
-                initDateTimePicker(preferredTimeInput);
+                );
             }
-
-            // 初始化日程管理
-            initScheduleManagement();
-
-            // 初始化用户信息显示
-            updateGreeting();
-            displayUsername();
-
-            // 获取天气信息
-            fetchWeatherAndLocation();
-
-            // 每分钟更新一次问候语
-            setInterval(updateGreeting, 60000);
-        });
-
-        // 更新问候语函数 - 合并后的版本
-        function updateGreeting() {
-            const greetingText = document.getElementById('greetingText');
-            if (!greetingText) return;
-
-            const hour = new Date().getHours();
-            let greeting = '';
-
-            if (hour >= 5 && hour < 9) {
-                greeting = '早上好';
-            } else if (hour >= 9 && hour < 11) {
-                greeting = '上午好';
-            } else if (hour >= 11 && hour < 13) {
-                greeting = '中午好';
-            } else if (hour >= 13 && hour < 18) {
-                greeting = '下午好';
-            } else {
-                greeting = '晚上好';
-            }
-
-            greetingText.textContent = greeting;
-        }
-
-        // 显示用户名函数 - 合并后的版本
-        function displayUsername() {
-            const usernameDisplay = document.getElementById('username-display');
-            if (!usernameDisplay) return;
-
-            $.ajax({
-                url: API_URLS.GET_USER_INFO,
-                method: 'GET',
-                xhrFields: {
-                    withCredentials: true
-                },
-                success: function (data) {
-                    if (data.message === 'Success') {
-                        const username = data.username;
-                        utils.saveData('username', username);
-                        usernameDisplay.textContent = username;
-                    } else {
-                        handleSessionError(data.message);
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error('获取用户信息失败:', error);
-                    const username = utils.getData('username');
-                    usernameDisplay.textContent = username || '用户';
+            function closeDateTimePicker() {
+                const picker=document.querySelector('.datetime-picker');
+                const container=picker.querySelector('.picker-container');
+                // 先执行动画
+                container.style.transform='translateY(100%)';
+                // 等待动画完成后隐藏整个选择器
+                setTimeout(()=> {
+                    picker.classList.remove('active');
+                    container.style.transform=''; // 重置transform
                 }
-            });
-        }
-
-        // 日程管理初始化函数 - 抽取为独立函数
-        function initScheduleManagement() {
-            const scheduleManagementButton = document.getElementById('schedule-management');
-            if (!scheduleManagementButton) return;
-
-            scheduleManagementButton.addEventListener('click', function () {
-                const modal = document.getElementById('scheduleModal');
-                modal.style.display = "block";
-                document.getElementById('overlay').style.display = "block";
-                this.classList.add('active');
-                toggleBodyScroll(true);
-
-                // 初始化日历
-                initCalendar();
-            });
-        }
-
-        // 日历初始化函数 - 抽取为独立函数
-        function initCalendar() {
-            const calendarEl = document.getElementById('mobileCalendar');
-            if (!calendarEl) return;
-
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth', // 默认月视图
-                locale: 'zh-cn',
-                height: 'auto',
-                headerToolbar: {
-                    left: 'prev,next',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                // 针对移动端的视图配置
-                views: {
-                    dayGridMonth: {
-                        titleFormat: { year: 'numeric', month: 'short' }, // 简化标题显示
-                        dayHeaderFormat: { weekday: 'narrow' } // 使用单字符表示星期
-                    },
-                    timeGridWeek: {
-                        slotMinTime: '18:00:00',
-                        slotMaxTime: '21:00:00',
-                        slotDuration: '00:30:00',
-                        allDaySlot: false,
-                        dayHeaderFormat: { weekday: 'narrow', day: 'numeric' }, // 简化头部显示
-                        slotLabelFormat: {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
+                , 300); // 与 CSS transition 时间相匹配
+            }
+            function showDateTimePicker() {
+                const picker=document.querySelector('.datetime-picker');
+                picker.classList.add('active');
+                // 确保容器动画正确显示
+                const container=picker.querySelector('.picker-container');
+                // 强制重排后执行动画
+                requestAnimationFrame(()=> {
+                    container.style.transform='translateY(0)';
+                }
+                );
+            }
+            // 确保在页面加载完成后初始化
+            document.addEventListener('DOMContentLoaded', ()=> {
+                initDateTimePicker();
+            }
+            );
+            // 统一的初始化函数
+            document.addEventListener('DOMContentLoaded', function () {
+                // 初始化网络检测
+                initNetworkDetection();
+                // 初始化日期时间选择器
+                const preferredTimeInput=document.getElementById('preferredTime');
+                if (preferredTimeInput) {
+                    initDateTimePicker(preferredTimeInput);
+                }
+                // 初始化日程管理
+                initScheduleManagement();
+                // 初始化用户信息显示
+                updateGreeting();
+                displayUsername();
+                // 获取天气信息
+                fetchWeatherAndLocation();
+                // 每分钟更新一次问候语
+                setInterval(updateGreeting, 60000);
+            }
+            );
+            // 更新问候语函数 - 合并后的版本
+            function updateGreeting() {
+                const greetingText=document.getElementById('greetingText');
+                if (!greetingText) return;
+                const hour=new Date().getHours();
+                let greeting='';
+                if (hour >=5 && hour < 9) {
+                    greeting='早上好';
+                }
+                else if (hour >=9 && hour < 11) {
+                    greeting='上午好';
+                }
+                else if (hour >=11 && hour < 13) {
+                    greeting='中午好';
+                }
+                else if (hour >=13 && hour < 18) {
+                    greeting='下午好';
+                }
+                else {
+                    greeting='晚上好';
+                }
+                greetingText.textContent=greeting;
+            }
+            // 显示用户名函数 - 合并后的版本
+            function displayUsername() {
+                const usernameDisplay=document.getElementById('username-display');
+                if (!usernameDisplay) return;
+                $.ajax( {
+                    url: API_URLS.GET_USER_INFO, method: 'GET', xhrFields: {
+                        withCredentials: true
+                    }
+                    , success: function (data) {
+                        if (data.message==='Success') {
+                            const username=data.username;
+                            utils.saveData('username', username);
+                            usernameDisplay.textContent=username;
                         }
-                    },
-                    timeGridDay: {
-                        slotMinTime: '18:00:00',
-                        slotMaxTime: '21:00:00',
-                        slotDuration: '00:30:00',
-                        allDaySlot: false,
-                        slotLabelFormat: {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
+                        else {
+                            handleSessionError(data.message);
                         }
                     }
-                },
-                // 移动端触摸支持
-                eventClick: function (info) {
-                    const order = info.event.extendedProps;
-                    showOrderDetail(order);
-                },
-                // 移动端手势支持
-                editable: false, // 禁用拖动以避免与滑动冲突
-                eventDragStart: function () { return false; }, // 禁用拖动
-                events: function (fetchInfo, successCallback, failureCallback) {
-                    $.ajax({
-                        url: API_URLS.GET_HISTORY,
-                        method: 'GET',
-                        xhrFields: {
-                            withCredentials: true
-                        },
-                        success: function (response) {
-                            if (response.message === 'Success') {
-                                const events = response.report_info.map(order => ({
-                                    title: `${order.issue.substring(0, 8)}...`, // 移动端显示更短的标题
-                                    start: new Date(order.date.replace(/-/g, '/')),
-                                    extendedProps: order,
-                                    backgroundColor: order.status === 'allocated' ? '#2ecc71' : '#f1c40f',
-                                    borderColor: order.status === 'allocated' ? '#27ae60' : '#f39c12',
-                                    textColor: order.status === 'allocated' ? '#fff' : '#000',
-                                    allDay: false,
-                                    displayEventTime: true,
-                                    eventDisplay: 'block'
-                                }));
-                                successCallback(events);
-                            } else if (response.message === 'No history report') {
-                                successCallback([]);
-                            } else {
-                                handleSessionError(response.message);
-                                failureCallback(new Error(response.message));
+                    , error: function (xhr, status, error) {
+                        console.error('获取用户信息失败:', error);
+                        const username=utils.getData('username');
+                        usernameDisplay.textContent=username || '用户';
+                    }
+                }
+                );
+            }
+            // 日程管理初始化函数 - 抽取为独立函数
+            function initScheduleManagement() {
+                const scheduleManagementButton=document.getElementById('schedule-management');
+                if (!scheduleManagementButton) return;
+                scheduleManagementButton.addEventListener('click', function () {
+                    const modal=document.getElementById('scheduleModal');
+                    modal.style.display="block";
+                    document.getElementById('overlay').style.display="block";
+                    this.classList.add('active');
+                    toggleBodyScroll(true);
+                    // 初始化日历
+                    initCalendar();
+                }
+                );
+            }
+            // 日历初始化函数 - 抽取为独立函数
+            function initCalendar() {
+                const calendarEl=document.getElementById('mobileCalendar');
+                if (!calendarEl) return;
+                const calendar=new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth', // 默认月视图
+                    locale: 'zh-cn', height: 'auto', headerToolbar: {
+                        left: 'prev,next', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    }
+                    , // 针对移动端的视图配置
+                    views: {
+                        dayGridMonth: {
+                            titleFormat: {
+                                year: 'numeric', month: 'short'
                             }
-                        },
-                        error: function (xhr, status, error) {
-                            console.error('获取历史订单失败:', error);
-                            failureCallback(new Error(error));
+                            , // 简化标题显示
+                            dayHeaderFormat: {
+                                weekday: 'narrow'
+                            } // 使用单字符表示星期
                         }
-                    });
-                },
-                // 移动端优化的事件渲染
-                eventDidMount: function (info) {
-                    // 使用移动端友好的触摸提示
-                    info.el.addEventListener('click', function () {
-                        showOrderDetail(info.event.extendedProps);
-                    });
-                },
-                // 移动端友好的时间格式
-                eventTimeFormat: {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                },
-                // 移动端特定配置
-                dayMaxEvents: 2, // 限制每天显示的事件数量
-                moreLinkContent: function (args) {
-                    return '+' + args.num; // 简化"更多"链接的显示
-                },
-                slotEventOverlap: false,
-                nowIndicator: true,
-                scrollTime: '18:00:00'
-            });
-
-            // 添加移动端手势支持
-            let touchStartX = 0;
-            calendarEl.addEventListener('touchstart', function (e) {
-                touchStartX = e.touches[0].clientX;
-            });
-
-            calendarEl.addEventListener('touchend', function (e) {
-                const touchEndX = e.changedTouches[0].clientX;
-                const diff = touchStartX - touchEndX;
-
-                if (Math.abs(diff) > 50) { // 最小滑动距离
-                    if (diff > 0) {
-                        calendar.next();
-                    } else {
-                        calendar.prev();
+                        , timeGridWeek: {
+                            slotMinTime: '18:00:00', slotMaxTime: '21:00:00', slotDuration: '00:30:00', allDaySlot: false, dayHeaderFormat: {
+                                weekday: 'narrow', day: 'numeric'
+                            }
+                            , // 简化头部显示
+                            slotLabelFormat: {
+                                hour: '2-digit', minute: '2-digit', hour12: false
+                            }
+                        }
+                        , timeGridDay: {
+                            slotMinTime: '18:00:00', slotMaxTime: '21:00:00', slotDuration: '00:30:00', allDaySlot: false, slotLabelFormat: {
+                                hour: '2-digit', minute: '2-digit', hour12: false
+                            }
+                        }
+                    }
+                    , // 移动端触摸支持
+                    eventClick: function (info) {
+                        const order=info.event.extendedProps;
+                        showOrderDetail(order);
+                    }
+                    , // 移动端手势支持
+                    editable: false, // 禁用拖动以避免与滑动冲突
+                    eventDragStart: function () {
+                        return false;
+                    }
+                    , // 禁用拖动
+                    events: function (fetchInfo, successCallback, failureCallback) {
+                        $.ajax( {
+                            url: API_URLS.GET_HISTORY, method: 'GET', xhrFields: {
+                                withCredentials: true
+                            }
+                            , success: function (response) {
+                                if (response.message==='Success') {
+                                    const events=response.report_info.map(order=> ( {
+                                        title: `$ {
+                                            order.issue.substring(0, 8)
+                                        }
+                                        ...`, // 移动端显示更短的标题
+                                        start: new Date(order.date.replace(/-/g, '/')), extendedProps: order, backgroundColor: order.status==='allocated' ? '#2ecc71': '#f1c40f', borderColor: order.status==='allocated' ? '#27ae60': '#f39c12', textColor: order.status==='allocated' ? '#fff': '#000', allDay: false, displayEventTime: true, eventDisplay: 'block'
+                                    }
+                                    ));
+                                    successCallback(events);
+                                }
+                                else if (response.message==='No history report') {
+                                    successCallback([]);
+                                }
+                                else {
+                                    handleSessionError(response.message);
+                                    failureCallback(new Error(response.message));
+                                }
+                            }
+                            , error: function (xhr, status, error) {
+                                console.error('获取历史订单失败:', error);
+                                failureCallback(new Error(error));
+                            }
+                        }
+                        );
+                    }
+                    , // 移动端优化的事件渲染
+                    eventDidMount: function (info) {
+                        // 使用移动端友好的触摸提示
+                        info.el.addEventListener('click', function () {
+                            showOrderDetail(info.event.extendedProps);
+                        }
+                        );
+                    }
+                    , // 移动端友好的时间格式
+                    eventTimeFormat: {
+                        hour: '2-digit', minute: '2-digit', hour12: false
+                    }
+                    , // 移动端特定配置
+                    dayMaxEvents: 2, // 限制每天显示的事件数量
+                    moreLinkContent: function (args) {
+                        return '+' + args.num; // 简化"更多"链接的显示
+                    }
+                    , slotEventOverlap: false, nowIndicator: true, scrollTime: '18:00:00'
+                }
+                );
+                // 添加移动端手势支持
+                let touchStartX=0;
+                calendarEl.addEventListener('touchstart', function (e) {
+                    touchStartX=e.touches[0].clientX;
+                }
+                );
+                calendarEl.addEventListener('touchend', function (e) {
+                    const touchEndX=e.changedTouches[0].clientX;
+                    const diff=touchStartX - touchEndX;
+                    if (Math.abs(diff) > 50) {
+                        // 最小滑动距离
+                        if (diff > 0) {
+                            calendar.next();
+                        }
+                        else {
+                            calendar.prev();
+                        }
                     }
                 }
-            });
-
-            calendar.render();
-
-            // 添加响应式处理
-            function handleResize() {
-                const width = window.innerWidth;
-                if (width < 768) {
-                    calendar.setOption('headerToolbar', {
-                        left: 'prev,next',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridDay' // 在小屏幕上只显示月视图和日视图
-                    });
-                } else {
-                    calendar.setOption('headerToolbar', {
-                        left: 'prev,next',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                    });
+                );
+                calendar.render();
+                // 添加响应式处理
+                function handleResize() {
+                    const width=window.innerWidth;
+                    if (width < 768) {
+                        calendar.setOption('headerToolbar', {
+                            left: 'prev,next', center: 'title', right: 'dayGridMonth,timeGridDay' // 在小屏幕上只显示月视图和日视图
+                        }
+                        );
+                    }
+                    else {
+                        calendar.setOption('headerToolbar', {
+                            left: 'prev,next', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                        }
+                        );
+                    }
+                }
+                // 初始化时和窗口大小改变时调用
+                handleResize();
+                window.addEventListener('resize', handleResize);
+            }
+            // 添加移动端友好的订单详情显示函数
+            function showOrderDetail(order) {
+                const detailCard=document.getElementById('orderDetailCard');
+                const detailContent=document.getElementById('orderDetailContent');
+                const overlay=document.getElementById('detailOverlay');
+                try {
+                    const formattedDate=formatDate(order.date);
+                    const formattedCallDate=formatDate(order.call_date);
+                    // 根据状态获取对应的样式类和文本
+                    let statusClass,
+                    statusText;
+                    switch (order.status) {
+                        case '0': statusClass='status-pending';
+                        statusText='待分配';
+                        break;
+                        case '1': statusClass='status-allocated';
+                        statusText='已分配';
+                        break;
+                        case '2': statusClass='status-completed';
+                        statusText='已完成';
+                        break;
+                        case '3': statusClass='status-cancelled';
+                        statusText='已撤单';
+                        break;
+                        default: statusClass='status-unknown';
+                        statusText='未知状态';
+                    }
+                    detailContent.innerHTML=` <div class="detail-row"><span class="detail-label">状态</span><span class="detail-value"><span class="status-badge ${statusClass}">$ {
+                        statusText
+                    }
+                    </span></span></div><div class="detail-row"><span class="detail-label">联系电话</span><span class="detail-value">$ {
+                        order.userPhoneNumber
+                    }
+                    </span></div><div class="detail-row"><span class="detail-label">服务地址</span><span class="detail-value">$ {
+                        order.address
+                    }
+                    </span></div><div class="detail-row"><span class="detail-label">问题描述</span><span class="detail-value">$ {
+                        order.issue
+                    }
+                    </span></div><div class="detail-row"><span class="detail-label">报单时间</span><span class="detail-value">$ {
+                        formattedCallDate
+                    }
+                    </span></div><div class="detail-row"><span class="detail-label">预约时间</span><span class="detail-value">$ {
+                        formattedDate
+                    }
+                    </span></div>`;
+                    detailCard.classList.add('show');
+                    overlay.classList.add('show');
+                }
+                catch (error) {
+                    console.error('显示订单详情时出错:', error);
+                    showMessage('加载订单详情失败');
                 }
             }
-
-            // 初始化时和窗口大小改变时调用
-            handleResize();
-            window.addEventListener('resize', handleResize);
-        }
-
-        // 添加移动端友好的订单详情显示函数
-        function showOrderDetail(order) {
-            const detailCard = document.getElementById('orderDetailCard');
-            const detailContent = document.getElementById('orderDetailContent');
-            const overlay = document.getElementById('detailOverlay');
-
-            try {
-                const formattedDate = formatDate(order.date);
-                const formattedCallDate = formatDate(order.call_date);
-                
-                // 根据状态获取对应的样式类和文本
-                let statusClass, statusText;
-                switch (order.status) {
-                    case '0':
-                        statusClass = 'status-pending';
-                        statusText = '待分配';
-                        break;
-                    case '1':
-                        statusClass = 'status-allocated';
-                        statusText = '已分配';
-                        break;
-                    case '2':
-                        statusClass = 'status-completed';
-                        statusText = '已完成';
-                        break;
-                    case '3':
-                        statusClass = 'status-cancelled';
-                        statusText = '已撤单';
-                        break;
-                    default:
-                        statusClass = 'status-unknown';
-                        statusText = '未知状态';
+            // 添加获取状态文本的辅助函数
+            function getStatusText(status) {
+                switch (status) {
+                    case '0': return '待分配';
+                    case '1': return '已分配';
+                    case '2': return '已完成';
+                    case '3': return '已撤单';
+                    default: return '未知状态';
                 }
-
-                detailContent.innerHTML = `
-                    <div class="detail-row">
-                        <span class="detail-label">状态</span>
-                        <span class="detail-value">
-                            <span class="status-badge ${statusClass}">
-                                ${statusText}
-                            </span>
-                        </span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">联系电话</span>
-                        <span class="detail-value">${order.userPhoneNumber}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">服务地址</span>
-                        <span class="detail-value">${order.address}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">问题描述</span>
-                        <span class="detail-value">${order.issue}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">报单时间</span>
-                        <span class="detail-value">${formattedCallDate}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">预约时间</span>
-                        <span class="detail-value">${formattedDate}</span>
-                    </div>
-                `;
-
-                detailCard.classList.add('show');
-                overlay.classList.add('show');
-            } catch (error) {
-                console.error('显示订单详情时出错:', error);
-                showMessage('加载订单详情失败');
             }
-        }
-
-        // 添加获取状态文本的辅助函数
-        function getStatusText(status) {
-            switch (status) {
-                case '0': return '待分配';
-                case '1': return '已分配';
-                case '2': return '已完成';
-                case '3': return '已撤单';
-                default: return '未知状态';
+            // 修改订单状态变化的处理函数（在订单完成时）
+            function completeOrder(orderId) {
+                $.ajax( {
+                    url: API_URLS.COMPLETE_REPORT, method: 'POST', data: JSON.stringify( {
+                        report_id: orderId
+                    }
+                    ), contentType: 'application/json', xhrFields: {
+                        withCredentials: true
+                    }
+                }
+                ).then(response=> {
+                    if (response.message==='Success') {
+                        showMessage('订单已完成');
+                        updateCalendarEvent(orderId, 'completed'); // 更新日历显示
+                        fetchHistoryOrders(); // 刷新订单列表
+                    }
+                    else {
+                        handleSessionError(response.message);
+                    }
+                }
+                ).catch(error=> {
+                    console.error('完成订单失败:', error);
+                    showMessage('完成订单失败，请重试');
+                }
+                );
             }
-        }
-
-        // 修改订单状态变化的处理函数（在订单完成时）
-        function completeOrder(orderId) {
-            $.ajax({
-                url: API_URLS.COMPLETE_REPORT,
-                method: 'POST',
-                data: JSON.stringify({ report_id: orderId }),
-                contentType: 'application/json',
-                xhrFields: {
-                    withCredentials: true
+            // 修改订单状态变化的处理函数（在订单撤销时）
+            function cancelOrder(orderId) {
+                $.ajax( {
+                    url: API_URLS.CANCEL_REPORT, method: 'POST', data: JSON.stringify( {
+                        report_id: orderId
+                    }
+                    ), contentType: 'application/json', xhrFields: {
+                        withCredentials: true
+                    }
                 }
-            }).then(response => {
-                if (response.message === 'Success') {
-                    showMessage('订单已完成');
-                    updateCalendarEvent(orderId, 'completed'); // 更新日历显示
-                    fetchHistoryOrders(); // 刷新订单列表
-                } else {
-                    handleSessionError(response.message);
+                ).then(response=> {
+                    if (response.message==='Success') {
+                        showMessage('订单已撤销');
+                        updateCalendarEvent(orderId, 'cancelled'); // 更新日历显示
+                        fetchHistoryOrders(); // 刷新订单列表
+                    }
+                    else {
+                        handleSessionError(response.message);
+                    }
                 }
-            }).catch(error => {
-                console.error('完成订单失败:', error);
-                showMessage('完成订单失败，请重试');
-            });
-        }
-
-        // 修改订单状态变化的处理函数（在订单撤销时）
-        function cancelOrder(orderId) {
-            $.ajax({
-                url: API_URLS.CANCEL_REPORT,
-                method: 'POST',
-                data: JSON.stringify({ report_id: orderId }),
-                contentType: 'application/json',
-                xhrFields: {
-                    withCredentials: true
+                ).catch(error=> {
+                    console.error('撤销订单失败:', error);
+                    showMessage('撤销订单失败，请重试');
                 }
-            }).then(response => {
-                if (response.message === 'Success') {
-                    showMessage('订单已撤销');
-                    updateCalendarEvent(orderId, 'cancelled'); // 更新日历显示
-                    fetchHistoryOrders(); // 刷新订单列表
-                } else {
-                    handleSessionError(response.message);
-                }
-            }).catch(error => {
-                console.error('撤销订单失败:', error);
-                showMessage('撤销订单失败，请重试');
-            });
-        }
-
-        var calendar = new FullCalendar.Calendar(document.getElementById('mobileCalendar'), {
-            // 基础配置
-            locale: 'zh-cn', // 设置为中文
-            initialView: 'dayGridMonth',
-            height: 'auto',
-            
-            // 工具栏配置
-            headerToolbar: {
-                left: 'prev,next',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            
-            // 按钮文字本地化
-            buttonText: {
-                today: '今天',
-                month: '月',
-                week: '周',
-                day: '日'
-            },
-            
-            // 修改标题格式化配置
-            titleFormat: {
-                year: 'numeric',
-                month: 'long'
-            },
-            
-            // 列头格式化
-            dayHeaderFormat: { 
-                weekday: 'short' // 显示为：周日、周一等
-            },
-            
-            // 日期单元格格式化
-            dayCellContent: function(info) {
-                return info.date.getDate();
-            },
-            
-            // 更多事件显示文本
-            moreLinkText: '更多',
-            noEventsText: '暂无事件',
-            
-            // ... 其他现有配置保持不变 ...
-        });
-
-        // ... rest of the code ...
-
-        // 添加获取状态样式类的辅助函数
-        function getStatusClass(status) {
-            switch (status) {
-                case '0': return 'status-pending';
-                case '1': return 'status-allocated';
-                case '2': return 'status-completed';
-                case '3': return 'status-cancelled';
-                default: return 'status-unknown';
+                );
             }
-        }
+            var calendar=new FullCalendar.Calendar(document.getElementById('mobileCalendar'), {
+                // 基础配置
+                locale: 'zh-cn', // 设置为中文
+                initialView: 'dayGridMonth', height: 'auto', // 工具栏配置
+                headerToolbar: {
+                    left: 'prev,next', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                }
+                , // 按钮文字本地化
+                buttonText: {
+                    today: '今天', month: '月', week: '周', day: '日'
+                }
+                , // 修改标题格式化配置
+                titleFormat: {
+                    year: 'numeric', month: 'long'
+                }
+                , // 列头格式化
+                dayHeaderFormat: {
+                    weekday: 'short' // 显示为：周日、周一等
+                }
+                , // 日期单元格格式化
+                dayCellContent: function(info) {
+                    return info.date.getDate();
+                }
+                , // 更多事件显示文本
+                moreLinkText: '更多', noEventsText: '暂无事件', // ... 其他现有配置保持不变 ...
+            }
+            );
+            // ... rest of the code ...
+            // 添加获取状态样式类的辅助函数
+            function getStatusClass(status) {
+                switch (status) {
+                    case '0': return 'status-pending';
+                    case '1': return 'status-allocated';
+                    case '2': return 'status-completed';
+                    case '3': return 'status-cancelled';
+                    default: return 'status-unknown';
+                }
+            }
+            // 控制body滚动的函数
+            function toggleBodyScroll(disable) {
+                if (disable) {
+                    document.body.classList.add('modal-open');
+                }
+                else {
+                    document.body.classList.remove('modal-open');
+                }
+            }
+            // 显示遮罩层
+            function showOverlay() {
+                document.getElementById('overlay').style.display='block';
+            }
+            // 隐藏遮罩层
+            function hideOverlay() {
+                document.getElementById('overlay').style.display='none';
+            }
+            // 显示消息提示
+            function showMessage(message) {
+                const messageModal=document.getElementById('messageModal');
+                const messageText=document.getElementById('messageText');
+                messageText.textContent=message;
+                messageModal.style.display='block';
+                toggleBodyScroll(true);
+            }
+            // 关闭消息提示
+            function closeMessage() {
+                const messageModal=document.getElementById('messageModal');
+                messageModal.classList.remove('show');
+                setTimeout(()=> {
+                    messageModal.style.display='none';
+                }
+                , 300);
+                toggleBodyScroll(false);
+            }
+            // 关闭订单详情
+            function closeDetail() {
+                const detailCard=document.getElementById('orderDetailCard');
+                const overlay=document.getElementById('detailOverlay');
+                detailCard.classList.remove('show');
+                overlay.classList.remove('show');
+                detailCard.style.transform='';
+                toggleBodyScroll(false);
+            }
+            // 显示订单详情
+            function showOrderDetail(order) {
+                const detailCard=document.getElementById('orderDetailCard');
+                const detailContent=document.getElementById('orderDetailContent');
+                const overlay=document.getElementById('detailOverlay');
+                // 设置详情内容
+                detailContent.innerHTML=` <div class="detail-row"><span class="detail-label">状态</span><span class="detail-value"><span class="status-badge ${getStatusClass(order.status)}">$ {
+                    getStatusText(order.status)
+                }
+                </span></span></div><div class="detail-row"><span class="detail-label">问题描述</span><span class="detail-value">$ {
+                    order.issue
+                }
+                </span></div><div class="detail-row"><span class="detail-label">预约时间</span><span class="detail-value">$ {
+                    formatDate(order.date)
+                }
+                </span></div><div class="detail-row"><span class="detail-label">地址</span><span class="detail-value">$ {
+                    order.address
+                }
+                </span></div><div class="detail-row"><span class="detail-label">联系电话</span><span class="detail-value">$ {
+                    order.userPhoneNumber
+                }
+                </span></div>`;
+                overlay.style.display='block';
+                detailCard.style.display='block';
+                // 使用 setTimeout 确保过渡效果正常显示
+                setTimeout(()=> {
+                    overlay.classList.add('show');
+                    detailCard.classList.add('show');
+                }
+                , 10);
+                toggleBodyScroll(true);
+            }
+            // 初始化事件监听
+            document.addEventListener('DOMContentLoaded', function() {
+                // 模态框关闭按钮事件
+                document.querySelectorAll('.close-button').forEach(button=> {
+                    button.addEventListener('click', function() {
+                        const modal=this.closest('.modal');
+                        hideModal(modal.id);
+                    }
+                    );
+                }
+                );
+                // 消息确认按钮事件
+                document.getElementById('messageConfirm').addEventListener('click', closeMessage);
+                // 关闭详情按钮事件
+                document.getElementById('closeDetail').addEventListener('click', closeDetail);
+                // 详情遮罩层点击事件
+                document.getElementById('detailOverlay').addEventListener('click', closeDetail);
+                // 修改信息管理链接的点击事件
+                document.getElementById('info-link').addEventListener('click', function(event) {
+                    event.preventDefault();
+                    showModal('editModal');
+                }
+                );
+                // 订单管理点击事件
+                document.getElementById('order-management').addEventListener('click', function() {
+                    showModal('orderManagementModal');
+                    this.classList.add('active');
+                }
+                );
+                // 日程管理点击事件
+                document.getElementById('schedule-management').addEventListener('click', function() {
+                    showModal('scheduleModal');
+                    this.classList.add('active');
+                }
+                );
+                // 退出确认点击事件
+                document.getElementById('logout').addEventListener('click', function(event) {
+                    event.preventDefault();
+                    showModal('logoutModal');
+                }
+                );
+            }
+            );
+            // 获取状态样式类
+            function getStatusClass(status) {
+                switch (status) {
+                    case '0': return 'status-pending';
+                    case '1': return 'status-allocated';
+                    case '2': return 'status-completed';
+                    case '3': return 'status-cancelled';
+                    default: return 'status-unknown';
+                }
+            }
+            // 获取状态文本
+            function getStatusText(status) {
+                switch (status) {
+                    case '0': return '待分配';
+                    case '1': return '已分配';
+                    case '2': return '已完成';
+                    case '3': return '已撤单';
+                    default: return '未知状态';
+                }
+            }
+            // 显示加载指示器
+            function showLoading(show) {
+                const loadingIndicator=document.querySelector('.loading-indicator');
+                if (!loadingIndicator) return;
+                loadingIndicator.style.display=show ? 'flex': 'none';
+                toggleBodyScroll(show);
+            }
+            // 显示模态框
+            function showModal(modalId) {
+                const modal=document.getElementById(modalId);
+                const overlay=document.getElementById('overlay');
+                modal.style.display='block';
+                overlay.style.display='block';
+                // 使用 setTimeout 确保过渡效果正常显示
+                setTimeout(()=> {
+                    modal.classList.add('show');
+                    overlay.classList.add('show');
+                }
+                , 10);
+                toggleBodyScroll(true);
+            }
+            // 隐藏模态框
+            function hideModal(modalId) {
+                const modal=document.getElementById(modalId);
+                const overlay=document.getElementById('overlay');
+                modal.classList.remove('show');
+                overlay.classList.remove('show');
+                // 等待过渡效果完成后隐藏元素
+                setTimeout(()=> {
+                    modal.style.display='none';
+                    overlay.style.display='none';
+                }
+                , 300);
+                toggleBodyScroll(false);
+            }
     </script>
-
 </body>
 
 </html>
