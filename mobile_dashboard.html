@@ -3368,7 +3368,7 @@
             function completeOrder(orderId) {
                 $.ajax( {
                     url: API_URLS.COMPLETE_REPORT, method: 'POST', data: JSON.stringify( {
-                        report_id: orderId
+                        report_id: orderid
                     }
                     ), contentType: 'application/json', xhrFields: {
                         withCredentials: true
@@ -3377,7 +3377,7 @@
                 ).then(response=> {
                     if (response.message==='Success') {
                         showMessage('订单已完成');
-                        updateCalendarEvent(orderId, 'completed'); // 更新日历显示
+                        updateCalendarEvent(orderid, 'completed'); // 更新日历显示
                         fetchHistoryOrders(); // 刷新订单列表
                     }
                     else {
@@ -3394,7 +3394,7 @@
             function cancelOrder(orderId) {
                 $.ajax( {
                     url: API_URLS.CANCEL_REPORT, method: 'POST', data: JSON.stringify( {
-                        report_id: orderId
+                        report_id: orderid
                     }
                     ), contentType: 'application/json', xhrFields: {
                         withCredentials: true
@@ -3403,7 +3403,7 @@
                 ).then(response=> {
                     if (response.message==='Success') {
                         showMessage('订单已撤销');
-                        updateCalendarEvent(orderId, 'cancelled'); // 更新日历显示
+                        updateCalendarEvent(orderid, 'cancelled'); // 更新日历显示
                         fetchHistoryOrders(); // 刷新订单列表
                     }
                     else {
