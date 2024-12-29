@@ -170,6 +170,17 @@
                 padding: 12px;
             }
         }
+        
+        .success-message {
+            display: none;
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: rgba(76, 175, 80, 0.1);
+            font-size: 14px;
+        }
     </style>
 </head>
 
@@ -199,6 +210,7 @@
             <button type="submit">注册</button>
             <div class="loading">注册中...</div>
             <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
         </form>
         <div class="links">
             <a href="login.html">已有账号？返回登录</a>
@@ -233,6 +245,15 @@
                 const hasNumber = /[0-9]/.test(password);
                 return password.length >= minLength && hasLetter && hasNumber;
             },
+
+            showSuccess: (message) => {
+                const successElement = document.getElementById('successMessage');
+                successElement.textContent = message;
+                successElement.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            }
         };
 
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
@@ -265,14 +286,13 @@
                     }),
                     success: function(data) {
                         if (data['message'] === 'Success') {
-                            alert("注册成功！将自动前往登陆界面！");
-                            window.location.href = 'login.html';
+                            utils.showSuccess("注册成功！2秒后自动跳转到登录页面...");
                         } else if (data['message'] === 'Existed') {
-                            alert("该昵称已存在，请更换昵称或前往登陆");
+                            utils.showError("该昵称已存在，请更换昵称或前往登录");
                         }
                     },
                     error: function() {
-                        alert('后端服务器错误！');
+                        utils.showError('后端服务器错误！');
                     }
                 })
 
