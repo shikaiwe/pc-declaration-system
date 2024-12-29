@@ -2376,8 +2376,10 @@
                         el: '.date-swiper .swiper-scrollbar',
                     },
                     touchRatio: 1.5,
-                    resistance: true,
-                    resistanceRatio: 0.85,
+                    resistance: false,
+                    freeMode: true,
+                    freeModeSticky: true,
+                    mousewheel: true,
                     touchAngle: 45,
                     touchReleaseOnEdges: true,
                 });
@@ -2391,17 +2393,48 @@
                         el: '.time-swiper .swiper-scrollbar',
                     },
                     touchRatio: 1.5,
-                    resistance: true,
-                    resistanceRatio: 0.85,
+                    resistance: false,
+                    freeMode: true,
+                    freeModeSticky: true,
+                    mousewheel: true,
                     touchAngle: 45,
                     touchReleaseOnEdges: true,
                 });
+
+                // 阻止时间选择器内的触摸事件传播
+                const pickerContent = pickerContainer.querySelector('.picker-container');
+                pickerContent.addEventListener('touchmove', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                }, { passive: false });
+
+                // 阻止整个选择器的触摸事件传播
+                pickerContainer.addEventListener('touchmove', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                }, { passive: false });
+
+                // 为日期和时间选择器添加触摸事件处理
+                const dateSwipeArea = pickerContainer.querySelector('.date-swiper');
+                const timeSwipeArea = pickerContainer.querySelector('.time-swiper');
+
+                dateSwipeArea.addEventListener('touchmove', (e) => {
+                    e.stopPropagation();
+                }, { passive: false });
+
+                timeSwipeArea.addEventListener('touchmove', (e) => {
+                    e.stopPropagation();
+                }, { passive: false });
             }, 0);
 
             // 事件处理
             preferredTimeInput.addEventListener('click', () => {
                 pickerContainer.classList.add('active');
                 utils.ui.toggleBodyScroll(true);
+                // 添加阻止页面滚动的类
+                document.body.style.overflow = 'hidden';
+                document.body.style.position = 'fixed';
+                document.body.style.width = '100%';
             });
 
             // 取消按钮
@@ -2481,6 +2514,10 @@
         hide(pickerContainer) {
             pickerContainer.classList.remove('active');
             utils.ui.toggleBodyScroll(false);
+            // 恢复页面滚动
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
             const pickerContent = pickerContainer.querySelector('.picker-container');
             if (pickerContent) {
                 pickerContent.style.transform = '';

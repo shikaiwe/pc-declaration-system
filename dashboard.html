@@ -2767,7 +2767,7 @@
                                     // 只验证时间范围，不验证日期
                                     if (hour < 18 || (hour === 21 && minute > 0) || hour >= 21) {
                                         instance.setDate(dateRange.default);
-                                        document.getElementById('timeWarning').textContent = '请选择18:00-21:00之间的时间';
+                                        document.getElementById('timeWarning').textContent = '非工作时间段，请在18:00-21:00之间选择';
                                         document.getElementById('timeWarning').style.display = 'block';
                                     } else {
                                         document.getElementById('timeWarning').style.display = 'none';
