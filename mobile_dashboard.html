@@ -383,12 +383,12 @@
         /* 天气卡片样式 */
         
         .weather-container {
-            padding: 15px;
-            border-radius: 12px;
             background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%);
+            border-radius: 12px;
+            padding: 15px;
             color: white;
-            margin: 10px 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
         .weather-content {
@@ -399,14 +399,14 @@
         
         .weather-main {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 10px;
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .weather-location {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
             display: flex;
             align-items: center;
@@ -414,11 +414,13 @@
         }
         
         .weather-temp {
-            font-size: 24px;
+            font-size: 32px;
             font-weight: bold;
             display: flex;
             align-items: center;
             gap: 5px;
+            justify-content: center;
+            padding: 10px 0;
         }
         
         .weather-info-details {
@@ -431,16 +433,22 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 14px;
+            font-size: 13px;
         }
         
         .weather-icon {
-            font-size: 16px;
+            font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
+        }
+        
+        .weather-temp .weather-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
         }
         
         .weather-update {
@@ -474,10 +482,10 @@
                 margin: 8px 12px;
             }
             .weather-temp {
-                font-size: 20px;
+                font-size: 28px;
             }
             .weather-row {
-                font-size: 13px;
+                font-size: 12px;
             }
         }
         /* 日期时间选择器样式 */
@@ -1032,7 +1040,7 @@
         .weather-container {
             background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%);
             border-radius: 12px;
-            padding: 20px;
+            padding: 15px;
             color: white;
             margin: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -1040,56 +1048,100 @@
         
         .weather-content {
             display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .weather-main {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .weather-location {
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
             align-items: center;
-        }
-        
-        .weather-icon {
-            font-size: 48px;
-            margin-right: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        
-        .weather-info {
-            flex: 1;
+            gap: 5px;
         }
         
         .weather-temp {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .weather-desc {
-            font-size: 18px;
-            margin-bottom: 10px;
-            opacity: 0.9;
-        }
-        
-        .weather-details {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            font-size: 14px;
-            opacity: 0.8;
+            align-items: center;
+            gap: 5px;
+            justify-content: center;
+            padding: 10px 0;
         }
         
-        .weather-details span {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 4px 8px;
-            border-radius: 12px;
+        .weather-info-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .weather-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        
+        .weather-icon {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+        }
+        
+        .weather-temp .weather-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+        }
+        
+        .weather-update {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 4px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .weather-error {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            font-size: 16px;
+            gap: 8px;
+            font-size: 14px;
             opacity: 0.8;
+            padding: 15px;
         }
         
         .weather-error i {
-            font-size: 24px;
+            font-size: 20px;
+        }
+        
+        @media (max-width: 360px) {
+            .weather-container {
+                padding: 12px;
+                margin: 8px 12px;
+            }
+            .weather-temp {
+                font-size: 28px;
+            }
+            .weather-row {
+                font-size: 12px;
+            }
         }
         /* 在现有的style标签内添加订单详情样式 */
         
@@ -1929,10 +1981,10 @@
                             <span class="weather-icon">💨</span>
                             <span>风力：${weather.windpower}级</span>
                         </div>
-                        <div class="weather-update">
-                            <span class="weather-icon">🕒</span>
-                            <span>更新：${updateTime}</span>
-                        </div>
+                    </div>
+                    <div class="weather-update">
+                        <span class="weather-icon">🕒</span>
+                        <span>更新：${updateTime}</span>
                     </div>
                 </div>
             `;
