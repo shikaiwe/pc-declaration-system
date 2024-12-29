@@ -81,18 +81,28 @@
         
         .card {
             background-color: white;
-            margin: 15px;
-            padding: 15px;
+            margin: 10px 15px;
+            padding: 12px;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
-            will-change: transform, box-shadow;
-            backface-visibility: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
         }
         
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        .card h2 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .card p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .card.hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
         
         .card.no-hover:hover {
@@ -373,48 +383,72 @@
         /* 天气卡片样式 */
         
         .weather-container {
-            padding: 10px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #6dd5ed, #2196F3);
+            padding: 12px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%);
             color: white;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            margin: 10px 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
-        .weather-container p {
-            margin: 8px 0;
-            font-size: 1em;
+        .weather-content {
             display: flex;
             align-items: center;
-            line-height: 1.3;
+            gap: 10px;
         }
         
-        .weather-location {
-            font-size: 1.1em !important;
-            font-weight: bold;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            padding-bottom: 5px;
-            margin-bottom: 10px !important;
+        .weather-icon {
+            font-size: 32px;
+            margin-right: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .weather-info {
+            flex: 1;
         }
         
         .weather-temp {
-            font-size: 1.5em !important;
+            font-size: 24px;
             font-weight: bold;
-            margin: 10px 0 !important;
+            margin-bottom: 2px;
+        }
+        
+        .weather-desc {
+            font-size: 14px;
+            margin-bottom: 5px;
+            opacity: 0.9;
         }
         
         .weather-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 12px;
+            opacity: 0.8;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-            padding: 8px;
-            margin-top: 10px;
+            border-radius: 8px;
+            padding: 6px;
+            margin-top: 5px;
         }
         
-        .weather-update-time {
-            margin-top: 8px !important;
-            padding-top: 8px !important;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 0.9em !important;
-            color: rgba(255, 255, 255, 0.9);
+        .weather-details span {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 3px 6px;
+            border-radius: 6px;
+        }
+        
+        .weather-error {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            opacity: 0.8;
+            padding: 10px;
+        }
+        
+        .weather-error i {
+            font-size: 20px;
         }
         /* 日期时间选择器样式 */
         
@@ -1026,6 +1060,168 @@
         
         .weather-error i {
             font-size: 24px;
+        }
+        /* 在现有的style标签内添加订单详情样式 */
+        
+        .order-detail-card {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 1005;
+            max-height: 80vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .order-detail-card.show {
+            transform: translateY(0);
+        }
+        
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .detail-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .close-detail {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            padding: 5px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .close-detail:hover {
+            color: #333;
+        }
+        
+        .detail-row {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            flex: 0 0 80px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .detail-value {
+            flex: 1;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+            padding-left: 15px;
+        }
+        
+        .detail-value .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .detail-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .detail-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .detail-button.primary {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .detail-button.primary:hover {
+            background-color: #1976D2;
+        }
+        
+        .detail-button.danger {
+            background-color: #ff4d4f;
+            color: white;
+        }
+        
+        .detail-button.danger:hover {
+            background-color: #ff7875;
+        }
+        
+        .pull-indicator {
+            width: 40px;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            margin: 0 auto 15px;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .order-detail-card {
+                background: #333;
+            }
+            .detail-header {
+                border-bottom-color: rgba(255, 255, 255, 0.1);
+            }
+            .detail-header h3 {
+                color: #fff;
+            }
+            .close-detail {
+                color: #999;
+            }
+            .close-detail:hover {
+                color: #fff;
+            }
+            .detail-row {
+                border-bottom-color: rgba(255, 255, 255, 0.1);
+            }
+            .detail-label {
+                color: #999;
+            }
+            .detail-value {
+                color: #fff;
+            }
+            .detail-actions {
+                border-top-color: rgba(255, 255, 255, 0.1);
+            }
+            .pull-indicator {
+                background: #666;
+            }
         }
     </style>
 </head>
@@ -1675,35 +1871,17 @@
             });
 
             document.getElementById('weather-info').innerHTML = `
-                <p class="weather-location">
-                    <span class="weather-icon">📍</span>
-                    ${city.replace('市', '')}
-                </p>
-                <p class="weather-temp">
-                    <span class="weather-icon">🌡️</span>
-                    ${weather.temperature}°C
-                </p>
-                <div class="weather-details">
-                    <p>
-                        <span class="weather-icon">🌤️</span>
-                        天气：${weather.weather}
-                    </p>
-                    <p>
-                        <span class="weather-icon">💧</span>
-                        湿度：${weather.humidity}%
-                    </p>
-                    <p>
-                        <span class="weather-icon">🌪️</span>
-                        风向：${weather.winddirection}
-                    </p>
-                    <p>
-                        <span class="weather-icon">💨</span>
-                        风力：${weather.windpower}级
-                    </p>
-                    <p class="weather-update-time">
-                        <span class="weather-icon">🕒</span>
-                        更新时间：${updateTime}
-                    </p>
+                <div class="weather-content">
+                    <div class="weather-icon">🌡️</div>
+                    <div class="weather-info">
+                        <div class="weather-temp">${weather.temperature}°C</div>
+                        <div class="weather-desc">${city.replace('市', '')} · ${weather.weather}</div>
+                        <div class="weather-details">
+                            <span>💧 ${weather.humidity}%</span>
+                            <span>🌪️ ${weather.winddirection}</span>
+                            <span>💨 ${weather.windpower}级</span>
+                        </div>
+                    </div>
                 </div>
             `;
         }
@@ -1885,7 +2063,18 @@
             const overlay = document.getElementById('detailOverlay');
 
             const statusInfo = orderManager.getStatusInfo(order.status);
+            const showButtons = ['0', '1'].includes(order.status);
+
             detailContent.innerHTML = `
+                <div class="pull-indicator"></div>
+                <div class="detail-header">
+                    <h3>订单详情</h3>
+                    <button class="close-detail" id="closeDetail">&times;</button>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">订单编号</span>
+                    <span class="detail-value">${order.reportId}</span>
+                </div>
                 <div class="detail-row">
                     <span class="detail-label">状态</span>
                     <span class="detail-value">
@@ -1908,10 +2097,76 @@
                     <span class="detail-label">联系电话</span>
                     <span class="detail-value">${order.userPhoneNumber}</span>
                 </div>
+                <div class="detail-row">
+                    <span class="detail-label">提交时间</span>
+                    <span class="detail-value">${utils.date.format(order.call_date)}</span>
+                </div>
+                ${showButtons ? `
+                    <div class="detail-actions">
+                        <button class="detail-button primary" onclick="orderManager.completeOrder('${order.reportId}')">
+                            完成订单
+                        </button>
+                        <button class="detail-button danger" onclick="orderManager.cancelOrder('${order.reportId}')">
+                            撤销订单
+                        </button>
+                    </div>
+                ` : ''}
             `;
 
             detailCard.classList.add('show');
             overlay.classList.add('show');
+
+            // 添加滑动关闭功能
+            let touchStartY = 0;
+            let touchEndY = 0;
+
+            const handleTouchStart = (e) => {
+                touchStartY = e.touches[0].clientY;
+            };
+
+            const handleTouchMove = (e) => {
+                touchEndY = e.touches[0].clientY;
+                const deltaY = touchEndY - touchStartY;
+                
+                if (deltaY > 0) {
+                    detailCard.style.transform = `translateY(${deltaY}px)`;
+                }
+            };
+
+            const handleTouchEnd = () => {
+                const deltaY = touchEndY - touchStartY;
+                if (deltaY > 100) {
+                    this.hideEventDetail();
+                } else {
+                    detailCard.style.transform = '';
+                }
+            };
+
+            detailCard.addEventListener('touchstart', handleTouchStart);
+            detailCard.addEventListener('touchmove', handleTouchMove);
+            detailCard.addEventListener('touchend', handleTouchEnd);
+
+            // 点击关闭按钮
+            document.getElementById('closeDetail').onclick = () => {
+                this.hideEventDetail();
+            };
+
+            // 点击遮罩层关闭
+            overlay.onclick = () => {
+                this.hideEventDetail();
+            };
+        },
+
+        hideEventDetail() {
+            const detailCard = document.getElementById('orderDetailCard');
+            const overlay = document.getElementById('detailOverlay');
+            
+            detailCard.style.transform = 'translateY(100%)';
+            overlay.classList.remove('show');
+            
+            setTimeout(() => {
+                detailCard.classList.remove('show');
+            }, 300);
         },
 
         addTouchSupport(calendarEl) {
