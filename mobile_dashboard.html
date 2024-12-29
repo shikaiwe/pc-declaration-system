@@ -15,13 +15,22 @@
     <style>
         /* 全局样式 */
         
+        html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            min-height: 100%;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            /* 更改为更明显的浅色调 */
-            padding-bottom: 60px;
+            background-attachment: fixed; /* 确保背景固定，不会随滚动条滚动 */
+            padding-bottom: 60px; /* 为底部导航栏留出空间 */
+            position: relative;
+            box-sizing: border-box;
         }
         
         .header {
@@ -1229,6 +1238,46 @@
         
         .retry-button:hover {
             background-color: #1976D2;
+        }
+
+        /* 在现有的 style 标签内添加以下样式 */
+
+        /* 禁用文本选择 */
+        .datetime-picker,
+        .datetime-picker *,
+        .date-item,
+        .time-item {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 禁用输入框的点击高亮 */
+        #preferredTime {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        /* 修改日期和时间项的点击效果 */
+        .date-item,
+        .time-item {
+            -webkit-touch-callout: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* 修改日期和时间项的激活状态样式 */
+        .date-item:active,
+        .time-item:active {
+            background: rgba(33, 150, 243, 0.1);
+            transform: scale(0.98);
+        }
+
+        /* 确保内容区域不会被底部导航栏遮挡 */
+        .content-wrapper {
+            padding-bottom: 60px; /* 与底部导航栏高度相同 */
         }
     </style>
 </head>
@@ -2738,6 +2787,12 @@
             document.querySelectorAll('.close-button').forEach(button => {
                 button.addEventListener('click', () => {
                     const modal = button.closest('.modal');
+                    // 找到触发这个模态框的卡片并移除active类
+                    const cardId = modal.id.replace('Modal', '');
+                    const card = document.getElementById(cardId);
+                    if (card) {
+                        card.classList.remove('active');
+                    }
                     utils.ui.hideModal(modal.id);
                 });
             });
