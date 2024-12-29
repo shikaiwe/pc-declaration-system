@@ -2112,15 +2112,17 @@
                 // 从服务器获取天气 API Key
                 getApiKeyFromServer: async function() {
                     try {
-                        const response = await fetch(API_URLS.WEATHER_API_KEY, {
+                        const response = await $.ajax({
+                            url: API_URLS.WEATHER_API_KEY,
                             method: 'GET',
-                            credentials: 'include'
+                            xhrFields: {
+                                withCredentials: true
+                            }
                         });
-                        const data = await response.json();
-                        if (data.message === 'Success') {
-                            return data.apiKey;
+                        if (response.message === 'Success') {
+                            return response.apiKey;
                         } else {
-                            auth.handleSessionError(data.message);
+                            auth.handleSessionError(response.message);
                             throw new Error('获取API Key失败');
                         }
                     } catch (error) {
@@ -2136,64 +2138,42 @@
                         const apiKey = await this.getApiKeyFromServer();
 
                         // 获取IP定位信息
-                        const ipResponse = await fetch(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
-                        const ipData = await ipResponse.json();
-                        if (ipData.status !== '1') {
-                            throw new Error(`无法获取IP信息: ${ipData.info}`);
-                        }
-
-                        const cityAdcode = ipData.adcode;
-                        const city = ipData.city.replace('市', '');
-
-                        // 获取天气信息
-                        const weatherResponse = await fetch(
-                            `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityAdcode}&extensions=base&output=JSON`
-                        );
-                        const weatherData = await weatherResponse.json();
-                        if (weatherData.status !== '1') {
-                            throw new Error(`无法获取天气信息: ${weatherData.info}`);
-                        }
-
-                        const live = weatherData.lives[0]; // 获取实时天气信息
-                        const updateTime = new Date().toLocaleTimeString('zh-CN', {
-                            hour: '2-digit',
-                            minute: '2-digit'
+                        const ipData = await $.ajax({
+                            url: `https://restapi.amap.com/v3/ip?key=${apiKey}`,
+                            method: 'GET'
                         });
-                        weatherInfoElement.innerHTML = `
-                        <p class="weather-location">
-                            <span class="weather-icon">📍</span>
-                            ${city}
-                        </p>
-                        <p class="weather-temp">
-                            <span class="weather-icon">🌡️</span>
-                            ${live.temperature}°C
-                        </p>
-                        <div class="weather-details">
-                            <p>
-                                <span class="weather-icon">🌤️</span>
-                                天气：${live.weather}
-                            </p>
-                            <p>
-                                <span class="weather-icon">💧</span>
-                                湿度：${live.humidity}%
-                            </p>
-                            <p>
-                                <span class="weather-icon">🌪️</span>
-                                风向：${live.winddirection}
-                            </p>
-                            <p>
-                                <span class="weather-icon">💨</span>
-                                风力：${live.windpower}级
-                            </p>
-                            <p class="weather-update-time">
-                                <span class="weather-icon">🕒</span>
-                                更新时间：${updateTime}
-                            </p>
-                        </div>
-                    `;
+                        
+                        // 获取天气信息
+                        const weatherData = await $.ajax({
+                            url: `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${ipData.adcode}&extensions=base`,
+                            method: 'GET'
+                        });
+
+                        if (weatherData.status === '1' && weatherData.lives && weatherData.lives.length > 0) {
+                            const weather = weatherData.lives[0];
+                            weatherInfoElement.innerHTML = `
+                                <div class="weather-content">
+                                    <div class="weather-location">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>${ipData.city}</span>
+                                    </div>
+                                    <div class="weather-info">
+                                        <div class="weather-temp">${weather.temperature}°C</div>
+                                        <div class="weather-desc">${weather.weather}</div>
+                                    </div>
+                                    <div class="weather-details">
+                                        <span>湿度: ${weather.humidity}%</span>
+                                        <span>风向: ${weather.winddirection}</span>
+                                        <span>风力: ${weather.windpower}级</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            throw new Error('无法获取天气数据');
+                        }
                     } catch (error) {
                         console.error('获取天气信息失败:', error);
-                        weatherInfoElement.innerHTML = '<p>暂时无法获取天气信息</p>';
+                        weatherInfoElement.innerHTML = '<div class="weather-error">无法获取天气信息</div>';
                     }
                 }
             };
@@ -2205,25 +2185,27 @@
                     const usernameDisplay = document.getElementById('username-display');
                     if (!usernameDisplay) return;
 
-                    fetch(API_URLS.GET_USER_INFO, {
-                            method: 'GET',
-                            credentials: 'include'
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.message === 'Success') {
-                                const username = data.username;
-                                utils.storage.save('username', username);
-                                usernameDisplay.textContent = username;
-                            } else {
-                                auth.handleSessionError(data.message);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('获取用户信息失败:', error);
-                            const username = utils.storage.get('username');
-                            usernameDisplay.textContent = username || '用户';
-                        });
+                    $.ajax({
+                        url: API_URLS.GET_USER_INFO,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        }
+                    })
+                    .done(function(data) {
+                        if (data.message === 'Success') {
+                            const username = data.username;
+                            utils.storage.save('username', username);
+                            usernameDisplay.textContent = username;
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    })
+                    .fail(function(error) {
+                        console.error('获取用户信息失败:', error);
+                        const username = utils.storage.get('username');
+                        usernameDisplay.textContent = username || '用户';
+                    });
                 }
 
                 // 初始化显示
@@ -2273,46 +2255,45 @@
 
                 // 检查用户身份并显示/隐藏分配订单选项
                 function checkUserRole() {
-                    fetch(API_URLS.GET_USER_INFO, {
-                            method: 'GET',
-                            credentials: 'include'
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.message === 'Success') {
-                                const isAdmin = data.label === 'admin';
-                                const assignOrderLink = document.getElementById('assignOrder');
-                                if (assignOrderLink) {
-                                    assignOrderLink.style.display = isAdmin ? 'block' : 'none';
-                                }
-
-                                // 根据用户身份调整订单管理界面
-                                const orderManagementLink = document.getElementById('orderManagement');
-                                const reportOrderTab = document.querySelector('[data-tab="reportOrder"]');
-                                const orderHistoryTab = document.querySelector('[data-tab="orderHistory"]');
-
-                                if (orderManagementLink && reportOrderTab && orderHistoryTab) {
-                                    switch (data.label) {
-                                        case 'customer':
-                                            // 普通用户只显示报修界面
-                                            orderHistoryTab.style.display = 'none';
-                                            reportOrderTab.classList.add('active');
-                                            document.getElementById('reportOrder').style.display = 'block';
-                                            break;
-                                        case 'worker':
-                                        case 'admin':
-                                            // 维修人员和管理员显示所有界面
-                                            orderHistoryTab.style.display = 'block';
-                                            break;
-                                    }
-                                }
-                            } else {
-                                auth.handleSessionError(data.message);
+                    $.ajax({
+                        url: API_URLS.GET_USER_INFO,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        }
+                    })
+                    .done(function(data) {
+                        if (data.message === 'Success') {
+                            const isAdmin = data.label === 'admin';
+                            const assignOrderLink = document.getElementById('assignOrder');
+                            if (assignOrderLink) {
+                                assignOrderLink.style.display = isAdmin ? 'block' : 'none';
                             }
-                        })
-                        .catch(error => {
-                            console.error('获取用户信息失败:', error);
-                        });
+
+                            const orderManagementLink = document.getElementById('orderManagement');
+                            const reportOrderTab = document.querySelector('[data-tab="reportOrder"]');
+                            const orderHistoryTab = document.querySelector('[data-tab="orderHistory"]');
+
+                            if (orderManagementLink && reportOrderTab && orderHistoryTab) {
+                                switch (data.label) {
+                                    case 'customer':
+                                        orderHistoryTab.style.display = 'none';
+                                        reportOrderTab.classList.add('active');
+                                        document.getElementById('reportOrder').style.display = 'block';
+                                        break;
+                                    case 'worker':
+                                    case 'admin':
+                                        orderHistoryTab.style.display = 'block';
+                                        break;
+                                }
+                            }
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    })
+                    .fail(function(error) {
+                        console.error('获取用户信息失败:', error);
+                    });
                 }
 
                 // 调用检查用户角色函数
@@ -2321,16 +2302,17 @@
                 // 加载分配订单页面内容的函数
                 function loadAssignOrderContent() {
                     const assignOrderContent = document.getElementById('assignOrderContent');
-                    fetch('assign_order.html')
-                        .then(response => response.text())
-                        .then(html => {
-                            assignOrderContent.innerHTML = html;
-                            // 这里可以添加任何需要的初始化代码
-                        })
-                        .catch(error => {
-                            console.error('加载分配订单页面失败:', error);
-                            assignOrderContent.innerHTML = '<p>加载页面失败，请刷新重试</p>';
-                        });
+                    $.ajax({
+                        url: 'assign_order.html',
+                        method: 'GET'
+                    })
+                    .done(function(html) {
+                        assignOrderContent.innerHTML = html;
+                    })
+                    .fail(function(error) {
+                        console.error('加载分配订单页面失败:', error);
+                        assignOrderContent.innerHTML = '<p>加载页面失败，请刷新重试</p>';
+                    });
                 }
 
                 // 修改菜单点击事件处理
@@ -2382,44 +2364,42 @@
                 });
 
                 // 修改报单表单提交处理
-                document.getElementById('reportOrderForm').addEventListener('submit', async(event) => {
+                document.getElementById('reportOrderForm').addEventListener('submit', function(event) {
                     event.preventDefault();
 
                     const userPhoneNumber = document.getElementById('userPhoneNumber').value;
                     const address = document.getElementById('address').value;
                     const issue = document.getElementById('issue').value;
                     const preferredTime = document.getElementById('preferredTime').value;
-                    // 修改这里：使用完整的时间戳作为提交时间
                     const call_date = new Date().toISOString();
 
-                    try {
-                        const response = await fetch(API_URLS.CALL_REPORT, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                userPhoneNumber,
-                                address,
-                                issue,
-                                date: preferredTime.replace(/-/g, '/'),
-                                call_date: call_date // 发送完整的时间戳
-                            }),
-                            credentials: 'include'
-                        });
-
-                        const data = await response.json();
-
+                    $.ajax({
+                        url: API_URLS.CALL_REPORT,
+                        method: 'POST',
+                        data: JSON.stringify({
+                            userPhoneNumber,
+                            address,
+                            issue,
+                            date: preferredTime.replace(/-/g, '/'),
+                            call_date: call_date
+                        }),
+                        contentType: 'application/json',
+                        xhrFields: {
+                            withCredentials: true
+                        }
+                    })
+                    .done(function(data) {
                         if (data.message === 'Success') {
                             showReportMessage('报单成功！', 'success');
                             event.target.reset();
                         } else {
                             auth.handleSessionError(data.message);
                         }
-                    } catch (error) {
+                    })
+                    .fail(function(error) {
                         console.error('报单失败:', error);
                         showReportMessage('报单失败，请重试', 'error');
-                    }
+                    });
                 });
                 // 退出登录处理
                 const logoutBtn = document.getElementById('logoutLink');
@@ -3118,21 +3098,14 @@
                 const orderHistoryContent = document.getElementById('orderHistory');
                 showLoading(orderHistoryContent);
 
-                try {
-                    const response = await fetch(API_URLS.GET_HISTORY, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: 'include' // 确保包含 cookies
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                $.ajax({
+                    url: API_URLS.GET_HISTORY,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
                     }
-
-                    const data = await response.json();
-
+                })
+                .done(function(data) {
                     if (data.message === 'Success') {
                         displayHistoryOrders(data.report_info);
                     } else if (data.message === 'No history report') {
@@ -3140,12 +3113,14 @@
                     } else {
                         auth.handleSessionError(data.message);
                     }
-                } catch (error) {
+                })
+                .fail(function(error) {
                     console.error('获取历史订单失败:', error);
                     showError();
-                } finally {
+                })
+                .always(function() {
                     hideLoading(orderHistoryContent);
-                }
+                });
             }
 
             // 修改 displayHistoryOrders 函数
@@ -3231,18 +3206,16 @@
 
             // 添加结单功能函数
             async function completeOrder(reportId) {
-                try {
-                    const response = await fetch(API_URLS.COMPLETE_REPORT, {
-                            method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ reportId }),
-                        credentials: 'include'
-                    });
-
-                    const data = await response.json();
-
+                $.ajax({
+                    url: API_URLS.COMPLETE_REPORT,
+                    method: 'POST',
+                    data: JSON.stringify({ reportId }),
+                    contentType: 'application/json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                })
+                .done(function(data) {
                     if (data.message === 'Success') {
                         utils.ui.showMessage('订单已完成');
                         updateCalendarEvent(reportId, 'completed'); // 更新日历显示
@@ -3250,10 +3223,11 @@
                     } else {
                         auth.handleSessionError(data.message);
                     }
-                } catch (error) {
+                })
+                .fail(function(error) {
                     console.error('完成订单失败:', error);
                     utils.ui.showMessage('完成订单失败，请重试');
-                }
+                });
             }
 
             // 添加撤单功能函数
@@ -3263,28 +3237,27 @@
                     return;
                 }
 
-                try {
-                    const response = await fetch(API_URLS.CANCEL_REPORT, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ reportId }),
-                        credentials: 'include'
-                    });
-
-                    const data = await response.json();
-
+                $.ajax({
+                    url: API_URLS.CANCEL_REPORT,
+                    method: 'POST',
+                    data: JSON.stringify({ reportId }),
+                    contentType: 'application/json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                })
+                .done(function(data) {
                     if (data.message === 'Success') {
                         utils.ui.showMessage('订单已撤销');
                         updateCalendarEvent(reportId, 'cancelled'); // 更新日历显示
-                        await fetchHistoryOrders(); // 刷新订单列表
+                        fetchHistoryOrders(); // 刷新订单列表
                     } else {
                         auth.handleSessionError(data.message);
                     }
-                } catch (error) {
+                })
+                .fail(function(error) {
                     handleApiError(error, '撤销订单失败，请重试');
-                }
+                });
             }
 
             function showNoOrders() {

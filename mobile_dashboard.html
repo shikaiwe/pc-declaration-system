@@ -1514,26 +1514,28 @@
 
         // 用户认证模块
         const auth = {
-            handleLogout: async() => {
-                try {
-                    const response = await fetch(API_URLS.LOGOUT, {
-                        method: 'GET',
-                        credentials: 'include'
-                    });
-                    const data = await response.json();
-
-                    if (data.message === 'Success') {
-                        utils.storage.remove('username');
-                        utils.storage.remove('loginData');
-                        utils.storage.remove('rememberMe');
-                        window.location.href = 'login.html';
-                    } else {
-                        handleSessionError(data.message);
+            handleLogout: function() {
+                $.ajax({
+                    url: API_URLS.LOGOUT,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        if (data.message === 'Success') {
+                            utils.storage.remove('username');
+                            utils.storage.remove('loginData');
+                            utils.storage.remove('rememberMe');
+                            window.location.href = 'login.html';
+                        } else {
+                            handleSessionError(data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('退出登录失败:', error);
+                        utils.ui.showMessage('退出登录失败，请重试');
                     }
-                } catch (error) {
-                    console.error('退出登录失败:', error);
-                    utils.ui.showMessage('退出登录失败，请重试');
-                }
+                });
             },
 
             handleSessionError: (message) => {
@@ -1588,61 +1590,63 @@
                     };
                 },
 
-                submitOrder: async(formData) => {
-                    try {
-                        utils.ui.showLoading(true);
-                        const response = await fetch(API_URLS.REPORT, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(formData),
-                            credentials: 'include'
-                        });
-
-                        const data = await response.json();
-                        utils.ui.showLoading(false);
-
-                        if (data.message === 'Success') {
-                            utils.ui.showMessage('报单提交成功', 'success');
-                            document.getElementById('newOrderForm').reset();
-                            if (document.getElementById('orderHistory').style.display === 'block') {
-                                orderManager.fetchHistoryOrders();
+                submitOrder: function(formData) {
+                    utils.ui.showLoading(true);
+                    $.ajax({
+                        url: API_URLS.REPORT,
+                        method: 'POST',
+                        data: JSON.stringify(formData),
+                        contentType: 'application/json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(data) {
+                            utils.ui.showLoading(false);
+                            if (data.message === 'Success') {
+                                utils.ui.showMessage('报单提交成功', 'success');
+                                document.getElementById('newOrderForm').reset();
+                                if (document.getElementById('orderHistory').style.display === 'block') {
+                                    orderManager.fetchHistoryOrders();
+                                }
+                            } else {
+                                auth.handleSessionError(data.message);
                             }
-                        } else {
-                            auth.handleSessionError(data.message);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('报单提交失败:', error);
+                            utils.ui.showMessage('报单提交失败，请重试');
+                            utils.ui.showLoading(false);
                         }
-                    } catch (error) {
-                        console.error('报单提交失败:', error);
-                        utils.ui.showMessage('报单提交失败，请重试');
-                        utils.ui.showLoading(false);
-                    }
+                    });
                 },
 
-                fetchHistoryOrders: async() => {
-                    try {
-                        utils.ui.showLoading(true);
-                        const response = await fetch(API_URLS.GET_HISTORY, {
-                            credentials: 'include'
-                        });
-                        const data = await response.json();
-                        utils.ui.showLoading(false);
-
-                        if (data.message === 'Success') {
-                            orderManager.displayHistoryOrders(data.report_info);
-                        } else if (data.message === 'No history report') {
-                            orderManager.showNoOrders();
-                        } else {
-                            auth.handleSessionError(data.message);
+                fetchHistoryOrders: function() {
+                    utils.ui.showLoading(true);
+                    $.ajax({
+                        url: API_URLS.GET_HISTORY,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(data) {
+                            utils.ui.showLoading(false);
+                            if (data.message === 'Success') {
+                                orderManager.displayHistoryOrders(data.report_info);
+                            } else if (data.message === 'No history report') {
+                                orderManager.showNoOrders();
+                            } else {
+                                auth.handleSessionError(data.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('获取历史订单失败:', error);
+                            orderManager.showError();
+                            utils.ui.showLoading(false);
                         }
-                    } catch (error) {
-                        console.error('获取历史订单失败:', error);
-                        orderManager.showError();
-                        utils.ui.showLoading(false);
-                    }
+                    });
                 },
 
-                displayHistoryOrders: (orders) => {
+                displayHistoryOrders: function(orders) {
                         const historyContent = document.getElementById('orderHistory');
                         if (!historyContent) return;
 
@@ -1707,7 +1711,7 @@
             `;
         },
 
-        showNoOrders: () => {
+        showNoOrders: function() {
             const historyContent = document.getElementById('orderHistory');
             if (historyContent) {
                 historyContent.innerHTML = `
@@ -1719,7 +1723,7 @@
             }
         },
 
-        showError: () => {
+        showError: function() {
             const historyContent = document.getElementById('orderHistory');
             if (historyContent) {
                 historyContent.innerHTML = `
@@ -1732,52 +1736,52 @@
             }
         },
 
-        completeOrder: async (reportId) => {
-            try {
-                const response = await fetch(API_URLS.COMPLETE_REPORT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ reportId }),
-                    credentials: 'include'
-                });
-
-                const data = await response.json();
-                if (data.message === 'Success') {
-                    utils.ui.showMessage('订单已完成');
-                    orderManager.fetchHistoryOrders();
-                } else {
-                    auth.handleSessionError(data.message);
+        completeOrder: function(reportId) {
+            $.ajax({
+                url: API_URLS.COMPLETE_REPORT,
+                method: 'POST',
+                data: JSON.stringify({ reportId }),
+                contentType: 'application/json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(data) {
+                    if (data.message === 'Success') {
+                        utils.ui.showMessage('订单已完成');
+                        orderManager.fetchHistoryOrders();
+                    } else {
+                        auth.handleSessionError(data.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('完成订单失败:', error);
+                    utils.ui.showMessage('完成订单失败，请重试');
                 }
-            } catch (error) {
-                console.error('完成订单失败:', error);
-                utils.ui.showMessage('完成订单失败，请重试');
-            }
+            });
         },
 
-        cancelOrder: async (reportId) => {
-            try {
-                const response = await fetch(API_URLS.CANCEL_REPORT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ reportId }),
-                    credentials: 'include'
-                });
-
-                const data = await response.json();
-                if (data.message === 'Success') {
-                    utils.ui.showMessage('订单已撤销');
-                    orderManager.fetchHistoryOrders();
-                } else {
-                    auth.handleSessionError(data.message);
+        cancelOrder: function(reportId) {
+            $.ajax({
+                url: API_URLS.CANCEL_REPORT,
+                method: 'POST',
+                data: JSON.stringify({ reportId }),
+                contentType: 'application/json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(data) {
+                    if (data.message === 'Success') {
+                        utils.ui.showMessage('订单已撤销');
+                        orderManager.fetchHistoryOrders();
+                    } else {
+                        auth.handleSessionError(data.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('撤销订单失败:', error);
+                    utils.ui.showMessage('撤销订单失败，请重试');
                 }
-            } catch (error) {
-                console.error('撤销订单失败:', error);
-                utils.ui.showMessage('撤销订单失败，请重试');
-            }
+            });
         }
     };
 
@@ -1786,8 +1790,14 @@
         async fetchWeatherAndLocation() {
             try {
                 const apiKey = await this.getApiKey();
-                const ipData = await this.fetchIpInfo(apiKey);
-                const weatherData = await this.fetchWeatherInfo(apiKey, ipData.adcode);
+                const ipData = await $.ajax({
+                    url: `https://restapi.amap.com/v3/ip?key=${apiKey}`,
+                    method: 'GET'
+                });
+                const weatherData = await $.ajax({
+                    url: `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${ipData.adcode}&extensions=base`,
+                    method: 'GET'
+                });
                 this.displayWeatherInfo(weatherData.lives[0], ipData.city);
             } catch (error) {
                 console.error('获取天气信息时出错:', error);
@@ -1795,35 +1805,26 @@
             }
         },
 
-        async getApiKey() {
-            const response = await fetch(API_URLS.WEATHER_API_KEY, {
-                credentials: 'include'
+        getApiKey() {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: API_URLS.WEATHER_API_KEY,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        if (data.message === 'Success') {
+                            resolve(data.apiKey);
+                        } else {
+                            reject(new Error('获取API Key失败'));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        reject(error);
+                    }
+                });
             });
-            const data = await response.json();
-            if (data.message === 'Success') {
-                return data.apiKey;
-            }
-            throw new Error('获取API Key失败');
-        },
-
-        async fetchIpInfo(apiKey) {
-            const response = await fetch(`https://restapi.amap.com/v3/ip?key=${apiKey}`);
-            const data = await response.json();
-            if (data.status !== '1') {
-                throw new Error(`无法获取IP信息: ${data.info}`);
-            }
-            return data;
-        },
-
-        async fetchWeatherInfo(apiKey, cityCode) {
-            const response = await fetch(
-                `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${cityCode}&extensions=base&output=JSON`
-            );
-            const data = await response.json();
-            if (data.status !== '1') {
-                throw new Error(`无法获取天气信息: ${data.info}`);
-            }
-            return data;
         },
 
         displayWeatherInfo(weather, city) {
@@ -2217,23 +2218,26 @@
         const usernameDisplay = document.getElementById('username-display');
         if (!usernameDisplay) return;
 
-        fetch(API_URLS.GET_USER_INFO, {
-            credentials: 'include'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message === 'Success') {
-                const username = data.username;
-                utils.storage.save('username', username);
-                usernameDisplay.textContent = username;
-            } else {
-                auth.handleSessionError(data.message);
+        $.ajax({
+            url: API_URLS.GET_USER_INFO,
+            method: 'GET',
+            xhrFields: {
+                withCredentials: true
+            },
+            success: function(data) {
+                if (data.message === 'Success') {
+                    const username = data.username;
+                    utils.storage.save('username', username);
+                    usernameDisplay.textContent = username;
+                } else {
+                    auth.handleSessionError(data.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('获取用户信息失败:', error);
+                const username = utils.storage.get('username');
+                usernameDisplay.textContent = username || '用户';
             }
-        })
-        .catch(error => {
-            console.error('获取用户信息失败:', error);
-            const username = utils.storage.get('username');
-            usernameDisplay.textContent = username || '用户';
         });
     }
 
@@ -2611,71 +2615,72 @@
         calendarManager.init();
 
         // 检查用户身份并显示/隐藏分配订单卡片
-        const checkUserRole = async () => {
-            try {
-                const response = await fetch(API_URLS.GET_USER_INFO, {
-                    credentials: 'include'
-                });
-                const data = await response.json();
-                
-                if (data.message === 'Success') {
-                    // 保存用户名
-                    utils.storage.save('username', data.username);
-                    document.getElementById('username-display').textContent = data.username;
+        const checkUserRole = function() {
+            $.ajax({
+                url: API_URLS.GET_USER_INFO,
+                method: 'GET',
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(data) {
+                    if (data.message === 'Success') {
+                        utils.storage.save('username', data.username);
+                        document.getElementById('username-display').textContent = data.username;
 
-                    // 根据用户身份显示不同功能
-                    const orderManagement = document.getElementById('order-management');
-                    const assignOrder = document.getElementById('assign-order');
+                        const orderManagement = document.getElementById('order-management');
+                        const assignOrder = document.getElementById('assign-order');
 
-                    switch (data.label) {
-                        case 'customer':
-                            // 普通用户只显示报修功能
-                            if (orderManagement) {
-                                orderManagement.style.display = 'block';
-                            }
-                            if (assignOrder) {
-                                assignOrder.style.display = 'none';
-                            }
-                            break;
-                        case 'worker':
-                            // 维修人员显示报修和查看自己的订单
-                            if (orderManagement) {
-                                orderManagement.style.display = 'block';
-                            }
-                            if (assignOrder) {
-                                assignOrder.style.display = 'none';
-                            }
-                            break;
-                        case 'admin':
-                            // 管理员显示所有功能
-                            if (orderManagement) {
-                                orderManagement.style.display = 'block';
-                            }
-                            if (assignOrder) {
-                                assignOrder.style.display = 'block';
-                            }
-                            break;
-                        default:
-                            console.error('未知的用户身份:', data.label);
+                        switch (data.label) {
+                            case 'customer':
+                                if (orderManagement) {
+                                    orderManagement.style.display = 'block';
+                                }
+                                if (assignOrder) {
+                                    assignOrder.style.display = 'none';
+                                }
+                                break;
+                            case 'worker':
+                                if (orderManagement) {
+                                    orderManagement.style.display = 'block';
+                                }
+                                if (assignOrder) {
+                                    assignOrder.style.display = 'none';
+                                }
+                                break;
+                            case 'admin':
+                                if (orderManagement) {
+                                    orderManagement.style.display = 'block';
+                                }
+                                if (assignOrder) {
+                                    assignOrder.style.display = 'block';
+                                }
+                                break;
+                            default:
+                                console.error('未知的用户身份:', data.label);
+                        }
+                    } else {
+                        auth.handleSessionError(data.message);
                     }
-                } else {
-                    auth.handleSessionError(data.message);
+                },
+                error: function(xhr, status, error) {
+                    console.error('获取用户信息失败:', error);
                 }
-            } catch (error) {
-                console.error('获取用户信息失败:', error);
-            }
+            });
         };
 
         // 加载分配订单页面内容
-        const loadAssignOrderContent = async () => {
-            try {
-                const response = await fetch('assign_order.html');
-                const html = await response.text();
-                document.getElementById('assignOrderContent').innerHTML = html;
-            } catch (error) {
-                console.error('加载分配订单页面失败:', error);
-                utils.ui.showMessage('加载分配订单页面失败，请重试');
-            }
+        const loadAssignOrderContent = function() {
+            $.ajax({
+                url: 'assign_order.html',
+                method: 'GET',
+                success: function(html) {
+                    document.getElementById('assignOrderContent').innerHTML = html;
+                },
+                error: function(xhr, status, error) {
+                    console.error('加载分配订单页面失败:', error);
+                    utils.ui.showMessage('加载分配订单页面失败，请重试');
+                }
+            });
         };
 
         // 绑定事件监听器
@@ -2745,31 +2750,34 @@
             });
 
             // 自动填充手机号按钮
-            document.getElementById('fillPhoneNumberButton')?.addEventListener('click', async () => {
-                try {
-                    utils.ui.showLoading(true);
-                    const response = await fetch(API_URLS.GET_PHONE, {
-                        credentials: 'include'
-                    });
-                    const data = await response.json();
-                    utils.ui.showLoading(false);
-
-                    if (data.message === 'Success' && data.phoneNumber) {
-                        document.getElementById('userPhoneNumber').value = data.phoneNumber;
-                    } else if (data.message === 'No phone number') {
-                        utils.ui.showMessage('您还未设置手机号，请先在账户管理中设置');
-                    } else {
-                        auth.handleSessionError(data.message);
+            document.getElementById('fillPhoneNumberButton')?.addEventListener('click', function() {
+                utils.ui.showLoading(true);
+                $.ajax({
+                    url: API_URLS.GET_PHONE,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        utils.ui.showLoading(false);
+                        if (data.message === 'Success' && data.phoneNumber) {
+                            document.getElementById('userPhoneNumber').value = data.phoneNumber;
+                        } else if (data.message === 'No phone number') {
+                            utils.ui.showMessage('您还未设置手机号，请先在账户管理中设置');
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('获取手机号失败:', error);
+                        utils.ui.showMessage('获取手机号失败，请重试');
+                        utils.ui.showLoading(false);
                     }
-                } catch (error) {
-                    console.error('获取手机号失败:', error);
-                    utils.ui.showMessage('获取手机号失败，请重试');
-                    utils.ui.showLoading(false);
-                }
+                });
             });
 
             // 账户信息表单提交
-            document.getElementById('infoForm')?.addEventListener('submit', async (event) => {
+            document.getElementById('infoForm')?.addEventListener('submit', function(event) {
                 event.preventDefault();
                 const phoneNumber = document.getElementById('phone').value.trim();
                 const newName = document.getElementById('username').value.trim();
@@ -2788,37 +2796,37 @@
                 if (phoneNumber) requestData.phoneNumber = phoneNumber;
                 if (newName) requestData.newName = newName;
 
-                try {
-                    const response = await fetch(API_URLS.SAVE_PHONE, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestData),
-                        credentials: 'include'
-                    });
-
-                    const data = await response.json();
-                    if (data.message === 'Success') {
-                        utils.ui.showMessage('保存成功', 'success');
-                        if (requestData.newName) {
-                            utils.storage.save('username', requestData.newName);
-                            document.getElementById('username-display').textContent = requestData.newName;
+                $.ajax({
+                    url: API_URLS.SAVE_PHONE,
+                    method: 'POST',
+                    data: JSON.stringify(requestData),
+                    contentType: 'application/json',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        if (data.message === 'Success') {
+                            utils.ui.showMessage('保存成功', 'success');
+                            if (requestData.newName) {
+                                utils.storage.save('username', requestData.newName);
+                                document.getElementById('username-display').textContent = requestData.newName;
+                            }
+                            event.target.reset();
+                        } else if (data.message === 'This user is existed') {
+                            utils.ui.showMessage('用户名已被占用');
+                        } else {
+                            auth.handleSessionError(data.message);
                         }
-                        event.target.reset();
-                    } else if (data.message === 'This user is existed') {
-                        utils.ui.showMessage('用户名已被占用');
-                    } else {
-                        auth.handleSessionError(data.message);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('保存失败:', error);
+                        utils.ui.showMessage('保存失败，请重试');
                     }
-                } catch (error) {
-                    console.error('保存失败:', error);
-                    utils.ui.showMessage('保存失败，请重试');
-                }
+                });
             });
 
             // 密码修改表单提交
-            document.getElementById('passwordForm')?.addEventListener('submit', async (event) => {
+            document.getElementById('passwordForm')?.addEventListener('submit', function(event) {
                 event.preventDefault();
                 const oldPassword = document.getElementById('current-password').value;
                 const newPassword = document.getElementById('new-password').value;
@@ -2829,34 +2837,34 @@
                     return;
                 }
 
-                try {
-                    const response = await fetch(API_URLS.CHANGE_PASSWORD, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            old_password: oldPassword,
-                            new_password: newPassword
-                        }),
-                        credentials: 'include'
-                    });
-
-                    const data = await response.json();
-                    if (data.message === 'Success') {
-                        utils.ui.showMessage('密码修改成功，请重新登录');
-                        setTimeout(() => {
-                            auth.handleLogout();
-                        }, 2000);
-                    } else if (data.message === 'Password error') {
-                        utils.ui.showMessage('原密码错误');
-                    } else {
-                        auth.handleSessionError(data.message);
+                $.ajax({
+                    url: API_URLS.CHANGE_PASSWORD,
+                    method: 'POST',
+                    data: JSON.stringify({
+                        old_password: oldPassword,
+                        new_password: newPassword
+                    }),
+                    contentType: 'application/json',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        if (data.message === 'Success') {
+                            utils.ui.showMessage('密码修改成功，请重新登录');
+                            setTimeout(() => {
+                                auth.handleLogout();
+                            }, 2000);
+                        } else if (data.message === 'Password error') {
+                            utils.ui.showMessage('原密码错误');
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('密码修改失败:', error);
+                        utils.ui.showMessage('密码修改失败，请重试');
                     }
-                } catch (error) {
-                    console.error('密码修改失败:', error);
-                    utils.ui.showMessage('密码修改失败，请重试');
-                }
+                });
             });
 
             // 问题描述文本框自动调整高度

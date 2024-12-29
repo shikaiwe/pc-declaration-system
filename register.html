@@ -325,6 +325,7 @@
                     data: JSON.stringify({
                         email: email
                     }),
+                    contentType: "application/json",
                     success: function(data) {
                         if (data['message'] === '验证码已发送') {
                             utils.showSuccess("验证码已发送到您的邮箱");
@@ -378,6 +379,7 @@
                         password: password,
                         code: verificationCode
                     }),
+                    contentType: "application/json",
                     success: function(data) {
                         if (data['message'] === 'Success') {
                             utils.showSuccess("注册成功！2秒后自动跳转到登录页面...");
@@ -396,7 +398,7 @@
                     error: function() {
                         utils.showError('后端服务器错误！');
                     }
-                })
+                });
             } catch (error) {
                 utils.showError(error.message);
             } finally {

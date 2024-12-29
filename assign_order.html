@@ -138,6 +138,7 @@
             }
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
@@ -212,45 +213,50 @@
         // 加载今日订单
         async function loadTodayOrders() {
             try {
-                const response = await fetch(ORDERS_API_URL, {
-                    credentials: 'include'
-                });
-                const data = await response.json();
+                $.ajax({
+                    url: ORDERS_API_URL,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        if (data.message === 'Success' && Array.isArray(data.report_info)) {
+                            reportSelect.innerHTML = '<option value="">请选择订单</option>';
 
-                if (data.message === 'Success' && Array.isArray(data.report_info)) {
-                    reportSelect.innerHTML = '<option value="">请选择订单</option>';
+                            const today = new Date().toISOString().split('T')[0];
+                            const todayOrders = data.report_info.filter(order =>
+                                order.date === today && order.status === '0'
+                            );
 
-                    // 获取今天的日期（格式：YYYY-MM-DD）
-                    const today = new Date().toISOString().split('T')[0];
-
-                    // 筛选今天的未分配订单
-                    const todayOrders = data.report_info.filter(order =>
-                        order.date === today && order.status === '0'
-                    );
-
-                    if (todayOrders.length === 0) {
-                        const option = document.createElement('option');
-                        option.value = "";
-                        option.textContent = "今日没有待分配的订单";
-                        option.disabled = true;
-                        reportSelect.appendChild(option);
-                    } else {
-                        todayOrders.forEach(order => {
+                            if (todayOrders.length === 0) {
+                                const option = document.createElement('option');
+                                option.value = "";
+                                option.textContent = "今日没有待分配的订单";
+                                option.disabled = true;
+                                reportSelect.appendChild(option);
+                            } else {
+                                todayOrders.forEach(order => {
+                                    const option = document.createElement('option');
+                                    option.value = order.reportId;
+                                    option.textContent = `订单号: ${order.reportId} - 电话: ${order.userPhoneNumber} - 地址: ${order.address} - 问题: ${order.issue}`;
+                                    reportSelect.appendChild(option);
+                                });
+                            }
+                        } else if (data.message === 'No history report') {
                             const option = document.createElement('option');
-                            option.value = order.reportId;
-                            option.textContent = `订单号: ${order.reportId} - 电话: ${order.userPhoneNumber} - 地址: ${order.address} - 问题: ${order.issue}`;
+                            option.value = "";
+                            option.textContent = "没有任何订单记录";
+                            option.disabled = true;
                             reportSelect.appendChild(option);
-                        });
+                        } else {
+                            handleSessionError(data.message);
+                        }
+                    },
+                    error: function(error) {
+                        console.error('加载订单失败:', error);
+                        showMessage('加载订单失败，请刷新页面重试', 'error');
                     }
-                } else if (data.message === 'No history report') {
-                    const option = document.createElement('option');
-                    option.value = "";
-                    option.textContent = "没有任何订单记录";
-                    option.disabled = true;
-                    reportSelect.appendChild(option);
-                } else {
-                    handleSessionError(data.message);
-                }
+                });
             } catch (error) {
                 console.error('加载订单失败:', error);
                 showMessage('加载订单失败，请刷新页面重试', 'error');
@@ -260,22 +266,30 @@
         // 加载今日值班人员
         async function loadTodayWorkers() {
             try {
-                const response = await fetch(WORKERS_API_URL, {
-                    credentials: 'include'
+                $.ajax({
+                    url: WORKERS_API_URL,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        if (data.message === 'Success' && Array.isArray(data.workers)) {
+                            workerSelect.innerHTML = '<option value="">请选择志愿者</option>';
+                            data.workers.forEach(worker => {
+                                const option = document.createElement('option');
+                                option.value = worker.username;
+                                option.textContent = `${worker.username} - ${worker.name}`;
+                                workerSelect.appendChild(option);
+                            });
+                        } else {
+                            handleSessionError(data.message);
+                        }
+                    },
+                    error: function(error) {
+                        console.error('加载值班人员失败:', error);
+                        showMessage('加载值班人员失败，请刷新页面重试', 'error');
+                    }
                 });
-                const data = await response.json();
-
-                if (data.message === 'Success' && Array.isArray(data.workers)) {
-                    workerSelect.innerHTML = '<option value="">请选择志愿者</option>';
-                    data.workers.forEach(worker => {
-                        const option = document.createElement('option');
-                        option.value = worker.username;
-                        option.textContent = `${worker.username} - ${worker.name}`;
-                        workerSelect.appendChild(option);
-                    });
-                } else {
-                    handleSessionError(data.message);
-                }
             } catch (error) {
                 console.error('加载值班人员失败:', error);
                 showMessage('加载值班人员失败，请刷新页面重试', 'error');
@@ -289,7 +303,7 @@
         });
 
         // 表单提交处理
-        form.addEventListener('submit', async(e) => {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
 
             const reportId = document.getElementById('reportId').value.trim();
@@ -300,53 +314,52 @@
                 return;
             }
 
-            // 显示加载状态
             loadingDiv.style.display = 'block';
             submitBtn.disabled = true;
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        reportId,
-                        workerName
-                    }),
-                    credentials: 'include'
-                });
-
-                const data = await response.json();
-
-                if (data.message === 'Success') {
-                    showMessage('订单分配成功', 'success');
-                    form.reset();
-                } else {
-                    switch (data.message) {
-                        case 'Permission error':
-                            showMessage('权限错误，无法分配订单', 'error');
-                            break;
-                        case 'This worker is no exist':
-                            showMessage('指定的志愿者不存在', 'error');
-                            break;
-                        case 'This report is allocated':
-                            showMessage('该订单已被分配', 'error');
-                            break;
-                        case 'This report is no exist':
-                            showMessage('该订单不存在', 'error');
-                            break;
-                        default:
-                            handleSessionError(data.message);
+            $.ajax({
+                url: API_URL,
+                method: 'POST',
+                data: JSON.stringify({
+                    reportId,
+                    workerName
+                }),
+                contentType: 'application/json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(data) {
+                    if (data.message === 'Success') {
+                        showMessage('订单分配成功', 'success');
+                        form.reset();
+                    } else {
+                        switch (data.message) {
+                            case 'Permission error':
+                                showMessage('权限错误，无法分配订单', 'error');
+                                break;
+                            case 'This worker is no exist':
+                                showMessage('指定的志愿者不存在', 'error');
+                                break;
+                            case 'This report is allocated':
+                                showMessage('该订单已被分配', 'error');
+                                break;
+                            case 'This report is no exist':
+                                showMessage('该订单不存在', 'error');
+                                break;
+                            default:
+                                handleSessionError(data.message);
+                        }
                     }
+                },
+                error: function(error) {
+                    console.error('分配订单失败:', error);
+                    showMessage('分配订单失败，请重试', 'error');
+                },
+                complete: function() {
+                    loadingDiv.style.display = 'none';
+                    submitBtn.disabled = false;
                 }
-            } catch (error) {
-                console.error('分配订单失败:', error);
-                showMessage('分配订单失败，请重试', 'error');
-            } finally {
-                loadingDiv.style.display = 'none';
-                submitBtn.disabled = false;
-            }
+            });
         });
     </script>
 </body>
