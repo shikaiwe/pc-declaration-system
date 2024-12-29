@@ -2613,13 +2613,13 @@
             });
 
             // 订单管理
-            document.getElementById('order-management')?.addEventListener('click', () => {
+            document.getElementById('order-management')?.addEventListener('click', function() {
                 utils.ui.showModal('orderManagementModal');
                 this.classList.add('active');
             });
 
             // 日程管理
-            document.getElementById('schedule-management')?.addEventListener('click', () => {
+            document.getElementById('schedule-management')?.addEventListener('click', function() {
                 utils.ui.showModal('scheduleModal');
                 this.classList.add('active');
             });
