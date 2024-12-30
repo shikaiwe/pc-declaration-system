@@ -328,7 +328,7 @@
                     contentType: "application/json",
                     success: function(data) {
                         if (data['message'] === '验证码已发送') {
-                            utils.showSuccess("验证码已发送到您的邮箱");
+                            utils.showError("验证码已发送到您的邮箱");
                             utils.startCountdown(button);
                         } else {
                             utils.showError(data['message']);
