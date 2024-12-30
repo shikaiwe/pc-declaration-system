@@ -3045,6 +3045,7 @@
                     if (phoneNumber) requestData.phoneNumber = phoneNumber;
                     if (newName) requestData.newName = newName;
 
+                    utils.ui.showLoading(true);
                     $.ajax({
                         url: API_URLS.SAVE_PHONE,
                         method: 'POST',
@@ -3054,11 +3055,17 @@
                             withCredentials: true
                         },
                         success: function(data) {
+                            utils.ui.showLoading(false);
                             if (data.message === 'Success') {
                                 utils.ui.showMessage('保存成功', 'success');
                                 if (requestData.newName) {
                                     utils.storage.save('username', requestData.newName);
                                     document.getElementById('username-display').textContent = requestData.newName;
+                                }
+                                // 保存成功后启用一键填充按钮
+                                const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
+                                if (fillPhoneNumberButton) {
+                                    fillPhoneNumberButton.disabled = false;
                                 }
                                 event.target.reset();
                             } else if (data.message === 'This user is existed') {
@@ -3068,6 +3075,7 @@
                             }
                         },
                         error: function(xhr, status, error) {
+                            utils.ui.showLoading(false);
                             console.error('保存失败:', error);
                             utils.ui.showMessage('保存失败，请重试');
                         }
@@ -3150,6 +3158,64 @@
 
             // 初始化日期时间选择器
             dateTimePicker.init();
+
+            // 检查是否已设置手机号码并设置一键填充按钮状态
+            const checkPhoneNumberStatus = () => {
+                const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
+                if (fillPhoneNumberButton) {
+                    utils.ui.showLoading(true);
+                    $.ajax({
+                        url: API_URLS.GET_PHONE,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(data) {
+                            utils.ui.showLoading(false);
+                            if (data.message === 'Success' && data.phoneNumber) {
+                                fillPhoneNumberButton.disabled = false;
+                            } else {
+                                fillPhoneNumberButton.disabled = true;
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            utils.ui.showLoading(false);
+                            console.error('获取手机号状态失败:', error);
+                            fillPhoneNumberButton.disabled = true;
+                        }
+                    });
+                }
+            };
+
+            // 一键填充按钮点击事件
+            document.getElementById('fillPhoneNumberButton')?.addEventListener('click', function() {
+                utils.ui.showLoading(true);
+                $.ajax({
+                    url: API_URLS.GET_PHONE,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        utils.ui.showLoading(false);
+                        if (data.message === 'Success' && data.phoneNumber) {
+                            document.getElementById('userPhoneNumber').value = data.phoneNumber;
+                        } else if (data.message === 'No phone number') {
+                            utils.ui.showMessage('您还未设置手机号，请先在账户管理中设置');
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        utils.ui.showLoading(false);
+                        console.error('获取手机号失败:', error);
+                        utils.ui.showMessage('获取手机号失败，请重试');
+                    }
+                });
+            });
+
+            // 初始化时检查手机号状态
+            checkPhoneNumberStatus();
         });
     </script>
 </body>
