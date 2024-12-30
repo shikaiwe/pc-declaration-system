@@ -1579,1030 +1579,1175 @@
 
         // 订单管理模块
         const orderManager = {
-                getStatusInfo: (status) => {
-                    const statusMap = {
-                        '0': {
-                            text: '待分配',
-                            class: 'status-pending'
-                        },
-                        '1': {
-                            text: '已分配',
-                            class: 'status-allocated'
-                        },
-                        '2': {
-                            text: '已完成',
-                            class: 'status-completed'
-                        },
-                        '3': {
-                            text: '已撤单',
-                            class: 'status-cancelled'
-                        }
-                    };
-                    return statusMap[status] || {
-                        text: '未知状态',
-                        class: 'status-unknown'
-                    };
-                },
-
-                submitOrder: function(formData) {
-                    utils.ui.showLoading(true);
-                    $.ajax({
-                        url: API_URLS.REPORT,
-                        method: 'POST',
-                        data: JSON.stringify(formData),
-                        contentType: 'application/json',
-                        xhrFields: {
-                            withCredentials: true
-                        },
-                        success: function(data) {
-                            utils.ui.showLoading(false);
-                            if (data.message === 'Success') {
-                                utils.ui.showMessage('报单提交成功', 'success');
-                                document.getElementById('newOrderForm').reset();
-                                if (document.getElementById('orderHistory').style.display === 'block') {
-                                    orderManager.fetchHistoryOrders();
-                                }
-                            } else {
-                                auth.handleSessionError(data.message);
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('报单提交失败:', error);
-                            utils.ui.showMessage('报单提交失败，请重试');
-                            utils.ui.showLoading(false);
-                        }
-                    });
-                },
-
-                fetchHistoryOrders: function() {
-                    utils.ui.showLoading(true);
-                    $.ajax({
-                        url: API_URLS.GET_HISTORY,
-                        method: 'GET',
-                        xhrFields: {
-                            withCredentials: true
-                        },
-                        success: function(data) {
-                            utils.ui.showLoading(false);
-                            if (data.message === 'Success') {
-                                orderManager.displayHistoryOrders(data.report_info);
-                            } else if (data.message === 'No history report') {
-                                orderManager.showNoOrders();
-                            } else {
-                                auth.handleSessionError(data.message);
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('获取历史订单失败:', error);
-                            orderManager.showError();
-                            utils.ui.showLoading(false);
-                        }
-                    });
-                },
-
-                displayHistoryOrders: function(orders) {
-                        const historyContent = document.getElementById('orderHistory');
-                        if (!historyContent) return;
-
-                        const ordersHTML = orders.map(order => {
-                                    const {
-                                        text: statusText,
-                                        class: statusClass
-                                    } = orderManager.getStatusInfo(order.status);
-                                    const showButtons = ['0', '1'].includes(order.status);
-
-                                    return `
-                    <div class="order-card">
-                        <div class="order-info">
-                            ${order.reportId ? `
-                                <p>
-                                    <strong>订单编号：</strong>
-                                    ${order.reportId}
-                                </p>
-                            ` : ''}
-                            <p>
-                                <strong>手机号码：</strong>
-                                ${order.userPhoneNumber}
-                                <span class="order-status ${statusClass}">
-                                    ${statusText}
-                                </span>
-                            </p>
-                            <p>
-                                <strong>地址：</strong>
-                                ${order.address}
-                            </p>
-                            <p>
-                                <strong>问题描述：</strong>
-                                ${order.issue}
-                            </p>
-                            <p>
-                                <strong>预约时间：</strong>
-                                ${utils.date.format(order.date)}
-                            </p>
-                            <p>
-                                <strong>提交时间：</strong>
-                                ${utils.date.format(order.call_date)}
-                            </p>
-                            ${showButtons ? `
-                                <div class="order-buttons">
-                                    <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}')">
-                                        结单
-                                    </button>
-                                    <button class="cancel-order-btn" onclick="orderManager.cancelOrder('${order.reportId}')">
-                                        撤单
-                                    </button>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            historyContent.innerHTML = `
-                <div class="orders-container" style="opacity: 1;">
-                    ${ordersHTML}
-                </div>
-            `;
-        },
-
-        showNoOrders: function() {
-            const historyContent = document.getElementById('orderHistory');
-            if (historyContent) {
-                historyContent.innerHTML = `
-                    <div class="no-orders">
-                        <i class="no-orders-icon">📝</i>
-                        <p>暂无历史订单</p>
-                    </div>
-                `;
-            }
-        },
-
-        showError: function() {
-            const historyContent = document.getElementById('orderHistory');
-            if (historyContent) {
-                historyContent.innerHTML = `
-                    <div class="error-message">
-                        <i class="error-icon">❌</i>
-                        <p>获取历史订单失败，请稍后重试</p>
-                        <button class="retry-button" onclick="orderManager.fetchHistoryOrders()">重试</button>
-                    </div>
-                `;
-            }
-        },
-
-        completeOrder: function(reportId) {
-            $.ajax({
-                url: API_URLS.COMPLETE_REPORT,
-                method: 'POST',
-                data: JSON.stringify({ reportId }),
-                contentType: 'application/json',
-                xhrFields: {
-                    withCredentials: true
-                },
-                success: function(data) {
-                    if (data.message === 'Success') {
-                        utils.ui.showMessage('订单已完成');
-                        orderManager.fetchHistoryOrders();
-                    } else {
-                        auth.handleSessionError(data.message);
+            getStatusInfo: (status) => {
+                const statusMap = {
+                    '0': {
+                        text: '待分配',
+                        class: 'status-pending'
+                    },
+                    '1': {
+                        text: '已分配',
+                        class: 'status-allocated'
+                    },
+                    '2': {
+                        text: '已完成',
+                        class: 'status-completed'
+                    },
+                    '3': {
+                        text: '已撤单',
+                        class: 'status-cancelled'
                     }
-                },
-                error: function(xhr, status, error) {
-                    console.error('完成订单失败:', error);
-                    utils.ui.showMessage('完成订单失败，请重试');
-                }
-            });
-        },
+                };
+                return statusMap[status] || {
+                    text: '未知状态',
+                    class: 'status-unknown'
+                };
+            },
 
-        cancelOrder: function(reportId) {
-            $.ajax({
-                url: API_URLS.CANCEL_REPORT,
-                method: 'POST',
-                data: JSON.stringify({ reportId }),
-                contentType: 'application/json',
-                xhrFields: {
-                    withCredentials: true
-                },
-                success: function(data) {
-                    if (data.message === 'Success') {
-                        utils.ui.showMessage('订单已撤销');
-                        orderManager.fetchHistoryOrders();
-                    } else {
-                        auth.handleSessionError(data.message);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('撤销订单失败:', error);
-                    utils.ui.showMessage('撤销订单失败，请重试');
-                }
-            });
-        },
-
-        fetchAssignedOrders: function() {
-            utils.ui.showLoading(true);
-            $.ajax({
-                url: API_URLS.GET_REPORT_LIST,
-                method: 'GET',
-                xhrFields: {
-                    withCredentials: true
-                },
-                success: function(data) {
-                    utils.ui.showLoading(false);
-                    if (data.message === 'Success') {
-                        orderManager.displayAssignedOrders(data.report_info);
-                    } else if (data.message === 'No my report') {
-                        orderManager.showNoAssignedOrders();
-                    } else {
-                        auth.handleSessionError(data.message);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('获取被分配订单失败:', error);
-                    orderManager.showAssignedOrdersError();
-                    utils.ui.showLoading(false);
-                }
-            });
-        },
-
-        displayAssignedOrders: function(orders) {
-            const assignedOrdersContent = document.getElementById('assignedOrderContent');
-            if (!assignedOrdersContent) return;
-
-            const ordersHTML = orders.map(order => {
-                const { text: statusText, class: statusClass } = orderManager.getStatusInfo(order.status);
-                const showCompleteButton = order.status === '1';
-
-                return `
-                    <div class="order-card">
-                        <div class="order-info">
-                            ${order.reportId ? `
-                                <p>
-                                    <strong>订单编号：</strong>
-                                    ${order.reportId}
-                                </p>
-                            ` : ''}
-                            <p>
-                                <strong>手机号码：</strong>
-                                ${order.userPhoneNumber}
-                                <span class="order-status ${statusClass}">
-                                    ${statusText}
-                                </span>
-                            </p>
-                            <p>
-                                <strong>地址：</strong>
-                                ${order.address}
-                            </p>
-                            <p>
-                                <strong>问题描述：</strong>
-                                ${order.issue}
-                            </p>
-                            <p>
-                                <strong>预约时间：</strong>
-                                ${utils.date.format(order.date)}
-                            </p>
-                            <p>
-                                <strong>提交时间：</strong>
-                                ${utils.date.format(order.call_date)}
-                            </p>
-                            ${showCompleteButton ? `
-                                <div class="order-buttons">
-                                    <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}')">
-                                        结单
-                                    </button>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            assignedOrdersContent.innerHTML = `
-                <div class="orders-container" style="opacity: 1;">
-                    ${ordersHTML}
-                </div>
-            `;
-        },
-
-        showNoAssignedOrders: function() {
-            const assignedOrdersContent = document.getElementById('assignedOrderContent');
-            if (assignedOrdersContent) {
-                assignedOrdersContent.innerHTML = `
-                    <div class="no-orders">
-                        <i class="no-orders-icon">🔧</i>
-                        <p>暂无被分配订单</p>
-                    </div>
-                `;
-            }
-        },
-
-        showAssignedOrdersError: function() {
-            const assignedOrdersContent = document.getElementById('assignedOrderContent');
-            if (assignedOrdersContent) {
-                assignedOrdersContent.innerHTML = `
-                    <div class="error-message">
-                        <i class="error-icon">❌</i>
-                        <p>获取被分配订单失败，请稍后重试</p>
-                        <button class="retry-button" onclick="orderManager.fetchAssignedOrders()">重试</button>
-                    </div>
-                `;
-            }
-        }
-    };
-
-    // 天气模块
-    const weatherManager = {
-        async fetchWeatherAndLocation() {
-            try {
-                const apiKey = await this.getApiKey();
-                const ipData = await $.ajax({
-                    url: `https://restapi.amap.com/v3/ip?key=${apiKey}`,
-                    method: 'GET'
-                });
-                const weatherData = await $.ajax({
-                    url: `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${ipData.adcode}&extensions=base`,
-                    method: 'GET'
-                });
-                this.displayWeatherInfo(weatherData.lives[0], ipData.city);
-            } catch (error) {
-                console.error('获取天气信息时出错:', error);
-                document.getElementById('weather-info').innerHTML = '<p>无法获取天气信息</p>';
-            }
-        },
-
-        getApiKey() {
-            return new Promise((resolve, reject) => {
+            submitOrder: function(formData) {
+                utils.ui.showLoading(true);
                 $.ajax({
-                    url: API_URLS.WEATHER_API_KEY,
+                    url: API_URLS.REPORT,
+                    method: 'POST',
+                    data: JSON.stringify(formData),
+                    contentType: 'application/json',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        utils.ui.showLoading(false);
+                        if (data.message === 'Success') {
+                            utils.ui.showMessage('报单提交成功', 'success');
+                            document.getElementById('newOrderForm').reset();
+                            if (document.getElementById('orderHistory').style.display === 'block') {
+                                orderManager.fetchHistoryOrders();
+                            }
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('报单提交失败:', error);
+                        utils.ui.showMessage('报单提交失败，请重试');
+                        utils.ui.showLoading(false);
+                    }
+                });
+            },
+
+            fetchHistoryOrders: function() {
+                utils.ui.showLoading(true);
+                $.ajax({
+                    url: API_URLS.GET_HISTORY,
                     method: 'GET',
                     xhrFields: {
                         withCredentials: true
                     },
                     success: function(data) {
+                        utils.ui.showLoading(false);
                         if (data.message === 'Success') {
-                            resolve(data.apiKey);
+                            orderManager.displayHistoryOrders(data.report_info);
+                        } else if (data.message === 'No history report') {
+                            orderManager.showNoOrders('orderHistory', '暂无历史订单');
                         } else {
-                            reject(new Error('获取API Key失败'));
+                            auth.handleSessionError(data.message);
                         }
                     },
                     error: function(xhr, status, error) {
-                        reject(error);
+                        console.error('获取历史订单失败:', error);
+                        orderManager.showError('orderHistory', '获取历史订单失败');
+                        utils.ui.showLoading(false);
                     }
                 });
-            });
-        },
+            },
 
-        displayWeatherInfo(weather, city) {
-            const updateTime = new Date().toLocaleTimeString('zh-CN', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-
-            document.getElementById('weather-info').innerHTML = `
-                <div class="weather-content">
-                    <div class="weather-main">
-                        <div class="weather-location">
-                            <span class="weather-icon">📍</span>
-                            ${city.replace('市', '')}
-                        </div>
-                        <div class="weather-temp">
-                            <span class="weather-icon">🌡️</span>
-                            ${weather.temperature}°C
-                        </div>
-                    </div>
-                    <div class="weather-info-details">
-                        <div class="weather-row">
-                            <span class="weather-icon">🌤️</span>
-                            <span>天气：${weather.weather}</span>
-                        </div>
-                        <div class="weather-row">
-                            <span class="weather-icon">💧</span>
-                            <span>湿度：${weather.humidity}%</span>
-                        </div>
-                        <div class="weather-row">
-                            <span class="weather-icon">🌪️</span>
-                            <span>风向：${weather.winddirection}</span>
-                        </div>
-                        <div class="weather-row">
-                            <span class="weather-icon">💨</span>
-                            <span>风力：${weather.windpower}级</span>
-                        </div>
-                    </div>
-                    <div class="weather-update">
-                        <span class="weather-icon">🕒</span>
-                        <span>更新：${updateTime}</span>
-                    </div>
-                </div>
-            `;
-        }
-    };
-
-    // 日程管理模块
-    const calendarManager = {
-        calendar: null,
-
-        init() {
-            const calendarEl = document.getElementById('mobileCalendar');
-            if (!calendarEl) return;
-
-            // 确保 FullCalendar 已加载
-            if (typeof FullCalendar === 'undefined') {
-                console.error('FullCalendar library is not loaded');
-                return;
-            }
-
-            // 根据屏幕宽度设置初始视图和工具栏
-            const width = window.innerWidth;
-            const initialView = width < 768 ? 'dayGridMonth' : 'timeGridWeek';
-            const headerToolbar = {
-                left: 'prev,next today',
-                center: 'title',
-                right: width < 768 ? 'dayGridMonth,timeGridDay' : 'dayGridMonth,timeGridWeek,timeGridDay'
-            };
-
-            // 初始化日历配置
-            this.calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: initialView,
-                locale: 'zh-cn',
-                height: 'auto',
-                headerToolbar: headerToolbar,
-                buttonText: {
-                    today: '今天',
-                    month: '月',
-                    week: '周',
-                    day: '日'
-                },
-                views: {
-                    dayGridMonth: {
-                        titleFormat: { year: 'numeric', month: 'short' }
+            fetchPendingOrders: function() {
+                utils.ui.showLoading(true);
+                $.ajax({
+                    url: API_URLS.GET_REPORT_LIST,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
                     },
-                    timeGridWeek: {
-                        titleFormat: { year: 'numeric', month: 'short', day: '2-digit' },
-                        slotMinTime: '18:00:00',
-                        slotMaxTime: '22:00:00',
-                        slotDuration: '00:30:00',
-                        dayHeaderFormat: { weekday: 'short', month: 'numeric', day: 'numeric', omitCommas: true }
+                    success: function(data) {
+                        utils.ui.showLoading(false);
+                        if (data.message === 'Success') {
+                            orderManager.displayPendingOrders(data.report_info);
+                        } else if (data.message === 'No my report') {
+                            orderManager.showNoOrders('newOrder', '暂无待分配订单');
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
                     },
-                    timeGridDay: {
-                        titleFormat: { year: 'numeric', month: 'short', day: '2-digit' },
-                        slotMinTime: '18:00:00',
-                        slotMaxTime: '22:00:00',
-                        slotDuration: '00:30:00'
+                    error: function(xhr, status, error) {
+                        console.error('获取待分配订单失败:', error);
+                        orderManager.showError('newOrder', '获取待分配订单失败');
+                        utils.ui.showLoading(false);
                     }
-                },
-                windowResize: (view) => {
-                    this.handleResize();
-                },
-                events: this.fetchEvents.bind(this),
-                eventClick: this.handleEventClick.bind(this),
-                eventDidMount: this.handleEventMount.bind(this),
-                // 添加日历渲染完成的回调
-                datesSet: () => {
-                    if (this.calendar) {
-                        this.calendar.refetchEvents();
-                    }
+                });
+            },
+
+            displayHistoryOrders: function(orders) {
+                const historyContent = document.getElementById('orderHistory');
+                if (!historyContent) return;
+
+                const ordersHTML = orders.map(order => {
+                    const { text: statusText, class: statusClass } = orderManager.getStatusInfo(order.status);
+                    const showButtons = ['0', '1'].includes(order.status);
+
+                    return `
+                        <div class="order-card">
+                            <div class="order-info">
+                                ${order.reportId ? `
+                                    <p>
+                                        <strong>订单编号：</strong>
+                                        ${order.reportId}
+                                    </p>
+                                ` : ''}
+                                <p>
+                                    <strong>手机号码：</strong>
+                                    ${order.userPhoneNumber}
+                                    <span class="order-status ${statusClass}">
+                                        ${statusText}
+                                    </span>
+                                </p>
+                                <p>
+                                    <strong>地址：</strong>
+                                    ${order.address}
+                                </p>
+                                <p>
+                                    <strong>问题描述：</strong>
+                                    ${order.issue}
+                                </p>
+                                <p>
+                                    <strong>预约时间：</strong>
+                                    ${utils.date.format(order.date)}
+                                </p>
+                                <p>
+                                    <strong>提交时间：</strong>
+                                    ${utils.date.format(order.call_date)}
+                                </p>
+                                ${showButtons ? `
+                                    <div class="order-buttons">
+                                        <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}')">
+                                            结单
+                                        </button>
+                                        <button class="cancel-order-btn" onclick="orderManager.cancelOrder('${order.reportId}')">
+                                            撤单
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                historyContent.innerHTML = `
+                    <div class="orders-container" style="opacity: 1;">
+                        ${ordersHTML}
+                    </div>
+                `;
+            },
+
+            displayPendingOrders: function(orders) {
+                const pendingContent = document.getElementById('newOrder');
+                if (!pendingContent) return;
+
+                // 保留报单表单
+                const orderForm = pendingContent.querySelector('#newOrderForm');
+                const formHTML = orderForm ? orderForm.outerHTML : '';
+
+                const ordersHTML = orders.map(order => {
+                    const { text: statusText, class: statusClass } = orderManager.getStatusInfo(order.status);
+                    const showButtons = ['0', '1'].includes(order.status);
+
+                    return `
+                        <div class="order-card">
+                            <div class="order-info">
+                                ${order.reportId ? `
+                                    <p>
+                                        <strong>订单编号：</strong>
+                                        ${order.reportId}
+                                    </p>
+                                ` : ''}
+                                <p>
+                                    <strong>手机号码：</strong>
+                                    ${order.userPhoneNumber}
+                                    <span class="order-status ${statusClass}">
+                                        ${statusText}
+                                    </span>
+                                </p>
+                                <p>
+                                    <strong>地址：</strong>
+                                    ${order.address}
+                                </p>
+                                <p>
+                                    <strong>问题描述：</strong>
+                                    ${order.issue}
+                                </p>
+                                <p>
+                                    <strong>预约时间：</strong>
+                                    ${utils.date.format(order.date)}
+                                </p>
+                                <p>
+                                    <strong>提交时间：</strong>
+                                    ${utils.date.format(order.call_date)}
+                                </p>
+                                ${showButtons ? `
+                                    <div class="order-buttons">
+                                        <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}')">
+                                            结单
+                                        </button>
+                                        <button class="cancel-order-btn" onclick="orderManager.cancelOrder('${order.reportId}')">
+                                            撤单
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                pendingContent.innerHTML = `
+                    ${formHTML}
+                    <div class="orders-container" style="opacity: 1;">
+                        ${ordersHTML}
+                    </div>
+                `;
+            },
+
+            showNoOrders: function(containerId, message) {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    // 如果是newOrder容器，保留表单
+                    const orderForm = container.querySelector('#newOrderForm');
+                    const formHTML = orderForm ? orderForm.outerHTML : '';
+                    
+                    container.innerHTML = `
+                        ${formHTML}
+                        <div class="no-orders">
+                            <i class="no-orders-icon">📝</i>
+                            <p>${message}</p>
+                        </div>
+                    `;
                 }
-            });
+            },
 
-            // 添加模态框显示事件监听
-            document.getElementById('schedule-management')?.addEventListener('click', () => {
-                utils.ui.showModal('scheduleModal');
-                // 延迟执行以确保模态框完全显示
-                setTimeout(() => {
-                    if (this.calendar) {
-                        this.calendar.updateSize();
-                        this.calendar.refetchEvents();
+            showError: function(containerId, message) {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    // 如果是newOrder容器，保留表单
+                    const orderForm = container.querySelector('#newOrderForm');
+                    const formHTML = orderForm ? orderForm.outerHTML : '';
+                    
+                    container.innerHTML = `
+                        ${formHTML}
+                        <div class="error-message">
+                            <i class="error-icon">❌</i>
+                            <p>${message}，请稍后重试</p>
+                            <button class="retry-button" onclick="orderManager.${containerId === 'orderHistory' ? 'fetchHistoryOrders' : 'fetchPendingOrders'}()">重试</button>
+                        </div>
+                    `;
+                }
+            },
+
+            completeOrder: function(reportId) {
+                $.ajax({
+                    url: API_URLS.COMPLETE_REPORT,
+                    method: 'POST',
+                    data: JSON.stringify({ reportId }),
+                    contentType: 'application/json',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        if (data.message === 'Success') {
+                            utils.ui.showMessage('订单已完成');
+                            orderManager.fetchHistoryOrders();
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('完成订单失败:', error);
+                        utils.ui.showMessage('完成订单失败，请重试');
                     }
-                }, 300);
-            });
+                });
+            },
 
-            // 初始化渲染
-            this.calendar.render();
-            
-            // 添加触摸支持
-            this.addTouchSupport(calendarEl);
-            
-            // 处理窗口大小变化
-            this.handleResize();
-            window.addEventListener('resize', this.handleResize.bind(this));
-        },
+            cancelOrder: function(reportId) {
+                $.ajax({
+                    url: API_URLS.CANCEL_REPORT,
+                    method: 'POST',
+                    data: JSON.stringify({ reportId }),
+                    contentType: 'application/json',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        if (data.message === 'Success') {
+                            utils.ui.showMessage('订单已撤销');
+                            orderManager.fetchHistoryOrders();
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('撤销订单失败:', error);
+                        utils.ui.showMessage('撤销订单失败，请重试');
+                    }
+                });
+            },
 
-        handleResize() {
-            const width = window.innerWidth;
-            if (this.calendar) {
-                // 更新工具栏布局
-                this.calendar.setOption('headerToolbar', {
+            fetchAssignedOrders: function() {
+                utils.ui.showLoading(true);
+                $.ajax({
+                    url: API_URLS.GET_REPORT_LIST,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function(data) {
+                        utils.ui.showLoading(false);
+                        if (data.message === 'Success') {
+                            orderManager.displayAssignedOrders(data.report_info);
+                        } else if (data.message === 'No my report') {
+                            orderManager.showNoAssignedOrders();
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('获取被分配订单失败:', error);
+                        orderManager.showAssignedOrdersError();
+                        utils.ui.showLoading(false);
+                    }
+                });
+            },
+
+            displayAssignedOrders: function(orders) {
+                const assignedOrdersContent = document.getElementById('assignedOrderContent');
+                if (!assignedOrdersContent) return;
+
+                const ordersHTML = orders.map(order => {
+                    const { text: statusText, class: statusClass } = orderManager.getStatusInfo(order.status);
+                    const showCompleteButton = order.status === '1';
+
+                    return `
+                        <div class="order-card">
+                            <div class="order-info">
+                                ${order.reportId ? `
+                                    <p>
+                                        <strong>订单编号：</strong>
+                                        ${order.reportId}
+                                    </p>
+                                ` : ''}
+                                <p>
+                                    <strong>手机号码：</strong>
+                                    ${order.userPhoneNumber}
+                                    <span class="order-status ${statusClass}">
+                                        ${statusText}
+                                    </span>
+                                </p>
+                                <p>
+                                    <strong>地址：</strong>
+                                    ${order.address}
+                                </p>
+                                <p>
+                                    <strong>问题描述：</strong>
+                                    ${order.issue}
+                                </p>
+                                <p>
+                                    <strong>预约时间：</strong>
+                                    ${utils.date.format(order.date)}
+                                </p>
+                                <p>
+                                    <strong>提交时间：</strong>
+                                    ${utils.date.format(order.call_date)}
+                                </p>
+                                ${showCompleteButton ? `
+                                    <div class="order-buttons">
+                                        <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}')">
+                                            结单
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                assignedOrdersContent.innerHTML = `
+                    <div class="orders-container" style="opacity: 1;">
+                        ${ordersHTML}
+                    </div>
+                `;
+            },
+
+            showNoAssignedOrders: function() {
+                const assignedOrdersContent = document.getElementById('assignedOrderContent');
+                if (assignedOrdersContent) {
+                    assignedOrdersContent.innerHTML = `
+                        <div class="no-orders">
+                            <i class="no-orders-icon">🔧</i>
+                            <p>暂无被分配订单</p>
+                        </div>
+                    `;
+                }
+            },
+
+            showAssignedOrdersError: function() {
+                const assignedOrdersContent = document.getElementById('assignedOrderContent');
+                if (assignedOrdersContent) {
+                    assignedOrdersContent.innerHTML = `
+                        <div class="error-message">
+                            <i class="error-icon">❌</i>
+                            <p>获取被分配订单失败，请稍后重试</p>
+                            <button class="retry-button" onclick="orderManager.fetchAssignedOrders()">重试</button>
+                        </div>
+                    `;
+                }
+            }
+        };
+
+        // 天气模块
+        const weatherManager = {
+            async fetchWeatherAndLocation() {
+                try {
+                    const apiKey = await this.getApiKey();
+                    const ipData = await $.ajax({
+                        url: `https://restapi.amap.com/v3/ip?key=${apiKey}`,
+                        method: 'GET'
+                    });
+                    const weatherData = await $.ajax({
+                        url: `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${ipData.adcode}&extensions=base`,
+                        method: 'GET'
+                    });
+                    this.displayWeatherInfo(weatherData.lives[0], ipData.city);
+                } catch (error) {
+                    console.error('获取天气信息时出错:', error);
+                    document.getElementById('weather-info').innerHTML = '<p>无法获取天气信息</p>';
+                }
+            },
+
+            getApiKey() {
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: API_URLS.WEATHER_API_KEY,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(data) {
+                            if (data.message === 'Success') {
+                                resolve(data.apiKey);
+                            } else {
+                                reject(new Error('获取API Key失败'));
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            reject(error);
+                        }
+                    });
+                });
+            },
+
+            displayWeatherInfo(weather, city) {
+                const updateTime = new Date().toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                document.getElementById('weather-info').innerHTML = `
+                    <div class="weather-content">
+                        <div class="weather-main">
+                            <div class="weather-location">
+                                <span class="weather-icon">📍</span>
+                                ${city.replace('市', '')}
+                            </div>
+                            <div class="weather-temp">
+                                <span class="weather-icon">🌡️</span>
+                                ${weather.temperature}°C
+                            </div>
+                        </div>
+                        <div class="weather-info-details">
+                            <div class="weather-row">
+                                <span class="weather-icon">🌤️</span>
+                                <span>天气：${weather.weather}</span>
+                            </div>
+                            <div class="weather-row">
+                                <span class="weather-icon">💧</span>
+                                <span>湿度：${weather.humidity}%</span>
+                            </div>
+                            <div class="weather-row">
+                                <span class="weather-icon">🌪️</span>
+                                <span>风向：${weather.winddirection}</span>
+                            </div>
+                            <div class="weather-row">
+                                <span class="weather-icon">💨</span>
+                                <span>风力：${weather.windpower}级</span>
+                            </div>
+                        </div>
+                        <div class="weather-update">
+                            <span class="weather-icon">🕒</span>
+                            <span>更新：${updateTime}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        };
+
+        // 日程管理模块
+        const calendarManager = {
+            calendar: null,
+
+            init() {
+                const calendarEl = document.getElementById('mobileCalendar');
+                if (!calendarEl) return;
+
+                // 确保 FullCalendar 已加载
+                if (typeof FullCalendar === 'undefined') {
+                    console.error('FullCalendar library is not loaded');
+                    return;
+                }
+
+                // 根据屏幕宽度设置初始视图和工具栏
+                const width = window.innerWidth;
+                const initialView = width < 768 ? 'dayGridMonth' : 'timeGridWeek';
+                const headerToolbar = {
                     left: 'prev,next today',
                     center: 'title',
                     right: width < 768 ? 'dayGridMonth,timeGridDay' : 'dayGridMonth,timeGridWeek,timeGridDay'
+                };
+
+                // 初始化日历配置
+                this.calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: initialView,
+                    locale: 'zh-cn',
+                    height: 'auto',
+                    headerToolbar: headerToolbar,
+                    buttonText: {
+                        today: '今天',
+                        month: '月',
+                        week: '周',
+                        day: '日'
+                    },
+                    views: {
+                        dayGridMonth: {
+                            titleFormat: { year: 'numeric', month: 'short' }
+                        },
+                        timeGridWeek: {
+                            titleFormat: { year: 'numeric', month: 'short', day: '2-digit' },
+                            slotMinTime: '18:00:00',
+                            slotMaxTime: '22:00:00',
+                            slotDuration: '00:30:00',
+                            dayHeaderFormat: { weekday: 'short', month: 'numeric', day: 'numeric', omitCommas: true }
+                        },
+                        timeGridDay: {
+                            titleFormat: { year: 'numeric', month: 'short', day: '2-digit' },
+                            slotMinTime: '18:00:00',
+                            slotMaxTime: '22:00:00',
+                            slotDuration: '00:30:00'
+                        }
+                    },
+                    windowResize: (view) => {
+                        this.handleResize();
+                    },
+                    events: this.fetchEvents.bind(this),
+                    eventClick: this.handleEventClick.bind(this),
+                    eventDidMount: this.handleEventMount.bind(this),
+                    // 添加日历渲染完成的回调
+                    datesSet: () => {
+                        if (this.calendar) {
+                            this.calendar.refetchEvents();
+                        }
+                    }
                 });
 
-                // 如果当前是周视图且在移动端，则切换到月视图
-                if (width < 768 && this.calendar.view.type === 'timeGridWeek') {
-                    this.calendar.changeView('dayGridMonth');
-                }
-
-                // 更新日历大小
-                this.calendar.updateSize();
-            }
-        },
-
-        async fetchEvents(fetchInfo, successCallback, failureCallback) {
-            try {
-                utils.ui.showLoading(true);
-                // 首先获取用户角色
-                const userResponse = await fetch(API_URLS.GET_USER_INFO, {
-                    credentials: 'include'
+                // 添加模态框显示事件监听
+                document.getElementById('schedule-management')?.addEventListener('click', () => {
+                    utils.ui.showModal('scheduleModal');
+                    // 延迟执行以确保模态框完全显示
+                    setTimeout(() => {
+                        if (this.calendar) {
+                            this.calendar.updateSize();
+                            this.calendar.refetchEvents();
+                        }
+                    }, 300);
                 });
-                const userData = await userResponse.json();
 
-                if (userData.message !== 'Success') {
-                    throw new Error(userData.message);
-                }
-
-                // 根据用户角色选择获取订单的API
-                const apiUrl = userData.label === 'worker' ? API_URLS.GET_REPORT_LIST : API_URLS.GET_HISTORY;
+                // 初始化渲染
+                this.calendar.render();
                 
-                const response = await fetch(apiUrl, {
-                    credentials: 'include'
-                });
-                const data = await response.json();
-                utils.ui.showLoading(false);
+                // 添加触摸支持
+                this.addTouchSupport(calendarEl);
+                
+                // 处理窗口大小变化
+                this.handleResize();
+                window.addEventListener('resize', this.handleResize.bind(this));
+            },
 
-                if (data.message === 'Success') {
-                    const events = data.report_info.map(this.convertOrderToEvent);
-                    successCallback(events);
-                } else if (data.message === 'No history report' || data.message === 'No my report') {
-                    successCallback([]);
-                } else {
-                    failureCallback(new Error(data.message));
+            handleResize() {
+                const width = window.innerWidth;
+                if (this.calendar) {
+                    // 更新工具栏布局
+                    this.calendar.setOption('headerToolbar', {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: width < 768 ? 'dayGridMonth,timeGridDay' : 'dayGridMonth,timeGridWeek,timeGridDay'
+                    });
+
+                    // 如果当前是周视图且在移动端，则切换到月视图
+                    if (width < 768 && this.calendar.view.type === 'timeGridWeek') {
+                        this.calendar.changeView('dayGridMonth');
+                    }
+
+                    // 更新日历大小
+                    this.calendar.updateSize();
                 }
-            } catch (error) {
-                utils.ui.showLoading(false);
-                console.error('获取日程数据失败:', error);
-                failureCallback(error);
-            }
-        },
+            },
 
-        convertOrderToEvent(order) {
-            const statusInfo = orderManager.getStatusInfo(order.status);
-            const backgroundColor = {
-                'status-pending': '#ffc107',
-                'status-allocated': '#28a745',
-                'status-completed': '#17a2b8',
-                'status-cancelled': '#dc3545',
-                'status-unknown': '#6c757d'
-            }[statusInfo.class] || '#6c757d';
+            async fetchEvents(fetchInfo, successCallback, failureCallback) {
+                try {
+                    utils.ui.showLoading(true);
+                    // 首先获取用户角色
+                    const userResponse = await fetch(API_URLS.GET_USER_INFO, {
+                        credentials: 'include'
+                    });
+                    const userData = await userResponse.json();
 
-            return {
-                id: order.reportId,
-                title: order.issue.length > 8 ? `${order.issue.substring(0, 8)}...` : order.issue,
-                start: new Date(order.date.replace(/-/g, '/')),
-                extendedProps: {
-                    ...order,
-                    statusText: statusInfo.text
-                },
-                backgroundColor: backgroundColor,
-                borderColor: backgroundColor,
-                textColor: '#ffffff',
-                allDay: false
-            };
-        },
+                    if (userData.message !== 'Success') {
+                        throw new Error(userData.message);
+                    }
 
-        handleEventClick(info) {
-            const order = info.event.extendedProps;
-            this.showEventDetail(order);
-        },
+                    // 根据用户角色选择获取订单的API
+                    const apiUrl = userData.label === 'worker' ? API_URLS.GET_REPORT_LIST : API_URLS.GET_HISTORY;
+                    
+                    const response = await fetch(apiUrl, {
+                        credentials: 'include'
+                    });
+                    const data = await response.json();
+                    utils.ui.showLoading(false);
 
-        handleEventMount(info) {
-            info.el.addEventListener('click', () => {
-                this.showEventDetail(info.event.extendedProps);
-            });
-        },
+                    if (data.message === 'Success') {
+                        const events = data.report_info.map(this.convertOrderToEvent);
+                        successCallback(events);
+                    } else if (data.message === 'No history report' || data.message === 'No my report') {
+                        successCallback([]);
+                    } else {
+                        failureCallback(new Error(data.message));
+                    }
+                } catch (error) {
+                    utils.ui.showLoading(false);
+                    console.error('获取日程数据失败:', error);
+                    failureCallback(error);
+                }
+            },
 
-        showEventDetail(order) {
-            const detailCard = document.getElementById('orderDetailCard');
-            const detailContent = document.getElementById('orderDetailContent');
-            const overlay = document.getElementById('detailOverlay');
+            convertOrderToEvent(order) {
+                const statusInfo = orderManager.getStatusInfo(order.status);
+                const backgroundColor = {
+                    'status-pending': '#ffc107',
+                    'status-allocated': '#28a745',
+                    'status-completed': '#17a2b8',
+                    'status-cancelled': '#dc3545',
+                    'status-unknown': '#6c757d'
+                }[statusInfo.class] || '#6c757d';
 
-            const statusInfo = orderManager.getStatusInfo(order.status);
-            const showButtons = ['0', '1'].includes(order.status);
+                return {
+                    id: order.reportId,
+                    title: order.issue.length > 8 ? `${order.issue.substring(0, 8)}...` : order.issue,
+                    start: new Date(order.date.replace(/-/g, '/')),
+                    extendedProps: {
+                        ...order,
+                        statusText: statusInfo.text
+                    },
+                    backgroundColor: backgroundColor,
+                    borderColor: backgroundColor,
+                    textColor: '#ffffff',
+                    allDay: false
+                };
+            },
 
-            detailContent.innerHTML = `
-                <div class="pull-indicator"></div>
-                <div class="detail-header">
-                    <h3>订单详情</h3>
-                    <button class="close-detail" id="closeDetail">&times;</button>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">订单编号</span>
-                    <span class="detail-value">${order.reportId}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">状态</span>
-                    <span class="detail-value">
-                        <span class="status-badge ${statusInfo.class}">${statusInfo.text}</span>
-                    </span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">问题描述</span>
-                    <span class="detail-value">${order.issue}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">预约时间</span>
-                    <span class="detail-value">${utils.date.format(order.date)}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">地址</span>
-                    <span class="detail-value">${order.address}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">联系电话</span>
-                    <span class="detail-value">${order.userPhoneNumber}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">提交时间</span>
-                    <span class="detail-value">${utils.date.format(order.call_date)}</span>
-                </div>
-                ${showButtons ? `
-                    <div class="detail-actions">
-                        <button class="detail-button primary" onclick="orderManager.completeOrder('${order.reportId}')">
-                            完成订单
-                        </button>
-                        <button class="detail-button danger" onclick="orderManager.cancelOrder('${order.reportId}')">
-                            撤销订单
-                        </button>
+            handleEventClick(info) {
+                const order = info.event.extendedProps;
+                this.showEventDetail(order);
+            },
+
+            handleEventMount(info) {
+                info.el.addEventListener('click', () => {
+                    this.showEventDetail(info.event.extendedProps);
+                });
+            },
+
+            showEventDetail(order) {
+                const detailCard = document.getElementById('orderDetailCard');
+                const detailContent = document.getElementById('orderDetailContent');
+                const overlay = document.getElementById('detailOverlay');
+
+                const statusInfo = orderManager.getStatusInfo(order.status);
+                const showButtons = ['0', '1'].includes(order.status);
+
+                detailContent.innerHTML = `
+                    <div class="pull-indicator"></div>
+                    <div class="detail-header">
+                        <h3>订单详情</h3>
+                        <button class="close-detail" id="closeDetail">&times;</button>
                     </div>
-                ` : ''}
-            `;
+                    <div class="detail-row">
+                        <span class="detail-label">订单编号</span>
+                        <span class="detail-value">${order.reportId}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">状态</span>
+                        <span class="detail-value">
+                            <span class="status-badge ${statusInfo.class}">${statusInfo.text}</span>
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">问题描述</span>
+                        <span class="detail-value">${order.issue}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">预约时间</span>
+                        <span class="detail-value">${utils.date.format(order.date)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">地址</span>
+                        <span class="detail-value">${order.address}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">联系电话</span>
+                        <span class="detail-value">${order.userPhoneNumber}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">提交时间</span>
+                        <span class="detail-value">${utils.date.format(order.call_date)}</span>
+                    </div>
+                    ${showButtons ? `
+                        <div class="detail-actions">
+                            <button class="detail-button primary" onclick="orderManager.completeOrder('${order.reportId}')">
+                                完成订单
+                            </button>
+                            <button class="detail-button danger" onclick="orderManager.cancelOrder('${order.reportId}')">
+                                撤销订单
+                            </button>
+                        </div>
+                    ` : ''}
+                `;
 
-            // 重置transform样式
-            detailCard.style.transform = '';
-            
-            // 显示遮罩层和详情卡片
-            overlay.style.display = 'block';
-            setTimeout(() => {
-                detailCard.classList.add('show');
-                overlay.classList.add('show');
-            }, 10);
-
-            // 添加滑动关闭功能
-            let touchStartY = 0;
-            let touchEndY = 0;
-
-            const handleTouchStart = (e) => {
-                touchStartY = e.touches[0].clientY;
-            };
-
-            const handleTouchMove = (e) => {
-                touchEndY = e.touches[0].clientY;
-                const deltaY = touchEndY - touchStartY;
+                // 重置transform样式
+                detailCard.style.transform = '';
                 
-                if (deltaY > 0) {
-                    detailCard.style.transform = `translateY(${deltaY}px)`;
+                // 显示遮罩层和详情卡片
+                overlay.style.display = 'block';
+                setTimeout(() => {
+                    detailCard.classList.add('show');
+                    overlay.classList.add('show');
+                }, 10);
+
+                // 添加滑动关闭功能
+                let touchStartY = 0;
+                let touchEndY = 0;
+
+                const handleTouchStart = (e) => {
+                    touchStartY = e.touches[0].clientY;
+                };
+
+                const handleTouchMove = (e) => {
+                    touchEndY = e.touches[0].clientY;
+                    const deltaY = touchEndY - touchStartY;
+                    
+                    if (deltaY > 0) {
+                        detailCard.style.transform = `translateY(${deltaY}px)`;
+                    }
+                };
+
+                const handleTouchEnd = () => {
+                    const deltaY = touchEndY - touchStartY;
+                    if (deltaY > 100) {
+                        this.hideEventDetail();
+                    } else {
+                        detailCard.style.transform = '';
+                    }
+                };
+
+                // 移除之前的事件监听器
+                detailCard.removeEventListener('touchstart', handleTouchStart);
+                detailCard.removeEventListener('touchmove', handleTouchMove);
+                detailCard.removeEventListener('touchend', handleTouchEnd);
+
+                // 添加新的事件监听器
+                detailCard.addEventListener('touchstart', handleTouchStart);
+                detailCard.addEventListener('touchmove', handleTouchMove);
+                detailCard.addEventListener('touchend', handleTouchEnd);
+
+                // 点击关闭按钮
+                const closeButton = document.getElementById('closeDetail');
+                if (closeButton) {
+                    closeButton.onclick = () => {
+                        this.hideEventDetail();
+                    };
                 }
-            };
 
-            const handleTouchEnd = () => {
-                const deltaY = touchEndY - touchStartY;
-                if (deltaY > 100) {
-                    this.hideEventDetail();
-                } else {
-                    detailCard.style.transform = '';
-                }
-            };
-
-            // 移除之前的事件监听器
-            detailCard.removeEventListener('touchstart', handleTouchStart);
-            detailCard.removeEventListener('touchmove', handleTouchMove);
-            detailCard.removeEventListener('touchend', handleTouchEnd);
-
-            // 添加新的事件监听器
-            detailCard.addEventListener('touchstart', handleTouchStart);
-            detailCard.addEventListener('touchmove', handleTouchMove);
-            detailCard.addEventListener('touchend', handleTouchEnd);
-
-            // 点击关闭按钮
-            const closeButton = document.getElementById('closeDetail');
-            if (closeButton) {
-                closeButton.onclick = () => {
+                // 点击遮罩层关闭
+                overlay.onclick = () => {
                     this.hideEventDetail();
                 };
-            }
+            },
 
-            // 点击遮罩层关闭
-            overlay.onclick = () => {
-                this.hideEventDetail();
-            };
-        },
+            hideEventDetail() {
+                const detailCard = document.getElementById('orderDetailCard');
+                const overlay = document.getElementById('detailOverlay');
+                
+                detailCard.style.transform = 'translateY(100%)';
+                overlay.classList.remove('show');
+                
+                setTimeout(() => {
+                    detailCard.classList.remove('show');
+                    overlay.style.display = 'none';
+                    detailCard.style.transform = '';  // 重置transform样式
+                }, 300);
+            },
 
-        hideEventDetail() {
-            const detailCard = document.getElementById('orderDetailCard');
-            const overlay = document.getElementById('detailOverlay');
-            
-            detailCard.style.transform = 'translateY(100%)';
-            overlay.classList.remove('show');
-            
-            setTimeout(() => {
-                detailCard.classList.remove('show');
-                overlay.style.display = 'none';
-                detailCard.style.transform = '';  // 重置transform样式
-            }, 300);
-        },
+            addTouchSupport(calendarEl) {
+                let touchStartX = 0;
+                calendarEl.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                });
 
-        addTouchSupport(calendarEl) {
-            let touchStartX = 0;
-            calendarEl.addEventListener('touchstart', (e) => {
-                touchStartX = e.touches[0].clientX;
-            });
-
-            calendarEl.addEventListener('touchend', (e) => {
-                const touchEndX = e.changedTouches[0].clientX;
-                const diff = touchStartX - touchEndX;
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) {
-                        this.calendar.next();
-                    } else {
-                        this.calendar.prev();
+                calendarEl.addEventListener('touchend', (e) => {
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const diff = touchStartX - touchEndX;
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            this.calendar.next();
+                        } else {
+                            this.calendar.prev();
+                        }
                     }
+                });
+            }
+        };
+
+        // 问候语更新函数
+        function updateGreeting() {
+            const greetingText = document.getElementById('greetingText');
+            if (!greetingText) return;
+            
+            const hour = new Date().getHours();
+            let greeting = '';
+            if (hour >= 5 && hour < 9) {
+                greeting = '早上好';
+            } else if (hour >= 9 && hour < 11) {
+                greeting = '上午好';
+            } else if (hour >= 11 && hour < 13) {
+                greeting = '中午好';
+            } else if (hour >= 13 && hour < 18) {
+                greeting = '下午好';
+            } else {
+                greeting = '晚上好';
+            }
+            greetingText.textContent = greeting;
+        }
+
+        // 显示用户名函数
+        function displayUsername() {
+            const usernameDisplay = document.getElementById('username-display');
+            if (!usernameDisplay) return;
+
+            $.ajax({
+                url: API_URLS.GET_USER_INFO,
+                method: 'GET',
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(data) {
+                    if (data.message === 'Success') {
+                        const username = data.username;
+                        utils.storage.save('username', username);
+                        usernameDisplay.textContent = username;
+                    } else {
+                        auth.handleSessionError(data.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('获取用户信息失败:', error);
+                    const username = utils.storage.get('username');
+                    usernameDisplay.textContent = username || '用户';
                 }
             });
         }
-    };
 
-    // 问候语更新函数
-    function updateGreeting() {
-        const greetingText = document.getElementById('greetingText');
-        if (!greetingText) return;
-        
-        const hour = new Date().getHours();
-        let greeting = '';
-        if (hour >= 5 && hour < 9) {
-            greeting = '早上好';
-        } else if (hour >= 9 && hour < 11) {
-            greeting = '上午好';
-        } else if (hour >= 11 && hour < 13) {
-            greeting = '中午好';
-        } else if (hour >= 13 && hour < 18) {
-            greeting = '下午好';
-        } else {
-            greeting = '晚上好';
+        // 标签切换函数
+        function openTab(event, tabName) {
+            const tabcontent = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            const tablinks = document.getElementsByClassName("tab-link");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.className += " active";
         }
-        greetingText.textContent = greeting;
-    }
 
-    // 显示用户名函数
-    function displayUsername() {
-        const usernameDisplay = document.getElementById('username-display');
-        if (!usernameDisplay) return;
+        // 订单标签切换函数
+        function openOrderTab(event, tabName) {
+            const tabcontent = document.querySelectorAll("#orderManagementModal .tab-content");
+            tabcontent.forEach(tab => tab.style.display = "none");
 
-        $.ajax({
-            url: API_URLS.GET_USER_INFO,
-            method: 'GET',
-            xhrFields: {
-                withCredentials: true
-            },
-            success: function(data) {
-                if (data.message === 'Success') {
-                    const username = data.username;
-                    utils.storage.save('username', username);
-                    usernameDisplay.textContent = username;
-                } else {
-                    auth.handleSessionError(data.message);
+            const tablinks = document.querySelectorAll("#orderManagementModal .tab-link");
+            tablinks.forEach(link => link.classList.remove("active"));
+
+            const selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.style.display = "block";
+                event.currentTarget.classList.add("active");
+
+                if (tabName === 'orderHistory') {
+                    orderManager.fetchHistoryOrders();
+                } else if (tabName === 'newOrder') {
+                    orderManager.fetchPendingOrders();
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error('获取用户信息失败:', error);
-                const username = utils.storage.get('username');
-                usernameDisplay.textContent = username || '用户';
-            }
-        });
-    }
-
-    // 标签切换函数
-    function openTab(event, tabName) {
-        const tabcontent = document.getElementsByClassName("tab-content");
-        for (let i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-        }
-        const tablinks = document.getElementsByClassName("tab-link");
-        for (let i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
-        document.getElementById(tabName).style.display = "block";
-        event.currentTarget.className += " active";
-    }
-
-    // 订单标签切换函数
-    function openOrderTab(event, tabName) {
-        const tabcontent = document.querySelectorAll("#orderManagementModal .tab-content");
-        tabcontent.forEach(tab => tab.style.display = "none");
-
-        const tablinks = document.querySelectorAll("#orderManagementModal .tab-link");
-        tablinks.forEach(link => link.classList.remove("active"));
-
-        const selectedTab = document.getElementById(tabName);
-        if (selectedTab) {
-            selectedTab.style.display = "block";
-            event.currentTarget.classList.add("active");
-
-            if (tabName === 'orderHistory') {
-                orderManager.fetchHistoryOrders();
             }
         }
-    }
 
-    // 在 script 标签内，初始化代码之前添加日期时间选择器模块
-    const dateTimePicker = {
-        init() {
-            const preferredTimeInput = document.getElementById('preferredTime');
-            if (!preferredTimeInput) return;
+        // 在 script 标签内，初始化代码之前添加日期时间选择器模块
+        const dateTimePicker = {
+            init() {
+                const preferredTimeInput = document.getElementById('preferredTime');
+                if (!preferredTimeInput) return;
 
-            // 生成日期选项
-            function generateDateSlides() {
-                const dates = [];
-                const today = new Date();
-                for (let i = 0; i < 14; i++) {
-                    const date = new Date(today);
-                    date.setDate(today.getDate() + i);
-                    dates.push(`
-                        <div class="swiper-slide">
-                            <div class="date-item">
-                                ${date.getMonth() + 1}月${date.getDate()}日
-                            </div>
-                        </div>
-                    `);
-                }
-                return dates.join('');
-            }
-
-            // 生成时间选项
-            function generateTimeSlides() {
-                const times = [];
-                for (let hour = 18; hour <= 21; hour++) {
-                    for (let minute = 0; minute < 60; minute += 5) {
-                        if (hour === 21 && minute > 0) break;
-                        times.push(`
+                // 生成日期选项
+                function generateDateSlides() {
+                    const dates = [];
+                    const today = new Date();
+                    for (let i = 0; i < 14; i++) {
+                        const date = new Date(today);
+                        date.setDate(today.getDate() + i);
+                        dates.push(`
                             <div class="swiper-slide">
-                                <div class="time-item">
-                                    ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}
+                                <div class="date-item">
+                                    ${date.getMonth() + 1}月${date.getDate()}日
                                 </div>
                             </div>
                         `);
                     }
-                }
-                return times.join('');
-            }
-
-            // 创建选择器HTML
-            const pickerContainer = document.createElement('div');
-            pickerContainer.className = 'datetime-picker';
-            pickerContainer.innerHTML = `
-                <div class="picker-container">
-                    <div class="picker-header">
-                        <button class="picker-cancel">取消</button>
-                        <div class="picker-title">选择时间</div>
-                        <button class="picker-confirm">确定</button>
-                    </div>
-                    <div class="picker-content">
-                        <div class="swiper-container date-swiper">
-                            <div class="swiper-wrapper">
-                                ${generateDateSlides()}
-                            </div>
-                            <div class="swiper-scrollbar"></div>
-                        </div>
-                        <div class="swiper-container time-swiper">
-                            <div class="swiper-wrapper">
-                                ${generateTimeSlides()}
-                            </div>
-                            <div class="swiper-scrollbar"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(pickerContainer);
-
-            // 初始化Swiper
-            let dateSwiper, timeSwiper;
-            setTimeout(() => {
-                dateSwiper = new Swiper('.date-swiper', {
-                    direction: 'vertical',
-                    slidesPerView: 5,
-                    centeredSlides: true,
-                    spaceBetween: 10,
-                    scrollbar: {
-                        el: '.date-swiper .swiper-scrollbar',
-                        draggable: true
-                    },
-                    mousewheel: {
-                        sensitivity: 0.5,
-                        releaseOnEdges: true
-                    },
-                    freeMode: {
-                        enabled: true,
-                        sticky: true,
-                        momentumRatio: 0.2,
-                        momentumBounce: true,
-                        momentumBounceRatio: 0.2,
-                        minimumVelocity: 0.02
-                    },
-                    touchRatio: 0.8,
-                    resistance: true,
-                    resistanceRatio: 0.9,
-                    speed: 400,
-                    observer: true,
-                    observeParents: true,
-                    on: {
-                        init: function() {
-                            this.slides.forEach((slide, index) => {
-                                slide.addEventListener('click', () => {
-                                    this.slideTo(index, 400);
-                                });
-                            });
-                        }
-                    }
-                });
-
-                timeSwiper = new Swiper('.time-swiper', {
-                    direction: 'vertical',
-                    slidesPerView: 5,
-                    centeredSlides: true,
-                    spaceBetween: 10,
-                    scrollbar: {
-                        el: '.time-swiper .swiper-scrollbar',
-                        draggable: true
-                    },
-                    mousewheel: {
-                        sensitivity: 0.5,
-                        releaseOnEdges: true
-                    },
-                    freeMode: {
-                        enabled: true,
-                        sticky: true,
-                        momentumRatio: 0.2,
-                        momentumBounce: true,
-                        momentumBounceRatio: 0.2,
-                        minimumVelocity: 0.02
-                    },
-                    touchRatio: 0.8,
-                    resistance: true,
-                    resistanceRatio: 0.9,
-                    speed: 400,
-                    observer: true,
-                    observeParents: true,
-                    on: {
-                        init: function() {
-                            this.slides.forEach((slide, index) => {
-                                slide.addEventListener('click', () => {
-                                    this.slideTo(index, 400);
-                                });
-                            });
-                        }
-                    }
-                });
-
-                // 为所有日期和时间项添加点击事件
-                const dateItems = pickerContainer.querySelectorAll('.date-swiper .swiper-slide');
-                const timeItems = pickerContainer.querySelectorAll('.time-swiper .swiper-slide');
-
-                dateItems.forEach((item, index) => {
-                    item.addEventListener('click', () => {
-                        dateSwiper.slideTo(index, 400);
-                    });
-                });
-
-                timeItems.forEach((item, index) => {
-                    item.addEventListener('click', () => {
-                        timeSwiper.slideTo(index, 400);
-                    });
-                });
-
-                // 添加活动项样式
-                function updateActiveItems() {
-                    dateItems.forEach(item => item.classList.remove('swiper-slide-active'));
-                    timeItems.forEach(item => item.classList.remove('swiper-slide-active'));
-
-                    if (dateSwiper && dateSwiper.slides[dateSwiper.activeIndex]) {
-                        dateSwiper.slides[dateSwiper.activeIndex].classList.add('swiper-slide-active');
-                    }
-                    if (timeSwiper && timeSwiper.slides[timeSwiper.activeIndex]) {
-                        timeSwiper.slides[timeSwiper.activeIndex].classList.add('swiper-slide-active');
-                    }
+                    return dates.join('');
                 }
 
-                dateSwiper.on('slideChange', updateActiveItems);
-                timeSwiper.on('slideChange', updateActiveItems);
-                updateActiveItems();
+                // 生成时间选项
+                function generateTimeSlides() {
+                    const times = [];
+                    for (let hour = 18; hour <= 21; hour++) {
+                        for (let minute = 0; minute < 60; minute += 5) {
+                            if (hour === 21 && minute > 0) break;
+                            times.push(`
+                                <div class="swiper-slide">
+                                    <div class="time-item">
+                                        ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}
+                                    </div>
+                                </div>
+                            `);
+                        }
+                    }
+                    return times.join('');
+                }
 
-                // 简化触摸事件处理
-                const pickerContent = pickerContainer.querySelector('.picker-container');
-                
-                // 阻止背景滚动和点击穿透
-                pickerContainer.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                }, { passive: false });
+                // 创建选择器HTML
+                const pickerContainer = document.createElement('div');
+                pickerContainer.className = 'datetime-picker';
+                pickerContainer.innerHTML = `
+                    <div class="picker-container">
+                        <div class="picker-header">
+                            <button class="picker-cancel">取消</button>
+                            <div class="picker-title">选择时间</div>
+                            <button class="picker-confirm">确定</button>
+                        </div>
+                        <div class="picker-content">
+                            <div class="swiper-container date-swiper">
+                                <div class="swiper-wrapper">
+                                    ${generateDateSlides()}
+                                </div>
+                                <div class="swiper-scrollbar"></div>
+                            </div>
+                            <div class="swiper-container time-swiper">
+                                <div class="swiper-wrapper">
+                                    ${generateTimeSlides()}
+                                </div>
+                                <div class="swiper-scrollbar"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(pickerContainer);
 
-                pickerContainer.addEventListener('click', (e) => {
-                    e.stopPropagation();
+                // 初始化Swiper
+                let dateSwiper, timeSwiper;
+                setTimeout(() => {
+                    dateSwiper = new Swiper('.date-swiper', {
+                        direction: 'vertical',
+                        slidesPerView: 5,
+                        centeredSlides: true,
+                        spaceBetween: 10,
+                        scrollbar: {
+                            el: '.date-swiper .swiper-scrollbar',
+                            draggable: true
+                        },
+                        mousewheel: {
+                            sensitivity: 0.5,
+                            releaseOnEdges: true
+                        },
+                        freeMode: {
+                            enabled: true,
+                            sticky: true,
+                            momentumRatio: 0.2,
+                            momentumBounce: true,
+                            momentumBounceRatio: 0.2,
+                            minimumVelocity: 0.02
+                        },
+                        touchRatio: 0.8,
+                        resistance: true,
+                        resistanceRatio: 0.9,
+                        speed: 400,
+                        observer: true,
+                        observeParents: true,
+                        on: {
+                            init: function() {
+                                this.slides.forEach((slide, index) => {
+                                    slide.addEventListener('click', () => {
+                                        this.slideTo(index, 400);
+                                    });
+                                });
+                            }
+                        }
+                    });
+
+                    timeSwiper = new Swiper('.time-swiper', {
+                        direction: 'vertical',
+                        slidesPerView: 5,
+                        centeredSlides: true,
+                        spaceBetween: 10,
+                        scrollbar: {
+                            el: '.time-swiper .swiper-scrollbar',
+                            draggable: true
+                        },
+                        mousewheel: {
+                            sensitivity: 0.5,
+                            releaseOnEdges: true
+                        },
+                        freeMode: {
+                            enabled: true,
+                            sticky: true,
+                            momentumRatio: 0.2,
+                            momentumBounce: true,
+                            momentumBounceRatio: 0.2,
+                            minimumVelocity: 0.02
+                        },
+                        touchRatio: 0.8,
+                        resistance: true,
+                        resistanceRatio: 0.9,
+                        speed: 400,
+                        observer: true,
+                        observeParents: true,
+                        on: {
+                            init: function() {
+                                this.slides.forEach((slide, index) => {
+                                    slide.addEventListener('click', () => {
+                                        this.slideTo(index, 400);
+                                    });
+                                });
+                            }
+                        }
+                    });
+
+                    // 为所有日期和时间项添加点击事件
+                    const dateItems = pickerContainer.querySelectorAll('.date-swiper .swiper-slide');
+                    const timeItems = pickerContainer.querySelectorAll('.time-swiper .swiper-slide');
+
+                    dateItems.forEach((item, index) => {
+                        item.addEventListener('click', () => {
+                            dateSwiper.slideTo(index, 400);
+                        });
+                    });
+
+                    timeItems.forEach((item, index) => {
+                        item.addEventListener('click', () => {
+                            timeSwiper.slideTo(index, 400);
+                        });
+                    });
+
+                    // 添加活动项样式
+                    function updateActiveItems() {
+                        dateItems.forEach(item => item.classList.remove('swiper-slide-active'));
+                        timeItems.forEach(item => item.classList.remove('swiper-slide-active'));
+
+                        if (dateSwiper && dateSwiper.slides[dateSwiper.activeIndex]) {
+                            dateSwiper.slides[dateSwiper.activeIndex].classList.add('swiper-slide-active');
+                        }
+                        if (timeSwiper && timeSwiper.slides[timeSwiper.activeIndex]) {
+                            timeSwiper.slides[timeSwiper.activeIndex].classList.add('swiper-slide-active');
+                        }
+                    }
+
+                    dateSwiper.on('slideChange', updateActiveItems);
+                    timeSwiper.on('slideChange', updateActiveItems);
+                    updateActiveItems();
+
+                    // 简化触摸事件处理
+                    const pickerContent = pickerContainer.querySelector('.picker-container');
+                    
+                    // 阻止背景滚动和点击穿透
+                    pickerContainer.addEventListener('touchmove', (e) => {
+                        e.preventDefault();
+                    }, { passive: false });
+
+                    pickerContainer.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                    });
+
+                    // 取消按钮
+                    pickerContainer.querySelector('.picker-cancel').addEventListener('click', () => {
+                        this.hide(pickerContainer);
+                    });
+
+                    // 确认按钮
+                    pickerContainer.querySelector('.picker-confirm').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        if (dateSwiper && timeSwiper) {
+                            const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
+                            const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
+
+                            const [hours, minutes] = selectedTime.split(':').map(Number);
+                            if (hours < 18 || (hours === 21 && minutes > 0) || hours > 21) {
+                                utils.ui.showMessage('请选择18:00-21:00之间的时间');
+                                return;
+                            }
+
+                            const year = new Date().getFullYear();
+                            const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
+
+                            const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
+                            const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
+
+                            preferredTimeInput.value = displayDateTime;
+                            preferredTimeInput.dataset.submitValue = submitDateTime;
+
+                            this.hide(pickerContainer);
+                        }
+                    });
+                }, 0);
+
+                // 打开选择器
+                preferredTimeInput.addEventListener('click', () => {
+                    pickerContainer.classList.add('active');
+                    utils.ui.toggleBodyScroll(true);
+                    document.body.style.overflow = 'hidden';
+                    document.body.style.position = 'fixed';
+                    document.body.style.width = '100%';
                 });
 
                 // 取消按钮
@@ -2637,418 +2782,375 @@
                         this.hide(pickerContainer);
                     }
                 });
-            }, 0);
 
-            // 打开选择器
-            preferredTimeInput.addEventListener('click', () => {
-                pickerContainer.classList.add('active');
-                utils.ui.toggleBodyScroll(true);
-                document.body.style.overflow = 'hidden';
-                document.body.style.position = 'fixed';
-                document.body.style.width = '100%';
-            });
+                // 点击背景关闭
+                pickerContainer.addEventListener('click', (e) => {
+                    if (e.target === pickerContainer) {
+                        this.hide(pickerContainer);
+                    }
+                });
 
-            // 取消按钮
-            pickerContainer.querySelector('.picker-cancel').addEventListener('click', () => {
-                this.hide(pickerContainer);
-            });
+                // 添加触摸手势支持
+                let startY = 0;
+                let currentY = 0;
+                const pickerContent = pickerContainer.querySelector('.picker-container');
 
-            // 确认按钮
-            pickerContainer.querySelector('.picker-confirm').addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                if (dateSwiper && timeSwiper) {
-                    const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
-                    const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
-
-                    const [hours, minutes] = selectedTime.split(':').map(Number);
-                    if (hours < 18 || (hours === 21 && minutes > 0) || hours > 21) {
-                        utils.ui.showMessage('请选择18:00-21:00之间的时间');
+                pickerContent.addEventListener('touchstart', (e) => {
+                    if (e.target.closest('.swiper-container')) {
                         return;
                     }
+                    startY = e.touches[0].clientY;
+                }, { passive: true });
 
-                    const year = new Date().getFullYear();
-                    const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
+                pickerContent.addEventListener('touchmove', (e) => {
+                    if (e.target.closest('.swiper-container')) {
+                        return;
+                    }
+                    currentY = e.touches[0].clientY;
+                    const deltaY = currentY - startY;
 
-                    const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
-                    const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
+                    if (deltaY > 0) {
+                        pickerContent.style.transform = `translateY(${deltaY}px)`;
+                    }
+                }, { passive: true });
 
-                    preferredTimeInput.value = displayDateTime;
-                    preferredTimeInput.dataset.submitValue = submitDateTime;
+                pickerContent.addEventListener('touchend', (e) => {
+                    if (e.target.closest('.swiper-container')) {
+                        return;
+                    }
+                    if (currentY - startY > 100) {
+                        this.hide(pickerContainer);
+                    } else {
+                        pickerContent.style.transform = '';
+                    }
+                    startY = 0;
+                    currentY = 0;
+                });
 
-                    this.hide(pickerContainer);
-                }
-            });
+                pickerContent.addEventListener('touchcancel', () => {
+                    pickerContent.style.transform = '';
+                    startY = 0;
+                    currentY = 0;
+                });
+            },
 
-            // 点击背景关闭
-            pickerContainer.addEventListener('click', (e) => {
-                if (e.target === pickerContainer) {
-                    this.hide(pickerContainer);
-                }
-            });
-
-            // 添加触摸手势支持
-            let startY = 0;
-            let currentY = 0;
-            const pickerContent = pickerContainer.querySelector('.picker-container');
-
-            pickerContent.addEventListener('touchstart', (e) => {
-                if (e.target.closest('.swiper-container')) {
-                    return;
-                }
-                startY = e.touches[0].clientY;
-            }, { passive: true });
-
-            pickerContent.addEventListener('touchmove', (e) => {
-                if (e.target.closest('.swiper-container')) {
-                    return;
-                }
-                currentY = e.touches[0].clientY;
-                const deltaY = currentY - startY;
-
-                if (deltaY > 0) {
-                    pickerContent.style.transform = `translateY(${deltaY}px)`;
-                }
-            }, { passive: true });
-
-            pickerContent.addEventListener('touchend', (e) => {
-                if (e.target.closest('.swiper-container')) {
-                    return;
-                }
-                if (currentY - startY > 100) {
-                    this.hide(pickerContainer);
-                } else {
+            hide(pickerContainer) {
+                pickerContainer.classList.remove('active');
+                utils.ui.toggleBodyScroll(false);
+                document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.body.style.width = '';
+                const pickerContent = pickerContainer.querySelector('.picker-container');
+                if (pickerContent) {
                     pickerContent.style.transform = '';
                 }
-                startY = 0;
-                currentY = 0;
-            });
-
-            pickerContent.addEventListener('touchcancel', () => {
-                pickerContent.style.transform = '';
-                startY = 0;
-                currentY = 0;
-            });
-        },
-
-        hide(pickerContainer) {
-            pickerContainer.classList.remove('active');
-            utils.ui.toggleBodyScroll(false);
-            document.body.style.overflow = '';
-            document.body.style.position = '';
-            document.body.style.width = '';
-            const pickerContent = pickerContainer.querySelector('.picker-container');
-            if (pickerContent) {
-                pickerContent.style.transform = '';
             }
-        }
-    };
-
-    // 初始化
-    document.addEventListener('DOMContentLoaded', () => {
-        // 初始化各个模块
-        weatherManager.fetchWeatherAndLocation();
-        calendarManager.init();
-
-        // 检查用户身份并显示/隐藏分配订单卡片
-        const checkUserRole = function() {
-            $.ajax({
-                url: API_URLS.GET_USER_INFO,
-                method: 'GET',
-                xhrFields: {
-                    withCredentials: true
-                },
-                success: function(data) {
-                    if (data.message === 'Success') {
-                        utils.storage.save('username', data.username);
-                        document.getElementById('username-display').textContent = data.username;
-
-                        const orderManagement = document.getElementById('order-management');
-                        const assignOrder = document.getElementById('assign-order');
-                        const assignedOrder = document.getElementById('assigned-order');
-
-                        switch (data.label) {
-                            case 'customer':
-                                if (orderManagement) {
-                                    orderManagement.style.display = 'block';
-                                }
-                                if (assignOrder) {
-                                    assignOrder.style.display = 'none';
-                                }
-                                if (assignedOrder) {
-                                    assignedOrder.style.display = 'none';
-                                }
-                                break;
-                            case 'worker':
-                                if (orderManagement) {
-                                    orderManagement.style.display = 'block';
-                                }
-                                if (assignOrder) {
-                                    assignOrder.style.display = 'none';
-                                }
-                                if (assignedOrder) {
-                                    assignedOrder.style.display = 'block';
-                                }
-                                break;
-                            case 'admin':
-                                if (orderManagement) {
-                                    orderManagement.style.display = 'block';
-                                }
-                                if (assignOrder) {
-                                    assignOrder.style.display = 'block';
-                                }
-                                if (assignedOrder) {
-                                    assignedOrder.style.display = 'none';
-                                }
-                                break;
-                            default:
-                                console.error('未知的用户身份:', data.label);
-                        }
-                    } else {
-                        auth.handleSessionError(data.message);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('获取用户信息失败:', error);
-                }
-            });
         };
 
-        // 加载分配订单页面内容
-        const loadAssignOrderContent = function() {
-            $.ajax({
-                url: 'assign_order.html',
-                method: 'GET',
-                success: function(html) {
-                    document.getElementById('assignOrderContent').innerHTML = html;
-                },
-                error: function(xhr, status, error) {
-                    console.error('加载分配订单页面失败:', error);
-                    utils.ui.showMessage('加载分配订单页面失败，请重试');
-                }
-            });
-        };
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化各个模块
+            weatherManager.fetchWeatherAndLocation();
+            calendarManager.init();
 
-        // 绑定事件监听器
-        const bindEvents = () => {
-            // 模态框关闭按钮
-            document.querySelectorAll('.close-button').forEach(button => {
-                button.addEventListener('click', () => {
-                    const modal = button.closest('.modal');
-                    // 找到触发这个模态框的卡片并移除active类
-                    const cardId = modal.id.replace('Modal', '');
-                    const card = document.getElementById(cardId);
-                    if (card) {
-                        card.classList.remove('active');
-                    }
-                    utils.ui.hideModal(modal.id);
-                });
-            });
-
-            // 消息确认按钮
-            document.getElementById('messageConfirm')?.addEventListener('click', () => {
-                document.getElementById('messageModal').style.display = 'none';
-            });
-
-            // 信息管理链接
-            document.getElementById('info-link')?.addEventListener('click', (event) => {
-                event.preventDefault();
-                utils.ui.showModal('editModal');
-            });
-
-            // 订单管理
-            document.getElementById('order-management')?.addEventListener('click', function() {
-                utils.ui.showModal('orderManagementModal');
-                this.classList.add('active');
-            });
-
-            // 日程管理
-            document.getElementById('schedule-management')?.addEventListener('click', function() {
-                utils.ui.showModal('scheduleModal');
-                this.classList.add('active');
-            });
-
-            // 退出登录
-            document.getElementById('logout')?.addEventListener('click', (event) => {
-                event.preventDefault();
-                utils.ui.showModal('logoutModal');
-            });
-
-            // 确认退出
-            document.getElementById('confirmLogout')?.addEventListener('click', auth.handleLogout);
-
-            // 取消退出
-            document.getElementById('cancelLogout')?.addEventListener('click', () => {
-                utils.ui.hideModal('logoutModal');
-            });
-
-            // 订单表单提交
-            document.getElementById('newOrderForm')?.addEventListener('submit', (event) => {
-                event.preventDefault();
-                const formData = {
-                    userPhoneNumber: document.getElementById('userPhoneNumber').value,
-                    address: document.getElementById('address').value,
-                    issue: document.getElementById('issue').value,
-                    date: document.getElementById('preferredTime').dataset.submitValue,
-                    call_date: new Date().toISOString()
-                };
-                orderManager.submitOrder(formData);
-            });
-
-            // 自动填充手机号按钮
-            document.getElementById('fillPhoneNumberButton')?.addEventListener('click', function() {
-                utils.ui.showLoading(true);
+            // 检查用户身份并显示/隐藏分配订单卡片
+            const checkUserRole = function() {
                 $.ajax({
-                    url: API_URLS.GET_PHONE,
+                    url: API_URLS.GET_USER_INFO,
                     method: 'GET',
                     xhrFields: {
                         withCredentials: true
                     },
                     success: function(data) {
-                        utils.ui.showLoading(false);
-                        if (data.message === 'Success' && data.phoneNumber) {
-                            document.getElementById('userPhoneNumber').value = data.phoneNumber;
-                        } else if (data.message === 'No phone number') {
-                            utils.ui.showMessage('您还未设置手机号，请先在账户管理中设置');
-                        } else {
-                            auth.handleSessionError(data.message);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('获取手机号失败:', error);
-                        utils.ui.showMessage('获取手机号失败，请重试');
-                        utils.ui.showLoading(false);
-                    }
-                });
-            });
-
-            // 账户信息表单提交
-            document.getElementById('infoForm')?.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const phoneNumber = document.getElementById('phone').value.trim();
-                const newName = document.getElementById('username').value.trim();
-
-                if (!phoneNumber && !newName) {
-                    utils.ui.showMessage('请至少填写一项需要修改的信息');
-                    return;
-                }
-
-                if (phoneNumber && !/^1[3-9]\d{9}$/.test(phoneNumber)) {
-                    utils.ui.showMessage('请输入正确的手机号码格式');
-                    return;
-                }
-
-                const requestData = {};
-                if (phoneNumber) requestData.phoneNumber = phoneNumber;
-                if (newName) requestData.newName = newName;
-
-                $.ajax({
-                    url: API_URLS.SAVE_PHONE,
-                    method: 'POST',
-                    data: JSON.stringify(requestData),
-                    contentType: 'application/json',
-                    xhrFields: {
-                        withCredentials: true
-                    },
-                    success: function(data) {
                         if (data.message === 'Success') {
-                            utils.ui.showMessage('保存成功', 'success');
-                            if (requestData.newName) {
-                                utils.storage.save('username', requestData.newName);
-                                document.getElementById('username-display').textContent = requestData.newName;
+                            utils.storage.save('username', data.username);
+                            document.getElementById('username-display').textContent = data.username;
+
+                            const orderManagement = document.getElementById('order-management');
+                            const assignOrder = document.getElementById('assign-order');
+                            const assignedOrder = document.getElementById('assigned-order');
+
+                            switch (data.label) {
+                                case 'customer':
+                                    if (orderManagement) {
+                                        orderManagement.style.display = 'block';
+                                    }
+                                    if (assignOrder) {
+                                        assignOrder.style.display = 'none';
+                                    }
+                                    if (assignedOrder) {
+                                        assignedOrder.style.display = 'none';
+                                    }
+                                    break;
+                                case 'worker':
+                                    if (orderManagement) {
+                                        orderManagement.style.display = 'block';
+                                    }
+                                    if (assignOrder) {
+                                        assignOrder.style.display = 'none';
+                                    }
+                                    if (assignedOrder) {
+                                        assignedOrder.style.display = 'block';
+                                    }
+                                    break;
+                                case 'admin':
+                                    if (orderManagement) {
+                                        orderManagement.style.display = 'block';
+                                    }
+                                    if (assignOrder) {
+                                        assignOrder.style.display = 'block';
+                                    }
+                                    if (assignedOrder) {
+                                        assignedOrder.style.display = 'none';
+                                    }
+                                    break;
+                                default:
+                                    console.error('未知的用户身份:', data.label);
                             }
-                            event.target.reset();
-                        } else if (data.message === 'This user is existed') {
-                            utils.ui.showMessage('用户名已被占用');
                         } else {
                             auth.handleSessionError(data.message);
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.error('保存失败:', error);
-                        utils.ui.showMessage('保存失败，请重试');
+                        console.error('获取用户信息失败:', error);
                     }
                 });
-            });
+            };
 
-            // 密码修改表单提交
-            document.getElementById('passwordForm')?.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const oldPassword = document.getElementById('current-password').value;
-                const newPassword = document.getElementById('new-password').value;
-                const confirmPassword = document.getElementById('confirm-password').value;
-
-                if (newPassword !== confirmPassword) {
-                    utils.ui.showMessage('两次输入的新密码不一致');
-                    return;
-                }
-
+            // 加载分配订单页面内容
+            const loadAssignOrderContent = function() {
                 $.ajax({
-                    url: API_URLS.CHANGE_PASSWORD,
-                    method: 'POST',
-                    data: JSON.stringify({
-                        old_password: oldPassword,
-                        new_password: newPassword
-                    }),
-                    contentType: 'application/json',
-                    xhrFields: {
-                        withCredentials: true
-                    },
-                    success: function(data) {
-                        if (data.message === 'Success') {
-                            utils.ui.showMessage('密码修改成功，请重新登录');
-                            setTimeout(() => {
-                                auth.handleLogout();
-                            }, 2000);
-                        } else if (data.message === 'Password error') {
-                            utils.ui.showMessage('原密码错误');
-                        } else {
-                            auth.handleSessionError(data.message);
-                        }
+                    url: 'assign_order.html',
+                    method: 'GET',
+                    success: function(html) {
+                        document.getElementById('assignOrderContent').innerHTML = html;
                     },
                     error: function(xhr, status, error) {
-                        console.error('密码修改失败:', error);
-                        utils.ui.showMessage('密码修改失败，请重试');
+                        console.error('加载分配订单页面失败:', error);
+                        utils.ui.showMessage('加载分配订单页面失败，请重试');
                     }
                 });
-            });
+            };
 
-            // 问题描述文本框自动调整高度
-            document.getElementById('issue')?.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
+            // 绑定事件监听器
+            const bindEvents = () => {
+                // 模态框关闭按钮
+                document.querySelectorAll('.close-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const modal = button.closest('.modal');
+                        // 找到触发这个模态框的卡片并移除active类
+                        const cardId = modal.id.replace('Modal', '');
+                        const card = document.getElementById(cardId);
+                        if (card) {
+                            card.classList.remove('active');
+                        }
+                        utils.ui.hideModal(modal.id);
+                    });
+                });
 
-            // 分配订单卡片点击事件
-            document.getElementById('assign-order')?.addEventListener('click', function() {
-                utils.ui.showModal('assignOrderModal');
-                this.classList.add('active');
-                loadAssignOrderContent();
-            });
+                // 消息确认按钮
+                document.getElementById('messageConfirm')?.addEventListener('click', () => {
+                    document.getElementById('messageModal').style.display = 'none';
+                });
 
-            // 被分配订单卡片点击事件
-            document.getElementById('assigned-order')?.addEventListener('click', function() {
-                utils.ui.showModal('assignedOrderModal');
-                this.classList.add('active');
-                orderManager.fetchAssignedOrders();
-            });
-        };
+                // 信息管理链接
+                document.getElementById('info-link')?.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    utils.ui.showModal('editModal');
+                });
 
-        // 初始化问候语和用户名
-        updateGreeting();
-        displayUsername();
-        checkUserRole();  // 检查用户身份
-        
-        // 每分钟更新一次问候语
-        setInterval(updateGreeting, 60000);
+                // 订单管理
+                document.getElementById('order-management')?.addEventListener('click', function() {
+                    utils.ui.showModal('orderManagementModal');
+                    this.classList.add('active');
+                });
 
-        // 绑定所有事件
-        bindEvents();
+                // 日程管理
+                document.getElementById('schedule-management')?.addEventListener('click', function() {
+                    utils.ui.showModal('scheduleModal');
+                    this.classList.add('active');
+                });
 
-        // 初始化日期时间选择器
-        dateTimePicker.init();
-    });
+                // 退出登录
+                document.getElementById('logout')?.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    utils.ui.showModal('logoutModal');
+                });
+
+                // 确认退出
+                document.getElementById('confirmLogout')?.addEventListener('click', auth.handleLogout);
+
+                // 取消退出
+                document.getElementById('cancelLogout')?.addEventListener('click', () => {
+                    utils.ui.hideModal('logoutModal');
+                });
+
+                // 订单表单提交
+                document.getElementById('newOrderForm')?.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    const formData = {
+                        userPhoneNumber: document.getElementById('userPhoneNumber').value,
+                        address: document.getElementById('address').value,
+                        issue: document.getElementById('issue').value,
+                        date: document.getElementById('preferredTime').dataset.submitValue,
+                        call_date: new Date().toISOString()
+                    };
+                    orderManager.submitOrder(formData);
+                });
+
+                // 自动填充手机号按钮
+                document.getElementById('fillPhoneNumberButton')?.addEventListener('click', function() {
+                    utils.ui.showLoading(true);
+                    $.ajax({
+                        url: API_URLS.GET_PHONE,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(data) {
+                            utils.ui.showLoading(false);
+                            if (data.message === 'Success' && data.phoneNumber) {
+                                document.getElementById('userPhoneNumber').value = data.phoneNumber;
+                            } else if (data.message === 'No phone number') {
+                                utils.ui.showMessage('您还未设置手机号，请先在账户管理中设置');
+                            } else {
+                                auth.handleSessionError(data.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('获取手机号失败:', error);
+                            utils.ui.showMessage('获取手机号失败，请重试');
+                            utils.ui.showLoading(false);
+                        }
+                    });
+                });
+
+                // 账户信息表单提交
+                document.getElementById('infoForm')?.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const phoneNumber = document.getElementById('phone').value.trim();
+                    const newName = document.getElementById('username').value.trim();
+
+                    if (!phoneNumber && !newName) {
+                        utils.ui.showMessage('请至少填写一项需要修改的信息');
+                        return;
+                    }
+
+                    if (phoneNumber && !/^1[3-9]\d{9}$/.test(phoneNumber)) {
+                        utils.ui.showMessage('请输入正确的手机号码格式');
+                        return;
+                    }
+
+                    const requestData = {};
+                    if (phoneNumber) requestData.phoneNumber = phoneNumber;
+                    if (newName) requestData.newName = newName;
+
+                    $.ajax({
+                        url: API_URLS.SAVE_PHONE,
+                        method: 'POST',
+                        data: JSON.stringify(requestData),
+                        contentType: 'application/json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(data) {
+                            if (data.message === 'Success') {
+                                utils.ui.showMessage('保存成功', 'success');
+                                if (requestData.newName) {
+                                    utils.storage.save('username', requestData.newName);
+                                    document.getElementById('username-display').textContent = requestData.newName;
+                                }
+                                event.target.reset();
+                            } else if (data.message === 'This user is existed') {
+                                utils.ui.showMessage('用户名已被占用');
+                            } else {
+                                auth.handleSessionError(data.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('保存失败:', error);
+                            utils.ui.showMessage('保存失败，请重试');
+                        }
+                    });
+                });
+
+                // 密码修改表单提交
+                document.getElementById('passwordForm')?.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const oldPassword = document.getElementById('current-password').value;
+                    const newPassword = document.getElementById('new-password').value;
+                    const confirmPassword = document.getElementById('confirm-password').value;
+
+                    if (newPassword !== confirmPassword) {
+                        utils.ui.showMessage('两次输入的新密码不一致');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: API_URLS.CHANGE_PASSWORD,
+                        method: 'POST',
+                        data: JSON.stringify({
+                            old_password: oldPassword,
+                            new_password: newPassword
+                        }),
+                        contentType: 'application/json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(data) {
+                            if (data.message === 'Success') {
+                                utils.ui.showMessage('密码修改成功，请重新登录');
+                                setTimeout(() => {
+                                    auth.handleLogout();
+                                }, 2000);
+                            } else if (data.message === 'Password error') {
+                                utils.ui.showMessage('原密码错误');
+                            } else {
+                                auth.handleSessionError(data.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('密码修改失败:', error);
+                            utils.ui.showMessage('密码修改失败，请重试');
+                        }
+                    });
+                });
+
+                // 问题描述文本框自动调整高度
+                document.getElementById('issue')?.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+
+                // 分配订单卡片点击事件
+                document.getElementById('assign-order')?.addEventListener('click', function() {
+                    utils.ui.showModal('assignOrderModal');
+                    this.classList.add('active');
+                    loadAssignOrderContent();
+                });
+
+                // 被分配订单卡片点击事件
+                document.getElementById('assigned-order')?.addEventListener('click', function() {
+                    utils.ui.showModal('assignedOrderModal');
+                    this.classList.add('active');
+                    orderManager.fetchAssignedOrders();
+                });
+            };
+
+            // 初始化问候语和用户名
+            updateGreeting();
+            displayUsername();
+            checkUserRole();  // 检查用户身份
+            
+            // 每分钟更新一次问候语
+            setInterval(updateGreeting, 60000);
+
+            // 绑定所有事件
+            bindEvents();
+
+            // 初始化日期时间选择器
+            dateTimePicker.init();
+        });
     </script>
 </body>
 
