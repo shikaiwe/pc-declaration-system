@@ -324,14 +324,16 @@
         .weather-info p {
             margin: 12px 0;
             font-size: 1.1em;
-            display: flex;
-            align-items: center;
+            display: block;
             line-height: 1.5;
+            text-align: center;
         }
         
         .weather-icon {
-            margin-right: 10px;
-            font-size: 1.2em;
+            display: block;
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 10px;
         }
         
         .weather-location {
@@ -340,12 +342,14 @@
             border-bottom: 2px solid rgba(255, 255, 255, 0.3);
             padding-bottom: 8px;
             margin-bottom: 15px !important;
+            text-align: center;
         }
         
         .weather-temp {
             font-size: 2em !important;
             font-weight: bold;
             margin: 15px 0 !important;
+            text-align: center;
         }
         
         .weather-details {
@@ -353,6 +357,29 @@
             border-radius: 6px;
             padding: 10px;
             margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .weather-details span {
+            display: block;
+            text-align: center;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .weather-details span:last-child {
+            border-bottom: none;
+        }
+
+        .weather-update-time {
+            font-size: 0.9em !important;
+            color: rgba(255, 255, 255, 0.8) !important;
+            text-align: center;
+            margin-top: 15px !important;
+            padding-top: 10px !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
         }
         /* 模态框样式 */
         
@@ -2151,6 +2178,12 @@
 
                         if (weatherData.status === '1' && weatherData.lives && weatherData.lives.length > 0) {
                             const weather = weatherData.lives[0];
+                            const updateTime = new Date().toLocaleString('zh-CN', { 
+                                hour12: false,
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            
                             weatherInfoElement.innerHTML = `
                                 <div class="weather-content">
                                     <div class="weather-location">
@@ -2165,6 +2198,9 @@
                                         <span>湿度: ${weather.humidity}%</span>
                                         <span>风向: ${weather.winddirection}</span>
                                         <span>风力: ${weather.windpower}级</span>
+                                    </div>
+                                    <div class="weather-update-time">
+                                        更新时间: ${updateTime}
                                     </div>
                                 </div>
                             `;
