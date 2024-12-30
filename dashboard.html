@@ -2275,16 +2275,18 @@
                             const orderHistoryTab = document.querySelector('[data-tab="orderHistory"]');
 
                             if (orderManagementLink && reportOrderTab && orderHistoryTab) {
-                                switch (data.label) {
-                                    case 'customer':
-                                        orderHistoryTab.style.display = 'none';
-                                        reportOrderTab.classList.add('active');
-                                        document.getElementById('reportOrder').style.display = 'block';
-                                        break;
-                                    case 'worker':
-                                    case 'admin':
-                                        orderHistoryTab.style.display = 'block';
-                                        break;
+                                // 移除对历史订单标签的隐藏
+                                orderHistoryTab.style.display = 'block';
+                                
+                                // 根据用户类型设置默认显示的标签页
+                                if (data.label === 'customer') {
+                                    reportOrderTab.classList.add('active');
+                                    document.getElementById('reportOrder').style.display = 'block';
+                                    document.getElementById('orderHistory').style.display = 'none';
+                                } else {
+                                    orderHistoryTab.classList.add('active');
+                                    document.getElementById('orderHistory').style.display = 'block';
+                                    document.getElementById('reportOrder').style.display = 'none';
                                 }
                             }
                         } else {
