@@ -1934,6 +1934,7 @@
             <li id="homeLink"><i>🏠</i>首页</li>
             <li id="orderManagement"><i>📝</i>订单管理</li>
             <li id="assignOrder" style="display: none;"><i>📋</i>分配订单</li>
+            <li id="assignedOrder" style="display: none;"><i>🔧</i>被分配订单</li>
             <li id="scheduleManagement"><i>📅</i>日程管理</li>
             <li id="dataStatistics"><i>📊</i>数据统计</li>
             <li id="accountManagement"><i>👤</i>账号管理</li>
@@ -2008,6 +2009,13 @@
 
         <div class="content" id="assignOrderContent" style="display: none;">
             <!-- 这里将通过JavaScript动态加载assign_order.html的内容 -->
+        </div>
+
+        <div class="content" id="assignedOrderContent" style="display: none;">
+            <h2>被分配订单</h2>
+            <div class="orders-container" id="assignedOrdersContainer">
+                <!-- 这里将通过JavaScript动态加载被分配订单的内容 -->
+            </div>
         </div>
 
         <div class="content" id="dataStatisticsContent" style="display: none;">
@@ -2123,10 +2131,10 @@
                 CALL_REPORT: `${CONFIG.baseUrl}/dashboard/call_report/`,
                 GET_HISTORY: `${CONFIG.baseUrl}/dashboard/user_get_history_report/`,
                 ASSIGN_ORDER: `${CONFIG.baseUrl}/dashboard/assign_order/`,
-                // GET_REPORT_LIST: `${CONFIG.baseUrl}/dashboard/worker_get_report_list/`,
                 COMPLETE_REPORT: `${CONFIG.baseUrl}/dashboard/complete_report/`,
                 WEATHER_API_KEY: `${CONFIG.baseUrl}/dashboard/getWeatherApiKey/`,
-                CANCEL_REPORT: `${CONFIG.baseUrl}/dashboard/cancel_report/`
+                CANCEL_REPORT: `${CONFIG.baseUrl}/dashboard/cancel_report/`,
+                GET_WORKER_REPORTS: `${CONFIG.baseUrl}/dashboard/worker_get_report_list/`
             };
 
             // 工具函数集合
@@ -2410,6 +2418,7 @@
                     homeLink: document.getElementById('contentArea'),
                     orderManagement: document.getElementById('orderContent'),
                     assignOrder: document.getElementById('assignOrderContent'),
+                    assignedOrder: document.getElementById('assignedOrderContent'),
                     scheduleManagement: document.getElementById('scheduleContent'),
                     dataStatistics: document.getElementById('dataStatisticsContent'),
                     accountManagement: document.getElementById('accountSettings')
@@ -2427,9 +2436,15 @@
                     .done(function(data) {
                         if (data.message === 'Success') {
                             const isAdmin = data.label === 'admin';
+                            const isWorker = data.label === 'worker';
                             const assignOrderLink = document.getElementById('assignOrder');
+                            const assignedOrderLink = document.getElementById('assignedOrder');
+                            
                             if (assignOrderLink) {
                                 assignOrderLink.style.display = isAdmin ? 'block' : 'none';
+                            }
+                            if (assignedOrderLink) {
+                                assignedOrderLink.style.display = isWorker ? 'block' : 'none';
                             }
 
                             const orderManagementLink = document.getElementById('orderManagement');
@@ -2496,6 +2511,10 @@
                             // 如果点击的是分配订单，加载其内容
                             if (item.id === 'assignOrder') {
                                 loadAssignOrderContent();
+                            }
+                            // 如果是被分配订单，加载其内容
+                            else if (item.id === 'assignedOrder') {
+                                fetchAssignedOrders();
                             }
                             // 如果是日程管理，初始化日历
                             else if (item.id === 'scheduleManagement') {
@@ -3146,66 +3165,80 @@
                         showOrderDetail(info.event.extendedProps);
                     },
                     events: function(fetchInfo, successCallback, failureCallback) {
+                        // 获取用户角色
                         $.ajax({
-                            url: API_URLS.GET_HISTORY,
+                            url: API_URLS.GET_USER_INFO,
                             method: 'GET',
                             xhrFields: {
                                 withCredentials: true
-                            },
-                            success: function(response) {
-                                if (response.message === 'Success') {
-                                    const events = response.report_info.map(order => {
-                                        let backgroundColor, borderColor, textColor, title;
-                                        switch (order.status) {
-                                            case 'allocated':
-                                                backgroundColor = '#28a745';
-                                                borderColor = '#28a745';
-                                                textColor = '#fff';
-                                                title = `${order.issue.substring(0, 8)}...`;
-                                                break;
-                                            case 'completed':
-                                                backgroundColor = '#17a2b8';
-                                                borderColor = '#17a2b8';
-                                                textColor = '#fff';
-                                                title = `[已完成] ${order.issue.substring(0, 6)}...`;
-                                                break;
-                                            case 'cancelled':
-                                                backgroundColor = '#dc3545';
-                                                borderColor = '#dc3545';
-                                                textColor = '#fff';
-                                                title = `[已撤单] ${order.issue.substring(0, 6)}...`;
-                                                break;
-                                            default:
-                                                backgroundColor = '#ffc107';
-                                                borderColor = '#ffc107';
-                                                textColor = '#000';
-                                                title = `${order.issue.substring(0, 8)}...`;
-                                        }
-                                        return {
-                                            id: order.id,
-                                            title: title,
-                                            start: new Date(order.date.replace(/-/g, '/')),
-                                            extendedProps: order,
-                                            backgroundColor: backgroundColor,
-                                            borderColor: borderColor,
-                                            textColor: textColor,
-                                            allDay: false,
-                                            displayEventTime: true,
-                                            eventDisplay: 'block'
-                                        };
-                                    });
-                                    successCallback(events);
-                                } else if (response.message === 'No history report') {
-                                    successCallback([]);
-                                } else {
-                                    handleSessionError(response.message);
-                                    failureCallback(new Error(response.message));
-                                }
-                            },
-                            error: function(xhr, status, error) {
-                                console.error('获取历史订单失败:', error);
-                                failureCallback(new Error(error));
                             }
+                        }).then(function(userInfo) {
+                            if (userInfo.message === 'Success') {
+                                const isWorker = userInfo.label === 'worker';
+                                const apiUrl = isWorker ? API_URLS.GET_WORKER_REPORTS : API_URLS.GET_HISTORY;
+
+                                return $.ajax({
+                                    url: apiUrl,
+                                    method: 'GET',
+                                    xhrFields: {
+                                        withCredentials: true
+                                    }
+                                });
+                            } else {
+                                throw new Error(userInfo.message);
+                            }
+                        }).then(function(response) {
+                            if (response.message === 'Success') {
+                                const events = response.report_info.map(order => {
+                                    let backgroundColor, borderColor, textColor, title;
+                                    switch (order.status) {
+                                        case '1':
+                                            backgroundColor = '#28a745';
+                                            borderColor = '#28a745';
+                                            textColor = '#fff';
+                                            title = `${order.issue.substring(0, 8)}...`;
+                                            break;
+                                        case '2':
+                                            backgroundColor = '#17a2b8';
+                                            borderColor = '#17a2b8';
+                                            textColor = '#fff';
+                                            title = `[已完成] ${order.issue.substring(0, 6)}...`;
+                                            break;
+                                        case '3':
+                                            backgroundColor = '#dc3545';
+                                            borderColor = '#dc3545';
+                                            textColor = '#fff';
+                                            title = `[已撤单] ${order.issue.substring(0, 6)}...`;
+                                            break;
+                                        default:
+                                            backgroundColor = '#ffc107';
+                                            borderColor = '#ffc107';
+                                            textColor = '#000';
+                                            title = `${order.issue.substring(0, 8)}...`;
+                                    }
+                                    return {
+                                        id: order.reportId,
+                                        title: title,
+                                        start: new Date(order.date.replace(/-/g, '/')),
+                                        extendedProps: order,
+                                        backgroundColor: backgroundColor,
+                                        borderColor: borderColor,
+                                        textColor: textColor,
+                                        allDay: false,
+                                        displayEventTime: true,
+                                        eventDisplay: 'block'
+                                    };
+                                });
+                                successCallback(events);
+                            } else if (response.message === 'No history report' || response.message === 'No my report') {
+                                successCallback([]);
+                            } else {
+                                handleSessionError(response.message);
+                                failureCallback(new Error(response.message));
+                            }
+                        }).catch(function(error) {
+                            console.error('获取订单失败:', error);
+                            failureCallback(error);
                         });
                     },
                     eventTimeFormat: {
@@ -3645,6 +3678,126 @@
 
             // 渲染日历
             calendar.render();
+
+            // 添加获取被分配订单的函数
+            function fetchAssignedOrders() {
+                const assignedOrdersContainer = document.getElementById('assignedOrdersContainer');
+                showLoading(assignedOrdersContainer);
+
+                $.ajax({
+                    url: API_URLS.GET_WORKER_REPORTS,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                })
+                .done(function(data) {
+                    if (data.message === 'Success') {
+                        displayAssignedOrders(data.report_info);
+                        // 同步到日历
+                        if (calendar) {
+                            calendar.refetchEvents();
+                        }
+                    } else if (data.message === 'No my report') {
+                        showNoAssignedOrders();
+                    } else {
+                        auth.handleSessionError(data.message);
+                    }
+                })
+                .fail(function(error) {
+                    console.error('获取被分配订单失败:', error);
+                    showAssignedOrdersError();
+                })
+                .always(function() {
+                    hideLoading(assignedOrdersContainer);
+                });
+            }
+
+            // 显示被分配订单的函数
+            function displayAssignedOrders(orders) {
+                const assignedOrdersContainer = document.getElementById('assignedOrdersContainer');
+                if (!Array.isArray(orders) || orders.length === 0) {
+                    showNoAssignedOrders();
+                    return;
+                }
+
+                const ordersHTML = orders.map(order => {
+                    const displayDate = order.date ? formatDate(order.date) : '日期未知';
+                    const displayCallDate = order.call_date ? formatDate(order.call_date) : '日期未知';
+
+                    let statusText, statusClass;
+                    let showCompleteButton = false;
+                    switch (order.status) {
+                        case '1':
+                            statusText = '已分配';
+                            statusClass = 'status-allocated';
+                            showCompleteButton = true;
+                            break;
+                        case '2':
+                            statusText = '已完成';
+                            statusClass = 'status-completed';
+                            break;
+                        case '3':
+                            statusText = '已撤单';
+                            statusClass = 'status-cancelled';
+                            break;
+                        default:
+                            statusText = '未知状态';
+                            statusClass = 'status-unknown';
+                    }
+
+                    return `
+                        <div class="order-card" data-report-id="${order.reportId}">
+                            <div class="order-info">
+                                <p>
+                                    <strong>手机号码：</strong>
+                                    ${order.userPhoneNumber || '未知'}
+                                    <span class="order-status ${statusClass}">
+                                        ${statusText}
+                                    </span>
+                                </p>
+                                <p><strong>地址：</strong>${order.address || '未知'}</p>
+                                <p><strong>问题：</strong>${order.issue || '未知'}</p>
+                                <p><strong>预约时间：</strong>${displayDate}</p>
+                                <p><strong>提交时间：</strong>${displayCallDate}</p>
+                                <div class="order-buttons">
+                                    ${showCompleteButton ? `
+                                        <button class="complete-order-btn" onclick="completeOrder('${order.reportId}')">
+                                            结单
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                assignedOrdersContainer.innerHTML = `
+                    <div class="orders-container">
+                        ${ordersHTML}
+                    </div>
+                `;
+            }
+
+            function showNoAssignedOrders() {
+                const assignedOrdersContainer = document.getElementById('assignedOrdersContainer');
+                assignedOrdersContainer.innerHTML = `
+                    <div class="no-orders">
+                        <i>🔧</i>
+                        <p>暂无被分配订单</p>
+                    </div>
+                `;
+            }
+
+            function showAssignedOrdersError() {
+                const assignedOrdersContainer = document.getElementById('assignedOrdersContainer');
+                assignedOrdersContainer.innerHTML = `
+                    <div class="error-message">
+                        <i>❌</i>
+                        <p>获取被分配订单失败，请稍后重试</p>
+                    </div>
+                `;
+            }
         </script>
 
 </body>

@@ -1211,6 +1211,10 @@
         <p>分配待处理订单...</p>
     </div>
 
+    <div class="card hover" id="assigned-order" style="display: none;">
+        <h2>被分配订单</h2>
+        <p>查看被分配的订单...</p>
+    </div>
 
     <div class="navbar">
         <a href="#info" id="info-link">信息管理</a>
@@ -1327,6 +1331,16 @@
             <span class="close-button">&times;</span>
             <h2>分配订单</h2>
             <div id="assignOrderContent"></div>
+        </div>
+    </div>
+
+    <div id="assignedOrderModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>被分配订单</h2>
+            <div id="assignedOrderContent">
+                <!-- 这里将通过JavaScript动态加载被分配订单的内容 -->
+            </div>
         </div>
     </div>
 
@@ -1782,6 +1796,116 @@
                     utils.ui.showMessage('撤销订单失败，请重试');
                 }
             });
+        },
+
+        fetchAssignedOrders: function() {
+            utils.ui.showLoading(true);
+            $.ajax({
+                url: API_URLS.GET_REPORT_LIST,
+                method: 'GET',
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(data) {
+                    utils.ui.showLoading(false);
+                    if (data.message === 'Success') {
+                        orderManager.displayAssignedOrders(data.report_info);
+                    } else if (data.message === 'No my report') {
+                        orderManager.showNoAssignedOrders();
+                    } else {
+                        auth.handleSessionError(data.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('获取被分配订单失败:', error);
+                    orderManager.showAssignedOrdersError();
+                    utils.ui.showLoading(false);
+                }
+            });
+        },
+
+        displayAssignedOrders: function(orders) {
+            const assignedOrdersContent = document.getElementById('assignedOrderContent');
+            if (!assignedOrdersContent) return;
+
+            const ordersHTML = orders.map(order => {
+                const { text: statusText, class: statusClass } = orderManager.getStatusInfo(order.status);
+                const showCompleteButton = order.status === '1';
+
+                return `
+                    <div class="order-card">
+                        <div class="order-info">
+                            ${order.reportId ? `
+                                <p>
+                                    <strong>订单编号：</strong>
+                                    ${order.reportId}
+                                </p>
+                            ` : ''}
+                            <p>
+                                <strong>手机号码：</strong>
+                                ${order.userPhoneNumber}
+                                <span class="order-status ${statusClass}">
+                                    ${statusText}
+                                </span>
+                            </p>
+                            <p>
+                                <strong>地址：</strong>
+                                ${order.address}
+                            </p>
+                            <p>
+                                <strong>问题描述：</strong>
+                                ${order.issue}
+                            </p>
+                            <p>
+                                <strong>预约时间：</strong>
+                                ${utils.date.format(order.date)}
+                            </p>
+                            <p>
+                                <strong>提交时间：</strong>
+                                ${utils.date.format(order.call_date)}
+                            </p>
+                            ${showCompleteButton ? `
+                                <div class="order-buttons">
+                                    <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}')">
+                                        结单
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            assignedOrdersContent.innerHTML = `
+                <div class="orders-container" style="opacity: 1;">
+                    ${ordersHTML}
+                </div>
+            `;
+        },
+
+        showNoAssignedOrders: function() {
+            const assignedOrdersContent = document.getElementById('assignedOrderContent');
+            if (assignedOrdersContent) {
+                assignedOrdersContent.innerHTML = `
+                    <div class="no-orders">
+                        <i class="no-orders-icon">🔧</i>
+                        <p>暂无被分配订单</p>
+                    </div>
+                `;
+            }
+        },
+
+        showAssignedOrdersError: function() {
+            const assignedOrdersContent = document.getElementById('assignedOrderContent');
+            if (assignedOrdersContent) {
+                assignedOrdersContent.innerHTML = `
+                    <div class="error-message">
+                        <i class="error-icon">❌</i>
+                        <p>获取被分配订单失败，请稍后重试</p>
+                        <button class="retry-button" onclick="orderManager.fetchAssignedOrders()">重试</button>
+                    </div>
+                `;
+            }
         }
     };
 
@@ -1985,7 +2109,20 @@
         async fetchEvents(fetchInfo, successCallback, failureCallback) {
             try {
                 utils.ui.showLoading(true);
-                const response = await fetch(API_URLS.GET_HISTORY, {
+                // 首先获取用户角色
+                const userResponse = await fetch(API_URLS.GET_USER_INFO, {
+                    credentials: 'include'
+                });
+                const userData = await userResponse.json();
+
+                if (userData.message !== 'Success') {
+                    throw new Error(userData.message);
+                }
+
+                // 根据用户角色选择获取订单的API
+                const apiUrl = userData.label === 'worker' ? API_URLS.GET_REPORT_LIST : API_URLS.GET_HISTORY;
+                
+                const response = await fetch(apiUrl, {
                     credentials: 'include'
                 });
                 const data = await response.json();
@@ -1994,7 +2131,7 @@
                 if (data.message === 'Success') {
                     const events = data.report_info.map(this.convertOrderToEvent);
                     successCallback(events);
-                } else if (data.message === 'No history report') {
+                } else if (data.message === 'No history report' || data.message === 'No my report') {
                     successCallback([]);
                 } else {
                     failureCallback(new Error(data.message));
@@ -2629,6 +2766,7 @@
 
                         const orderManagement = document.getElementById('order-management');
                         const assignOrder = document.getElementById('assign-order');
+                        const assignedOrder = document.getElementById('assigned-order');
 
                         switch (data.label) {
                             case 'customer':
@@ -2638,6 +2776,9 @@
                                 if (assignOrder) {
                                     assignOrder.style.display = 'none';
                                 }
+                                if (assignedOrder) {
+                                    assignedOrder.style.display = 'none';
+                                }
                                 break;
                             case 'worker':
                                 if (orderManagement) {
@@ -2646,6 +2787,9 @@
                                 if (assignOrder) {
                                     assignOrder.style.display = 'none';
                                 }
+                                if (assignedOrder) {
+                                    assignedOrder.style.display = 'block';
+                                }
                                 break;
                             case 'admin':
                                 if (orderManagement) {
@@ -2653,6 +2797,9 @@
                                 }
                                 if (assignOrder) {
                                     assignOrder.style.display = 'block';
+                                }
+                                if (assignedOrder) {
+                                    assignedOrder.style.display = 'none';
                                 }
                                 break;
                             default:
@@ -2878,6 +3025,13 @@
                 utils.ui.showModal('assignOrderModal');
                 this.classList.add('active');
                 loadAssignOrderContent();
+            });
+
+            // 被分配订单卡片点击事件
+            document.getElementById('assigned-order')?.addEventListener('click', function() {
+                utils.ui.showModal('assignedOrderModal');
+                this.classList.add('active');
+                orderManager.fetchAssignedOrders();
             });
         };
 
