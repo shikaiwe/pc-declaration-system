@@ -3226,6 +3226,7 @@
                             if (response.message === 'Success') {
                                 const events = response.report_info.map(order => {
                                     let backgroundColor, borderColor, textColor, title;
+                                    console.log('Order status:', order.status, 'Type:', typeof order.status);
                                     switch (order.status) {
                                         case '0':
                                             backgroundColor = '#ffc107';
