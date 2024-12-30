@@ -3226,8 +3226,10 @@
                             if (response.message === 'Success') {
                                 const events = response.report_info.map(order => {
                                     let backgroundColor, borderColor, textColor, title;
-                                    console.log('Order status:', order.status, 'Type:', typeof order.status);
-                                    switch (order.status) {
+                                    // 确保status是干净的字符串
+                                    const status = String(order.status).trim();
+                                    console.log('Cleaned status:', status, 'Type:', typeof status);
+                                    switch (status) {
                                         case '0':
                                             backgroundColor = '#ffc107';
                                             borderColor = '#ffc107';
@@ -3238,7 +3240,7 @@
                                             backgroundColor = '#28a745';
                                             borderColor = '#28a745';
                                             textColor = '#fff';
-                                            title = `${order.issue.substring(0, 8)}...`;
+                                            title = `[已分配] ${order.issue.substring(0, 6)}...`;
                                             break;
                                         case '2':
                                             backgroundColor = '#17a2b8';
@@ -3253,6 +3255,7 @@
                                             title = `[已撤单] ${order.issue.substring(0, 6)}...`;
                                             break;
                                         default:
+                                            console.log('Status not matched:', status);
                                             backgroundColor = '#6c757d';
                                             borderColor = '#6c757d';
                                             textColor = '#fff';
