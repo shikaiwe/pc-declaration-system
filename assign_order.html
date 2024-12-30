@@ -278,7 +278,7 @@
                             data.workers.forEach(worker => {
                                 const option = document.createElement('option');
                                 option.value = worker.username;
-                                option.textContent = `${worker.username} - ${worker.name}`;
+                                option.textContent = worker.username;
                                 workerSelect.appendChild(option);
                             });
                         } else {
