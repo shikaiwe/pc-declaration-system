@@ -3057,7 +3057,11 @@
                         success: function(data) {
                             utils.ui.showLoading(false);
                             if (data.message === 'Success') {
-                                utils.ui.showMessage('保存成功', 'success');
+                                let successMessage = [];
+                                if (phoneNumber) successMessage.push('手机号码');
+                                if (newName) successMessage.push('用户名');
+                                utils.ui.showMessage(`${successMessage.join('和')}修改成功`, 'success');
+                                
                                 if (requestData.newName) {
                                     utils.storage.save('username', requestData.newName);
                                     document.getElementById('username-display').textContent = requestData.newName;
@@ -3068,6 +3072,11 @@
                                     fillPhoneNumberButton.disabled = false;
                                 }
                                 event.target.reset();
+                                
+                                // 延迟关闭模态框
+                                setTimeout(() => {
+                                    utils.ui.hideModal('editModal');
+                                }, 2000);
                             } else if (data.message === 'This user is existed') {
                                 utils.ui.showMessage('用户名已被占用');
                             } else {
@@ -3077,7 +3086,10 @@
                         error: function(xhr, status, error) {
                             utils.ui.showLoading(false);
                             console.error('保存失败:', error);
-                            utils.ui.showMessage('保存失败，请重试');
+                            let errorMessage = [];
+                            if (phoneNumber) errorMessage.push('手机号码');
+                            if (newName) errorMessage.push('用户名');
+                            utils.ui.showMessage(`${errorMessage.join('和')}修改失败，请重试`);
                         }
                     });
                 });
