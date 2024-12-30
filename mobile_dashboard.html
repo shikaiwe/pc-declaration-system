@@ -750,14 +750,16 @@
             background-color: rgba(0, 0, 0, 0.5);
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: all 0.3s ease;
             justify-content: center;
             align-items: center;
+            pointer-events: none;
         }
         
         .message-modal.show {
             opacity: 1;
             visibility: visible;
+            pointer-events: auto;
         }
         
         .message-content {
@@ -766,15 +768,16 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             text-align: center;
-            min-width: 280px;
-            max-width: 90%;
-            transform: scale(0.8);
+            transform: translateY(20px);
             opacity: 0;
             transition: all 0.3s ease;
+            pointer-events: auto;
+            min-width: 280px;
+            max-width: 90%;
         }
         
         .message-modal.show .message-content {
-            transform: scale(1);
+            transform: translateY(0);
             opacity: 1;
         }
         
@@ -1516,18 +1519,22 @@
                     const messageText = document.getElementById('messageText');
                     if (!messageModal || !messageText) return;
 
-                    messageText.textContent = message;
-                    messageModal.classList.add('show');
-                    
-                    // 根据消息类型设置不同的自动关闭时间
-                    const timeout = type === 'success' ? 2000 : 3000;
-                    
                     // 清除之前的定时器
                     if (messageModal.timeoutId) {
                         clearTimeout(messageModal.timeoutId);
+                        messageModal.classList.remove('show');
                     }
-                    
-                    // 设置新的定时器
+
+                    // 设置消息文本
+                    messageText.textContent = message;
+
+                    // 显示消息
+                    requestAnimationFrame(() => {
+                        messageModal.classList.add('show');
+                    });
+
+                    // 设置自动关闭
+                    const timeout = type === 'success' ? 2000 : 3000;
                     messageModal.timeoutId = setTimeout(() => {
                         messageModal.classList.remove('show');
                     }, timeout);
@@ -2989,11 +2996,6 @@
                     });
                 });
 
-                // 消息确认按钮
-                document.getElementById('messageConfirm')?.addEventListener('click', () => {
-                    document.getElementById('messageModal').style.display = 'none';
-                });
-
                 // 信息管理链接
                 document.getElementById('info-link')?.addEventListener('click', (event) => {
                     event.preventDefault();
@@ -3195,6 +3197,14 @@
                     utils.ui.showModal('assignedOrderModal');
                     this.classList.add('active');
                     orderManager.fetchAssignedOrders();
+                });
+
+                // 消息确认按钮
+                document.getElementById('messageConfirm')?.addEventListener('click', () => {
+                    const messageModal = document.getElementById('messageModal');
+                    if (messageModal) {
+                        messageModal.classList.remove('show');
+                    }
                 });
             };
 
