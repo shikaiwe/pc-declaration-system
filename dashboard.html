@@ -3227,6 +3227,12 @@
                                 const events = response.report_info.map(order => {
                                     let backgroundColor, borderColor, textColor, title;
                                     switch (order.status) {
+                                        case '0':
+                                            backgroundColor = '#ffc107';
+                                            borderColor = '#ffc107';
+                                            textColor = '#000';
+                                            title = `[待分配] ${order.issue.substring(0, 6)}...`;
+                                            break;
                                         case '1':
                                             backgroundColor = '#28a745';
                                             borderColor = '#28a745';
@@ -3246,10 +3252,10 @@
                                             title = `[已撤单] ${order.issue.substring(0, 6)}...`;
                                             break;
                                         default:
-                                            backgroundColor = '#ffc107';
-                                            borderColor = '#ffc107';
-                                            textColor = '#000';
-                                            title = `${order.issue.substring(0, 8)}...`;
+                                            backgroundColor = '#6c757d';
+                                            borderColor = '#6c757d';
+                                            textColor = '#fff';
+                                            title = `[未知] ${order.issue.substring(0, 8)}...`;
                                     }
                                     return {
                                         id: order.reportId,
