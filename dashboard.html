@@ -2490,8 +2490,38 @@
                         url: 'assign_order.html',
                         method: 'GET'
                     })
-                    .done(function(html) {
-                        assignOrderContent.innerHTML = html;
+                    .done(function(response) {
+                        // 创建一个临时的div来解析HTML
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = response;
+                        
+                        // 提取样式
+                        const styles = tempDiv.getElementsByTagName('style');
+                        Array.from(styles).forEach(style => {
+                            document.head.appendChild(style.cloneNode(true));
+                        });
+                        
+                        // 提取内容
+                        const container = tempDiv.querySelector('.assign-order-container');
+                        if (container) {
+                            assignOrderContent.innerHTML = container.outerHTML;
+                            
+                            // 手动执行脚本内容
+                            const scriptContent = tempDiv.querySelector('script:not([src])');
+                            if (scriptContent) {
+                                const script = document.createElement('script');
+                                script.textContent = scriptContent.textContent;
+                                document.body.appendChild(script);
+                            }
+                            
+                            // 初始化页面数据
+                            if (typeof loadTodayOrders === 'function' && typeof loadTodayWorkers === 'function') {
+                                loadTodayOrders();
+                                loadTodayWorkers();
+                            }
+                        } else {
+                            assignOrderContent.innerHTML = '<p>加载页面内容失败</p>';
+                        }
                     })
                     .fail(function(error) {
                         console.error('加载分配订单页面失败:', error);
