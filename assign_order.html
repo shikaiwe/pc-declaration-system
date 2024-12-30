@@ -169,7 +169,7 @@
 
     <script>
         const API_URL = 'https://8.134.178.71/api/dashboard/assign_order/';
-        const ORDERS_API_URL = 'https://8.134.178.71/api/dashboard/user_get_history_report/';
+        const ORDERS_API_URL = 'https://8.134.178.71/api/dashboard/get_report_of_same_day/';
         const WORKERS_API_URL = 'https://8.134.178.71/api/dashboard/today_workers/';
         const form = document.getElementById('assignOrderForm');
         const messageDiv = document.getElementById('assignOrderMessage');
@@ -220,12 +220,11 @@
                         withCredentials: true
                     },
                     success: function(data) {
-                        if (data.message === 'Success' && Array.isArray(data.report_info)) {
+                        if (data.message === 'Success' && Array.isArray(data.reports)) {
                             reportSelect.innerHTML = '<option value="">请选择订单</option>';
 
-                            const today = new Date().toISOString().split('T')[0];
-                            const todayOrders = data.report_info.filter(order =>
-                                order.date === today && order.status === '0'
+                            const todayOrders = data.reports.filter(order =>
+                                order.status === '0'
                             );
 
                             if (todayOrders.length === 0) {
@@ -242,12 +241,8 @@
                                     reportSelect.appendChild(option);
                                 });
                             }
-                        } else if (data.message === 'No history report') {
-                            const option = document.createElement('option');
-                            option.value = "";
-                            option.textContent = "没有任何订单记录";
-                            option.disabled = true;
-                            reportSelect.appendChild(option);
+                        } else if (data.message === 'Permission error') {
+                            showMessage('权限错误，无法获取订单信息', 'error');
                         } else {
                             handleSessionError(data.message);
                         }
