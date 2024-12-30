@@ -2969,28 +2969,72 @@
                     url: 'assign_order.html',
                     method: 'GET',
                     success: function(html) {
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = html;
-                        
-                        // 提取 style 标签
-                        const styles = tempDiv.getElementsByTagName('style');
-                        for (let style of styles) {
-                            document.head.appendChild(style.cloneNode(true));
-                        }
-                        
-                        // 提取主要内容
-                        const content = tempDiv.querySelector('.assign-order-container');
-                        if (content) {
-                            document.getElementById('assignOrderContent').innerHTML = content.outerHTML;
+                        try {
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = html;
                             
-                            // 初始化分配订单页面的功能
-                            initAssignOrderPage();
+                            // 提取 style 标签并检查是否已存在
+                            const styles = tempDiv.getElementsByTagName('style');
+                            for (let style of styles) {
+                                const styleContent = style.textContent;
+                                // 检查是否已存在相同的样式
+                                const existingStyle = Array.from(document.getElementsByTagName('style')).find(s => s.textContent === styleContent);
+                                if (!existingStyle) {
+                                    document.head.appendChild(style.cloneNode(true));
+                                }
+                            }
+                            
+                            // 提取主要内容
+                            const content = tempDiv.querySelector('.assign-order-container');
+                            const assignOrderContent = document.getElementById('assignOrderContent');
+                            
+                            if (!assignOrderContent) {
+                                throw new Error('找不到assignOrderContent元素');
+                            }
+                            
+                            if (content) {
+                                assignOrderContent.innerHTML = content.outerHTML;
+                                
+                                // 确保所有必要的元素都存在
+                                const requiredElements = ['assignOrderForm', 'reportId', 'workerName'];
+                                const missingElements = requiredElements.filter(id => !document.getElementById(id));
+                                
+                                if (missingElements.length > 0) {
+                                    throw new Error(`缺少必要的元素: ${missingElements.join(', ')}`);
+                                }
+                                
+                                // 初始化分配订单页面的功能
+                                initAssignOrderPage();
+                            } else {
+                                throw new Error('找不到assign-order-container元素');
+                            }
+                        } catch (error) {
+                            console.error('处理分配订单页面内容时出错:', error);
+                            utils.ui.showMessage('加载分配订单页面内容失败，请重试');
+                            if (document.getElementById('assignOrderContent')) {
+                                document.getElementById('assignOrderContent').innerHTML = `
+                                    <div class="error-message">
+                                        <i class="error-icon">❌</i>
+                                        <p>加载失败，请重试</p>
+                                        <button class="retry-button" onclick="loadAssignOrderContent()">重试</button>
+                                    </div>
+                                `;
+                            }
                         }
                         utils.ui.showLoading(false);
                     },
                     error: function(xhr, status, error) {
                         console.error('加载分配订单页面失败:', error);
                         utils.ui.showMessage('加载分配订单页面失败，请重试');
+                        if (document.getElementById('assignOrderContent')) {
+                            document.getElementById('assignOrderContent').innerHTML = `
+                                <div class="error-message">
+                                    <i class="error-icon">❌</i>
+                                    <p>加载失败，请重试</p>
+                                    <button class="retry-button" onclick="loadAssignOrderContent()">重试</button>
+                                </div>
+                            `;
+                        }
                         utils.ui.showLoading(false);
                     }
                 });
