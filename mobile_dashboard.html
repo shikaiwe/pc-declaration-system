@@ -740,7 +740,7 @@
         /* 消息提示模态框样式 */
         
         .message-modal {
-            display: none;
+            display: flex;
             position: fixed;
             z-index: 2000;
             left: 0;
@@ -750,7 +750,9 @@
             background-color: rgba(0, 0, 0, 0.5);
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            justify-content: center;
+            align-items: center;
         }
         
         .message-modal.show {
@@ -759,10 +761,6 @@
         }
         
         .message-content {
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
             background-color: #fff;
             padding: 20px;
             border-radius: 12px;
@@ -770,13 +768,46 @@
             text-align: center;
             min-width: 280px;
             max-width: 90%;
+            transform: scale(0.8);
             opacity: 0;
             transition: all 0.3s ease;
         }
         
         .message-modal.show .message-content {
-            transform: translate(-50%, -50%) scale(1);
+            transform: scale(1);
             opacity: 1;
+        }
+        
+        #messageText {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        #messageConfirm {
+            margin-top: 15px;
+            padding: 8px 24px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        #messageConfirm:hover {
+            background-color: #1976D2;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .message-content {
+                background-color: #333;
+            }
+            #messageText {
+                color: #fff;
+            }
         }
         /* 订单详情卡片样式 */
         
@@ -1483,13 +1514,23 @@
                 showMessage: (message, type = 'info') => {
                     const messageModal = document.getElementById('messageModal');
                     const messageText = document.getElementById('messageText');
+                    if (!messageModal || !messageText) return;
+
                     messageText.textContent = message;
-                    messageModal.style.display = 'block';
-                    if (type === 'success') {
-                        setTimeout(() => {
-                            messageModal.style.display = 'none';
-                        }, 3000);
+                    messageModal.classList.add('show');
+                    
+                    // 根据消息类型设置不同的自动关闭时间
+                    const timeout = type === 'success' ? 2000 : 3000;
+                    
+                    // 清除之前的定时器
+                    if (messageModal.timeoutId) {
+                        clearTimeout(messageModal.timeoutId);
                     }
+                    
+                    // 设置新的定时器
+                    messageModal.timeoutId = setTimeout(() => {
+                        messageModal.classList.remove('show');
+                    }, timeout);
                 },
 
                 toggleBodyScroll: (disable) => {
