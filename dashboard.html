@@ -1815,6 +1815,116 @@
         .fc .fc-more-popover .fc-popover-body {
             padding: 8px;
         }
+
+        /* 天气卡片样式 */
+        .weather-container {
+            background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 140px;
+            display: flex;
+        }
+        
+        .weather-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+        
+        .weather-main {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .weather-location {
+            font-size: 18px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+        }
+        
+        .weather-temp {
+            font-size: 48px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            padding: 10px 0;
+        }
+        
+        .weather-info-details {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        
+        .weather-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            justify-content: center;
+        }
+        
+        .weather-icon {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .weather-temp .weather-icon {
+            font-size: 36px;
+            width: 36px;
+            height: 36px;
+        }
+        
+        .weather-update {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            justify-content: center;
+        }
+        
+        @media (max-width: 360px) {
+            .weather-container {
+                padding: 12px;
+                margin: 12px 15px;
+                min-height: 130px;
+            }
+            .weather-temp {
+                font-size: 36px;
+            }
+            .weather-row {
+                font-size: 14px;
+            }
+            .weather-location {
+                font-size: 15px;
+            }
+            .weather-temp .weather-icon {
+                font-size: 28px;
+                width: 28px;
+                height: 28px;
+            }
+        }
     </style>
 </head>
 
@@ -2186,21 +2296,37 @@
                             
                             weatherInfoElement.innerHTML = `
                                 <div class="weather-content">
-                                    <div class="weather-location">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        <span>${ipData.city}</span>
+                                    <div class="weather-main">
+                                        <div class="weather-location">
+                                            <span class="weather-icon">📍</span>
+                                            ${ipData.city}
+                                        </div>
+                                        <div class="weather-temp">
+                                            <span class="weather-icon">🌡️</span>
+                                            ${weather.temperature}°C
+                                        </div>
                                     </div>
-                                    <div class="weather-info">
-                                        <div class="weather-temp">${weather.temperature}°C</div>
-                                        <div class="weather-desc">${weather.weather}</div>
+                                    <div class="weather-info-details">
+                                        <div class="weather-row">
+                                            <span class="weather-icon">🌤️</span>
+                                            <span>天气：${weather.weather}</span>
+                                        </div>
+                                        <div class="weather-row">
+                                            <span class="weather-icon">💧</span>
+                                            <span>湿度：${weather.humidity}%</span>
+                                        </div>
+                                        <div class="weather-row">
+                                            <span class="weather-icon">🌪️</span>
+                                            <span>风向：${weather.winddirection}</span>
+                                        </div>
+                                        <div class="weather-row">
+                                            <span class="weather-icon">💨</span>
+                                            <span>风力：${weather.windpower}级</span>
+                                        </div>
                                     </div>
-                                    <div class="weather-details">
-                                        <span>湿度: ${weather.humidity}%</span>
-                                        <span>风向: ${weather.winddirection}</span>
-                                        <span>风力: ${weather.windpower}级</span>
-                                    </div>
-                                    <div class="weather-update-time">
-                                        更新时间: ${updateTime}
+                                    <div class="weather-update">
+                                        <span class="weather-icon">🕒</span>
+                                        <span>更新：${updateTime}</span>
                                     </div>
                                 </div>
                             `;
@@ -3470,15 +3596,15 @@
                     }
                 }).then(response => {
                     if (response.message === 'Success') {
-                        showMessage('订单已完成', 'success');
+                        utils.ui.showMessage('订单已完成');
                         updateCalendarEvent(orderId, 'completed'); // 更新日历显示
                         fetchHistoryOrders(); // 刷新订单列表
                     } else {
-                        handleSessionError(response.message);
+                        auth.handleSessionError(response.message);
                     }
                 }).catch(error => {
                     console.error('完成订单失败:', error);
-                    showMessage('完成订单失败，请重试', 'error');
+                    utils.ui.showMessage('完成订单失败，请重试');
                 });
             }
 
@@ -3494,15 +3620,15 @@
                     }
                 }).then(response => {
                     if (response.message === 'Success') {
-                        showMessage('订单已撤销', 'success');
+                        utils.ui.showMessage('订单已撤销');
                         updateCalendarEvent(orderId, 'cancelled'); // 更新日历显示
                         fetchHistoryOrders(); // 刷新订单列表
                     } else {
-                        handleSessionError(response.message);
+                        auth.handleSessionError(response.message);
                     }
                 }).catch(error => {
                     console.error('撤销订单失败:', error);
-                    showMessage('撤销订单失败，请重试', 'error');
+                    utils.ui.showMessage('撤销订单失败，请重试');
                 });
             }
 
