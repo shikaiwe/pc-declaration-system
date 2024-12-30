@@ -3226,36 +3226,41 @@
                             if (response.message === 'Success') {
                                 const events = response.report_info.map(order => {
                                     let backgroundColor, borderColor, textColor, title;
-                                    // 确保status是干净的字符串
-                                    const status = String(order.status).trim();
-                                    console.log('Cleaned status:', status, 'Type:', typeof status);
-                                    switch (status) {
-                                        case '0':
+                                    // 打印完整的订单对象和状态信息
+                                    console.log('Complete order object:', order);
+                                    console.log('Status value:', order.status);
+                                    console.log('Status type:', typeof order.status);
+                                    console.log('Status === "0":', order.status === '0');
+                                    console.log('Status === 0:', order.status === 0);
+                                    // 尝试数字比较
+                                    const numericStatus = parseInt(order.status);
+                                    switch (numericStatus) {
+                                        case 0:
                                             backgroundColor = '#ffc107';
                                             borderColor = '#ffc107';
                                             textColor = '#000';
                                             title = `[待分配] ${order.issue.substring(0, 6)}...`;
                                             break;
-                                        case '1':
+                                        case 1:
                                             backgroundColor = '#28a745';
                                             borderColor = '#28a745';
                                             textColor = '#fff';
                                             title = `[已分配] ${order.issue.substring(0, 6)}...`;
                                             break;
-                                        case '2':
+                                        case 2:
                                             backgroundColor = '#17a2b8';
                                             borderColor = '#17a2b8';
                                             textColor = '#fff';
                                             title = `[已完成] ${order.issue.substring(0, 6)}...`;
                                             break;
-                                        case '3':
+                                        case 3:
                                             backgroundColor = '#dc3545';
                                             borderColor = '#dc3545';
                                             textColor = '#fff';
                                             title = `[已撤单] ${order.issue.substring(0, 6)}...`;
                                             break;
                                         default:
-                                            console.log('Status not matched:', status);
+                                            console.log('Numeric status not matched:', numericStatus);
                                             backgroundColor = '#6c757d';
                                             borderColor = '#6c757d';
                                             textColor = '#fff';
