@@ -291,6 +291,13 @@
             }
         }
 
+        // 页面可见性变化时重新加载订单
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                loadTodayOrders();
+            }
+        });
+
         // 页面加载时获取数据
         document.addEventListener('DOMContentLoaded', () => {
             loadTodayOrders();
