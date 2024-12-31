@@ -2830,16 +2830,16 @@
                             tempDiv.innerHTML = html;
                             
                             // 提取并处理样式标签
-                            // 检查是否已存在相同的样式，避免重复添加
                             const styles = tempDiv.getElementsByTagName('style');
-                            for (let style of styles) {
+                            Array.from(styles).forEach(style => {
+                                // 检查是否已存在相同的样式
                                 const styleContent = style.textContent;
                                 const existingStyle = Array.from(document.getElementsByTagName('style'))
                                     .find(s => s.textContent === styleContent);
                                 if (!existingStyle) {
                                     document.head.appendChild(style.cloneNode(true));
                                 }
-                            }
+                            });
                             
                             // 提取assign-order-container的内容
                             const content = tempDiv.querySelector('.assign-order-container');
@@ -2853,15 +2853,86 @@
                             // 更新容器内容
                             if (content) {
                                 assignOrderContent.innerHTML = content.outerHTML;
+                                
+                                // 获取脚本内容
+                                const scriptContent = tempDiv.querySelector('script:not([src])');
+                                if (scriptContent) {
+                                    // 创建一个新的立即执行函数来封装脚本内容
+                                    const scriptWrapper = document.createElement('script');
+                                    scriptWrapper.textContent = `
+                                        (function() {
+                                            ${scriptContent.textContent}
+                                            // 确保在脚本加载完成后初始化数据
+                                            if (typeof loadTodayOrders === 'function' && typeof loadTodayWorkers === 'function') {
+                                                loadTodayOrders();
+                                                loadTodayWorkers();
+                                            }
+                                        })();
+                                    `;
+                                    // 移除可能存在的旧脚本
+                                    const oldScript = document.getElementById('assign-order-script');
+                                    if (oldScript) {
+                                        oldScript.remove();
+                                    }
+                                    // 添加新脚本
+                                    scriptWrapper.id = 'assign-order-script';
+                                    document.body.appendChild(scriptWrapper);
+                                }
+
+                                // 重新绑定事件监听器
+                                const form = document.getElementById('assignOrderForm');
+                                if (form) {
+                                    form.removeEventListener('submit', window.handleAssignOrderSubmit);
+                                    window.handleAssignOrderSubmit = function(e) {
+                                        e.preventDefault();
+                                        const reportId = document.getElementById('reportId').value.trim();
+                                        const workerName = document.getElementById('workerName').value.trim();
+                                        
+                                        if (!reportId || !workerName) {
+                                            utils.ui.showMessage('请填写所有必填字段', 'error');
+                                            return;
+                                        }
+                                        
+                                        utils.ui.showLoading(true);
+                                        $.ajax({
+                                            url: API_URLS.ASSIGN_ORDER,
+                                            method: 'POST',
+                                            data: JSON.stringify({
+                                                reportId,
+                                                workerName
+                                            }),
+                                            contentType: 'application/json',
+                                            xhrFields: {
+                                                withCredentials: true
+                                            },
+                                            success: function(data) {
+                                                if (data.message === 'Success') {
+                                                    utils.ui.showMessage('订单分配成功', 'success');
+                                                    form.reset();
+                                                    // 重新加载订单列表
+                                                    loadTodayOrders();
+                                                } else {
+                                                    handleAssignOrderError(data.message);
+                                                }
+                                            },
+                                            error: function(error) {
+                                                console.error('分配订单失败:', error);
+                                                utils.ui.showMessage('分配订单失败，请重试', 'error');
+                                            },
+                                            complete: function() {
+                                                utils.ui.showLoading(false);
+                                            }
+                                        });
+                                    };
+                                    form.addEventListener('submit', window.handleAssignOrderSubmit);
+                                }
                             } else {
                                 throw new Error('找不到assign-order-container元素');
                             }
                         } catch (error) {
-                            // 错误处理
                             console.error('分配订单页面加载失败:', error);
                             utils.ui.showMessage('加载失败，请重试');
                             
-                            // 显示错误界面
                             if (document.getElementById('assignOrderContent')) {
                                 document.getElementById('assignOrderContent').innerHTML = `
                                     <div class="error-message">
@@ -2872,15 +2943,12 @@
                                 `;
                             }
                         }
-                        // 结束加载状态
                         utils.ui.showLoading(false);
                     },
                     error: function(xhr, status, error) {
-                        // AJAX错误处理
                         console.error('请求失败:', error);
                         utils.ui.showMessage('加载失败，请重试');
                         
-                        // 显示错误界面
                         if (document.getElementById('assignOrderContent')) {
                             document.getElementById('assignOrderContent').innerHTML = `
                                 <div class="error-message">
@@ -2890,7 +2958,6 @@
                                 </div>
                             `;
                         }
-                        // 隐藏加载指示器
                         utils.ui.showLoading(false);
                     }
                 });
