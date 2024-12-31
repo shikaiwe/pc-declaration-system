@@ -2583,10 +2583,16 @@
                 // 生成日期选项
                 function generateDateSlides() {
                     const dates = [];
-                    const today = new Date();
-                    for (let i = 0; i < 14; i++) {
-                        const date = new Date(today);
-                        date.setDate(today.getDate() + i);
+                    const now = new Date();
+                    const hours = now.getHours();
+                    
+                    // 如果当前时间晚于21:00，从第二天开始
+                    const startDay = hours >= 21 ? 1 : 0;
+                    const daysToShow = 14; // 显示14天的选项
+                    
+                    for (let i = startDay; i < startDay + daysToShow; i++) {
+                        const date = new Date(now);
+                        date.setDate(now.getDate() + i);
                         dates.push(`
                             <div class="swiper-slide">
                                 <div class="date-item">
