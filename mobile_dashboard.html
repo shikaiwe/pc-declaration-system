@@ -2538,6 +2538,16 @@
                     if (orderForm) {
                         const formHTML = orderForm.outerHTML;
                         selectedTab.innerHTML = formHTML;
+                        // 重新初始化时间选择器
+                        dateTimePicker.init();
+                        // 重新绑定问题描述文本框的自动调整高度事件
+                        const issueTextarea = document.getElementById('issue');
+                        if (issueTextarea) {
+                            issueTextarea.addEventListener('input', function() {
+                                this.style.height = 'auto';
+                                this.style.height = (this.scrollHeight) + 'px';
+                            });
+                        }
                     }
                 } else if (tabName === 'orderHistory') {
                     // 清空历史订单内容，然后重新加载
@@ -2552,6 +2562,12 @@
             init() {
                 const preferredTimeInput = document.getElementById('preferredTime');
                 if (!preferredTimeInput) return;
+
+                // 检查并移除已存在的日期时间选择器
+                let existingPicker = document.querySelector('.datetime-picker');
+                if (existingPicker) {
+                    existingPicker.remove();
+                }
 
                 // 生成日期选项
                 function generateDateSlides() {
@@ -2617,6 +2633,17 @@
                 `;
                 document.body.appendChild(pickerContainer);
 
+                // 移除之前的点击事件（如果有）
+                preferredTimeInput.removeEventListener('click', this.showPicker);
+                // 添加新的点击事件
+                preferredTimeInput.addEventListener('click', () => {
+                    pickerContainer.classList.add('active');
+                    utils.ui.toggleBodyScroll(true);
+                    document.body.style.overflow = 'hidden';
+                    document.body.style.position = 'fixed';
+                    document.body.style.width = '100%';
+                });
+
                 // 初始化Swiper
                 let dateSwiper, timeSwiper;
                 setTimeout(() => {
@@ -2629,24 +2656,7 @@
                             el: '.date-swiper .swiper-scrollbar',
                             draggable: true
                         },
-                        mousewheel: {
-                            sensitivity: 0.5,
-                            releaseOnEdges: true
-                        },
-                        freeMode: {
-                            enabled: true,
-                            sticky: true,
-                            momentumRatio: 0.2,
-                            momentumBounce: true,
-                            momentumBounceRatio: 0.2,
-                            minimumVelocity: 0.02
-                        },
-                        touchRatio: 0.8,
-                        resistance: true,
-                        resistanceRatio: 0.9,
-                        speed: 400,
-                        observer: true,
-                        observeParents: true,
+                        mousewheel: true,
                         on: {
                             init: function() {
                                 this.slides.forEach((slide, index) => {
@@ -2667,24 +2677,7 @@
                             el: '.time-swiper .swiper-scrollbar',
                             draggable: true
                         },
-                        mousewheel: {
-                            sensitivity: 0.5,
-                            releaseOnEdges: true
-                        },
-                        freeMode: {
-                            enabled: true,
-                            sticky: true,
-                            momentumRatio: 0.2,
-                            momentumBounce: true,
-                            momentumBounceRatio: 0.2,
-                            minimumVelocity: 0.02
-                        },
-                        touchRatio: 0.8,
-                        resistance: true,
-                        resistanceRatio: 0.9,
-                        speed: 400,
-                        observer: true,
-                        observeParents: true,
+                        mousewheel: true,
                         on: {
                             init: function() {
                                 this.slides.forEach((slide, index) => {
@@ -2696,57 +2689,12 @@
                         }
                     });
 
-                    // 为所有日期和时间项添加点击事件
-                    const dateItems = pickerContainer.querySelectorAll('.date-swiper .swiper-slide');
-                    const timeItems = pickerContainer.querySelectorAll('.time-swiper .swiper-slide');
-
-                    dateItems.forEach((item, index) => {
-                        item.addEventListener('click', () => {
-                            dateSwiper.slideTo(index, 400);
-                        });
-                    });
-
-                    timeItems.forEach((item, index) => {
-                        item.addEventListener('click', () => {
-                            timeSwiper.slideTo(index, 400);
-                        });
-                    });
-
-                    // 添加活动项样式
-                    function updateActiveItems() {
-                        dateItems.forEach(item => item.classList.remove('swiper-slide-active'));
-                        timeItems.forEach(item => item.classList.remove('swiper-slide-active'));
-
-                        if (dateSwiper && dateSwiper.slides[dateSwiper.activeIndex]) {
-                            dateSwiper.slides[dateSwiper.activeIndex].classList.add('swiper-slide-active');
-                        }
-                        if (timeSwiper && timeSwiper.slides[timeSwiper.activeIndex]) {
-                            timeSwiper.slides[timeSwiper.activeIndex].classList.add('swiper-slide-active');
-                        }
-                    }
-
-                    dateSwiper.on('slideChange', updateActiveItems);
-                    timeSwiper.on('slideChange', updateActiveItems);
-                    updateActiveItems();
-
-                    // 简化触摸事件处理
-                    const pickerContent = pickerContainer.querySelector('.picker-container');
-                    
-                    // 阻止背景滚动和点击穿透
-                    pickerContainer.addEventListener('touchmove', (e) => {
-                        e.preventDefault();
-                    }, { passive: false });
-
-                    pickerContainer.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                    });
-
-                    // 取消按钮
+                    // 绑定取消按钮事件
                     pickerContainer.querySelector('.picker-cancel').addEventListener('click', () => {
                         this.hide(pickerContainer);
                     });
 
-                    // 确认按钮
+                    // 绑定确认按钮事件
                     pickerContainer.querySelector('.picker-confirm').addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -2773,99 +2721,14 @@
                             this.hide(pickerContainer);
                         }
                     });
-                }, 0);
 
-                // 打开选择器
-                preferredTimeInput.addEventListener('click', () => {
-                    pickerContainer.classList.add('active');
-                    utils.ui.toggleBodyScroll(true);
-                    document.body.style.overflow = 'hidden';
-                    document.body.style.position = 'fixed';
-                    document.body.style.width = '100%';
-                });
-
-                // 取消按钮
-                pickerContainer.querySelector('.picker-cancel').addEventListener('click', () => {
-                    this.hide(pickerContainer);
-                });
-
-                // 确认按钮
-                pickerContainer.querySelector('.picker-confirm').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    if (dateSwiper && timeSwiper) {
-                        const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
-                        const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
-
-                        const [hours, minutes] = selectedTime.split(':').map(Number);
-                        if (hours < 18 || (hours === 21 && minutes > 0) || hours > 21) {
-                            utils.ui.showMessage('请选择18:00-21:00之间的时间');
-                            return;
+                    // 点击背景关闭
+                    pickerContainer.addEventListener('click', (e) => {
+                        if (e.target === pickerContainer) {
+                            this.hide(pickerContainer);
                         }
-
-                        const year = new Date().getFullYear();
-                        const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
-
-                        const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
-                        const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
-
-                        preferredTimeInput.value = displayDateTime;
-                        preferredTimeInput.dataset.submitValue = submitDateTime;
-
-                        this.hide(pickerContainer);
-                    }
-                });
-
-                // 点击背景关闭
-                pickerContainer.addEventListener('click', (e) => {
-                    if (e.target === pickerContainer) {
-                        this.hide(pickerContainer);
-                    }
-                });
-
-                // 添加触摸手势支持
-                let startY = 0;
-                let currentY = 0;
-                const pickerContent = pickerContainer.querySelector('.picker-container');
-
-                pickerContent.addEventListener('touchstart', (e) => {
-                    if (e.target.closest('.swiper-container')) {
-                        return;
-                    }
-                    startY = e.touches[0].clientY;
-                }, { passive: true });
-
-                pickerContent.addEventListener('touchmove', (e) => {
-                    if (e.target.closest('.swiper-container')) {
-                        return;
-                    }
-                    currentY = e.touches[0].clientY;
-                    const deltaY = currentY - startY;
-
-                    if (deltaY > 0) {
-                        pickerContent.style.transform = `translateY(${deltaY}px)`;
-                    }
-                }, { passive: true });
-
-                pickerContent.addEventListener('touchend', (e) => {
-                    if (e.target.closest('.swiper-container')) {
-                        return;
-                    }
-                    if (currentY - startY > 100) {
-                        this.hide(pickerContainer);
-                    } else {
-                        pickerContent.style.transform = '';
-                    }
-                    startY = 0;
-                    currentY = 0;
-                });
-
-                pickerContent.addEventListener('touchcancel', () => {
-                    pickerContent.style.transform = '';
-                    startY = 0;
-                    currentY = 0;
-                });
+                    });
+                }, 0);
             },
 
             hide(pickerContainer) {
