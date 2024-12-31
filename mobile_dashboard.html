@@ -1332,13 +1332,9 @@
                     <div id="reportOrderMessage" class="form-message" style="display: none;"></div>
                     <button type="submit">提交</button>
                 </form>
-                <div id="reportOrderInfo">
-                    <!-- 这里将显示报单信息 -->
-                </div>
             </div>
             <div class="tab-content" id="orderHistory" style="display: none;">
-                <p>这里是历史订单的内容。</p>
-                <!-- 你可以在这里添加订单列表或其他内容 -->
+                <!-- 历史订单内容将通过JavaScript动态加载 -->
             </div>
         </div>
     </div>
@@ -2535,10 +2531,18 @@
                 selectedTab.style.display = "block";
                 event.currentTarget.classList.add("active");
 
-                if (tabName === 'orderHistory') {
+                // 清理之前的内容
+                if (tabName === 'newOrder') {
+                    // 保留表单，清除其他内容
+                    const orderForm = selectedTab.querySelector('#newOrderForm');
+                    if (orderForm) {
+                        const formHTML = orderForm.outerHTML;
+                        selectedTab.innerHTML = formHTML;
+                    }
+                } else if (tabName === 'orderHistory') {
+                    // 清空历史订单内容，然后重新加载
+                    selectedTab.innerHTML = '';
                     orderManager.fetchHistoryOrders();
-                } else if (tabName === 'newOrder') {
-                    orderManager.fetchPendingOrders();
                 }
             }
         }
