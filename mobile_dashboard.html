@@ -2688,65 +2688,71 @@
                                 }
                                 // 滑动到默认日期位置
                                 this.slideTo(defaultDateIndex, 0);
-                            }
-                        }
-                    });
 
-                    timeSwiper = new Swiper('.time-swiper', {
-                        direction: 'vertical',
-                        slidesPerView: 5,
-                        centeredSlides: true,
-                        spaceBetween: 10,
-                        scrollbar: {
-                            el: '.time-swiper .swiper-scrollbar',
-                            draggable: true
-                        },
-                        mousewheel: true,
-                        on: {
-                            init: function() {
-                                this.slides.forEach((slide, index) => {
-                                    slide.addEventListener('click', () => {
-                                        this.slideTo(index, 400);
+                                // 在日期选择器初始化完成后再初始化时间选择器
+                                setTimeout(() => {
+                                    timeSwiper = new Swiper('.time-swiper', {
+                                        direction: 'vertical',
+                                        slidesPerView: 5,
+                                        centeredSlides: true,
+                                        spaceBetween: 10,
+                                        scrollbar: {
+                                            el: '.time-swiper .swiper-scrollbar',
+                                            draggable: true
+                                        },
+                                        mousewheel: true,
+                                        on: {
+                                            init: function() {
+                                                this.slides.forEach((slide, index) => {
+                                                    slide.addEventListener('click', () => {
+                                                        this.slideTo(index, 400);
+                                                    });
+                                                });
+                                                
+                                                // 获取当前时间
+                                                const now = new Date();
+                                                const hours = now.getHours();
+                                                const minutes = now.getMinutes();
+                                                
+                                                // 计算默认时间索引
+                                                let defaultTimeIndex = 0;
+                                                if (hours < 18) {
+                                                    // 如果当前时间早于18:00，默认选择18:00
+                                                    defaultTimeIndex = 0; // 18:00对应的索引
+                                                } else if (hours >= 21) {
+                                                    // 如果当前时间晚于或等于21:00，默认选择第二天18:00
+                                                    defaultTimeIndex = 0; // 18:00对应的索引
+                                                } else {
+                                                    // 当前时间在18:00-21:00之间，找到最接近的5分钟时间点
+                                                    const totalMinutes = hours * 60 + minutes;
+                                                    const startMinutes = 18 * 60;
+                                                    const minutesDiff = Math.floor((totalMinutes - startMinutes) / 5);
+                                                    defaultTimeIndex = minutesDiff;
+                                                }
+                                                
+                                                // 滑动到默认时间位置
+                                                this.slideTo(defaultTimeIndex, 0);
+
+                                                // 确保 dateSwiper 已经完全初始化
+                                                if (dateSwiper && dateSwiper.slides && dateSwiper.slides[dateSwiper.activeIndex]) {
+                                                    // 自动设置初始值
+                                                    const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
+                                                    const selectedTime = this.slides[defaultTimeIndex].querySelector('.time-item').textContent.trim();
+                                                    const year = new Date().getFullYear();
+                                                    const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
+                                                    const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
+                                                    const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
+                                                    
+                                                    const preferredTimeInput = document.getElementById('preferredTime');
+                                                    if (preferredTimeInput) {
+                                                        preferredTimeInput.value = displayDateTime;
+                                                        preferredTimeInput.dataset.submitValue = submitDateTime;
+                                                    }
+                                                }
+                                            }
+                                        }
                                     });
-                                });
-                                
-                                // 获取当前时间
-                                const now = new Date();
-                                const hours = now.getHours();
-                                const minutes = now.getMinutes();
-                                
-                                // 计算默认时间索引
-                                let defaultTimeIndex = 0;
-                                if (hours < 18) {
-                                    // 如果当前时间早于18:00，默认选择18:00
-                                    defaultTimeIndex = 0; // 18:00对应的索引
-                                } else if (hours >= 21) {
-                                    // 如果当前时间晚于或等于21:00，默认选择第二天18:00
-                                    defaultTimeIndex = 0; // 18:00对应的索引
-                                } else {
-                                    // 当前时间在18:00-21:00之间，找到最接近的5分钟时间点
-                                    const totalMinutes = hours * 60 + minutes;
-                                    const startMinutes = 18 * 60;
-                                    const minutesDiff = Math.floor((totalMinutes - startMinutes) / 5);
-                                    defaultTimeIndex = minutesDiff;
-                                }
-                                
-                                // 滑动到默认时间位置
-                                this.slideTo(defaultTimeIndex, 0);
-                                
-                                // 自动设置初始值
-                                const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
-                                const selectedTime = this.slides[defaultTimeIndex].querySelector('.time-item').textContent.trim();
-                                const year = new Date().getFullYear();
-                                const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
-                                const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
-                                const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
-                                
-                                const preferredTimeInput = document.getElementById('preferredTime');
-                                if (preferredTimeInput) {
-                                    preferredTimeInput.value = displayDateTime;
-                                    preferredTimeInput.dataset.submitValue = submitDateTime;
-                                }
+                                }, 100); // 给一个短暂的延迟确保 dateSwiper 完全初始化
                             }
                         }
                     });
