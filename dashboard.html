@@ -16,7 +16,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
-        /* 基本样式设置 */
+        /* 全局样式 */
         
         body {
             margin: 0;
@@ -26,7 +26,7 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-        /* 侧边栏样式 */
+        /* 左侧导航栏 */
         
         .sidebar {
             width: 250px;
@@ -43,18 +43,21 @@
             flex-direction: column;
             justify-content: space-between;
         }
+        /* 导航菜单列表 */
         
         .sidebar-menu {
             list-style: none;
             padding: 0;
             margin: 0;
         }
+        /* 导航菜单项 */
         
         .sidebar-menu li {
             padding: 15px 25px;
             cursor: pointer;
             transition: transform 0.2s ease-out, background-color 0.2s ease-out;
         }
+        /* 导航菜单项悬停和激活状态 */
         
         .sidebar-menu li:hover,
         .sidebar-menu li.active {
@@ -62,7 +65,7 @@
             transform: translateX(10px);
             color: white;
         }
-        /* 主内容样式 */
+        /* 主要内容区域 */
         
         .main-content {
             flex: 1;
@@ -77,9 +80,9 @@
             box-sizing: border-box;
             text-align: center;
             min-height: calc(100vh - 60px);
-            overflow-y: auto; /* 添加垂直滚动 */
+            overflow-y: auto;
         }
-        /* 顶部导航栏样式 */
+        /* 顶部导航条 */
         
         .top-nav {
             position: fixed;
@@ -161,9 +164,12 @@
         
         .content {
             padding: 20px;
-            background-color: rgba(255, 255, 255, 0.9); /* 使用半透明白色背景 */
-            backdrop-filter: blur(10px); /* 添加背景模糊效果 */
-            -webkit-backdrop-filter: blur(10px); /* Safari 支持 */
+            background-color: rgba(255, 255, 255, 0.9);
+            /* 使用半透明白色背景 */
+            backdrop-filter: blur(10px);
+            /* 添加背景模糊效果 */
+            -webkit-backdrop-filter: blur(10px);
+            /* Safari 支持 */
             flex: 1;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -366,18 +372,18 @@
             flex-direction: column;
             gap: 8px;
         }
-
+        
         .weather-details span {
             display: block;
             text-align: center;
             padding: 5px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
+        
         .weather-details span:last-child {
             border-bottom: none;
         }
-
+        
         .weather-update-time {
             font-size: 0.9em !important;
             color: rgba(255, 255, 255, 0.8) !important;
@@ -1820,8 +1826,8 @@
         .fc .fc-more-popover .fc-popover-body {
             padding: 8px;
         }
-
         /* 天气卡片样式 */
+        
         .weather-container {
             background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%);
             border-radius: 15px;
@@ -2292,7 +2298,7 @@
                             url: `https://restapi.amap.com/v3/ip?key=${apiKey}`,
                             method: 'GET'
                         });
-                        
+
                         // 获取天气信息
                         const weatherData = await $.ajax({
                             url: `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${ipData.adcode}&extensions=base`,
@@ -2301,12 +2307,12 @@
 
                         if (weatherData.status === '1' && weatherData.lives && weatherData.lives.length > 0) {
                             const weather = weatherData.lives[0];
-                            const updateTime = new Date().toLocaleString('zh-CN', { 
+                            const updateTime = new Date().toLocaleString('zh-CN', {
                                 hour12: false,
                                 hour: '2-digit',
                                 minute: '2-digit'
                             });
-                            
+
                             weatherInfoElement.innerHTML = `
                                 <div class="weather-content">
                                     <div class="weather-main">
@@ -2361,26 +2367,26 @@
                     if (!usernameDisplay) return;
 
                     $.ajax({
-                        url: API_URLS.GET_USER_INFO,
-                        method: 'GET',
-                        xhrFields: {
-                            withCredentials: true
-                        }
-                    })
-                    .done(function(data) {
-                        if (data.message === 'Success') {
-                            const username = data.username;
-                            utils.storage.save('username', username);
-                            usernameDisplay.textContent = username;
-                        } else {
-                            auth.handleSessionError(data.message);
-                        }
-                    })
-                    .fail(function(error) {
-                        console.error('获取用户信息失败:', error);
-                        const username = utils.storage.get('username');
-                        usernameDisplay.textContent = username || '用户';
-                    });
+                            url: API_URLS.GET_USER_INFO,
+                            method: 'GET',
+                            xhrFields: {
+                                withCredentials: true
+                            }
+                        })
+                        .done(function(data) {
+                            if (data.message === 'Success') {
+                                const username = data.username;
+                                utils.storage.save('username', username);
+                                usernameDisplay.textContent = username;
+                            } else {
+                                auth.handleSessionError(data.message);
+                            }
+                        })
+                        .fail(function(error) {
+                            console.error('获取用户信息失败:', error);
+                            const username = utils.storage.get('username');
+                            usernameDisplay.textContent = username || '用户';
+                        });
                 }
 
                 // 初始化显示
@@ -2432,52 +2438,52 @@
                 // 检查用户身份并显示/隐藏分配订单选项
                 function checkUserRole() {
                     $.ajax({
-                        url: API_URLS.GET_USER_INFO,
-                        method: 'GET',
-                        xhrFields: {
-                            withCredentials: true
-                        }
-                    })
-                    .done(function(data) {
-                        if (data.message === 'Success') {
-                            const isAdmin = data.label === 'admin';
-                            const isWorker = data.label === 'worker';
-                            const assignOrderLink = document.getElementById('assignOrder');
-                            const assignedOrderLink = document.getElementById('assignedOrder');
-                            
-                            if (assignOrderLink) {
-                                assignOrderLink.style.display = isAdmin ? 'block' : 'none';
+                            url: API_URLS.GET_USER_INFO,
+                            method: 'GET',
+                            xhrFields: {
+                                withCredentials: true
                             }
-                            if (assignedOrderLink) {
-                                assignedOrderLink.style.display = isWorker ? 'block' : 'none';
-                            }
+                        })
+                        .done(function(data) {
+                            if (data.message === 'Success') {
+                                const isAdmin = data.label === 'admin';
+                                const isWorker = data.label === 'worker';
+                                const assignOrderLink = document.getElementById('assignOrder');
+                                const assignedOrderLink = document.getElementById('assignedOrder');
 
-                            const orderManagementLink = document.getElementById('orderManagement');
-                            const reportOrderTab = document.querySelector('[data-tab="reportOrder"]');
-                            const orderHistoryTab = document.querySelector('[data-tab="orderHistory"]');
-
-                            if (orderManagementLink && reportOrderTab && orderHistoryTab) {
-                                // 移除对历史订单标签的隐藏
-                                orderHistoryTab.style.display = 'block';
-                                
-                                // 根据用户类型设置默认显示的标签页
-                                if (data.label === 'customer') {
-                                    reportOrderTab.classList.add('active');
-                                    document.getElementById('reportOrder').style.display = 'block';
-                                    document.getElementById('orderHistory').style.display = 'none';
-                                } else {
-                                    orderHistoryTab.classList.add('active');
-                                    document.getElementById('orderHistory').style.display = 'block';
-                                    document.getElementById('reportOrder').style.display = 'none';
+                                if (assignOrderLink) {
+                                    assignOrderLink.style.display = isAdmin ? 'block' : 'none';
                                 }
+                                if (assignedOrderLink) {
+                                    assignedOrderLink.style.display = isWorker ? 'block' : 'none';
+                                }
+
+                                const orderManagementLink = document.getElementById('orderManagement');
+                                const reportOrderTab = document.querySelector('[data-tab="reportOrder"]');
+                                const orderHistoryTab = document.querySelector('[data-tab="orderHistory"]');
+
+                                if (orderManagementLink && reportOrderTab && orderHistoryTab) {
+                                    // 移除对历史订单标签的隐藏
+                                    orderHistoryTab.style.display = 'block';
+
+                                    // 根据用户类型设置默认显示的标签页
+                                    if (data.label === 'customer') {
+                                        reportOrderTab.classList.add('active');
+                                        document.getElementById('reportOrder').style.display = 'block';
+                                        document.getElementById('orderHistory').style.display = 'none';
+                                    } else {
+                                        orderHistoryTab.classList.add('active');
+                                        document.getElementById('orderHistory').style.display = 'block';
+                                        document.getElementById('reportOrder').style.display = 'none';
+                                    }
+                                }
+                            } else {
+                                auth.handleSessionError(data.message);
                             }
-                        } else {
-                            auth.handleSessionError(data.message);
-                        }
-                    })
-                    .fail(function(error) {
-                        console.error('获取用户信息失败:', error);
-                    });
+                        })
+                        .fail(function(error) {
+                            console.error('获取用户信息失败:', error);
+                        });
                 }
 
                 // 调用检查用户角色函数
@@ -2487,46 +2493,46 @@
                 function loadAssignOrderContent() {
                     const assignOrderContent = document.getElementById('assignOrderContent');
                     $.ajax({
-                        url: 'assign_order.html',
-                        method: 'GET'
-                    })
-                    .done(function(response) {
-                        // 创建一个临时的div来解析HTML
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = response;
-                        
-                        // 提取样式
-                        const styles = tempDiv.getElementsByTagName('style');
-                        Array.from(styles).forEach(style => {
-                            document.head.appendChild(style.cloneNode(true));
+                            url: 'assign_order.html',
+                            method: 'GET'
+                        })
+                        .done(function(response) {
+                            // 创建一个临时的div来解析HTML
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = response;
+
+                            // 提取样式
+                            const styles = tempDiv.getElementsByTagName('style');
+                            Array.from(styles).forEach(style => {
+                                document.head.appendChild(style.cloneNode(true));
+                            });
+
+                            // 提取内容
+                            const container = tempDiv.querySelector('.assign-order-container');
+                            if (container) {
+                                assignOrderContent.innerHTML = container.outerHTML;
+
+                                // 手动执行脚本内容
+                                const scriptContent = tempDiv.querySelector('script:not([src])');
+                                if (scriptContent) {
+                                    const script = document.createElement('script');
+                                    script.textContent = scriptContent.textContent;
+                                    document.body.appendChild(script);
+                                }
+
+                                // 初始化页面数据
+                                if (typeof loadTodayOrders === 'function' && typeof loadTodayWorkers === 'function') {
+                                    loadTodayOrders();
+                                    loadTodayWorkers();
+                                }
+                            } else {
+                                assignOrderContent.innerHTML = '<p>加载页面内容失败</p>';
+                            }
+                        })
+                        .fail(function(error) {
+                            console.error('加载分配订单页面失败:', error);
+                            assignOrderContent.innerHTML = '<p>加载页面失败，请刷新重试</p>';
                         });
-                        
-                        // 提取内容
-                        const container = tempDiv.querySelector('.assign-order-container');
-                        if (container) {
-                            assignOrderContent.innerHTML = container.outerHTML;
-                            
-                            // 手动执行脚本内容
-                            const scriptContent = tempDiv.querySelector('script:not([src])');
-                            if (scriptContent) {
-                                const script = document.createElement('script');
-                                script.textContent = scriptContent.textContent;
-                                document.body.appendChild(script);
-                            }
-                            
-                            // 初始化页面数据
-                            if (typeof loadTodayOrders === 'function' && typeof loadTodayWorkers === 'function') {
-                                loadTodayOrders();
-                                loadTodayWorkers();
-                            }
-                        } else {
-                            assignOrderContent.innerHTML = '<p>加载页面内容失败</p>';
-                        }
-                    })
-                    .fail(function(error) {
-                        console.error('加载分配订单页面失败:', error);
-                        assignOrderContent.innerHTML = '<p>加载页面失败，请刷新重试</p>';
-                    });
                 }
 
                 // 修改菜单点击事件处理
@@ -2592,32 +2598,32 @@
                     const call_date = new Date().toISOString();
 
                     $.ajax({
-                        url: API_URLS.CALL_REPORT,
-                        method: 'POST',
-                        data: JSON.stringify({
-                            userPhoneNumber,
-                            address,
-                            issue,
-                            date: preferredTime.replace(/-/g, '/'),
-                            call_date: call_date
-                        }),
-                        contentType: 'application/json',
-                        xhrFields: {
-                            withCredentials: true
-                        }
-                    })
-                    .done(function(data) {
-                        if (data.message === 'Success') {
-                            showReportMessage('报单成功！', 'success');
-                            event.target.reset();
-                        } else {
-                            auth.handleSessionError(data.message);
-                        }
-                    })
-                    .fail(function(error) {
-                        console.error('报单失败:', error);
-                        showReportMessage('报单失败，请重试', 'error');
-                    });
+                            url: API_URLS.CALL_REPORT,
+                            method: 'POST',
+                            data: JSON.stringify({
+                                userPhoneNumber,
+                                address,
+                                issue,
+                                date: preferredTime.replace(/-/g, '/'),
+                                call_date: call_date
+                            }),
+                            contentType: 'application/json',
+                            xhrFields: {
+                                withCredentials: true
+                            }
+                        })
+                        .done(function(data) {
+                            if (data.message === 'Success') {
+                                showReportMessage('报单成功！', 'success');
+                                event.target.reset();
+                            } else {
+                                auth.handleSessionError(data.message);
+                            }
+                        })
+                        .fail(function(error) {
+                            console.error('报单失败:', error);
+                            showReportMessage('报单失败，请重试', 'error');
+                        });
                 });
                 // 退出登录处理
                 const logoutBtn = document.getElementById('logoutLink');
@@ -3337,28 +3343,28 @@
                 showLoading(orderHistoryContent);
 
                 $.ajax({
-                    url: API_URLS.GET_HISTORY,
-                    method: 'GET',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                })
-                .done(function(data) {
-                    if (data.message === 'Success') {
-                        displayHistoryOrders(data.report_info);
-                    } else if (data.message === 'No history report') {
-                        showNoOrders();
-                    } else {
-                        auth.handleSessionError(data.message);
-                    }
-                })
-                .fail(function(error) {
-                    console.error('获取历史订单失败:', error);
-                    showError();
-                })
-                .always(function() {
-                    hideLoading(orderHistoryContent);
-                });
+                        url: API_URLS.GET_HISTORY,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        }
+                    })
+                    .done(function(data) {
+                        if (data.message === 'Success') {
+                            displayHistoryOrders(data.report_info);
+                        } else if (data.message === 'No history report') {
+                            showNoOrders();
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    })
+                    .fail(function(error) {
+                        console.error('获取历史订单失败:', error);
+                        showError();
+                    })
+                    .always(function() {
+                        hideLoading(orderHistoryContent);
+                    });
             }
 
             // 修改 displayHistoryOrders 函数

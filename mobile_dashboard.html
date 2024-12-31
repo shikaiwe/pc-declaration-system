@@ -27,8 +27,10 @@
             padding: 0;
             min-height: 100%;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            background-attachment: fixed; /* 确保背景固定，不会随滚动条滚动 */
-            padding-bottom: 60px; /* 为底部导航栏留出空间 */
+            background-attachment: fixed;
+            /* 确保背景固定，不会随滚动条滚动 */
+            padding-bottom: 60px;
+            /* 为底部导航栏留出空间 */
             position: relative;
             box-sizing: border-box;
         }
@@ -583,13 +585,7 @@
             display: flex;
             height: 280px;
             padding: 20px 0;
-            background: linear-gradient(
-                180deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 1) 5%,
-                rgba(255, 255, 255, 1) 95%,
-                rgba(255, 255, 255, 0) 100%
-            );
+            background: linear-gradient( 180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 5%, rgba(255, 255, 255, 1) 95%, rgba(255, 255, 255, 0) 100%);
         }
         
         .swiper-container {
@@ -654,42 +650,29 @@
             .picker-container {
                 background: #1a1a1a;
             }
-            
             .picker-header {
                 background: rgba(26, 26, 26, 0.95);
                 border-bottom-color: rgba(255, 255, 255, 0.1);
             }
-            
             .picker-title {
                 color: #fff;
             }
-            
             .date-item,
             .time-item {
                 color: #999;
             }
-            
             .swiper-slide-active .date-item,
             .swiper-slide-active .time-item {
                 color: #64B5F6;
                 background: rgba(33, 150, 243, 0.15);
                 box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
             }
-            
             .picker-content {
-                background: linear-gradient(
-                    180deg,
-                    rgba(26, 26, 26, 0) 0%,
-                    rgba(26, 26, 26, 1) 5%,
-                    rgba(26, 26, 26, 1) 95%,
-                    rgba(26, 26, 26, 0) 100%
-                );
+                background: linear-gradient( 180deg, rgba(26, 26, 26, 0) 0%, rgba(26, 26, 26, 1) 5%, rgba(26, 26, 26, 1) 95%, rgba(26, 26, 26, 0) 100%);
             }
-            
             .swiper-container::before {
                 background: linear-gradient(to bottom, rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0));
             }
-            
             .swiper-container::after {
                 background: linear-gradient(to top, rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0));
             }
@@ -1016,7 +999,7 @@
             background-color: #6c757d;
             color: #fff;
         }
-        /* 问题描述输入框样式 */
+        /* 文本输入区域 */
         
         .tab-content textarea {
             width: 100%;
@@ -1042,7 +1025,7 @@
             border-color: #2196F3;
             box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
         }
-        /* 禁止滚动时的样式 */
+        /* 模态框打开时的页面状态 */
         
         body.modal-open {
             overflow: hidden;
@@ -1050,9 +1033,9 @@
             width: 100%;
             height: 100%;
             padding-right: 15px;
-            /* 防止滚动条消失导致页面抖动 */
+            /* 补偿滚动条宽度 */
         }
-        /* 订单卡片样式 */
+        /* 订单列表容器 */
         
         .orders-container {
             padding: 15px;
@@ -1178,10 +1161,9 @@
         .retry-button:hover {
             background-color: #1976D2;
         }
-
         /* 在现有的 style 标签内添加以下样式 */
-
         /* 禁用文本选择 */
+        
         .datetime-picker,
         .datetime-picker *,
         .date-item,
@@ -1192,31 +1174,32 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-
         /* 禁用输入框的点击高亮 */
+        
         #preferredTime {
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
-
         /* 修改日期和时间项的点击效果 */
+        
         .date-item,
         .time-item {
             -webkit-touch-callout: none;
             cursor: pointer;
             outline: none;
         }
-
         /* 修改日期和时间项的激活状态样式 */
+        
         .date-item:active,
         .time-item:active {
             background: rgba(33, 150, 243, 0.1);
             transform: scale(0.98);
         }
-
         /* 确保内容区域不会被底部导航栏遮挡 */
+        
         .content-wrapper {
-            padding-bottom: 60px; /* 与底部导航栏高度相同 */
+            padding-bottom: 60px;
+            /* 与底部导航栏高度相同 */
         }
     </style>
 </head>
@@ -1526,7 +1509,7 @@
                     const messageModal = document.getElementById('messageModal');
                     const messageText = document.getElementById('messageText');
                     const confirmButton = document.getElementById('messageConfirm');
-                    
+
                     if (!messageModal || !messageText || !confirmButton) return;
 
                     messageText.textContent = message;
@@ -1624,122 +1607,125 @@
 
         // 订单管理模块
         const orderManager = {
-            getStatusInfo: (status) => {
-                const statusMap = {
-                    '0': {
-                        text: '待分配',
-                        class: 'status-pending'
-                    },
-                    '1': {
-                        text: '已分配',
-                        class: 'status-allocated'
-                    },
-                    '2': {
-                        text: '已完成',
-                        class: 'status-completed'
-                    },
-                    '3': {
-                        text: '已撤单',
-                        class: 'status-cancelled'
-                    }
-                };
-                return statusMap[status] || {
-                    text: '未知状态',
-                    class: 'status-unknown'
-                };
-            },
+                getStatusInfo: (status) => {
+                    const statusMap = {
+                        '0': {
+                            text: '待分配',
+                            class: 'status-pending'
+                        },
+                        '1': {
+                            text: '已分配',
+                            class: 'status-allocated'
+                        },
+                        '2': {
+                            text: '已完成',
+                            class: 'status-completed'
+                        },
+                        '3': {
+                            text: '已撤单',
+                            class: 'status-cancelled'
+                        }
+                    };
+                    return statusMap[status] || {
+                        text: '未知状态',
+                        class: 'status-unknown'
+                    };
+                },
 
-            submitOrder: function(formData) {
-                utils.ui.showLoading(true);
-                $.ajax({
-                    url: API_URLS.REPORT,
-                    method: 'POST',
-                    data: JSON.stringify(formData),
-                    contentType: 'application/json',
-                    xhrFields: {
-                        withCredentials: true
-                    },
-                    success: function(data) {
-                        utils.ui.showLoading(false);
-                        if (data.message === 'Success') {
-                            utils.ui.showMessage('报单提交成功', 'success');
-                            document.getElementById('newOrderForm').reset();
-                            if (document.getElementById('orderHistory').style.display === 'block') {
-                                orderManager.fetchHistoryOrders();
+                submitOrder: function(formData) {
+                    utils.ui.showLoading(true);
+                    $.ajax({
+                        url: API_URLS.REPORT,
+                        method: 'POST',
+                        data: JSON.stringify(formData),
+                        contentType: 'application/json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(data) {
+                            utils.ui.showLoading(false);
+                            if (data.message === 'Success') {
+                                utils.ui.showMessage('报单提交成功', 'success');
+                                document.getElementById('newOrderForm').reset();
+                                if (document.getElementById('orderHistory').style.display === 'block') {
+                                    orderManager.fetchHistoryOrders();
+                                }
+                            } else {
+                                auth.handleSessionError(data.message);
                             }
-                        } else {
-                            auth.handleSessionError(data.message);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('报单提交失败:', error);
+                            utils.ui.showMessage('报单提交失败，请重试');
+                            utils.ui.showLoading(false);
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('报单提交失败:', error);
-                        utils.ui.showMessage('报单提交失败，请重试');
-                        utils.ui.showLoading(false);
-                    }
-                });
-            },
+                    });
+                },
 
-            fetchHistoryOrders: function() {
-                utils.ui.showLoading(true);
-                $.ajax({
-                    url: API_URLS.GET_HISTORY,
-                    method: 'GET',
-                    xhrFields: {
-                        withCredentials: true
-                    },
-                    success: function(data) {
-                        utils.ui.showLoading(false);
-                        if (data.message === 'Success') {
-                            orderManager.displayHistoryOrders(data.report_info);
-                        } else if (data.message === 'No history report') {
-                            orderManager.showNoOrders('orderHistory', '暂无历史订单');
-                        } else {
-                            auth.handleSessionError(data.message);
+                fetchHistoryOrders: function() {
+                    utils.ui.showLoading(true);
+                    $.ajax({
+                        url: API_URLS.GET_HISTORY,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(data) {
+                            utils.ui.showLoading(false);
+                            if (data.message === 'Success') {
+                                orderManager.displayHistoryOrders(data.report_info);
+                            } else if (data.message === 'No history report') {
+                                orderManager.showNoOrders('orderHistory', '暂无历史订单');
+                            } else {
+                                auth.handleSessionError(data.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('获取历史订单失败:', error);
+                            orderManager.showError('orderHistory', '获取历史订单失败');
+                            utils.ui.showLoading(false);
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('获取历史订单失败:', error);
-                        orderManager.showError('orderHistory', '获取历史订单失败');
-                        utils.ui.showLoading(false);
-                    }
-                });
-            },
+                    });
+                },
 
-            fetchPendingOrders: function() {
-                utils.ui.showLoading(true);
-                $.ajax({
-                    url: API_URLS.GET_REPORT_LIST,
-                    method: 'GET',
-                    xhrFields: {
-                        withCredentials: true
-                    },
-                    success: function(data) {
-                        utils.ui.showLoading(false);
-                        if (data.message === 'Success') {
-                            orderManager.displayPendingOrders(data.report_info);
-                        } else if (data.message === 'No my report') {
-                            orderManager.showNoOrders('newOrder', '暂无待分配订单');
-                        } else {
-                            auth.handleSessionError(data.message);
+                fetchPendingOrders: function() {
+                    utils.ui.showLoading(true);
+                    $.ajax({
+                        url: API_URLS.GET_REPORT_LIST,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(data) {
+                            utils.ui.showLoading(false);
+                            if (data.message === 'Success') {
+                                orderManager.displayPendingOrders(data.report_info);
+                            } else if (data.message === 'No my report') {
+                                orderManager.showNoOrders('newOrder', '暂无待分配订单');
+                            } else {
+                                auth.handleSessionError(data.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('获取待分配订单失败:', error);
+                            orderManager.showError('newOrder', '获取待分配订单失败');
+                            utils.ui.showLoading(false);
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('获取待分配订单失败:', error);
-                        orderManager.showError('newOrder', '获取待分配订单失败');
-                        utils.ui.showLoading(false);
-                    }
-                });
-            },
+                    });
+                },
 
-            displayHistoryOrders: function(orders) {
-                const historyContent = document.getElementById('orderHistory');
-                if (!historyContent) return;
+                displayHistoryOrders: function(orders) {
+                        const historyContent = document.getElementById('orderHistory');
+                        if (!historyContent) return;
 
-                const ordersHTML = orders.map(order => {
-                    const { text: statusText, class: statusClass } = orderManager.getStatusInfo(order.status);
-                    const showButtons = ['0', '1'].includes(order.status);
+                        const ordersHTML = orders.map(order => {
+                                    const {
+                                        text: statusText,
+                                        class: statusClass
+                                    } = orderManager.getStatusInfo(order.status);
+                                    const showButtons = ['0', '1'].includes(order.status);
 
-                    return `
+                                    return `
                         <div class="order-card">
                             <div class="order-info">
                                 ${order.reportId ? `
@@ -2964,53 +2950,52 @@
 
             // 加载分配订单页面内容
             const loadAssignOrderContent = function() {
+                // 显示加载指示器
                 utils.ui.showLoading(true);
+                
+                // 通过AJAX请求加载assign_order.html的内容
                 $.ajax({
                     url: 'assign_order.html',
                     method: 'GET',
                     success: function(html) {
                         try {
+                            // 创建临时div用于解析HTML内容
                             const tempDiv = document.createElement('div');
                             tempDiv.innerHTML = html;
                             
-                            // 提取 style 标签并检查是否已存在
+                            // 提取并处理样式标签
+                            // 检查是否已存在相同的样式，避免重复添加
                             const styles = tempDiv.getElementsByTagName('style');
                             for (let style of styles) {
                                 const styleContent = style.textContent;
-                                // 检查是否已存在相同的样式
-                                const existingStyle = Array.from(document.getElementsByTagName('style')).find(s => s.textContent === styleContent);
+                                const existingStyle = Array.from(document.getElementsByTagName('style'))
+                                    .find(s => s.textContent === styleContent);
                                 if (!existingStyle) {
                                     document.head.appendChild(style.cloneNode(true));
                                 }
                             }
                             
-                            // 提取主要内容
+                            // 提取assign-order-container的内容
                             const content = tempDiv.querySelector('.assign-order-container');
                             const assignOrderContent = document.getElementById('assignOrderContent');
                             
+                            // 验证目标容器
                             if (!assignOrderContent) {
                                 throw new Error('找不到assignOrderContent元素');
                             }
                             
+                            // 更新容器内容
                             if (content) {
                                 assignOrderContent.innerHTML = content.outerHTML;
-                                
-                                // 确保所有必要的元素都存在
-                                const requiredElements = ['assignOrderForm', 'reportId', 'workerName'];
-                                const missingElements = requiredElements.filter(id => !document.getElementById(id));
-                                
-                                if (missingElements.length > 0) {
-                                    throw new Error(`缺少必要的元素: ${missingElements.join(', ')}`);
-                                }
-                                
-                                // 初始化分配订单页面的功能
-                                initAssignOrderPage();
                             } else {
                                 throw new Error('找不到assign-order-container元素');
                             }
                         } catch (error) {
-                            console.error('处理分配订单页面内容时出错:', error);
-                            utils.ui.showMessage('加载分配订单页面内容失败，请重试');
+                            // 错误处理
+                            console.error('分配订单页面加载失败:', error);
+                            utils.ui.showMessage('加载失败，请重试');
+                            
+                            // 显示错误界面
                             if (document.getElementById('assignOrderContent')) {
                                 document.getElementById('assignOrderContent').innerHTML = `
                                     <div class="error-message">
@@ -3021,11 +3006,15 @@
                                 `;
                             }
                         }
+                        // 结束加载状态
                         utils.ui.showLoading(false);
                     },
                     error: function(xhr, status, error) {
-                        console.error('加载分配订单页面失败:', error);
-                        utils.ui.showMessage('加载分配订单页面失败，请重试');
+                        // AJAX错误处理
+                        console.error('请求失败:', error);
+                        utils.ui.showMessage('加载失败，请重试');
+                        
+                        // 显示错误界面
                         if (document.getElementById('assignOrderContent')) {
                             document.getElementById('assignOrderContent').innerHTML = `
                                 <div class="error-message">
@@ -3035,186 +3024,11 @@
                                 </div>
                             `;
                         }
+                        // 隐藏加载指示器
                         utils.ui.showLoading(false);
                     }
                 });
             };
-
-            // 添加分配订单页面的初始化函数
-            function initAssignOrderPage() {
-                const API_URL = 'https://8.134.178.71/api/dashboard/assign_order/';
-                const ORDERS_API_URL = 'https://8.134.178.71/api/dashboard/user_get_history_report/';
-                const WORKERS_API_URL = 'https://8.134.178.71/api/dashboard/today_workers/';
-                
-                const form = document.getElementById('assignOrderForm');
-                const messageDiv = document.getElementById('assignOrderMessage');
-                const loadingDiv = document.getElementById('assignOrderLoading');
-                const submitBtn = document.getElementById('assignOrderSubmitBtn');
-                const reportSelect = document.getElementById('reportId');
-                const workerSelect = document.getElementById('workerName');
-
-                if (!form || !messageDiv || !loadingDiv || !submitBtn || !reportSelect || !workerSelect) {
-                    console.error('分配订单页面元素未找到');
-                    return;
-                }
-
-                // 显示消息
-                function showMessage(text, type) {
-                    messageDiv.textContent = text;
-                    messageDiv.className = `assign-order-message ${type}`;
-                    messageDiv.style.display = 'block';
-                    setTimeout(() => {
-                        messageDiv.style.display = 'none';
-                    }, 3000);
-                }
-
-                // 加载今日订单
-                function loadTodayOrders() {
-                    utils.ui.showLoading(true);
-                    $.ajax({
-                        url: ORDERS_API_URL,
-                        method: 'GET',
-                        xhrFields: {
-                            withCredentials: true
-                        },
-                        success: function(data) {
-                            if (data.message === 'Success' && Array.isArray(data.report_info)) {
-                                reportSelect.innerHTML = '<option value="">请选择订单</option>';
-
-                                const today = new Date().toISOString().split('T')[0];
-                                const todayOrders = data.report_info.filter(order =>
-                                    order.date.startsWith(today) && order.status === '0'
-                                );
-
-                                if (todayOrders.length === 0) {
-                                    const option = document.createElement('option');
-                                    option.value = "";
-                                    option.textContent = "今日没有待分配的订单";
-                                    option.disabled = true;
-                                    reportSelect.appendChild(option);
-                                } else {
-                                    todayOrders.forEach(order => {
-                                        const option = document.createElement('option');
-                                        option.value = order.reportId;
-                                        option.textContent = `订单号: ${order.reportId} - 电话: ${order.userPhoneNumber} - 地址: ${order.address}`;
-                                        reportSelect.appendChild(option);
-                                    });
-                                }
-                            } else if (data.message === 'No history report') {
-                                const option = document.createElement('option');
-                                option.value = "";
-                                option.textContent = "没有任何订单记录";
-                                option.disabled = true;
-                                reportSelect.appendChild(option);
-                            } else {
-                                auth.handleSessionError(data.message);
-                            }
-                            utils.ui.showLoading(false);
-                        },
-                        error: function(error) {
-                            console.error('加载订单失败:', error);
-                            showMessage('加载订单失败，请刷新页面重试', 'error');
-                            utils.ui.showLoading(false);
-                        }
-                    });
-                }
-
-                // 加载今日值班人员
-                function loadTodayWorkers() {
-                    utils.ui.showLoading(true);
-                    $.ajax({
-                        url: WORKERS_API_URL,
-                        method: 'GET',
-                        xhrFields: {
-                            withCredentials: true
-                        },
-                        success: function(data) {
-                            if (data.message === 'Success' && Array.isArray(data.workers)) {
-                                workerSelect.innerHTML = '<option value="">请选择志愿者</option>';
-                                data.workers.forEach(worker => {
-                                    const option = document.createElement('option');
-                                    option.value = worker.username;
-                                    option.textContent = worker.username;
-                                    workerSelect.appendChild(option);
-                                });
-                            } else {
-                                auth.handleSessionError(data.message);
-                            }
-                            utils.ui.showLoading(false);
-                        },
-                        error: function(error) {
-                            console.error('加载值班人员失败:', error);
-                            showMessage('加载值班人员失败，请刷新页面重试', 'error');
-                            utils.ui.showLoading(false);
-                        }
-                    });
-                }
-
-                // 加载数据
-                loadTodayOrders();
-                loadTodayWorkers();
-
-                // 表单提交处理
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-
-                    const reportId = reportSelect.value.trim();
-                    const workerName = workerSelect.value.trim();
-
-                    if (!reportId || !workerName) {
-                        showMessage('请填写所有必填字段', 'error');
-                        return;
-                    }
-
-                    loadingDiv.style.display = 'block';
-                    submitBtn.disabled = true;
-
-                    $.ajax({
-                        url: API_URL,
-                        method: 'POST',
-                        data: JSON.stringify({
-                            reportId,
-                            workerName
-                        }),
-                        contentType: 'application/json',
-                        xhrFields: {
-                            withCredentials: true
-                        },
-                        success: function(data) {
-                            if (data.message === 'Success') {
-                                showMessage('订单分配成功', 'success');
-                                form.reset();
-                                loadTodayOrders(); // 重新加载订单列表
-                            } else {
-                                switch (data.message) {
-                                    case 'Permission error':
-                                        showMessage('权限错误，无法分配订单', 'error');
-                                        break;
-                                    case 'This worker is no exist':
-                                        showMessage('指定的志愿者不存在', 'error');
-                                        break;
-                                    case 'This report is allocated':
-                                        showMessage('该订单已被分配', 'error');
-                                        break;
-                                    case 'This report is no exist':
-                                        showMessage('该订单不存在', 'error');
-                                        break;
-                                    default:
-                                        auth.handleSessionError(data.message);
-                                }
-                            }
-                        },
-                        error: function(error) {
-                            console.error('分配订单失败:', error);
-                            showMessage('分配订单失败，请重试', 'error');
-                        },
-                        complete: function() {
-                            loadingDiv.style.display = 'none';
-                            submitBtn.disabled = false;
-                        }
-                    });
-                });
-            }
 
             // 绑定事件监听器
             const bindEvents = () => {
