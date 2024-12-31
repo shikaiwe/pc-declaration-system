@@ -221,11 +221,15 @@
                     },
                     success: function(data) {
                         if (data.message === 'Success' && Array.isArray(data.reports)) {
+                            console.log('获取到的所有订单:', data.reports);
                             reportSelect.innerHTML = '<option value="">请选择订单</option>';
 
-                            const todayOrders = data.reports.filter(order =>
-                                order.status === '0'
-                            );
+                            const todayOrders = data.reports.filter(order => {
+                                console.log('订单状态:', order.reportId, '状态:', order.status, '类型:', typeof order.status);
+                                return order.status === '0' || order.status === 0;
+                            });
+
+                            console.log('过滤后的待分配订单:', todayOrders);
 
                             if (todayOrders.length === 0) {
                                 const option = document.createElement('option');
