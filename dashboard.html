@@ -3414,6 +3414,10 @@
                     <div class="order-card" data-report-id="${order.reportId}">
                         <div class="order-info">
                             <p>
+                                <strong>订单编号：</strong>
+                                ${order.reportId || '未知'}
+                            </p>
+                            <p>
                                 <strong>手机号码：</strong>
                                 ${order.userPhoneNumber || '未知'}
                                 <span class="order-status ${statusClass}">
@@ -3566,6 +3570,10 @@
                     const formattedCallDate = formatDate(order.call_date);
 
                     orderDetailBody.innerHTML = `
+                    <div class="detail-item">
+                        <span class="detail-label">订单号：</span>
+                        <span class="detail-value">${order.reportId}</span>
+                    </div>
                     <div class="detail-item">
                         <span class="detail-label">订单状态：</span>
                         <span class="detail-value">
