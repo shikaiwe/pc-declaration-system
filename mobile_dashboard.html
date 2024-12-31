@@ -1783,9 +1783,13 @@
                 const pendingContent = document.getElementById('newOrder');
                 if (!pendingContent) return;
 
-                // 保留报单表单
-                const orderForm = pendingContent.querySelector('#newOrderForm');
-                const formHTML = orderForm ? orderForm.outerHTML : '';
+                // 检查是否存在订单列表容器，如果不存在则创建
+                let ordersContainer = pendingContent.querySelector('.orders-container');
+                if (!ordersContainer) {
+                    ordersContainer = document.createElement('div');
+                    ordersContainer.className = 'orders-container';
+                    pendingContent.appendChild(ordersContainer);
+                }
 
                 const ordersHTML = orders.map(order => {
                     const { text: statusText, class: statusClass } = orderManager.getStatusInfo(order.status);
@@ -1838,12 +1842,7 @@
                     `;
                 }).join('');
 
-                pendingContent.innerHTML = `
-                    ${formHTML}
-                    <div class="orders-container" style="opacity: 1;">
-                        ${ordersHTML}
-                    </div>
-                `;
+                ordersContainer.innerHTML = ordersHTML;
             },
 
             showNoOrders: function(containerId, message) {
