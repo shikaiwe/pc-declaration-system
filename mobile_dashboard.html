@@ -2137,16 +2137,19 @@
                     return;
                 }
 
-                // 确保天气数据是字符串类型
+                console.log('接收到的天气数据:', weather);
+
+                // 直接使用API返回的数据结构
                 const weatherInfo = {
-                    temperature: weather.temperature ? String(weather.temperature) : 'N/A',
-                    weather: typeof weather.weather === 'object' ? 'N/A' : (weather.weather || 'N/A'),
-                    humidity: weather.humidity ? String(weather.humidity) : 'N/A',
+                    temperature: weather.temperature || 'N/A',
+                    weather: weather.weather || 'N/A',
+                    humidity: weather.humidity || 'N/A',
                     winddirection: weather.winddirection || 'N/A',
-                    windpower: weather.windpower || 'N/A'
+                    windpower: weather.windpower || 'N/A',
+                    updatetime: weather.updatetime
                 };
 
-                console.log('处理后的天气信息:', weatherInfo);
+                console.log('格式化后的天气信息:', weatherInfo);
 
                 const weatherContent = `
                     <div class="weather-content">
@@ -2178,10 +2181,10 @@
                                 <span>风力：${weatherInfo.windpower}</span>
                             </div>
                         </div>
-                        ${weather.updatetime ? `
+                        ${weatherInfo.updatetime ? `
                             <div class="weather-update">
                                 <span class="weather-icon">🕒</span>
-                                <span>更新：${new Date(weather.updatetime).toLocaleTimeString('zh-CN', {
+                                <span>更新：${new Date(weatherInfo.updatetime).toLocaleTimeString('zh-CN', {
                                     hour: '2-digit',
                                     minute: '2-digit'
                                 })}</span>
