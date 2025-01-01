@@ -281,6 +281,15 @@ class AssignOrder {
     constructor(container) {
         this.container = container;
         this.currentReportId = null;
+        // 将事件处理函数绑定到实例
+        this.handleClick = this.handleClick.bind(this);
+        this.handleTouchStart = this.handleTouchStart.bind(this);
+        this.handleTouchMove = this.handleTouchMove.bind(this);
+        this.handleTouchEnd = this.handleTouchEnd.bind(this);
+        this.handleCancel = this.handleCancel.bind(this);
+        this.handleConfirm = this.handleConfirm.bind(this);
+        this.handleOverlayClick = this.handleOverlayClick.bind(this);
+        this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
         this.init();
     }
 
@@ -470,84 +479,7 @@ class AssignOrder {
     }
 
     bindEvents() {
-        // 使用箭头函数绑定this上下文
-        this.handleClick = async(e) => {
-            if (e.target.classList.contains('assign-btn')) {
-                this.currentReportId = e.target.dataset.reportId;
-                this.modalOverlay.classList.add('active');
-                this.workerSelection.classList.add('active');
-                await this.loadTodayWorkers();
-            }
-        };
-
-        this.handleTouchStart = (e) => {
-            this.startY = e.touches[0].clientY;
-            this.currentY = this.startY;
-        };
-
-        this.handleTouchMove = (e) => {
-            this.currentY = e.touches[0].clientY;
-            const deltaY = this.currentY - this.startY;
-
-            if (deltaY > 0) {
-                e.preventDefault();
-                this.workerSelection.style.transform = `translateY(${deltaY}px)`;
-            }
-        };
-
-        this.handleTouchEnd = () => {
-            const deltaY = this.currentY - this.startY;
-            if (deltaY > 100) {
-                this.hideWorkerSelection();
-            } else {
-                this.workerSelection.style.transform = '';
-            }
-        };
-
-        this.handleCancel = () => {
-            this.hideWorkerSelection();
-        };
-
-        this.handleOverlayClick = () => {
-            this.hideWorkerSelection();
-        };
-
-        this.handleConfirm = async() => {
-            const workerName = this.workerSelect.value;
-
-            if (!workerName) {
-                this.showMessage('请选择工作人员');
-                return;
-            }
-
-            try {
-                const response = await $.ajax({
-                    url: API_URLS.ASSIGN_ORDER,
-                    method: 'POST',
-                    data: JSON.stringify({
-                        reportId: this.currentReportId,
-                        workerName
-                    }),
-                    contentType: 'application/json',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                });
-
-                if (response.message === 'Success') {
-                    this.showMessage('订单分配成功');
-                    this.hideWorkerSelection();
-                    await this.loadTodayOrders();
-                } else {
-                    this.handleSessionError(response.message);
-                }
-            } catch (error) {
-                console.error('分配订单失败:', error);
-                this.showMessage('分配订单失败，请重试');
-            }
-        };
-
-        // 添加事件监听器
+        // 移除箭头函数，使用已绑定的方法
         this.container.addEventListener('click', this.handleClick);
         this.workerSelection.addEventListener('touchstart', this.handleTouchStart);
         this.workerSelection.addEventListener('touchmove', this.handleTouchMove);
@@ -555,14 +487,100 @@ class AssignOrder {
         this.cancelAssign.addEventListener('click', this.handleCancel);
         this.confirmAssign.addEventListener('click', this.handleConfirm);
         this.modalOverlay.addEventListener('click', this.handleOverlayClick);
-
-        // 添加页面可见性变化监听
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && this.container.isConnected) {
-                this.loadTodayOrders();
-            }
-        });
+        document.addEventListener('visibilitychange', this.handleVisibilityChange);
     }
+
+    async handleClick(e) {
+        if (e.target.classList.contains('assign-btn')) {
+            // 防止重复点击
+            if (this.currentReportId) return;
+
+            this.currentReportId = e.target.dataset.reportId;
+            this.modalOverlay.classList.add('active');
+            this.workerSelection.classList.add('active');
+            await this.loadTodayWorkers();
+        }
+    }
+
+    handleTouchStart(e) {
+        if (!this.currentReportId) return;
+        this.startY = e.touches[0].clientY;
+        this.currentY = this.startY;
+    }
+
+    handleTouchMove(e) {
+        if (!this.currentReportId) return;
+        this.currentY = e.touches[0].clientY;
+        const deltaY = this.currentY - this.startY;
+
+        if (deltaY > 0) {
+            e.preventDefault();
+            this.workerSelection.style.transform = `translateY(${deltaY}px)`;
+        }
+    }
+
+    handleTouchEnd() {
+        if (!this.currentReportId) return;
+        const deltaY = this.currentY - this.startY;
+        if (deltaY > 100) {
+            this.hideWorkerSelection();
+        } else {
+            this.workerSelection.style.transform = '';
+        }
+    }
+
+    handleCancel() {
+        this.hideWorkerSelection();
+    }
+
+    handleOverlayClick() {
+        this.hideWorkerSelection();
+    }
+
+    handleVisibilityChange() {
+        if (document.visibilityState === 'visible' && this.container.isConnected) {
+            // 如果选择界面打开，先关闭它
+            if (this.currentReportId) {
+                this.hideWorkerSelection();
+            }
+            this.loadTodayOrders();
+        }
+    }
+
+    handleConfirm = async() => {
+        const workerName = this.workerSelect.value;
+
+        if (!workerName) {
+            this.showMessage('请选择工作人员');
+            return;
+        }
+
+        try {
+            const response = await $.ajax({
+                url: API_URLS.ASSIGN_ORDER,
+                method: 'POST',
+                data: JSON.stringify({
+                    reportId: this.currentReportId,
+                    workerName
+                }),
+                contentType: 'application/json',
+                xhrFields: {
+                    withCredentials: true
+                }
+            });
+
+            if (response.message === 'Success') {
+                this.showMessage('订单分配成功');
+                this.hideWorkerSelection();
+                await this.loadTodayOrders();
+            } else {
+                this.handleSessionError(response.message);
+            }
+        } catch (error) {
+            console.error('分配订单失败:', error);
+            this.showMessage('分配订单失败，请重试');
+        }
+    };
 
     hideWorkerSelection() {
         if (!this.modalOverlay || !this.workerSelection) return;
