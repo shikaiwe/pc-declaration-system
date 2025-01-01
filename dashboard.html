@@ -2530,16 +2530,23 @@
                         })
                         .done(function(data) {
                             if (data.message === 'Success') {
-                                const isAdmin = data.label === 'admin';
-                                const isWorker = data.label === 'worker';
                                 const assignOrderLink = document.getElementById('assignOrder');
                                 const assignedOrderLink = document.getElementById('assignedOrder');
 
-                                if (assignOrderLink) {
-                                    assignOrderLink.style.display = isAdmin ? 'block' : 'none';
-                                }
-                                if (assignedOrderLink) {
-                                    assignedOrderLink.style.display = isWorker ? 'block' : 'none';
+                                if (assignOrderLink && assignedOrderLink) {
+                                    switch (data.label) {
+                                        case 'admin':
+                                            assignOrderLink.style.display = 'block';
+                                            assignedOrderLink.style.display = 'block';
+                                            break;
+                                        case 'worker':
+                                            assignOrderLink.style.display = 'none';
+                                            assignedOrderLink.style.display = 'block';
+                                            break;
+                                        default:
+                                            assignOrderLink.style.display = 'none';
+                                            assignedOrderLink.style.display = 'none';
+                                    }
                                 }
 
                                 const orderManagementLink = document.getElementById('orderManagement');

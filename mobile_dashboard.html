@@ -2183,14 +2183,9 @@
                         ${weatherInfo.updatetime ? `
                             <div class="weather-update">
                                 <span class="weather-icon">🕒</span>
-                                <span>更新：${new Date(weatherInfo.updatetime).toLocaleString('zh-CN', {
-                                    year: 'numeric',
-                                    month: 'numeric',
-                                    day: 'numeric',
+                                <span>更新：${new Date(weatherInfo.updatetime).toLocaleTimeString('zh-CN', {
                                     hour: '2-digit',
-                                    minute: '2-digit',
-                                    second: '2-digit',
-                                    hour12: false
+                                    minute: '2-digit'
                                 })}</span>
                             </div>
                         ` : ''}
@@ -2930,7 +2925,7 @@
                                         assignOrder.style.display = 'block';
                                     }
                                     if (assignedOrder) {
-                                        assignedOrder.style.display = 'block';
+                                        assignedOrder.style.display = 'none';
                                     }
                                     break;
                                 default:
