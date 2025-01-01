@@ -2560,6 +2560,27 @@
                                         document.getElementById('orderHistory').style.display = 'block';
                                         document.getElementById('reportOrder').style.display = 'none';
                                     }
+
+                                    // 根据用户角色显示/隐藏相应的菜单项
+                                    const assignOrderItem = document.getElementById('assignOrder');
+                                    const assignedOrderItem = document.getElementById('assignedOrder');
+
+                                    if (assignOrderItem && assignedOrderItem) {
+                                        switch (data.label) {
+                                            case 'customer':
+                                                assignOrderItem.style.display = 'none';
+                                                assignedOrderItem.style.display = 'none';
+                                                break;
+                                            case 'worker':
+                                                assignOrderItem.style.display = 'none';
+                                                assignedOrderItem.style.display = 'block';
+                                                break;
+                                            case 'admin':
+                                                assignOrderItem.style.display = 'block';
+                                                assignedOrderItem.style.display = 'block';
+                                                break;
+                                        }
+                                    }
                                 }
                             } else {
                                 auth.handleSessionError(data.message);
