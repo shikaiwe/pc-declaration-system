@@ -280,6 +280,7 @@ const template = `
 class AssignOrder {
     constructor(container) {
         this.container = container;
+        this.currentReportId = null;
         this.init();
     }
 
@@ -296,27 +297,64 @@ class AssignOrder {
         this.container.innerHTML = template;
 
         // 获取元素引用
-        this.form = document.getElementById('assignOrderForm');
-        this.reportSelect = document.getElementById('reportId');
-        this.workerSelect = document.getElementById('workerName');
         this.messageDiv = document.getElementById('assignOrderMessage');
-        this.loadingDiv = document.getElementById('assignOrderLoading');
-        this.submitBtn = document.querySelector('button[type="submit"]');
+        this.orderList = document.getElementById('orderList');
+        this.modalOverlay = document.getElementById('modalOverlay');
+        this.workerSelection = document.getElementById('workerSelection');
+        this.workerSelect = document.getElementById('workerName');
+        this.cancelAssign = document.getElementById('cancelAssign');
+        this.confirmAssign = document.getElementById('confirmAssign');
 
         // 绑定事件
         this.bindEvents();
 
         // 初始加载数据
         this.loadTodayOrders();
-        this.loadTodayWorkers();
     }
 
-    showMessage(text, type) {
+    destroy() {
+        // 移除事件监听器
+        this.container.removeEventListener('click', this.handleClick);
+        if (this.workerSelection) {
+            this.workerSelection.removeEventListener('touchstart', this.handleTouchStart);
+            this.workerSelection.removeEventListener('touchmove', this.handleTouchMove);
+            this.workerSelection.removeEventListener('touchend', this.handleTouchEnd);
+        }
+        if (this.cancelAssign) {
+            this.cancelAssign.removeEventListener('click', this.handleCancel);
+        }
+        if (this.confirmAssign) {
+            this.confirmAssign.removeEventListener('click', this.handleConfirm);
+        }
+        if (this.modalOverlay) {
+            this.modalOverlay.removeEventListener('click', this.handleOverlayClick);
+        }
+
+        // 移除样式
+        const styleSheet = document.getElementById('assign-order-styles');
+        if (styleSheet) {
+            styleSheet.remove();
+        }
+
+        // 清空容器
+        this.container.innerHTML = '';
+
+        // 重置状态
+        this.currentReportId = null;
+    }
+
+    showMessage(text, type = 'info') {
+        if (!this.messageDiv) return;
+
         this.messageDiv.textContent = text;
         this.messageDiv.className = `assign-order-message ${type}`;
         this.messageDiv.style.display = 'block';
+
+        // 自动隐藏消息
         setTimeout(() => {
-            this.messageDiv.style.display = 'none';
+            if (this.messageDiv) {
+                this.messageDiv.style.display = 'none';
+            }
         }, 3000);
     }
 
@@ -432,62 +470,50 @@ class AssignOrder {
     }
 
     bindEvents() {
-        const modalOverlay = document.getElementById('modalOverlay');
-        const workerSelection = document.getElementById('workerSelection');
-        const cancelAssign = document.getElementById('cancelAssign');
-        const confirmAssign = document.getElementById('confirmAssign');
-        let currentReportId = null;
-        let startY = 0;
-        let currentY = 0;
-
-        // 订单分配按钮点击事件
-        document.addEventListener('click', async(e) => {
+        // 使用箭头函数绑定this上下文
+        this.handleClick = async(e) => {
             if (e.target.classList.contains('assign-btn')) {
-                currentReportId = e.target.dataset.reportId;
-                modalOverlay.classList.add('active');
-                workerSelection.classList.add('active');
+                this.currentReportId = e.target.dataset.reportId;
+                this.modalOverlay.classList.add('active');
+                this.workerSelection.classList.add('active');
                 await this.loadTodayWorkers();
             }
-        });
+        };
 
-        // 添加滑动关闭功能
-        workerSelection.addEventListener('touchstart', (e) => {
-            startY = e.touches[0].clientY;
-            currentY = startY;
-        });
+        this.handleTouchStart = (e) => {
+            this.startY = e.touches[0].clientY;
+            this.currentY = this.startY;
+        };
 
-        workerSelection.addEventListener('touchmove', (e) => {
-            currentY = e.touches[0].clientY;
-            const deltaY = currentY - startY;
+        this.handleTouchMove = (e) => {
+            this.currentY = e.touches[0].clientY;
+            const deltaY = this.currentY - this.startY;
 
             if (deltaY > 0) {
                 e.preventDefault();
-                workerSelection.style.transform = `translateY(${deltaY}px)`;
+                this.workerSelection.style.transform = `translateY(${deltaY}px)`;
             }
-        });
+        };
 
-        workerSelection.addEventListener('touchend', () => {
-            const deltaY = currentY - startY;
+        this.handleTouchEnd = () => {
+            const deltaY = this.currentY - this.startY;
             if (deltaY > 100) {
                 this.hideWorkerSelection();
             } else {
-                workerSelection.style.transform = '';
+                this.workerSelection.style.transform = '';
             }
-        });
+        };
 
-        // 取消分配
-        cancelAssign.addEventListener('click', () => {
+        this.handleCancel = () => {
             this.hideWorkerSelection();
-        });
+        };
 
-        // 点击遮罩层关闭
-        modalOverlay.addEventListener('click', () => {
+        this.handleOverlayClick = () => {
             this.hideWorkerSelection();
-        });
+        };
 
-        // 确认分配
-        confirmAssign.addEventListener('click', async() => {
-            const workerName = document.getElementById('workerName').value;
+        this.handleConfirm = async() => {
+            const workerName = this.workerSelect.value;
 
             if (!workerName) {
                 this.showMessage('请选择工作人员');
@@ -499,7 +525,7 @@ class AssignOrder {
                     url: API_URLS.ASSIGN_ORDER,
                     method: 'POST',
                     data: JSON.stringify({
-                        reportId: currentReportId,
+                        reportId: this.currentReportId,
                         workerName
                     }),
                     contentType: 'application/json',
@@ -519,16 +545,32 @@ class AssignOrder {
                 console.error('分配订单失败:', error);
                 this.showMessage('分配订单失败，请重试');
             }
+        };
+
+        // 添加事件监听器
+        this.container.addEventListener('click', this.handleClick);
+        this.workerSelection.addEventListener('touchstart', this.handleTouchStart);
+        this.workerSelection.addEventListener('touchmove', this.handleTouchMove);
+        this.workerSelection.addEventListener('touchend', this.handleTouchEnd);
+        this.cancelAssign.addEventListener('click', this.handleCancel);
+        this.confirmAssign.addEventListener('click', this.handleConfirm);
+        this.modalOverlay.addEventListener('click', this.handleOverlayClick);
+
+        // 添加页面可见性变化监听
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && this.container.isConnected) {
+                this.loadTodayOrders();
+            }
         });
     }
 
     hideWorkerSelection() {
-        const modalOverlay = document.getElementById('modalOverlay');
-        const workerSelection = document.getElementById('workerSelection');
+        if (!this.modalOverlay || !this.workerSelection) return;
 
-        modalOverlay.classList.remove('active');
-        workerSelection.classList.remove('active');
-        workerSelection.style.transform = '';
+        this.modalOverlay.classList.remove('active');
+        this.workerSelection.classList.remove('active');
+        this.workerSelection.style.transform = '';
+        this.currentReportId = null;
     }
 
     // 添加日期格式化方法
