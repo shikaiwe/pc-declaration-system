@@ -14,7 +14,7 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <!-- 添加assign_order.js模块引入 -->
     <script type="module">
-        import AssignOrder from './assign_order.js'; window.AssignOrder = AssignOrder;
+        import AssignOrder from './js/assign_order.js'; window.AssignOrder = AssignOrder;
     </script>
     <style>
         /* 全局样式 */
@@ -1408,12 +1408,9 @@
             // 订单相关
             REPORT: `${CONFIG.baseUrl}/dashboard/call_report/`,
             GET_HISTORY: `${CONFIG.baseUrl}/dashboard/user_get_history_report/`,
-            ASSIGN_ORDER: `${CONFIG.baseUrl}/dashboard/assign_order/`,
             GET_REPORT_LIST: `${CONFIG.baseUrl}/dashboard/worker_get_report_list/`,
             COMPLETE_REPORT: `${CONFIG.baseUrl}/dashboard/complete_report/`,
             CANCEL_REPORT: `${CONFIG.baseUrl}/dashboard/cancel_report/`,
-            GET_REPORT_OF_SAME_DAY: `${CONFIG.baseUrl}/dashboard/get_report_of_same_day/`,
-            TODAY_WORKERS: `${CONFIG.baseUrl}/dashboard/today_workers/`,
 
             // 天气相关
             GET_CITY_AND_WEATHER: `${CONFIG.baseUrl}/unit/user_get_city_and_weather/`,

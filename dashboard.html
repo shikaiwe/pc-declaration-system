@@ -17,7 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- 添加assign_order.js模块引入 -->
     <script type="module">
-        import AssignOrder from './assign_order.js'; window.AssignOrder = AssignOrder;
+        import AssignOrder from './js/assign_order.js'; window.AssignOrder = AssignOrder;
     </script>
     <style>
         /* 全局样式 */
@@ -2191,14 +2191,10 @@
                 RENEW_PASSWORD: `${CONFIG.baseUrl}/dashboard/renew_password/`,
                 CALL_REPORT: `${CONFIG.baseUrl}/dashboard/call_report/`,
                 GET_HISTORY: `${CONFIG.baseUrl}/dashboard/user_get_history_report/`,
-                ASSIGN_ORDER: `${CONFIG.baseUrl}/dashboard/assign_order/`,
                 COMPLETE_REPORT: `${CONFIG.baseUrl}/dashboard/complete_report/`,
                 GET_CITY_AND_WEATHER: `${CONFIG.baseUrl}/unit/user_get_city_and_weather/`,
                 CANCEL_REPORT: `${CONFIG.baseUrl}/dashboard/cancel_report/`,
                 GET_WORKER_REPORTS: `${CONFIG.baseUrl}/dashboard/worker_get_report_list/`,
-                // 分配订单
-                GET_REPORT_OF_SAME_DAY: `${CONFIG.baseUrl}/dashboard/get_report_of_same_day/`,
-                TODAY_WORKERS: `${CONFIG.baseUrl}/dashboard/today_workers/`
             };
 
             // 工具函数集合
