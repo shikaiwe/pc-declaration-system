@@ -258,7 +258,7 @@ class AssignOrder {
             <div class="modal-overlay">
                 <div class="worker-selection">
                     <div class="worker-selection-header">
-                        <h3>选择维修工</h3>
+                        <h3>选择维修人员</h3>
                     </div>
                     <div class="worker-selection-body">
                         <select id="workerSelect"></select>
@@ -337,32 +337,32 @@ class AssignOrder {
                 this.updateWorkerSelect();
             } else if (data.message === 'Success' && !data.worker_info) {
                 this.workers = [];
-                this.showMessage('暂无可用维修工', 'error');
+                this.showMessage('暂无可用维修人员', 'error');
             } else {
                 this.handleSessionError(data.message);
             }
         } catch (error) {
-            console.error('加载维修工列表失败:', error);
+            console.error('加载维修人员列表失败:', error);
             this.workers = [];
-            this.showMessage('加载维修工列表失败', 'error');
+            this.showMessage('加载维修人员列表失败', 'error');
         }
     }
 
     updateWorkerSelect() {
         if (!this.workerSelect) {
-            console.error('维修工选择器元素未找到');
+            console.error('维修人员选择器元素未找到');
             return;
         }
 
         if (!Array.isArray(this.workers) || this.workers.length === 0) {
-            this.workerSelect.innerHTML = '<option value="">暂无可用维修工</option>';
+            this.workerSelect.innerHTML = '<option value="">暂无可用维修人员</option>';
             return;
         }
 
         this.workerSelect.innerHTML = this.workers
             .filter(worker => worker && worker.username)
             .map(worker => `<option value="${worker.username}">${worker.username}</option>`)
-            .join('') || '<option value="">暂无可用维修工</option>';
+            .join('') || '<option value="">暂无可用维修人员</option>';
     }
 
     renderOrders(orders) {
@@ -422,7 +422,7 @@ class AssignOrder {
 
     async handleConfirm() {
         if (!this.selectedOrderId || !this.workerSelect.value) {
-            this.showMessage('请选择维修工', 'error');
+            this.showMessage('请选择维修人员', 'error');
             return;
         }
 
