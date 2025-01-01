@@ -3286,15 +3286,38 @@
 
             utils.ui.showLoading(true);
             try {
-                assignOrderInstance = new window.AssignOrder(assignOrderContent);
-                utils.ui.showLoading(false);
+                // 添加延迟初始化
+                setTimeout(() => {
+                    try {
+                        assignOrderInstance = new window.AssignOrder(assignOrderContent);
+                        utils.ui.showLoading(false);
+                    } catch (error) {
+                        console.error('分配订单页面初始化失败:', error);
+                        assignOrderContent.innerHTML = `
+                            <div class="error-message" style="text-align: center; padding: 20px;">
+                                <i class="error-icon" style="font-size: 48px; display: block; margin-bottom: 10px;">❌</i>
+                                <p style="color: #ff4d4f; margin-bottom: 15px;">加载失败，请重试</p>
+                                <button class="retry-button" 
+                                        style="padding: 8px 20px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;"
+                                        onclick="initAssignOrder()">
+                                    重试
+                                </button>
+                            </div>
+                        `;
+                        utils.ui.showLoading(false);
+                    }
+                }, 100); // 添加100ms延迟
             } catch (error) {
                 console.error('分配订单页面初始化失败:', error);
                 assignOrderContent.innerHTML = `
-                    <div class="error-message">
-                        <i class="error-icon">❌</i>
-                        <p>加载失败，请重试</p>
-                        <button class="retry-button" onclick="initAssignOrder()">重试</button>
+                    <div class="error-message" style="text-align: center; padding: 20px;">
+                        <i class="error-icon" style="font-size: 48px; display: block; margin-bottom: 10px;">❌</i>
+                        <p style="color: #ff4d4f; margin-bottom: 15px;">加载失败，请重试</p>
+                        <button class="retry-button" 
+                                style="padding: 8px 20px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;"
+                                onclick="initAssignOrder()">
+                            重试
+                        </button>
                     </div>
                 `;
                 utils.ui.showLoading(false);
