@@ -2183,9 +2183,14 @@
                         ${weatherInfo.updatetime ? `
                             <div class="weather-update">
                                 <span class="weather-icon">🕒</span>
-                                <span>更新：${new Date(weatherInfo.updatetime).toLocaleTimeString('zh-CN', {
+                                <span>更新：${new Date(weatherInfo.updatetime).toLocaleString('zh-CN', {
+                                    year: 'numeric',
+                                    month: 'numeric',
+                                    day: 'numeric',
                                     hour: '2-digit',
-                                    minute: '2-digit'
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    hour12: false
                                 })}</span>
                             </div>
                         ` : ''}
