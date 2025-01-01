@@ -2944,32 +2944,7 @@
 
             // 加载分配订单页面内容
             const loadAssignOrderContent = function() {
-                utils.ui.showLoading(true);
-                const assignOrderContent = document.getElementById('assignOrderContent');
-                
-                if (!assignOrderContent) {
-                    console.error('找不到assignOrderContent元素');
-                    utils.ui.showLoading(false);
-                    return;
-                }
-
-                try {
-                    // 创建一个新的AssignOrder实例
-                    const assignOrder = new window.AssignOrder(assignOrderContent);
-                    utils.ui.showLoading(false);
-                } catch (error) {
-                    console.error('分配订单页面加载失败:', error);
-                    utils.ui.showMessage('加载失败，请重试');
-                    
-                    assignOrderContent.innerHTML = `
-                        <div class="error-message">
-                            <i class="error-icon">❌</i>
-                            <p>加载失败，请重试</p>
-                            <button class="retry-button" onclick="loadAssignOrderContent()">重试</button>
-                        </div>
-                    `;
-                    utils.ui.showLoading(false);
-                }
+                initAssignOrder();
             };
 
             // 绑定事件监听器
@@ -3288,6 +3263,76 @@
             // 初始化时检查手机号状态
             checkPhoneNumberStatus();
         });
+
+        // 存储AssignOrder实例
+        let assignOrderInstance = null;
+
+        // 初始化分配订单功能
+        function initAssignOrder() {
+            const assignOrderContent = document.getElementById('assignOrderContent');
+            if (assignOrderContent && !assignOrderInstance) {
+                try {
+                    assignOrderInstance = new window.AssignOrder(assignOrderContent);
+                } catch (error) {
+                    console.error('分配订单页面初始化失败:', error);
+                    assignOrderContent.innerHTML = `
+                        <div class="error-message">
+                            <i class="error-icon">❌</i>
+                            <p>加载失败，请重试</p>
+                            <button class="retry-button" onclick="initAssignOrder()">重试</button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // 销毁分配订单实例
+        function destroyAssignOrder() {
+            if (assignOrderInstance) {
+                assignOrderInstance.destroy();
+                assignOrderInstance = null;
+            }
+        }
+
+        // 监听模态框显示和隐藏
+        document.addEventListener('DOMContentLoaded', () => {
+            const assignOrderBtn = document.getElementById('assign-order');
+            if (assignOrderBtn) {
+                assignOrderBtn.addEventListener('click', () => {
+                    utils.ui.showModal('assignOrderModal');
+                    initAssignOrder();
+                });
+            }
+
+            // 监听模态框关闭
+            const closeButtons = document.querySelectorAll('.close-button');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const modal = button.closest('.modal');
+                    if (modal && modal.id === 'assignOrderModal') {
+                        utils.ui.hideModal('assignOrderModal');
+                        destroyAssignOrder();
+                    }
+                });
+            });
+
+            // 监听遮罩层点击
+            const overlay = document.getElementById('overlay');
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    const assignOrderModal = document.getElementById('assignOrderModal');
+                    if (assignOrderModal && assignOrderModal.classList.contains('show')) {
+                        utils.ui.hideModal('assignOrderModal');
+                        destroyAssignOrder();
+                    }
+                });
+            }
+        });
+
+        // 替换原来的loadAssignOrderContent函数
+        function loadAssignOrderContent() {
+            initAssignOrder();
+        }
     </script>
 </body>
 
