@@ -23,7 +23,6 @@ class AssignOrder {
             this.bindMethods();
             this.bindEvents();
             await this.loadTodayOrders();
-            await this.loadTodayWorkers();
         } catch (error) {
             console.error('初始化失败:', error);
             this.showMessage('初始化失败，请刷新页面重试', 'error');
@@ -404,10 +403,25 @@ class AssignOrder {
         });
     }
 
-    handleAssignClick(reportId) {
+    async handleAssignClick(reportId) {
         this.selectedOrderId = reportId;
-        this.modalOverlay.classList.add('active');
-        this.workerSelection.classList.add('active');
+        
+        // 显示加载中状态
+        this.showMessage('正在加载维修人员列表...', 'info');
+        
+        // 获取维修人员列表
+        try {
+            await this.loadTodayWorkers();
+            
+            // 只有在成功获取维修人员列表后才显示选择界面
+            if (Array.isArray(this.workers) && this.workers.length > 0) {
+                this.modalOverlay.classList.add('active');
+                this.workerSelection.classList.add('active');
+            }
+        } catch (error) {
+            console.error('获取维修人员列表失败:', error);
+            this.showMessage('获取维修人员列表失败，请重试', 'error');
+        }
     }
 
     handleCancel() {
