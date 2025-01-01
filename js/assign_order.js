@@ -8,35 +8,35 @@ const API_URLS = {
 // 样式定义
 const styles = `
     .assign-order-container {
-        width: 100%;
-        max-width: 800px;
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
+        padding: 15px;
+        max-width: 100%;
         margin: 0 auto;
+        background: transparent;
     }
     
     .assign-order-title {
         text-align: center;
         color: #2196F3;
         margin-bottom: 20px;
-        font-size: 1.8em;
+        font-size: 1.5em;
         font-weight: 600;
     }
     
     .order-list {
-        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
     }
     
     .order-item {
+        background: #fff;
+        border-radius: 12px;
         padding: 15px;
-        border: 1px solid #e0e0e0;
-        border-radius: 4px;
-        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #f8f9fa;
+        flex-direction: column;
+        gap: 10px;
     }
     
     .order-info {
@@ -46,81 +46,110 @@ const styles = `
     .order-id {
         font-weight: bold;
         color: #2196F3;
+        font-size: 1.1em;
+        margin-bottom: 8px;
     }
     
     .order-details {
-        margin-top: 5px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
         color: #666;
         font-size: 0.9em;
     }
     
+    .order-details-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .order-details-label {
+        color: #999;
+        min-width: 60px;
+    }
+    
     .assign-btn {
-        padding: 8px 15px;
+        width: 100%;
+        padding: 12px;
         background-color: #2196F3;
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
-        margin-left: 15px;
+        transition: background-color 0.3s ease;
+        margin-top: 8px;
     }
     
     .assign-btn:hover {
         background-color: #1976D2;
     }
     
+    .assign-btn:active {
+        transform: scale(0.98);
+    }
+    
     .worker-selection {
-        display: none;
         position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        bottom: 0;
+        left: 0;
+        right: 0;
         background: white;
         padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+        transform: translateY(100%);
+        transition: transform 0.3s ease-out;
         z-index: 1000;
-        width: 90%;
-        max-width: 400px;
     }
     
     .worker-selection.active {
-        display: block;
+        transform: translateY(0);
     }
     
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 999;
-    }
-    
-    .modal-overlay.active {
-        display: block;
+    .worker-selection h2 {
+        text-align: center;
+        color: #333;
+        font-size: 1.2em;
+        margin-bottom: 20px;
     }
     
     .worker-selection select {
         width: 100%;
-        padding: 10px;
-        margin-bottom: 15px;
+        padding: 12px;
         border: 1px solid #e0e0e0;
-        border-radius: 4px;
+        border-radius: 8px;
+        font-size: 16px;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
     }
     
     .worker-selection-buttons {
         display: flex;
-        justify-content: flex-end;
         gap: 10px;
     }
     
     .worker-selection-buttons button {
-        padding: 8px 15px;
-        border-radius: 4px;
+        flex: 1;
+        padding: 12px;
         border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .cancel-assign {
+        background-color: #f5f5f5;
+        color: #666;
     }
     
     .confirm-assign {
@@ -128,22 +157,106 @@ const styles = `
         color: white;
     }
     
-    .cancel-assign {
-        background-color: #e0e0e0;
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 999;
+    }
+    
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .assign-order-message {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        z-index: 1001;
+        display: none;
     }
     
     .no-orders {
         text-align: center;
-        padding: 20px;
+        padding: 40px 20px;
         color: #666;
-        font-style: italic;
+        background: #fff;
+        border-radius: 12px;
+        margin: 20px 0;
+    }
+    
+    .pull-indicator {
+        width: 40px;
+        height: 4px;
+        background: #ddd;
+        border-radius: 2px;
+        margin: 0 auto 15px;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        .order-item {
+            background: #333;
+        }
+        
+        .order-id {
+            color: #64B5F6;
+        }
+        
+        .order-details {
+            color: #ccc;
+        }
+        
+        .order-details-label {
+            color: #888;
+        }
+        
+        .worker-selection {
+            background: #333;
+        }
+        
+        .worker-selection h2 {
+            color: #fff;
+        }
+        
+        .worker-selection select {
+            background-color: #444;
+            border-color: #555;
+            color: #fff;
+        }
+        
+        .cancel-assign {
+            background-color: #444;
+            color: #fff;
+        }
+        
+        .no-orders {
+            background: #333;
+            color: #ccc;
+        }
+        
+        .pull-indicator {
+            background: #666;
+        }
     }
 `;
 
 // HTML模板
 const template = `
     <div class="assign-order-container">
-        <h1 class="assign-order-title">今日订单分配</h1>
+        <h1 class="assign-order-title">今日待分配订单</h1>
         <div id="assignOrderMessage" class="assign-order-message"></div>
         <div id="orderList" class="order-list">
             <!-- 订单列表将在这里动态生成 -->
@@ -152,7 +265,8 @@ const template = `
     
     <div class="modal-overlay" id="modalOverlay"></div>
     <div class="worker-selection" id="workerSelection">
-        <h2 style="margin-bottom: 15px;">选择工作人员</h2>
+        <div class="pull-indicator"></div>
+        <h2>选择工作人员</h2>
         <select id="workerName" name="workerName" required>
             <option value="">请选择工作人员</option>
         </select>
@@ -257,7 +371,22 @@ class AssignOrder {
                         <div class="order-info">
                             <div class="order-id">订单号: ${order.reportId}</div>
                             <div class="order-details">
-                                电话: ${order.userPhoneNumber} | 地址: ${order.address} | 问题: ${order.issue}
+                                <div class="order-details-item">
+                                    <span class="order-details-label">电话</span>
+                                    <span>${order.userPhoneNumber}</span>
+                                </div>
+                                <div class="order-details-item">
+                                    <span class="order-details-label">地址</span>
+                                    <span>${order.address}</span>
+                                </div>
+                                <div class="order-details-item">
+                                    <span class="order-details-label">问题</span>
+                                    <span>${order.issue}</span>
+                                </div>
+                                <div class="order-details-item">
+                                    <span class="order-details-label">预约</span>
+                                    <span>${this.formatDate(order.date)}</span>
+                                </div>
                             </div>
                         </div>
                         <button class="assign-btn" data-report-id="${order.reportId}">分配订单</button>
@@ -308,6 +437,8 @@ class AssignOrder {
         const cancelAssign = document.getElementById('cancelAssign');
         const confirmAssign = document.getElementById('confirmAssign');
         let currentReportId = null;
+        let startY = 0;
+        let currentY = 0;
 
         // 订单分配按钮点击事件
         document.addEventListener('click', async(e) => {
@@ -315,15 +446,43 @@ class AssignOrder {
                 currentReportId = e.target.dataset.reportId;
                 modalOverlay.classList.add('active');
                 workerSelection.classList.add('active');
-                await this.loadTodayWorkers(); // 加载工作人员列表
+                await this.loadTodayWorkers();
+            }
+        });
+
+        // 添加滑动关闭功能
+        workerSelection.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+            currentY = startY;
+        });
+
+        workerSelection.addEventListener('touchmove', (e) => {
+            currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+
+            if (deltaY > 0) {
+                e.preventDefault();
+                workerSelection.style.transform = `translateY(${deltaY}px)`;
+            }
+        });
+
+        workerSelection.addEventListener('touchend', () => {
+            const deltaY = currentY - startY;
+            if (deltaY > 100) {
+                this.hideWorkerSelection();
+            } else {
+                workerSelection.style.transform = '';
             }
         });
 
         // 取消分配
         cancelAssign.addEventListener('click', () => {
-            modalOverlay.classList.remove('active');
-            workerSelection.classList.remove('active');
-            currentReportId = null;
+            this.hideWorkerSelection();
+        });
+
+        // 点击遮罩层关闭
+        modalOverlay.addEventListener('click', () => {
+            this.hideWorkerSelection();
         });
 
         // 确认分配
@@ -331,7 +490,7 @@ class AssignOrder {
             const workerName = document.getElementById('workerName').value;
 
             if (!workerName) {
-                this.showMessage('请选择工作人员', 'error');
+                this.showMessage('请选择工作人员');
                 return;
             }
 
@@ -350,25 +509,41 @@ class AssignOrder {
                 });
 
                 if (response.message === 'Success') {
-                    this.showMessage('订单分配成功', 'success');
-                    modalOverlay.classList.remove('active');
-                    workerSelection.classList.remove('active');
-                    await this.loadTodayOrders(); // 重新加载订单列表
+                    this.showMessage('订单分配成功');
+                    this.hideWorkerSelection();
+                    await this.loadTodayOrders();
                 } else {
                     this.handleSessionError(response.message);
                 }
             } catch (error) {
                 console.error('分配订单失败:', error);
-                this.showMessage('分配订单失败，请重试', 'error');
+                this.showMessage('分配订单失败，请重试');
             }
         });
+    }
 
-        // 页面可见性变化时重新加载订单
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                this.loadTodayOrders();
-            }
-        });
+    hideWorkerSelection() {
+        const modalOverlay = document.getElementById('modalOverlay');
+        const workerSelection = document.getElementById('workerSelection');
+
+        modalOverlay.classList.remove('active');
+        workerSelection.classList.remove('active');
+        workerSelection.style.transform = '';
+    }
+
+    // 添加日期格式化方法
+    formatDate(dateString) {
+        try {
+            const date = new Date(dateString.replace(/-/g, '/'));
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${month}月${day}日 ${hours}:${minutes}`;
+        } catch (error) {
+            console.error('日期格式化错误:', error);
+            return dateString;
+        }
     }
 }
 
