@@ -332,22 +332,37 @@ class AssignOrder {
             });
             const data = await response.json();
 
-            if (data.message === 'Success') {
+            if (data.message === 'Success' && Array.isArray(data.worker_info)) {
                 this.workers = data.worker_info;
                 this.updateWorkerSelect();
+            } else if (data.message === 'Success' && !data.worker_info) {
+                this.workers = [];
+                this.showMessage('暂无可用维修工', 'error');
             } else {
                 this.handleSessionError(data.message);
             }
         } catch (error) {
             console.error('加载维修工列表失败:', error);
+            this.workers = [];
             this.showMessage('加载维修工列表失败', 'error');
         }
     }
 
     updateWorkerSelect() {
-        this.workerSelect.innerHTML = this.workers.map(worker => 
-            `<option value="${worker.username}">${worker.username}</option>`
-        ).join('');
+        if (!this.workerSelect) {
+            console.error('维修工选择器元素未找到');
+            return;
+        }
+
+        if (!Array.isArray(this.workers) || this.workers.length === 0) {
+            this.workerSelect.innerHTML = '<option value="">暂无可用维修工</option>';
+            return;
+        }
+
+        this.workerSelect.innerHTML = this.workers
+            .filter(worker => worker && worker.username)
+            .map(worker => `<option value="${worker.username}">${worker.username}</option>`)
+            .join('') || '<option value="">暂无可用维修工</option>';
     }
 
     renderOrders(orders) {
