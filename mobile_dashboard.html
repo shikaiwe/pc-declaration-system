@@ -2047,86 +2047,85 @@
 
         // 天气模块
         const weatherManager = {
+            // 会话错误类型
+            SESSION_ERRORS: ['Session has expired', 'Invalid session', 'No sessionid cookie'],
+
+            // 检查是否是会话错误
+            isSessionError(message) {
+                return this.SESSION_ERRORS.includes(message);
+            },
+
+            // 统一错误处理
+            handleError(error, container) {
+                console.error('操作失败:', error);
+                const errorMessage = this.isSessionError(error.message)
+                    ? '会话已过期，请重新登录'
+                    : '无法获取天气信息，请稍后重试';
+
+                if (container) {
+                    container.innerHTML = `<p>${errorMessage}</p>`;
+                }
+
+                if (this.isSessionError(error.message)) {
+                    auth.handleSessionError(error.message);
+                }
+            },
+
             async getIpFromIpSb() {
-                return new Promise((resolve, reject) => {
-                    $.ajax({
+                try {
+                    const response = await $.ajax({
                         url: 'https://api.ip.sb/jsonip',
                         dataType: 'jsonp',
-                        timeout: 5000,
-                        success: function(response) {
-                            resolve(response);
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('获取IP信息失败:', error);
-                            reject(error);
-                        }
+                        timeout: 5000
                     });
-                });
+                    
+                    if (!response || !response.ip) {
+                        throw new Error('IP数据无效');
+                    }
+                    return response;
+                } catch (error) {
+                    throw new Error('获取IP信息失败: ' + error.message);
+                }
             },
 
             async fetchWeatherAndLocation() {
                 try {
-                    // 先从 ip.sb 获取 IP 信息
+                    // 获取IP信息
                     const ipInfo = await this.getIpFromIpSb();
-                    if (!ipInfo || !ipInfo.ip) {
-                        throw new Error('无法获取IP信息');
-                    }
-
                     console.log('获取到IP信息:', ipInfo);
 
-                    // 使用获取到的 IP 获取天气信息
+                    // 获取天气信息
                     const response = await $.ajax({
                         url: API_URLS.GET_CITY_AND_WEATHER,
                         method: 'POST',
-                        data: JSON.stringify({
-                            ip: ipInfo.ip
-                        }),
+                        data: JSON.stringify({ ip: ipInfo.ip }),
                         contentType: 'application/json',
-                        xhrFields: {
-                            withCredentials: true
-                        }
+                        xhrFields: { withCredentials: true }
                     });
 
-                    console.log('原始天气API响应:', response);
+                    console.log('天气API响应:', response);
 
-                    if (response.message === 'Success' && response.weather && response.IP) {
-                        // 检查并处理天气数据
-                        const weatherData = response.weather;
-                        console.log('天气数据结构:', {
-                            weatherKeys: Object.keys(weatherData),
-                            weatherValues: Object.values(weatherData),
-                            fullWeather: weatherData
-                        });
+                    if (response.message !== 'Success') {
+                        throw new Error(response.message);
+                    }
 
-                        // 如果天气数据是字符串，尝试解析它
-                        if (typeof weatherData === 'string') {
-                            try {
-                                const parsedWeather = JSON.parse(weatherData);
-                                console.log('解析后的天气数据:', parsedWeather);
-                                this.displayWeatherInfo(parsedWeather, response.IP.city);
-                            } catch (e) {
-                                console.error('天气数据解析失败:', e);
-                                this.displayWeatherInfo(weatherData, response.IP.city);
-                            }
-                        } else {
-                            // 直接使用对象格式的天气数据
-                            this.displayWeatherInfo(weatherData, response.IP.city);
-                        }
-                    } else {
-                        console.error('天气数据格式错误:', {
-                            message: response.message,
-                            hasWeather: !!response.weather,
-                            hasIP: !!response.IP,
-                            response
-                        });
-                        document.getElementById('weather-info').innerHTML = '<p>暂时无法获取天气信息</p>';
-                        if (response.message !== 'Success') {
-                            auth.handleSessionError(response.message);
+                    if (!response.weather || !response.IP || !response.IP.city) {
+                        throw new Error('天气数据格式不完整');
+                    }
+
+                    // 处理天气数据
+                    let weatherData = response.weather;
+                    if (typeof weatherData === 'string') {
+                        try {
+                            weatherData = JSON.parse(weatherData);
+                        } catch (e) {
+                            console.error('天气数据解析失败:', e);
                         }
                     }
+
+                    this.displayWeatherInfo(weatherData, response.IP.city);
                 } catch (error) {
-                    console.error('获取天气信息时出错:', error);
-                    document.getElementById('weather-info').innerHTML = '<p>无法获取天气信息，请稍后重试</p>';
+                    this.handleError(error, document.getElementById('weather-info'));
                 }
             },
 
@@ -2137,9 +2136,7 @@
                     return;
                 }
 
-                console.log('接收到的天气数据:', weather);
-
-                // 直接使用API返回的数据结构
+                // 确保所有数据字段都存在
                 const weatherInfo = {
                     temperature: weather.temperature || 'N/A',
                     weather: weather.weather || 'N/A',
@@ -2149,7 +2146,7 @@
                     updatetime: weather.updatetime
                 };
 
-                console.log('格式化后的天气信息:', weatherInfo);
+                console.log('处理后的天气数据:', weatherInfo);
 
                 const weatherContent = `
                     <div class="weather-content">
