@@ -3272,37 +3272,32 @@
         // 初始化分配订单功能
         function initAssignOrder() {
             const assignOrderContent = document.getElementById('assignOrderContent');
-            if (assignOrderContent && !assignOrderInstance) {
-                utils.ui.showLoading(true);
-                try {
-                    // 确保先销毁旧实例
-                    destroyAssignOrder();
-                    // 创建新实例
-                    assignOrderInstance = new window.AssignOrder(assignOrderContent);
-                    utils.ui.showLoading(false);
-                } catch (error) {
-                    console.error('分配订单页面初始化失败:', error);
-                    assignOrderContent.innerHTML = `
-                        <div class="error-message">
-                            <i class="error-icon">❌</i>
-                            <p>加载失败，请重试</p>
-                            <button class="retry-button" onclick="initAssignOrder()">重试</button>
-                        </div>
-                    `;
-                    utils.ui.showLoading(false);
-                }
-            }
-        }
+            if (!assignOrderContent) return;
 
-        // 销毁分配订单实例
-        function destroyAssignOrder() {
+            // 确保先完全销毁旧实例
             if (assignOrderInstance) {
                 try {
                     assignOrderInstance.destroy();
+                    assignOrderInstance = null;
                 } catch (error) {
-                    console.error('销毁分配订单实例失败:', error);
+                    console.error('销毁旧实例失败:', error);
                 }
-                assignOrderInstance = null;
+            }
+
+            utils.ui.showLoading(true);
+            try {
+                assignOrderInstance = new window.AssignOrder(assignOrderContent);
+                utils.ui.showLoading(false);
+            } catch (error) {
+                console.error('分配订单页面初始化失败:', error);
+                assignOrderContent.innerHTML = `
+                    <div class="error-message">
+                        <i class="error-icon">❌</i>
+                        <p>加载失败，请重试</p>
+                        <button class="retry-button" onclick="initAssignOrder()">重试</button>
+                    </div>
+                `;
+                utils.ui.showLoading(false);
             }
         }
 
@@ -3323,7 +3318,10 @@
                     const modal = button.closest('.modal');
                     if (modal && modal.id === 'assignOrderModal') {
                         utils.ui.hideModal('assignOrderModal');
-                        destroyAssignOrder();
+                        if (assignOrderInstance) {
+                            assignOrderInstance.destroy();
+                            assignOrderInstance = null;
+                        }
                     }
                 });
             });
@@ -3335,7 +3333,10 @@
                     const assignOrderModal = document.getElementById('assignOrderModal');
                     if (assignOrderModal && assignOrderModal.classList.contains('show')) {
                         utils.ui.hideModal('assignOrderModal');
-                        destroyAssignOrder();
+                        if (assignOrderInstance) {
+                            assignOrderInstance.destroy();
+                            assignOrderInstance = null;
+                        }
                     }
                 });
             }

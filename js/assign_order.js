@@ -1,3 +1,136 @@
+// 添加样式
+const style = document.createElement('style');
+style.textContent = `
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+    .worker-selection {
+        position: fixed;
+        bottom: -100%;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        border-radius: 20px 20px 0 0;
+        padding: 20px;
+        z-index: 1001;
+        transition: transform 0.3s ease;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .worker-selection.active {
+        transform: translateY(-100%);
+    }
+
+    .worker-selection-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .worker-selection-header h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .worker-selection-body {
+        margin-bottom: 20px;
+    }
+
+    .worker-selection-body select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .worker-selection-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .worker-selection-footer button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    #cancelAssign {
+        background-color: #f5f5f5;
+        color: #666;
+    }
+
+    #confirmAssign {
+        background-color: #2196F3;
+        color: white;
+    }
+
+    #cancelAssign:hover {
+        background-color: #e0e0e0;
+    }
+
+    #confirmAssign:hover {
+        background-color: #1976D2;
+    }
+
+    .assign-order-message {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        z-index: 1002;
+        font-size: 16px;
+        text-align: center;
+        min-width: 200px;
+        max-width: 80%;
+        animation: messagePopup 0.3s ease;
+    }
+
+    .assign-order-message.error {
+        background-color: rgba(244, 67, 54, 0.9);
+    }
+
+    .assign-order-message.success {
+        background-color: rgba(76, 175, 80, 0.9);
+    }
+
+    @keyframes messagePopup {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -60%);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%);
+        }
+    }
+`;
+document.head.appendChild(style);
+
 // API端点配置
 const API_URLS = {
     GET_REPORT_OF_SAME_DAY: 'https://8.134.178.71/api/dashboard/get_report_of_same_day/',
@@ -281,127 +414,104 @@ class AssignOrder {
     constructor(container) {
         this.container = container;
         this.currentReportId = null;
-        // 将事件处理函数绑定到实例
+        this.startY = 0;
+        this.currentY = 0;
+        this.modalOverlay = null;
+        this.workerSelection = null;
+        this.workerSelect = null;
+        this.cancelAssign = null;
+        this.confirmAssign = null;
+        this.messageDiv = null;
+
+        this.init();
+    }
+
+    async init() {
+        try {
+            // 创建必要的 DOM 元素
+            this.createElements();
+            // 绑定事件处理器到实例
+            this.bindMethods();
+            // 绑定事件监听器
+            this.bindEvents();
+            // 加载今日订单
+            await this.loadTodayOrders();
+        } catch (error) {
+            console.error('初始化失败:', error);
+            this.showMessage('初始化失败，请刷新页面重试', 'error');
+        }
+    }
+
+    createElements() {
+        try {
+            // 创建遮罩层
+            this.modalOverlay = document.createElement('div');
+            this.modalOverlay.className = 'modal-overlay';
+            this.container.appendChild(this.modalOverlay);
+
+            // 创建消息提示div
+            this.messageDiv = document.createElement('div');
+            this.messageDiv.className = 'assign-order-message';
+            this.messageDiv.style.display = 'none';
+            this.container.appendChild(this.messageDiv);
+
+            // 创建工作人员选择面板
+            this.workerSelection = document.createElement('div');
+            this.workerSelection.className = 'worker-selection';
+            this.workerSelection.innerHTML = `
+                <div class="worker-selection-header">
+                    <h3>选择工作人员</h3>
+                </div>
+                <div class="worker-selection-body">
+                    <select id="workerSelect"></select>
+                </div>
+                <div class="worker-selection-footer">
+                    <button id="cancelAssign">取消</button>
+                    <button id="confirmAssign">确认</button>
+                </div>
+            `;
+            this.container.appendChild(this.workerSelection);
+
+            // 获取相关元素引用
+            this.workerSelect = this.workerSelection.querySelector('#workerSelect');
+            this.cancelAssign = this.workerSelection.querySelector('#cancelAssign');
+            this.confirmAssign = this.workerSelection.querySelector('#confirmAssign');
+
+            if (!this.workerSelect || !this.cancelAssign || !this.confirmAssign) {
+                throw new Error('无法获取必要的DOM元素');
+            }
+        } catch (error) {
+            console.error('创建元素失败:', error);
+            throw error;
+        }
+    }
+
+    bindMethods() {
+        // 绑定事件处理器到实例
         this.handleClick = this.handleClick.bind(this);
         this.handleTouchStart = this.handleTouchStart.bind(this);
         this.handleTouchMove = this.handleTouchMove.bind(this);
         this.handleTouchEnd = this.handleTouchEnd.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
-        this.handleConfirm = this.handleConfirm.bind(this);
         this.handleOverlayClick = this.handleOverlayClick.bind(this);
         this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
-        this.init();
-    }
-
-    init() {
-        // 添加样式
-        if (!document.getElementById('assign-order-styles')) {
-            const styleSheet = document.createElement('style');
-            styleSheet.id = 'assign-order-styles';
-            styleSheet.textContent = styles;
-            document.head.appendChild(styleSheet);
-        }
-
-        // 添加HTML
-        this.container.innerHTML = template;
-
-        // 获取元素引用
-        this.messageDiv = document.getElementById('assignOrderMessage');
-        this.orderList = document.getElementById('orderList');
-        this.modalOverlay = document.getElementById('modalOverlay');
-        this.workerSelection = document.getElementById('workerSelection');
-        this.workerSelect = document.getElementById('workerName');
-        this.cancelAssign = document.getElementById('cancelAssign');
-        this.confirmAssign = document.getElementById('confirmAssign');
-
-        // 绑定事件
-        this.bindEvents();
-
-        // 初始加载数据
-        this.loadTodayOrders();
-    }
-
-    destroy() {
-        // 移除事件监听器
-        this.container.removeEventListener('click', this.handleClick);
-        if (this.workerSelection) {
-            this.workerSelection.removeEventListener('touchstart', this.handleTouchStart);
-            this.workerSelection.removeEventListener('touchmove', this.handleTouchMove);
-            this.workerSelection.removeEventListener('touchend', this.handleTouchEnd);
-        }
-        if (this.cancelAssign) {
-            this.cancelAssign.removeEventListener('click', this.handleCancel);
-        }
-        if (this.confirmAssign) {
-            this.confirmAssign.removeEventListener('click', this.handleConfirm);
-        }
-        if (this.modalOverlay) {
-            this.modalOverlay.removeEventListener('click', this.handleOverlayClick);
-        }
-
-        // 移除样式
-        const styleSheet = document.getElementById('assign-order-styles');
-        if (styleSheet) {
-            styleSheet.remove();
-        }
-
-        // 清空容器
-        this.container.innerHTML = '';
-
-        // 重置状态
-        this.currentReportId = null;
-    }
-
-    showMessage(text, type = 'info') {
-        if (!this.messageDiv) return;
-
-        this.messageDiv.textContent = text;
-        this.messageDiv.className = `assign-order-message ${type}`;
-        this.messageDiv.style.display = 'block';
-
-        // 自动隐藏消息
-        setTimeout(() => {
-            if (this.messageDiv) {
-                this.messageDiv.style.display = 'none';
-            }
-        }, 3000);
-    }
-
-    handleSessionError(message) {
-        let errorMessage;
-        switch (message) {
-            case 'Session has expired':
-                errorMessage = '会话已过期，请重新登录';
-                break;
-            case 'Invalid session':
-                errorMessage = '无效会话，请重新登录';
-                break;
-            case 'No sessionid cookie':
-                errorMessage = '未找到会话信息，请重新登录';
-                break;
-            default:
-                errorMessage = '发生未知错误，请重新登录';
-        }
-        this.showMessage(errorMessage, 'error');
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 2000);
+        this.handleConfirm = this.handleConfirm.bind(this);
     }
 
     async loadTodayOrders() {
         try {
             const response = await $.ajax({
-                url: API_URLS.GET_REPORT_OF_SAME_DAY,
+                url: API_URLS.TODAY_ORDERS,
                 method: 'GET',
                 xhrFields: {
                     withCredentials: true
                 }
             });
 
-            if (response.message === 'Success' && Array.isArray(response.reports)) {
-                const orderList = document.getElementById('orderList');
-                orderList.innerHTML = '';
+            const orderList = this.container.querySelector('.order-list') || document.createElement('div');
+            orderList.className = 'order-list';
 
+            if (response.message === 'Success' && Array.isArray(response.reports)) {
                 const todayOrders = response.reports.filter(order =>
                     order.status === '0' || order.status === 0
                 );
@@ -431,17 +541,19 @@ class AssignOrder {
                                     <span>${order.issue}</span>
                                 </div>
                                 <div class="order-details-item">
-                                    <span class="order-details-label">预约</span>
+                                    <span class="order-details-label">预约时间</span>
                                     <span>${this.formatDate(order.date)}</span>
                                 </div>
                             </div>
+                            <button class="assign-btn" data-report-id="${order.reportId}">分配订单</button>
                         </div>
-                        <button class="assign-btn" data-report-id="${order.reportId}">分配订单</button>
                     `;
                     orderList.appendChild(orderDiv);
                 });
-            } else if (response.message === 'Permission error') {
-                this.showMessage('权限错误，无法获取订单信息', 'error');
+
+                if (!this.container.contains(orderList)) {
+                    this.container.appendChild(orderList);
+                }
             } else {
                 this.handleSessionError(response.message);
             }
@@ -479,26 +591,45 @@ class AssignOrder {
     }
 
     bindEvents() {
-        // 移除箭头函数，使用已绑定的方法
-        this.container.addEventListener('click', this.handleClick);
-        this.workerSelection.addEventListener('touchstart', this.handleTouchStart);
-        this.workerSelection.addEventListener('touchmove', this.handleTouchMove);
-        this.workerSelection.addEventListener('touchend', this.handleTouchEnd);
-        this.cancelAssign.addEventListener('click', this.handleCancel);
-        this.confirmAssign.addEventListener('click', this.handleConfirm);
-        this.modalOverlay.addEventListener('click', this.handleOverlayClick);
-        document.addEventListener('visibilitychange', this.handleVisibilityChange);
-    }
+        try {
+            // 移除旧的事件监听器
+            this.container.removeEventListener('click', this.handleClick);
+            this.workerSelection.removeEventListener('touchstart', this.handleTouchStart);
+            this.workerSelection.removeEventListener('touchmove', this.handleTouchMove);
+            this.workerSelection.removeEventListener('touchend', this.handleTouchEnd);
+            this.cancelAssign.removeEventListener('click', this.handleCancel);
+            this.confirmAssign.removeEventListener('click', this.handleConfirm);
+            this.modalOverlay.removeEventListener('click', this.handleOverlayClick);
+            document.removeEventListener('visibilitychange', this.handleVisibilityChange);
 
-    async handleClick(e) {
-        if (e.target.classList.contains('assign-btn')) {
-            // 防止重复点击
-            if (this.currentReportId) return;
+            // 添加新的事件监听器
+            this.container.addEventListener('click', async(e) => {
+                if (e.target.classList.contains('assign-btn')) {
+                    // 防止重复点击
+                    if (this.currentReportId) {
+                        this.hideWorkerSelection();
+                        return;
+                    }
 
-            this.currentReportId = e.target.dataset.reportId;
-            this.modalOverlay.classList.add('active');
-            this.workerSelection.classList.add('active');
-            await this.loadTodayWorkers();
+                    this.currentReportId = e.target.dataset.reportId;
+                    // 先加载工作人员列表
+                    await this.loadTodayWorkers();
+                    // 再显示选择面板
+                    this.modalOverlay.classList.add('active');
+                    this.workerSelection.classList.add('active');
+                }
+            });
+
+            this.workerSelection.addEventListener('touchstart', this.handleTouchStart);
+            this.workerSelection.addEventListener('touchmove', this.handleTouchMove);
+            this.workerSelection.addEventListener('touchend', this.handleTouchEnd);
+            this.cancelAssign.addEventListener('click', this.handleCancel);
+            this.confirmAssign.addEventListener('click', this.handleConfirm);
+            this.modalOverlay.addEventListener('click', this.handleOverlayClick);
+            document.addEventListener('visibilitychange', this.handleVisibilityChange);
+        } catch (error) {
+            console.error('绑定事件失败:', error);
+            throw error;
         }
     }
 
@@ -583,12 +714,21 @@ class AssignOrder {
     };
 
     hideWorkerSelection() {
-        if (!this.modalOverlay || !this.workerSelection) return;
+        try {
+            if (!this.modalOverlay || !this.workerSelection) return;
 
-        this.modalOverlay.classList.remove('active');
-        this.workerSelection.classList.remove('active');
-        this.workerSelection.style.transform = '';
-        this.currentReportId = null;
+            this.modalOverlay.classList.remove('active');
+            this.workerSelection.classList.remove('active');
+            this.workerSelection.style.transform = '';
+            this.currentReportId = null;
+
+            // 清空选择框
+            if (this.workerSelect) {
+                this.workerSelect.value = '';
+            }
+        } catch (error) {
+            console.error('隐藏选择面板失败:', error);
+        }
     }
 
     // 添加日期格式化方法
@@ -604,6 +744,87 @@ class AssignOrder {
             console.error('日期格式化错误:', error);
             return dateString;
         }
+    }
+
+    destroy() {
+        try {
+            // 移除所有事件监听器
+            this.container.removeEventListener('click', this.handleClick);
+            this.workerSelection.removeEventListener('touchstart', this.handleTouchStart);
+            this.workerSelection.removeEventListener('touchmove', this.handleTouchMove);
+            this.workerSelection.removeEventListener('touchend', this.handleTouchEnd);
+            this.cancelAssign.removeEventListener('click', this.handleCancel);
+            this.confirmAssign.removeEventListener('click', this.handleConfirm);
+            this.modalOverlay.removeEventListener('click', this.handleOverlayClick);
+            document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+
+            // 隐藏选择面板
+            this.hideWorkerSelection();
+
+            // 移除所有创建的元素
+            if (this.modalOverlay && this.modalOverlay.parentNode) {
+                this.modalOverlay.parentNode.removeChild(this.modalOverlay);
+            }
+            if (this.workerSelection && this.workerSelection.parentNode) {
+                this.workerSelection.parentNode.removeChild(this.workerSelection);
+            }
+            if (this.messageDiv && this.messageDiv.parentNode) {
+                this.messageDiv.parentNode.removeChild(this.messageDiv);
+            }
+
+            // 清除状态
+            this.currentReportId = null;
+            this.startY = 0;
+            this.currentY = 0;
+            this.modalOverlay = null;
+            this.workerSelection = null;
+            this.workerSelect = null;
+            this.cancelAssign = null;
+            this.confirmAssign = null;
+            this.messageDiv = null;
+        } catch (error) {
+            console.error('销毁实例失败:', error);
+        }
+    }
+
+    showMessage(text, type = 'info') {
+        if (!this.messageDiv) {
+            this.messageDiv = document.createElement('div');
+            this.messageDiv.className = 'assign-order-message';
+            this.container.appendChild(this.messageDiv);
+        }
+
+        this.messageDiv.textContent = text;
+        this.messageDiv.className = `assign-order-message ${type}`;
+        this.messageDiv.style.display = 'block';
+
+        // 自动隐藏消息
+        setTimeout(() => {
+            if (this.messageDiv) {
+                this.messageDiv.style.display = 'none';
+            }
+        }, 3000);
+    }
+
+    handleSessionError(message) {
+        let errorMessage;
+        switch (message) {
+            case 'Session has expired':
+                errorMessage = '会话已过期，请重新登录';
+                break;
+            case 'Invalid session':
+                errorMessage = '无效会话，请重新登录';
+                break;
+            case 'No sessionid cookie':
+                errorMessage = '未找到会话信息，请重新登录';
+                break;
+            default:
+                errorMessage = '发生未知错误，请重新登录';
+        }
+        this.showMessage(errorMessage, 'error');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 2000);
     }
 }
 

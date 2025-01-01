@@ -1986,6 +1986,142 @@
                 font-size: 0.85em;
             }
         }
+        /* 修改样式名称避免冲突 */
+        
+        .assign-order-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1010;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .assign-order-modal-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+        
+        .assign-order-worker-selection {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            z-index: 1011;
+            transition: transform 0.3s ease;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .assign-order-worker-selection.active {
+            transform: translateY(-100%);
+        }
+        
+        .assign-order-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .assign-order-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .assign-order-body {
+            margin-bottom: 20px;
+        }
+        
+        .assign-order-body select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .assign-order-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .assign-order-footer button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .assign-order-cancel {
+            background-color: #f5f5f5;
+            color: #666;
+        }
+        
+        .assign-order-confirm {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .assign-order-cancel:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .assign-order-confirm:hover {
+            background-color: #1976D2;
+        }
+        
+        .assign-order-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 1012;
+            font-size: 16px;
+            text-align: center;
+            min-width: 200px;
+            max-width: 80%;
+            display: none;
+        }
+        
+        .assign-order-message.error {
+            background-color: rgba(244, 67, 54, 0.9);
+        }
+        
+        .assign-order-message.success {
+            background-color: rgba(76, 175, 80, 0.9);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .assign-order-worker-selection {
+                background-color: #333;
+            }
+            .assign-order-header h3 {
+                color: #fff;
+            }
+            .assign-order-body select {
+                background-color: #444;
+                border-color: #555;
+                color: #fff;
+            }
+            .assign-order-cancel {
+                background-color: #444;
+                color: #fff;
+            }
+        }
     </style>
 </head>
 
@@ -2175,7 +2311,6 @@
         <div class="detail-overlay" id="detailOverlay"></div>
 
         <script>
-            alert('test');
             // 配置常量
             const CONFIG = {
                 baseUrl: 'https://8.134.178.71/api'
@@ -2196,6 +2331,7 @@
                 GET_CITY_AND_WEATHER: `${CONFIG.baseUrl}/unit/user_get_city_and_weather/`,
                 CANCEL_REPORT: `${CONFIG.baseUrl}/dashboard/cancel_report/`,
                 GET_WORKER_REPORTS: `${CONFIG.baseUrl}/dashboard/worker_get_report_list/`,
+                ASSIGN_ORDER: `${CONFIG.baseUrl}/dashboard/assign_order/`,
             };
 
             // 工具函数集合
