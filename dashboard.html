@@ -2357,14 +2357,20 @@
                             }
                         });
 
-                        console.log('天气API响应:', response); // 添加调试日志
+                        console.log('天气API响应:', response); // 调试日志
 
                         if (response.message === 'Success') {
-                            if (!response.weather || !response.IP) {
+                            if (!response.weather || !response.IP || !response.IP.city) {
                                 throw new Error('天气数据格式不正确');
                             }
                             // 更新天气显示
                             this.updateWeatherDisplay(response.IP, response.weather);
+                        } else if (response.message === 'Session has expired') {
+                            auth.handleSessionError('会话已过期');
+                        } else if (response.message === 'Invalid session') {
+                            auth.handleSessionError('无效的会话');
+                        } else if (response.message === 'No sessionid cookie') {
+                            auth.handleSessionError('未找到会话信息');
                         } else {
                             auth.handleSessionError(response.message);
                         }
@@ -2383,24 +2389,19 @@
                     const weatherInfoElement = document.getElementById('weatherInfo');
 
                     // 添加数据验证
-                    if (!weatherData || !ipInfo) {
+                    if (!weatherData || !ipInfo || !ipInfo.city) {
                         weatherInfoElement.innerHTML = '<div class="weather-error">天气数据不完整</div>';
                         return;
                     }
 
-                    // 确保所有必需的天气数据字段都存在
-                    const defaultWeather = {
-                        temperature: '未知',
-                        weather: '未知',
-                        humidity: '未知',
-                        winddirection: '未知',
-                        windpower: '未知',
-                        updatetime: '未知'
-                    };
-
-                    // 合并默认值和实际数据
-                    const weather = {...defaultWeather,
-                        ...weatherData
+                    // 确保所有必需的天气数据字段都存在并正确处理
+                    const weather = {
+                        weather: weatherData.weather ? weatherData.weather.weather || '未知' : '未知',
+                        temperature: weatherData.weather ? weatherData.weather.temperature || '未知' : '未知',
+                        winddirection: weatherData.weather ? weatherData.weather.winddirection || '未知' : '未知',
+                        windpower: weatherData.weather ? weatherData.weather.windpower || '未知' : '未知',
+                        humidity: weatherData.weather ? weatherData.weather.humidity || '未知' : '未知',
+                        updatetime: weatherData.weather ? weatherData.weather.updatetime || '未知' : '未知'
                     };
 
                     weatherInfoElement.innerHTML = `
@@ -2408,7 +2409,7 @@
                             <div class="weather-main">
                                 <div class="weather-location">
                                     <span class="weather-icon">📍</span>
-                                    ${ipInfo.city || '未知城市'}
+                                    ${ipInfo.city}
                                 </div>
                                 <div class="weather-temp">
                                     <span class="weather-icon">🌡️</span>
