@@ -2114,7 +2114,7 @@
                     }
 
                     // 处理天气数据
-                    let weatherData = response.weather;
+                    let weatherData = response.weather.weather;  // 获取嵌套的weather对象
                     if (typeof weatherData === 'string') {
                         try {
                             weatherData = JSON.parse(weatherData);
@@ -2123,7 +2123,9 @@
                         }
                     }
 
-                    this.displayWeatherInfo(weatherData, response.IP.city);
+                    // 解码城市名称（处理Unicode编码）
+                    const cityName = decodeURIComponent(JSON.parse('"' + response.IP.city + '"'));
+                    this.displayWeatherInfo(weatherData, cityName);
                 } catch (error) {
                     this.handleError(error, document.getElementById('weather-info'));
                 }
@@ -2143,7 +2145,7 @@
                     humidity: weather.humidity || 'N/A',
                     winddirection: weather.winddirection || 'N/A',
                     windpower: weather.windpower || 'N/A',
-                    updatetime: weather.updatetime
+                    updatetime: weather.updateTime  // 注意这里的大写T
                 };
 
                 console.log('处理后的天气数据:', weatherInfo);
