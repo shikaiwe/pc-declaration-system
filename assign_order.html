@@ -168,9 +168,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://8.134.178.71/api/dashboard/assign_order/';
-        const ORDERS_API_URL = 'https://8.134.178.71/api/dashboard/get_report_of_same_day/';
-        const WORKERS_API_URL = 'https://8.134.178.71/api/dashboard/today_workers/';
+        // 使用父页面中定义的 API_URLS 对象
         const form = document.getElementById('assignOrderForm');
         const messageDiv = document.getElementById('assignOrderMessage');
         const loadingDiv = document.getElementById('assignOrderLoading');
@@ -214,7 +212,7 @@
         async function loadTodayOrders() {
             try {
                 $.ajax({
-                    url: ORDERS_API_URL,
+                    url: window.parent.API_URLS.GET_REPORT_OF_SAME_DAY,
                     method: 'GET',
                     xhrFields: {
                         withCredentials: true
@@ -266,7 +264,7 @@
         async function loadTodayWorkers() {
             try {
                 $.ajax({
-                    url: WORKERS_API_URL,
+                    url: window.parent.API_URLS.TODAY_WORKERS,
                     method: 'GET',
                     xhrFields: {
                         withCredentials: true
@@ -324,7 +322,7 @@
             submitBtn.disabled = true;
 
             $.ajax({
-                url: API_URL,
+                url: window.parent.API_URLS.ASSIGN_ORDER,
                 method: 'POST',
                 data: JSON.stringify({
                     reportId,
