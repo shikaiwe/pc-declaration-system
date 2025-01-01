@@ -2401,7 +2401,7 @@
                         winddirection: weatherData.weather ? weatherData.weather.winddirection || '未知' : '未知',
                         windpower: weatherData.weather ? weatherData.weather.windpower || '未知' : '未知',
                         humidity: weatherData.weather ? weatherData.weather.humidity || '未知' : '未知',
-                        updatetime: weatherData.weather ? weatherData.weather.updatetime || '未知' : '未知'
+                        updateTime: weatherData.weather ? weatherData.weather.updateTime || '未知' : '未知'
                     };
 
                     weatherInfoElement.innerHTML = `
@@ -2436,7 +2436,7 @@
                             </div>
                             <div class="weather-update">
                                 <span class="weather-icon">🕒</span>
-                                <span>更新：${weather.updatetime}</span>
+                                <span>更新时间：${weather.updateTime}</span>
                             </div>
                         </div>
                     `;

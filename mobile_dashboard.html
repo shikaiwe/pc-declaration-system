@@ -2112,7 +2112,16 @@
                     return;
                 }
 
-                console.log('显示天气信息:', { weather, city });
+                // 确保天气数据是字符串类型
+                const weatherInfo = {
+                    temperature: weather.temperature ? String(weather.temperature) : 'N/A',
+                    weather: typeof weather.weather === 'object' ? 'N/A' : (weather.weather || 'N/A'),
+                    humidity: weather.humidity ? String(weather.humidity) : 'N/A',
+                    winddirection: weather.winddirection || 'N/A',
+                    windpower: weather.windpower || 'N/A'
+                };
+
+                console.log('处理后的天气信息:', weatherInfo);
 
                 const weatherContent = `
                     <div class="weather-content">
@@ -2123,25 +2132,25 @@
                             </div>
                             <div class="weather-temp">
                                 <span class="weather-icon">🌡️</span>
-                                ${weather.temperature || 'N/A'}°C
+                                ${weatherInfo.temperature}°C
                             </div>
                         </div>
                         <div class="weather-info-details">
                             <div class="weather-row">
                                 <span class="weather-icon">🌤️</span>
-                                <span>天气：${weather.weather || 'N/A'}</span>
+                                <span>天气：${weatherInfo.weather}</span>
                             </div>
                             <div class="weather-row">
                                 <span class="weather-icon">💧</span>
-                                <span>湿度：${weather.humidity || 'N/A'}%</span>
+                                <span>湿度：${weatherInfo.humidity}%</span>
                             </div>
                             <div class="weather-row">
                                 <span class="weather-icon">🌪️</span>
-                                <span>风向：${weather.winddirection || 'N/A'}</span>
+                                <span>风向：${weatherInfo.winddirection}</span>
                             </div>
                             <div class="weather-row">
                                 <span class="weather-icon">💨</span>
-                                <span>风力：${weather.windpower || 'N/A'}</span>
+                                <span>风力：${weatherInfo.windpower}</span>
                             </div>
                         </div>
                         ${weather.updatetime ? `
