@@ -30,251 +30,31 @@ class AssignOrder {
     }
 
     createElements() {
-        // 添加样式
-        const style = document.createElement('style');
-        style.textContent = `
-            .assign-order-container {
-                padding: 15px;
-                max-width: 100%;
-                margin: 0 auto;
-                background: transparent;
-            }
-            
-            .assign-order-title {
-                text-align: center;
-                color: #2196F3;
-                margin-bottom: 20px;
-                font-size: 1.5em;
-                font-weight: 600;
-            }
-            
-            .order-list {
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .order-item {
-                background: #fff;
-                border-radius: 12px;
-                padding: 15px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .order-info {
-                flex: 1;
-            }
-            
-            .order-id {
-                font-weight: bold;
-                color: #2196F3;
-                font-size: 1.1em;
-                margin-bottom: 8px;
-            }
-            
-            .order-details {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                color: #666;
-                font-size: 0.9em;
-            }
-            
-            .order-details-item {
-                display: flex;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            
-            .order-details-label {
-                color: #999;
-                min-width: 60px;
-            }
-            
-            .assign-btn {
-                width: 100%;
-                padding: 12px;
-                background-color: #2196F3;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: 500;
-                cursor: pointer;
-                transition: background-color 0.3s ease;
-                margin-top: 8px;
-            }
-            
-            .assign-btn:hover {
-                background-color: #1976D2;
-            }
-            
-            .assign-btn:active {
-                transform: scale(0.98);
-            }
-            
-            .modal-overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-                z-index: 1000;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-            }
-            
-            .modal-overlay.active {
-                display: block;
-                opacity: 1;
-            }
-            
-            .worker-selection {
-                position: fixed;
-                bottom: -100%;
-                left: 0;
-                width: 100%;
-                background-color: white;
-                border-radius: 20px 20px 0 0;
-                padding: 20px;
-                z-index: 1001;
-                transition: transform 0.3s ease;
-                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-            }
-            
-            .worker-selection.active {
-                transform: translateY(-100%);
-            }
-            
-            .worker-selection-header {
-                text-align: center;
-                margin-bottom: 20px;
-            }
-            
-            .worker-selection-header h3 {
-                margin: 0;
-                font-size: 18px;
-                color: #333;
-            }
-            
-            .worker-selection-body {
-                margin-bottom: 20px;
-            }
-            
-            .worker-selection-body select {
-                width: 100%;
-                padding: 12px;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                font-size: 16px;
-                color: #333;
-            }
-            
-            .worker-selection-footer {
-                display: flex;
-                gap: 10px;
-                justify-content: flex-end;
-            }
-            
-            .worker-selection-footer button {
-                padding: 10px 20px;
-                border: none;
-                border-radius: 6px;
-                font-size: 16px;
-                cursor: pointer;
-                transition: background-color 0.3s ease;
-            }
-            
-            #cancelAssign {
-                background-color: #f5f5f5;
-                color: #666;
-            }
-            
-            #confirmAssign {
-                background-color: #2196F3;
-                color: white;
-            }
-            
-            #cancelAssign:hover {
-                background-color: #e0e0e0;
-            }
-            
-            #confirmAssign:hover {
-                background-color: #1976D2;
-            }
-            
-            .assign-order-message {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background-color: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 12px 24px;
-                border-radius: 8px;
-                z-index: 1002;
-                font-size: 16px;
-                text-align: center;
-                min-width: 200px;
-                max-width: 80%;
-                display: none;
-                animation: messagePopup 0.3s ease;
-            }
-            
-            .assign-order-message.error {
-                background-color: rgba(244, 67, 54, 0.9);
-            }
-            
-            .assign-order-message.success {
-                background-color: rgba(76, 175, 80, 0.9);
-            }
-            
-            @keyframes messagePopup {
-                from {
-                    opacity: 0;
-                    transform: translate(-50%, -60%);
-                }
-                to {
-                    opacity: 1;
-                    transform: translate(-50%, -50%);
-                }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // 创建主容器
+        // 创建基本HTML结构
         this.container.innerHTML = `
             <div class="assign-order-container">
-                <h2 class="assign-order-title">分配订单</h2>
-                <div class="order-list"></div>
-            </div>
-            <div class="modal-overlay">
-                <div class="worker-selection">
-                    <div class="worker-selection-header">
+                <div class="assign-order-list" id="orderList"></div>
+                <div class="assign-order-modal-overlay"></div>
+                <div class="assign-order-worker-selection">
+                    <div class="assign-order-header">
                         <h3>选择维修人员</h3>
                     </div>
-                    <div class="worker-selection-body">
+                    <div class="assign-order-body">
                         <select id="workerSelect"></select>
                     </div>
-                    <div class="worker-selection-footer">
-                        <button id="cancelAssign">取消</button>
-                        <button id="confirmAssign">确认</button>
+                    <div class="assign-order-footer">
+                        <button id="cancelAssign" class="assign-order-cancel">取消</button>
+                        <button id="confirmAssign" class="assign-order-confirm">确认</button>
                     </div>
                 </div>
+                <div class="assign-order-message"></div>
             </div>
-            <div class="assign-order-message"></div>
         `;
 
-        // 获取元素引用
-        this.orderList = this.container.querySelector('.order-list');
-        this.modalOverlay = this.container.querySelector('.modal-overlay');
-        this.workerSelection = this.container.querySelector('.worker-selection');
+        // 获取DOM元素引用
+        this.orderList = this.container.querySelector('#orderList');
+        this.modalOverlay = this.container.querySelector('.assign-order-modal-overlay');
+        this.workerSelection = this.container.querySelector('.assign-order-worker-selection');
         this.workerSelect = this.container.querySelector('#workerSelect');
         this.cancelButton = this.container.querySelector('#cancelAssign');
         this.confirmButton = this.container.querySelector('#confirmAssign');
