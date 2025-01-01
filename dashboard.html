@@ -2345,32 +2345,36 @@
                         }
 
                         // 获取天气信息
-                        try {
-                            const response = await $.ajax({
-                                url: API_URLS.GET_CITY_AND_WEATHER,
-                                method: 'POST',
-                                data: JSON.stringify({
-                                    ip: ipData.ip
-                                }),
-                                contentType: 'application/json',
-                                xhrFields: {
-                                    withCredentials: true
-                                }
-                            });
-
-                            if (response.message === 'Success') {
-                                // 更新天气显示
-                                this.updateWeatherDisplay(response.IP, response.weather);
-                            } else {
-                                auth.handleSessionError(response.message);
+                        const response = await $.ajax({
+                            url: API_URLS.GET_CITY_AND_WEATHER,
+                            method: 'POST',
+                            data: JSON.stringify({
+                                ip: ipData.ip
+                            }),
+                            contentType: 'application/json',
+                            xhrFields: {
+                                withCredentials: true
                             }
-                        } catch (error) {
-                            console.error('获取天气信息失败:', error);
-                            weatherInfoElement.innerHTML = '<div class="weather-error">暂无天气信息</div>';
+                        });
+
+                        console.log('天气API响应:', response); // 添加调试日志
+
+                        if (response.message === 'Success') {
+                            if (!response.weather || !response.IP) {
+                                throw new Error('天气数据格式不正确');
+                            }
+                            // 更新天气显示
+                            this.updateWeatherDisplay(response.IP, response.weather);
+                        } else {
+                            auth.handleSessionError(response.message);
                         }
                     } catch (error) {
-                        console.error('获取IP信息失败:', error);
-                        weatherInfoElement.innerHTML = '<div class="weather-error">无法获取位置信息</div>';
+                        console.error('获取天气信息失败:', error);
+                        weatherInfoElement.innerHTML = `
+                            <div class="weather-error">
+                                <p>暂无天气信息</p>
+                                <p class="error-details">${error.message}</p>
+                            </div>`;
                     }
                 },
 
@@ -2378,39 +2382,60 @@
                 updateWeatherDisplay: function(ipInfo, weatherData) {
                     const weatherInfoElement = document.getElementById('weatherInfo');
 
+                    // 添加数据验证
+                    if (!weatherData || !ipInfo) {
+                        weatherInfoElement.innerHTML = '<div class="weather-error">天气数据不完整</div>';
+                        return;
+                    }
+
+                    // 确保所有必需的天气数据字段都存在
+                    const defaultWeather = {
+                        temperature: '未知',
+                        weather: '未知',
+                        humidity: '未知',
+                        winddirection: '未知',
+                        windpower: '未知',
+                        updatetime: '未知'
+                    };
+
+                    // 合并默认值和实际数据
+                    const weather = {...defaultWeather,
+                        ...weatherData
+                    };
+
                     weatherInfoElement.innerHTML = `
                         <div class="weather-content">
                             <div class="weather-main">
                                 <div class="weather-location">
                                     <span class="weather-icon">📍</span>
-                                    ${ipInfo.city}
+                                    ${ipInfo.city || '未知城市'}
                                 </div>
                                 <div class="weather-temp">
                                     <span class="weather-icon">🌡️</span>
-                                    ${weatherData.temperature}°C
+                                    ${weather.temperature}°C
                                 </div>
                             </div>
                             <div class="weather-info-details">
                                 <div class="weather-row">
                                     <span class="weather-icon">🌤️</span>
-                                    <span>天气：${weatherData.weather}</span>
+                                    <span>天气：${weather.weather}</span>
                                 </div>
                                 <div class="weather-row">
                                     <span class="weather-icon">💧</span>
-                                    <span>湿度：${weatherData.humidity}%</span>
+                                    <span>湿度：${weather.humidity}%</span>
                                 </div>
                                 <div class="weather-row">
                                     <span class="weather-icon">🌪️</span>
-                                    <span>风向：${weatherData.winddirection}</span>
+                                    <span>风向：${weather.winddirection}</span>
                                 </div>
                                 <div class="weather-row">
                                     <span class="weather-icon">💨</span>
-                                    <span>风力：${weatherData.windpower}</span>
+                                    <span>风力：${weather.windpower}</span>
                                 </div>
                             </div>
                             <div class="weather-update">
                                 <span class="weather-icon">🕒</span>
-                                <span>更新：${weatherData.updatetime}</span>
+                                <span>更新：${weather.updatetime}</span>
                             </div>
                         </div>
                     `;
