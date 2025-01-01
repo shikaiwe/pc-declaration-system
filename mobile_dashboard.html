@@ -2087,13 +2087,38 @@
                         }
                     });
 
-                    console.log('天气API响应:', response);
+                    console.log('原始天气API响应:', response);
 
                     if (response.message === 'Success' && response.weather && response.IP) {
-                        // 显示天气信息
-                        this.displayWeatherInfo(response.weather, response.IP.city);
+                        // 检查并处理天气数据
+                        const weatherData = response.weather;
+                        console.log('天气数据结构:', {
+                            weatherKeys: Object.keys(weatherData),
+                            weatherValues: Object.values(weatherData),
+                            fullWeather: weatherData
+                        });
+
+                        // 如果天气数据是字符串，尝试解析它
+                        if (typeof weatherData === 'string') {
+                            try {
+                                const parsedWeather = JSON.parse(weatherData);
+                                console.log('解析后的天气数据:', parsedWeather);
+                                this.displayWeatherInfo(parsedWeather, response.IP.city);
+                            } catch (e) {
+                                console.error('天气数据解析失败:', e);
+                                this.displayWeatherInfo(weatherData, response.IP.city);
+                            }
+                        } else {
+                            // 直接使用对象格式的天气数据
+                            this.displayWeatherInfo(weatherData, response.IP.city);
+                        }
                     } else {
-                        console.error('天气数据格式错误:', response);
+                        console.error('天气数据格式错误:', {
+                            message: response.message,
+                            hasWeather: !!response.weather,
+                            hasIP: !!response.IP,
+                            response
+                        });
                         document.getElementById('weather-info').innerHTML = '<p>暂时无法获取天气信息</p>';
                         if (response.message !== 'Success') {
                             auth.handleSessionError(response.message);
