@@ -2613,8 +2613,13 @@
                     }
 
                     try {
+                        // 确保先销毁旧实例
+                        if (window.assignOrderInstance) {
+                            window.assignOrderInstance.destroy();
+                            window.assignOrderInstance = null;
+                        }
                         // 创建一个新的AssignOrder实例
-                        const assignOrder = new window.AssignOrder(assignOrderContent);
+                        window.assignOrderInstance = new window.AssignOrder(assignOrderContent);
                     } catch (error) {
                         console.error('分配订单页面加载失败:', error);
                         assignOrderContent.innerHTML = `
@@ -2624,6 +2629,18 @@
                                 <button class="retry-button" onclick="loadAssignOrderContent()">重试</button>
                             </div>
                         `;
+                    }
+                }
+
+                // 销毁分配订单实例
+                function destroyAssignOrder() {
+                    if (window.assignOrderInstance) {
+                        try {
+                            window.assignOrderInstance.destroy();
+                        } catch (error) {
+                            console.error('销毁分配订单实例失败:', error);
+                        }
+                        window.assignOrderInstance = null;
                     }
                 }
 
@@ -2644,9 +2661,12 @@
                             // 如果点击的是分配订单，加载其内容
                             if (item.id === 'assignOrder') {
                                 loadAssignOrderContent();
+                            } else {
+                                // 如果切换到其他页面，销毁分配订单实例
+                                destroyAssignOrder();
                             }
                             // 如果是被分配订单，加载其内容
-                            else if (item.id === 'assignedOrder') {
+                            if (item.id === 'assignedOrder') {
                                 fetchAssignedOrders();
                             }
                             // 如果是日程管理，初始化日历

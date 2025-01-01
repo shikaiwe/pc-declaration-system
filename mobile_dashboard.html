@@ -12,6 +12,7 @@
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <!-- FullCalendar 最新版本 -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- 添加assign_order.js模块引入 -->
     <script type="module">
         import AssignOrder from './js/assign_order.js'; window.AssignOrder = AssignOrder;
@@ -3274,6 +3275,9 @@
             if (assignOrderContent && !assignOrderInstance) {
                 utils.ui.showLoading(true);
                 try {
+                    // 确保先销毁旧实例
+                    destroyAssignOrder();
+                    // 创建新实例
                     assignOrderInstance = new window.AssignOrder(assignOrderContent);
                     utils.ui.showLoading(false);
                 } catch (error) {
@@ -3293,7 +3297,11 @@
         // 销毁分配订单实例
         function destroyAssignOrder() {
             if (assignOrderInstance) {
-                assignOrderInstance.destroy();
+                try {
+                    assignOrderInstance.destroy();
+                } catch (error) {
+                    console.error('销毁分配订单实例失败:', error);
+                }
                 assignOrderInstance = null;
             }
         }
