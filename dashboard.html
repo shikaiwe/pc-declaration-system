@@ -2190,7 +2190,6 @@
                 ASSIGN_ORDER: `${CONFIG.baseUrl}/dashboard/assign_order/`,
                 COMPLETE_REPORT: `${CONFIG.baseUrl}/dashboard/complete_report/`,
                 GET_CITY_AND_WEATHER: `${CONFIG.baseUrl}/unit/user_get_city_and_weather/`,
-                SAVE_IP: `${CONFIG.baseUrl}/unit/user_save_ip/`,
                 CANCEL_REPORT: `${CONFIG.baseUrl}/dashboard/cancel_report/`,
                 GET_WORKER_REPORTS: `${CONFIG.baseUrl}/dashboard/worker_get_report_list/`
             };
@@ -2345,7 +2344,7 @@
                             throw new Error('无法获取IP信息');
                         }
 
-                        // 保存IP信息到服务器并获取天气信息
+                        // 获取天气信息
                         try {
                             const response = await $.ajax({
                                 url: API_URLS.GET_CITY_AND_WEATHER,
@@ -2362,19 +2361,6 @@
                             if (response.message === 'Success') {
                                 // 更新天气显示
                                 this.updateWeatherDisplay(response.IP, response.weather);
-
-                                // 保存IP信息到服务器
-                                await $.ajax({
-                                    url: API_URLS.SAVE_IP,
-                                    method: 'POST',
-                                    data: JSON.stringify({
-                                        ip: ipData.ip
-                                    }),
-                                    contentType: 'application/json',
-                                    xhrFields: {
-                                        withCredentials: true
-                                    }
-                                });
                             } else {
                                 auth.handleSessionError(response.message);
                             }
