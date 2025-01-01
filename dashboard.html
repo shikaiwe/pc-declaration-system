@@ -1936,6 +1936,52 @@
                 height: 28px;
             }
         }
+        /* 添加上次登录天气信息样式 */
+        
+        .weather-last-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .weather-last-info .weather-row {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .weather-last-info .weather-row:last-child {
+            border-bottom: none;
+        }
+        
+        .weather-last-info .weather-icon {
+            opacity: 0.8;
+            margin-right: 8px;
+        }
+        
+        .weather-last-info span {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        /* 添加分隔线 */
+        
+        .weather-content>div:not(:last-child) {
+            margin-bottom: 15px;
+        }
+        /* 响应式调整 */
+        
+        @media (max-width: 360px) {
+            .weather-last-info {
+                padding: 10px;
+            }
+            .weather-last-info .weather-row {
+                padding: 6px 0;
+            }
+            .weather-last-info span {
+                font-size: 0.85em;
+            }
+        }
     </style>
 </head>
 
@@ -2143,7 +2189,8 @@
                 GET_HISTORY: `${CONFIG.baseUrl}/dashboard/user_get_history_report/`,
                 ASSIGN_ORDER: `${CONFIG.baseUrl}/dashboard/assign_order/`,
                 COMPLETE_REPORT: `${CONFIG.baseUrl}/dashboard/complete_report/`,
-                WEATHER_API_KEY: `${CONFIG.baseUrl}/dashboard/getWeatherApiKey/`,
+                GET_CITY_AND_WEATHER: `${CONFIG.baseUrl}/unit/user_get_city_and_weather/`,
+                SAVE_IP: `${CONFIG.baseUrl}/unit/user_save_ip/`,
                 CANCEL_REPORT: `${CONFIG.baseUrl}/dashboard/cancel_report/`,
                 GET_WORKER_REPORTS: `${CONFIG.baseUrl}/dashboard/worker_get_report_list/`
             };
@@ -2265,97 +2312,122 @@
 
             // 天气相关功能
             const weather = {
-                // 从服务器获取天气 API Key
-                getApiKeyFromServer: async function() {
-                    try {
-                        const response = await $.ajax({
-                            url: API_URLS.WEATHER_API_KEY,
-                            method: 'GET',
-                            xhrFields: {
-                                withCredentials: true
-                            }
-                        });
-                        if (response.message === 'Success') {
-                            return response.apiKey;
-                        } else {
-                            auth.handleSessionError(response.message);
-                            throw new Error('获取API Key失败');
-                        }
-                    } catch (error) {
-                        console.error('获取API Key失败:', error);
-                        throw error;
-                    }
+                // 从 ip.sb 获取 IP 信息
+                getIpInfo: function() {
+                    return new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        const callbackName = 'ipCallback_' + Math.random().toString(36).substr(2, 9);
+
+                        window[callbackName] = function(data) {
+                            document.body.removeChild(script);
+                            delete window[callbackName];
+                            resolve(data);
+                        };
+
+                        script.src = `https://api.ip.sb/jsonip?callback=${callbackName}`;
+                        script.onerror = () => {
+                            document.body.removeChild(script);
+                            delete window[callbackName];
+                            reject(new Error('获取IP信息失败'));
+                        };
+
+                        document.body.appendChild(script);
+                    });
                 },
 
                 // 获取天气信息
                 fetchWeatherAndLocation: async function() {
                     const weatherInfoElement = document.getElementById('weatherInfo');
                     try {
-                        const apiKey = await this.getApiKeyFromServer();
+                        // 获取IP信息
+                        const ipData = await this.getIpInfo();
+                        if (!ipData || !ipData.ip) {
+                            throw new Error('无法获取IP信息');
+                        }
 
-                        // 获取IP定位信息
-                        const ipData = await $.ajax({
-                            url: `https://restapi.amap.com/v3/ip?key=${apiKey}`,
-                            method: 'GET'
-                        });
-
-                        // 获取天气信息
-                        const weatherData = await $.ajax({
-                            url: `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${ipData.adcode}&extensions=base`,
-                            method: 'GET'
-                        });
-
-                        if (weatherData.status === '1' && weatherData.lives && weatherData.lives.length > 0) {
-                            const weather = weatherData.lives[0];
-                            const updateTime = new Date().toLocaleString('zh-CN', {
-                                hour12: false,
-                                hour: '2-digit',
-                                minute: '2-digit'
+                        // 保存IP信息到服务器并获取天气信息
+                        try {
+                            const response = await $.ajax({
+                                url: API_URLS.GET_CITY_AND_WEATHER,
+                                method: 'POST',
+                                data: JSON.stringify({
+                                    ip: ipData.ip
+                                }),
+                                contentType: 'application/json',
+                                xhrFields: {
+                                    withCredentials: true
+                                }
                             });
 
-                            weatherInfoElement.innerHTML = `
-                                <div class="weather-content">
-                                    <div class="weather-main">
-                                        <div class="weather-location">
-                                            <span class="weather-icon">📍</span>
-                                            ${ipData.city}
-                                        </div>
-                                        <div class="weather-temp">
-                                            <span class="weather-icon">🌡️</span>
-                                            ${weather.temperature}°C
-                                        </div>
-                                    </div>
-                                    <div class="weather-info-details">
-                                        <div class="weather-row">
-                                            <span class="weather-icon">🌤️</span>
-                                            <span>天气：${weather.weather}</span>
-                                        </div>
-                                        <div class="weather-row">
-                                            <span class="weather-icon">💧</span>
-                                            <span>湿度：${weather.humidity}%</span>
-                                        </div>
-                                        <div class="weather-row">
-                                            <span class="weather-icon">🌪️</span>
-                                            <span>风向：${weather.winddirection}</span>
-                                        </div>
-                                        <div class="weather-row">
-                                            <span class="weather-icon">💨</span>
-                                            <span>风力：${weather.windpower}级</span>
-                                        </div>
-                                    </div>
-                                    <div class="weather-update">
-                                        <span class="weather-icon">🕒</span>
-                                        <span>更新：${updateTime}</span>
-                                    </div>
-                                </div>
-                            `;
-                        } else {
-                            throw new Error('无法获取天气数据');
+                            if (response.message === 'Success') {
+                                // 更新天气显示
+                                this.updateWeatherDisplay(response.IP, response.weather);
+
+                                // 保存IP信息到服务器
+                                await $.ajax({
+                                    url: API_URLS.SAVE_IP,
+                                    method: 'POST',
+                                    data: JSON.stringify({
+                                        ip: ipData.ip
+                                    }),
+                                    contentType: 'application/json',
+                                    xhrFields: {
+                                        withCredentials: true
+                                    }
+                                });
+                            } else {
+                                auth.handleSessionError(response.message);
+                            }
+                        } catch (error) {
+                            console.error('获取天气信息失败:', error);
+                            weatherInfoElement.innerHTML = '<div class="weather-error">暂无天气信息</div>';
                         }
                     } catch (error) {
-                        console.error('获取天气信息失败:', error);
-                        weatherInfoElement.innerHTML = '<div class="weather-error">无法获取天气信息</div>';
+                        console.error('获取IP信息失败:', error);
+                        weatherInfoElement.innerHTML = '<div class="weather-error">无法获取位置信息</div>';
                     }
+                },
+
+                // 更新天气显示
+                updateWeatherDisplay: function(ipInfo, weatherData) {
+                    const weatherInfoElement = document.getElementById('weatherInfo');
+
+                    weatherInfoElement.innerHTML = `
+                        <div class="weather-content">
+                            <div class="weather-main">
+                                <div class="weather-location">
+                                    <span class="weather-icon">📍</span>
+                                    ${ipInfo.city}
+                                </div>
+                                <div class="weather-temp">
+                                    <span class="weather-icon">🌡️</span>
+                                    ${weatherData.temperature}°C
+                                </div>
+                            </div>
+                            <div class="weather-info-details">
+                                <div class="weather-row">
+                                    <span class="weather-icon">🌤️</span>
+                                    <span>天气：${weatherData.weather}</span>
+                                </div>
+                                <div class="weather-row">
+                                    <span class="weather-icon">💧</span>
+                                    <span>湿度：${weatherData.humidity}%</span>
+                                </div>
+                                <div class="weather-row">
+                                    <span class="weather-icon">🌪️</span>
+                                    <span>风向：${weatherData.winddirection}</span>
+                                </div>
+                                <div class="weather-row">
+                                    <span class="weather-icon">💨</span>
+                                    <span>风力：${weatherData.windpower}</span>
+                                </div>
+                            </div>
+                            <div class="weather-update">
+                                <span class="weather-icon">🕒</span>
+                                <span>更新：${weatherData.updatetime}</span>
+                            </div>
+                        </div>
+                    `;
                 }
             };
 

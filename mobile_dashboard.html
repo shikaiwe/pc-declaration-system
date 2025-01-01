@@ -1412,8 +1412,8 @@
             CANCEL_REPORT: `${CONFIG.baseUrl}/dashboard/cancel_report/`,
 
             // 天气相关
-            WEATHER_API_KEY: `${CONFIG.baseUrl}/dashboard/getWeatherApiKey/`,
-            weather: `${CONFIG.baseUrl}/dashboard/getWeather/`
+            GET_CITY_AND_WEATHER: `${CONFIG.baseUrl}/unit/user_get_city_and_weather/`,
+            SAVE_IP: `${CONFIG.baseUrl}/unit/user_save_ip/`
         };
 
         // 工具函数模块
@@ -2050,50 +2050,81 @@
         const weatherManager = {
             async fetchWeatherAndLocation() {
                 try {
-                    const apiKey = await this.getApiKey();
-                    const ipData = await $.ajax({
-                        url: `https://restapi.amap.com/v3/ip?key=${apiKey}`,
-                        method: 'GET'
+                    // 先从 ip.sb 获取 IP 信息
+                    const ipInfo = await this.getIpFromIpSb();
+                    if (!ipInfo || !ipInfo.ip) {
+                        throw new Error('无法获取IP信息');
+                    }
+
+                    // 使用获取到的 IP 获取天气信息
+                    const response = await $.ajax({
+                        url: API_URLS.GET_CITY_AND_WEATHER,
+                        method: 'POST',
+                        data: JSON.stringify({
+                            ip: ipInfo.ip
+                        }),
+                        contentType: 'application/json',
+                        xhrFields: {
+                            withCredentials: true
+                        }
                     });
-                    const weatherData = await $.ajax({
-                        url: `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${ipData.adcode}&extensions=base`,
-                        method: 'GET'
-                    });
-                    this.displayWeatherInfo(weatherData.lives[0], ipData.city);
+
+                    if (response.message === 'Success') {
+                        // 显示天气信息
+                        this.displayWeatherInfo(response.weather, response.IP.city);
+                    } else {
+                        auth.handleSessionError(response.message);
+                    }
                 } catch (error) {
                     console.error('获取天气信息时出错:', error);
                     document.getElementById('weather-info').innerHTML = '<p>无法获取天气信息</p>';
                 }
             },
 
-            getApiKey() {
+            getIpFromIpSb() {
                 return new Promise((resolve, reject) => {
-                    $.ajax({
-                        url: API_URLS.WEATHER_API_KEY,
-                        method: 'GET',
-                        xhrFields: {
-                            withCredentials: true
-                        },
-                        success: function(data) {
-                            if (data.message === 'Success') {
-                                resolve(data.apiKey);
+                    // 创建一个全局回调函数
+                    window.ipCallback = (response) => {
+                        try {
+                            if (response && response.ip) {
+                                resolve(response);
                             } else {
-                                reject(new Error('获取API Key失败'));
+                                reject(new Error('无法获取IP信息'));
                             }
-                        },
-                        error: function(xhr, status, error) {
+                        } catch (error) {
                             reject(error);
+                        } finally {
+                            // 清理全局回调函数
+                            delete window.ipCallback;
+                            // 移除script标签
+                            const scriptElement = document.getElementById('ipScript');
+                            if (scriptElement) {
+                                scriptElement.remove();
+                            }
                         }
-                    });
+                    };
+
+                    // 创建script标签
+                    const script = document.createElement('script');
+                    script.id = 'ipScript';
+                    script.src = 'https://api.ip.sb/jsonip?callback=ipCallback';
+                    document.head.appendChild(script);
+
+                    // 设置超时处理
+                    setTimeout(() => {
+                        if (window.ipCallback) {
+                            delete window.ipCallback;
+                            const scriptElement = document.getElementById('ipScript');
+                            if (scriptElement) {
+                                scriptElement.remove();
+                            }
+                            reject(new Error('获取IP信息超时'));
+                        }
+                    }, 5000);
                 });
             },
 
             displayWeatherInfo(weather, city) {
-                const updateTime = new Date().toLocaleTimeString('zh-CN', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
                 document.getElementById('weather-info').innerHTML = `
                     <div class="weather-content">
                         <div class="weather-main">
@@ -2121,12 +2152,15 @@
                             </div>
                             <div class="weather-row">
                                 <span class="weather-icon">💨</span>
-                                <span>风力：${weather.windpower}级</span>
+                                <span>风力：${weather.windpower}</span>
                             </div>
                         </div>
                         <div class="weather-update">
                             <span class="weather-icon">🕒</span>
-                            <span>更新：${updateTime}</span>
+                            <span>更新：${new Date(weather.updatetime).toLocaleTimeString('zh-CN', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}</span>
                         </div>
                     </div>
                 `;
