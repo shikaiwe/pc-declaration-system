@@ -1354,8 +1354,9 @@
     <div id="assignOrderModal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>分配订单</h2>
-            <div id="assignOrderContent"></div>
+            <div id="assignOrderContent" class="assign-order-container">
+                <!-- 内容将由AssignOrder组件动态生成 -->
+            </div>
         </div>
     </div>
 
@@ -3172,7 +3173,7 @@
                 document.getElementById('assign-order')?.addEventListener('click', function() {
                     utils.ui.showModal('assignOrderModal');
                     this.classList.add('active');
-                    loadAssignOrderContent();
+                    initAssignOrder();
                 });
 
                 // 被分配订单卡片点击事件
@@ -3271,8 +3272,10 @@
         function initAssignOrder() {
             const assignOrderContent = document.getElementById('assignOrderContent');
             if (assignOrderContent && !assignOrderInstance) {
+                utils.ui.showLoading(true);
                 try {
                     assignOrderInstance = new window.AssignOrder(assignOrderContent);
+                    utils.ui.showLoading(false);
                 } catch (error) {
                     console.error('分配订单页面初始化失败:', error);
                     assignOrderContent.innerHTML = `
@@ -3282,6 +3285,7 @@
                             <button class="retry-button" onclick="initAssignOrder()">重试</button>
                         </div>
                     `;
+                    utils.ui.showLoading(false);
                 }
             }
         }
