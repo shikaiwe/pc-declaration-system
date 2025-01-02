@@ -41,14 +41,14 @@ class AssignOrder {
 
     async loadOrders() {
         try {
-            const response = await fetch('/api/dashboard/worker_get_report_list/', {
+            const response = await fetch(API_URLS.GET_REPORT_OF_SAME_DAY, {
                 credentials: 'include'
             });
             const data = await response.json();
 
             if (data.message === 'Success') {
                 this.displayOrders(data.report_info);
-            } else if (data.message === 'No my report') {
+            } else if (data.message === 'No report') {
                 this.showNoOrders();
             } else {
                 this.handleSessionError(data.message);
