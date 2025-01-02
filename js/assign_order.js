@@ -191,6 +191,7 @@ class AssignOrder {
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
                 defaultOption.textContent = '请选择维修人员';
+                defaultOption.style.color = '#666';
                 select.appendChild(defaultOption);
 
                 // 添加维修人员选项
@@ -198,10 +199,16 @@ class AssignOrder {
                     const option = document.createElement('option');
                     option.value = worker.username;
                     option.textContent = worker.username;
+                    option.style.padding = '12px';
                     select.appendChild(option);
                 });
 
                 this.workersLoaded = true;
+
+                // 确保选择框可见
+                select.style.display = 'block';
+                select.style.visibility = 'visible';
+                select.style.opacity = '1';
             } else if (response.message === 'Success' && (!response.worker_list || response.worker_list.length === 0)) {
                 select.innerHTML = '<option value="">暂无可用维修人员</option>';
                 select.disabled = true;
