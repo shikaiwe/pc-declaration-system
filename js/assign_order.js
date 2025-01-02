@@ -50,7 +50,7 @@ class AssignOrder {
 
             if (data.message === 'Success') {
                 console.log('订单信息:', data.report_info);
-                this.displayOrders(data.report_info);
+                this.displayOrders(data.report_info.reports);
             } else if (data.message === 'No report') {
                 console.log('没有订单信息');
                 this.showNoOrders();
@@ -67,13 +67,12 @@ class AssignOrder {
     displayOrders(orders) {
         const orderList = this.container.querySelector('#assignOrderList');
         // // 过滤出待分配的订单（status = '0'）
-        // const pendingOrders = orders.filter(order => order.status === '0');
-        const pendingOrders = orders;
+        const pendingOrders = orders.filter(order => order.status === '0');
 
-        // if (!pendingOrders || pendingOrders.length === 0) {
-        //     this.showNoOrders();
-        //     return;
-        // }
+        if (!pendingOrders || pendingOrders.length === 0) {
+            this.showNoOrders();
+            return;
+        }
 
         const ordersHTML = pendingOrders.map(order => `
             <div class="order-item">
