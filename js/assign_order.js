@@ -41,23 +41,31 @@ class AssignOrder {
 
     async loadOrders() {
         try {
-            const response = await fetch(API_URLS.GET_REPORT_OF_SAME_DAY, {
-                credentials: 'include'
-            });
-            const data = await response.json();
+            $.ajax({
+                    url: API_URLS.GET_REPORT_OF_SAME_DAY,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                })
+                .done((data) => {
+                    console.log('获取到的订单数据:', data);
 
-            console.log('获取到的订单数据:', data);
-
-            if (data.message === 'Success') {
-                console.log('订单信息:', data.reports);
-                this.displayOrders(data.reports);
-            } else if (data.message === 'No report') {
-                console.log('没有订单信息');
-                this.showNoOrders();
-            } else {
-                console.log('API响应消息:', data.message);
-                this.handleSessionError(data.message);
-            }
+                    if (data.message === 'Success') {
+                        console.log('订单信息:', data.reports);
+                        this.displayOrders(data.reports);
+                    } else if (data.message === 'No report') {
+                        console.log('没有订单信息');
+                        this.showNoOrders();
+                    } else {
+                        console.log('API响应消息:', data.message);
+                        this.handleSessionError(data.message);
+                    }
+                })
+                .fail((error) => {
+                    console.error('加载订单失败:', error);
+                    this.showError();
+                });
         } catch (error) {
             console.error('加载订单失败:', error);
             this.showError();
@@ -128,20 +136,30 @@ class AssignOrder {
 
     async loadWorkers() {
         try {
-            const response = await fetch('/api/dashboard/get_worker_list/', {
-                credentials: 'include'
-            });
-            const data = await response.json();
-            const select = this.container.querySelector('#workerSelect');
+            $.ajax({
+                    url: API_URLS.TODAY_WORKERS,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                })
+                .done((data) => {
+                    const select = this.container.querySelector('#workerSelect');
 
-            if (data.message === 'Success' && data.worker_list && data.worker_list.length > 0) {
-                const options = data.worker_list.map(worker =>
-                    `<option value="${worker.username}">${worker.username}</option>`
-                ).join('');
-                select.innerHTML = options;
-            } else {
-                select.innerHTML = '<option value="">暂无可用维修人员</option>';
-            }
+                    if (data.message === 'Success' && data.worker_list && data.worker_list.length > 0) {
+                        const options = data.worker_list.map(worker =>
+                            `<option value="${worker.username}">${worker.username}</option>`
+                        ).join('');
+                        select.innerHTML = options;
+                    } else {
+                        select.innerHTML = '<option value="">暂无可用维修人员</option>';
+                    }
+                })
+                .fail((error) => {
+                    console.error('加载维修人员列表失败:', error);
+                    const select = this.container.querySelector('#workerSelect');
+                    select.innerHTML = '<option value="">加载失败，请重试</option>';
+                });
         } catch (error) {
             console.error('加载维修人员列表失败:', error);
             const select = this.container.querySelector('#workerSelect');
@@ -207,28 +225,31 @@ class AssignOrder {
 
     async assignOrder(reportId, workerName) {
         try {
-            const response = await fetch('/api/dashboard/assign_report/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    reportId: reportId,
-                    workerName: workerName
-                }),
-                credentials: 'include'
-            });
-
-            const data = await response.json();
-
-            if (data.message === 'Success') {
-                this.showMessage('分配成功', 'success');
-                this.closeWorkerSelection();
-                // 重新加载订单列表
-                await this.loadOrders();
-            } else {
-                this.showMessage(data.message || '分配失败', 'error');
-            }
+            $.ajax({
+                    url: API_URLS.ASSIGN_ORDER,
+                    method: 'POST',
+                    data: JSON.stringify({
+                        reportId: reportId,
+                        workerName: workerName
+                    }),
+                    contentType: 'application/json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                })
+                .done((data) => {
+                    if (data.message === 'Success') {
+                        this.showMessage('分配成功', 'success');
+                        this.closeWorkerSelection();
+                        this.loadOrders();
+                    } else {
+                        this.showMessage(data.message || '分配失败', 'error');
+                    }
+                })
+                .fail((error) => {
+                    console.error('分配订单失败:', error);
+                    this.showMessage('分配失败，请重试', 'error');
+                });
         } catch (error) {
             console.error('分配订单失败:', error);
             this.showMessage('分配失败，请重试', 'error');
