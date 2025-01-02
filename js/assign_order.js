@@ -128,11 +128,14 @@ class AssignOrder {
                 <div class="order-item ${isAssigned ? 'allocated' : ''}">
                     <div class="order-info">
                         <div class="order-id">订单编号: ${order.reportId || '未知'}</div>
-                        <span class="status-badge ${status.class}">${status.text}</span>
                         <div class="order-details">
                             <div class="order-details-item">
                                 <span class="order-details-label">联系电话:</span>
                                 <span>${order.userPhoneNumber || '未知'}</span>
+                            </div>
+                            <div class="order-details-item">
+                                <span class="order-details-label">状态:</span>
+                                <span class="status-badge ${status.class}">${status.text}</span>
                             </div>
                             <div class="order-details-item">
                                 <span class="order-details-label">地址:</span>

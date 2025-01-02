@@ -4435,70 +4435,55 @@
                 }
 
                 const ordersHTML = orders.map(order => {
-                            // 检查并确保日期存在
-                            const displayDate = order.date ? utils.date.format(order.date) : '日期未知';
-                            const displayCallDate = order.call_date ? utils.date.format(order.call_date) : '日期未知';
+                    const { text: statusText, class: statusClass } = orderManager.getStatusInfo(order.status);
+                    const showButtons = ['0', '1'].includes(order.status);
 
-                            // 根据状态获取对应的显示文本和样式
-                            let statusText, statusClass;
-                            let showCompleteButton = false;
-                            let showCancelButton = false;
-                            switch (order.status) {
-                                case '0':
-                                    statusText = '待分配';
-                                    statusClass = 'status-pending';
-                                    showCompleteButton = true;
-                                    showCancelButton = true;
-                                    break;
-                                case '1':
-                                    statusText = '已分配';
-                                    statusClass = 'status-allocated';
-                                    showCompleteButton = true;
-                                    showCancelButton = true;
-                                    break;
-                                case '2':
-                                    statusText = '已完成';
-                                    statusClass = 'status-completed';
-                                    break;
-                                case '3':
-                                    statusText = '已撤单';
-                                    statusClass = 'status-cancelled';
-                                    break;
-                                default:
-                                    statusText = '未知状态';
-                                    statusClass = 'status-unknown';
-                            }
-
-                            return `
-                    <div class="order-card" data-report-id="${order.reportId}">
-                        <div class="order-info">
-                            <p>
-                                <strong>订单编号：</strong>
-                                ${order.reportId || '未知'}
-                            </p>
-                            <p>
-                                <strong>手机号码：</strong>
-                                ${order.userPhoneNumber || '未知'}
-                            </p>
-                            <p><strong>地址：</strong>${order.address || '未知'}</p>
-                            <p><strong>问题：</strong>${order.issue || '未知'}</p>
-                            <p><strong>预约时间：</strong>${displayDate}</p>
-                            <p><strong>提交时间：</strong>${displayCallDate}</p>
-                            <div class="order-buttons">
-                                ${showCompleteButton ? `
-                                    <button class="complete-order-btn" onclick="completeOrder('${order.reportId}')">
-                                        结单
-                                    </button>
+                    return `
+                        <div class="order-card">
+                            <div class="order-info">
+                                ${order.reportId ? `
+                                    <p>
+                                        <strong>订单编号：</strong>
+                                        ${order.reportId}
+                                    </p>
                                 ` : ''}
-                                ${showCancelButton ? `
-                                    <button class="cancel-order-btn" onclick="cancelOrder('${order.reportId}')">
-                                        撤单
-                                    </button>
+                                <p>
+                                    <strong>手机号码：</strong>
+                                    ${order.userPhoneNumber}
+                                </p>
+                                <p>
+                                    <strong>状态：</strong>
+                                    <span class="status-badge ${statusClass}">${statusText}</span>
+                                </p>
+                                <p>
+                                    <strong>地址：</strong>
+                                    ${order.address}
+                                </p>
+                                <p>
+                                    <strong>问题描述：</strong>
+                                    ${order.issue}
+                                </p>
+                                <p>
+                                    <strong>预约时间：</strong>
+                                    ${utils.date.format(order.date)}
+                                </p>
+                                <p>
+                                    <strong>提交时间：</strong>
+                                    ${utils.date.format(order.call_date)}
+                                </p>
+                                ${showButtons ? `
+                                    <div class="order-buttons">
+                                        <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}')">
+                                            结单
+                                        </button>
+                                        <button class="cancel-order-btn" onclick="orderManager.cancelOrder('${order.reportId}')">
+                                            撤单
+                                        </button>
+                                    </div>
                                 ` : ''}
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
                 }).join('');
 
                 orderHistoryContent.innerHTML = `
@@ -4838,9 +4823,6 @@
                                 <p>
                                     <strong>手机号码：</strong>
                                     ${order.userPhoneNumber || '未知'}
-                                    <span class="order-status ${statusClass}">
-                                        ${statusText}
-                                    </span>
                                 </p>
                                 <p><strong>地址：</strong>${order.address || '未知'}</p>
                                 <p><strong>问题：</strong>${order.issue || '未知'}</p>
