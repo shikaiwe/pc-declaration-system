@@ -2009,30 +2009,32 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(0.9);
             width: 90%;
             max-width: 400px;
             background-color: white;
             border-radius: 12px;
             padding: 20px;
             z-index: 1011;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            display: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
         
         .assign-order-worker-selection.active {
-            display: block;
-            animation: fadeIn 0.3s ease-out;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            visibility: visible;
         }
         
-        @keyframes fadeIn {
+        @keyframes modalFadeIn {
             from {
                 opacity: 0;
-                transform: translate(-50%, -48%);
+                transform: translate(-50%, -60%) scale(0.9);
             }
             to {
                 opacity: 1;
-                transform: translate(-50%, -50%);
+                transform: translate(-50%, -50%) scale(1);
             }
         }
         
