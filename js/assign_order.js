@@ -7,168 +7,84 @@ const API_URLS = {
 
 class AssignOrder {
     constructor(container) {
-        if (!container) {
-            throw new Error('Container element is required');
-        }
         this.container = container;
-        this.selectedOrderId = null;
-        this.workers = [];
-        this.touchStartY = 0;
         this.init();
     }
 
-    async init() {
-        try {
-            this.createElements();
-            this.bindMethods();
-            this.bindEvents();
-            await this.loadTodayOrders();
-        } catch (error) {
-            console.error('初始化失败:', error);
-            this.showMessage('初始化失败，请刷新页面重试', 'error');
-        }
-    }
-
-    createElements() {
-        // 创建基本HTML结构
+    init() {
         this.container.innerHTML = `
-            <div class="assign-order-container">
-                <div class="assign-order-list" id="orderList"></div>
-                <div class="assign-order-modal-overlay"></div>
+            <div class="assign-order-list" id="assignOrderList">
+                <!-- 订单列表将在这里动态生成 -->
+            </div>
+            <div class="assign-order-modal-overlay" id="assignOrderModalOverlay">
                 <div class="assign-order-worker-selection">
                     <div class="assign-order-header">
                         <h3>选择维修人员</h3>
                     </div>
                     <div class="assign-order-body">
-                        <select id="workerSelect"></select>
+                        <select id="workerSelect">
+                            <option value="">加载中...</option>
+                        </select>
                     </div>
                     <div class="assign-order-footer">
-                        <button id="cancelAssign" class="assign-order-cancel">取消</button>
-                        <button id="confirmAssign" class="assign-order-confirm">确认</button>
+                        <button class="assign-order-cancel">取消</button>
+                        <button class="assign-order-confirm">确认</button>
                     </div>
                 </div>
-                <div class="assign-order-message"></div>
             </div>
+            <div class="assign-order-message"></div>
         `;
 
-        // 获取DOM元素引用
-        this.orderList = this.container.querySelector('#orderList');
-        this.modalOverlay = this.container.querySelector('.assign-order-modal-overlay');
-        this.workerSelection = this.container.querySelector('.assign-order-worker-selection');
-        this.workerSelect = this.container.querySelector('#workerSelect');
-        this.cancelButton = this.container.querySelector('#cancelAssign');
-        this.confirmButton = this.container.querySelector('#confirmAssign');
-        this.messageElement = this.container.querySelector('.assign-order-message');
+        this.loadOrders();
+        this.bindEvents();
     }
 
-    bindMethods() {
-        // 绑定方法到实例
-        this.handleAssignClick = this.handleAssignClick.bind(this);
-        this.handleCancel = this.handleCancel.bind(this);
-        this.handleConfirm = this.handleConfirm.bind(this);
-        this.handleOverlayClick = this.handleOverlayClick.bind(this);
-        this.handleTouchStart = this.handleTouchStart.bind(this);
-        this.handleTouchMove = this.handleTouchMove.bind(this);
-        this.handleTouchEnd = this.handleTouchEnd.bind(this);
-        this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
-    }
-
-    bindEvents() {
-        // 绑定事件监听器
-        this.cancelButton.addEventListener('click', this.handleCancel);
-        this.confirmButton.addEventListener('click', this.handleConfirm);
-        this.modalOverlay.addEventListener('click', this.handleOverlayClick);
-        this.workerSelection.addEventListener('touchstart', this.handleTouchStart);
-        this.workerSelection.addEventListener('touchmove', this.handleTouchMove);
-        this.workerSelection.addEventListener('touchend', this.handleTouchEnd);
-        document.addEventListener('visibilitychange', this.handleVisibilityChange);
-    }
-
-    async loadTodayOrders() {
+    async loadOrders() {
         try {
-            const response = await fetch(API_URLS.GET_REPORT_OF_SAME_DAY, {
+            const response = await fetch('/api/dashboard/worker_get_report_list/', {
                 credentials: 'include'
             });
             const data = await response.json();
 
             if (data.message === 'Success') {
-                this.renderOrders(data.report_info);
-            } else if (data.message === 'No report') {
-                this.orderList.innerHTML = '<p style="text-align: center; color: #666;">今日暂无待分配订单</p>';
+                this.displayOrders(data.report_info);
+            } else if (data.message === 'No my report') {
+                this.showNoOrders();
             } else {
                 this.handleSessionError(data.message);
             }
         } catch (error) {
             console.error('加载订单失败:', error);
-            this.showMessage('加载订单失败，请刷新重试', 'error');
+            this.showError();
         }
     }
 
-    async loadTodayWorkers() {
-        try {
-            const response = await fetch(API_URLS.TODAY_WORKERS, {
-                credentials: 'include'
-            });
-            const data = await response.json();
-
-            if (data.message === 'Success' && Array.isArray(data.worker_info)) {
-                this.workers = data.worker_info;
-                this.updateWorkerSelect();
-            } else if (data.message === 'Success' && !data.worker_info) {
-                this.workers = [];
-                this.showMessage('暂无可用维修人员', 'error');
-            } else {
-                this.handleSessionError(data.message);
-            }
-        } catch (error) {
-            console.error('加载维修人员列表失败:', error);
-            this.workers = [];
-            this.showMessage('加载维修人员列表失败', 'error');
-        }
-    }
-
-    updateWorkerSelect() {
-        if (!this.workerSelect) {
-            console.error('维修人员选择器元素未找到');
+    displayOrders(orders) {
+        const orderList = this.container.querySelector('#assignOrderList');
+        if (!orders || orders.length === 0) {
+            this.showNoOrders();
             return;
         }
 
-        if (!Array.isArray(this.workers) || this.workers.length === 0) {
-            this.workerSelect.innerHTML = '<option value="">暂无可用维修人员</option>';
-            return;
-        }
-
-        this.workerSelect.innerHTML = this.workers
-            .filter(worker => worker && worker.username)
-            .map(worker => `<option value="${worker.username}">${worker.username}</option>`)
-            .join('') || '<option value="">暂无可用维修人员</option>';
-    }
-
-    renderOrders(orders) {
-        if (!Array.isArray(orders) || orders.length === 0) {
-            this.orderList.innerHTML = '<p style="text-align: center; color: #666;">今日暂无待分配订单</p>';
-            return;
-        }
-
-        this.orderList.innerHTML = orders.map(order => `
+        const ordersHTML = orders.map(order => `
             <div class="order-item">
                 <div class="order-info">
-                    <div class="order-id">订单号：${order.reportId}</div>
+                    <div class="order-id">订单编号: ${order.reportId}</div>
                     <div class="order-details">
                         <div class="order-details-item">
-                            <span class="order-details-label">手机号：</span>
+                            <span class="order-details-label">联系电话:</span>
                             <span>${order.userPhoneNumber}</span>
                         </div>
                         <div class="order-details-item">
-                            <span class="order-details-label">地址：</span>
+                            <span class="order-details-label">地址:</span>
                             <span>${order.address}</span>
                         </div>
                         <div class="order-details-item">
-                            <span class="order-details-label">问题：</span>
+                            <span class="order-details-label">问题:</span>
                             <span>${order.issue}</span>
                         </div>
                         <div class="order-details-item">
-                            <span class="order-details-label">时间：</span>
+                            <span class="order-details-label">预约时间:</span>
                             <span>${this.formatDate(order.date)}</span>
                         </div>
                     </div>
@@ -177,58 +93,119 @@ class AssignOrder {
             </div>
         `).join('');
 
-        // 为每个分配按钮添加点击事件
-        this.orderList.querySelectorAll('.assign-btn').forEach(btn => {
-            btn.addEventListener('click', () => this.handleAssignClick(btn.dataset.reportId));
+        orderList.innerHTML = ordersHTML;
+    }
+
+    showNoOrders() {
+        const orderList = this.container.querySelector('#assignOrderList');
+        orderList.innerHTML = `
+            <div class="no-orders">
+                <i class="no-orders-icon">📋</i>
+                <p>暂无待分配订单</p>
+            </div>
+        `;
+    }
+
+    showError() {
+        const orderList = this.container.querySelector('#assignOrderList');
+        orderList.innerHTML = `
+            <div class="error-message">
+                <i class="error-icon">❌</i>
+                <p>加载失败，请重试</p>
+                <button class="retry-button" onclick="this.loadOrders()">重试</button>
+            </div>
+        `;
+    }
+
+    async loadWorkers() {
+        try {
+            const response = await fetch('/api/dashboard/get_worker_list/', {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            const select = this.container.querySelector('#workerSelect');
+
+            if (data.message === 'Success' && data.worker_list && data.worker_list.length > 0) {
+                const options = data.worker_list.map(worker =>
+                    `<option value="${worker.username}">${worker.username}</option>`
+                ).join('');
+                select.innerHTML = options;
+            } else {
+                select.innerHTML = '<option value="">暂无可用维修人员</option>';
+            }
+        } catch (error) {
+            console.error('加载维修人员列表失败:', error);
+            const select = this.container.querySelector('#workerSelect');
+            select.innerHTML = '<option value="">加载失败，请重试</option>';
+        }
+    }
+
+    bindEvents() {
+        // 分配按钮点击事件
+        this.container.addEventListener('click', async(e) => {
+            if (e.target.classList.contains('assign-btn')) {
+                const reportId = e.target.dataset.reportId;
+                const overlay = this.container.querySelector('#assignOrderModalOverlay');
+                const selection = overlay.querySelector('.assign-order-worker-selection');
+
+                // 显示选择框前先加载维修人员列表
+                await this.loadWorkers();
+
+                overlay.classList.add('active');
+                selection.classList.add('active');
+
+                // 存储当前选中的订单ID
+                this.currentReportId = reportId;
+            }
+        });
+
+        // 取消按钮点击事件
+        const cancelBtn = this.container.querySelector('.assign-order-cancel');
+        cancelBtn.addEventListener('click', () => {
+            this.closeWorkerSelection();
+        });
+
+        // 确认按钮点击事件
+        const confirmBtn = this.container.querySelector('.assign-order-confirm');
+        confirmBtn.addEventListener('click', async() => {
+            const select = this.container.querySelector('#workerSelect');
+            const selectedWorker = select.value;
+
+            if (!selectedWorker) {
+                this.showMessage('请选择维修人员', 'error');
+                return;
+            }
+
+            await this.assignOrder(this.currentReportId, selectedWorker);
+        });
+
+        // 点击遮罩层关闭
+        const overlay = this.container.querySelector('#assignOrderModalOverlay');
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                this.closeWorkerSelection();
+            }
         });
     }
 
-    async handleAssignClick(reportId) {
-        this.selectedOrderId = reportId;
-        
-        // 显示加载中状态
-        this.showMessage('正在加载维修人员列表...', 'info');
-        
-        // 获取维修人员列表
+    closeWorkerSelection() {
+        const overlay = this.container.querySelector('#assignOrderModalOverlay');
+        const selection = overlay.querySelector('.assign-order-worker-selection');
+        overlay.classList.remove('active');
+        selection.classList.remove('active');
+        this.currentReportId = null;
+    }
+
+    async assignOrder(reportId, workerName) {
         try {
-            await this.loadTodayWorkers();
-            
-            // 只有在成功获取维修人员列表后才显示选择界面
-            if (Array.isArray(this.workers) && this.workers.length > 0) {
-                this.modalOverlay.classList.add('active');
-                this.workerSelection.classList.add('active');
-            }
-        } catch (error) {
-            console.error('获取维修人员列表失败:', error);
-            this.showMessage('获取维修人员列表失败，请重试', 'error');
-        }
-    }
-
-    handleCancel() {
-        this.hideWorkerSelection();
-    }
-
-    handleOverlayClick(event) {
-        if (event.target === this.modalOverlay) {
-            this.hideWorkerSelection();
-        }
-    }
-
-    async handleConfirm() {
-        if (!this.selectedOrderId || !this.workerSelect.value) {
-            this.showMessage('请选择维修人员', 'error');
-            return;
-        }
-
-        try {
-            const response = await fetch(API_URLS.ASSIGN_ORDER, {
+            const response = await fetch('/api/dashboard/assign_report/', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    reportId: this.selectedOrderId,
-                    worker: this.workerSelect.value
+                    reportId: reportId,
+                    workerName: workerName
                 }),
                 credentials: 'include'
             });
@@ -237,10 +214,11 @@ class AssignOrder {
 
             if (data.message === 'Success') {
                 this.showMessage('分配成功', 'success');
-                this.hideWorkerSelection();
-                await this.loadTodayOrders();
+                this.closeWorkerSelection();
+                // 重新加载订单列表
+                await this.loadOrders();
             } else {
-                this.handleSessionError(data.message);
+                this.showMessage(data.message || '分配失败', 'error');
             }
         } catch (error) {
             console.error('分配订单失败:', error);
@@ -248,102 +226,40 @@ class AssignOrder {
         }
     }
 
-    hideWorkerSelection() {
-        this.modalOverlay.classList.remove('active');
-        this.workerSelection.classList.remove('active');
-        this.selectedOrderId = null;
-    }
-
-    handleTouchStart(e) {
-        this.touchStartY = e.touches[0].clientY;
-    }
-
-    handleTouchMove(e) {
-        const touchY = e.touches[0].clientY;
-        const deltaY = touchY - this.touchStartY;
-
-        if (deltaY > 0) {
-            e.preventDefault();
-            this.workerSelection.style.transform = `translateY(${deltaY}px)`;
-        }
-    }
-
-    handleTouchEnd() {
-        const currentTransform = getComputedStyle(this.workerSelection).transform;
-        const matrix = new DOMMatrix(currentTransform);
-        const translateY = matrix.m42;
-
-        if (translateY > 100) {
-            this.hideWorkerSelection();
-        } else {
-            this.workerSelection.style.transform = '';
-        }
-    }
-
-    handleVisibilityChange() {
-        if (!document.hidden) {
-            this.loadTodayOrders();
-            this.loadTodayWorkers();
-        }
-    }
-
-    formatDate(dateString) {
-        const date = new Date(dateString.replace(/-/g, '/'));
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${year}年${month}月${day}日 ${hours}:${minutes}`;
-    }
-
     showMessage(text, type = 'info') {
-        this.messageElement.textContent = text;
-        this.messageElement.className = 'assign-order-message';
-        if (type) {
-            this.messageElement.classList.add(type);
-        }
-        this.messageElement.style.display = 'block';
+        const messageEl = this.container.querySelector('.assign-order-message');
+        messageEl.textContent = text;
+        messageEl.className = `assign-order-message ${type}`;
+        messageEl.style.display = 'block';
 
         setTimeout(() => {
-            this.messageElement.style.display = 'none';
+            messageEl.style.display = 'none';
         }, 3000);
     }
 
-    handleSessionError(message) {
-        switch (message) {
-            case 'Session has expired':
-                this.showMessage('会话已过期，请重新登录', 'error');
-                break;
-            case 'Invalid session':
-                this.showMessage('无效的会话，请重新登录', 'error');
-                break;
-            case 'No sessionid cookie':
-                this.showMessage('未找到会话信息，请重新登录', 'error');
-                break;
-            default:
-                this.showMessage('发生未知错误，请重新登录', 'error');
+    formatDate(dateString) {
+        try {
+            const date = new Date(dateString.replace(/-/g, '/'));
+            return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+        } catch (error) {
+            console.error('日期格式化失败:', error);
+            return dateString;
         }
+    }
 
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 2000);
+    handleSessionError(message) {
+        if (['Session has expired', 'Invalid session', 'No sessionid cookie'].includes(message)) {
+            this.showMessage('会话已过期，请重新登录', 'error');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+        }
     }
 
     destroy() {
-        // 移除事件监听器
-        this.cancelButton.removeEventListener('click', this.handleCancel);
-        this.confirmButton.removeEventListener('click', this.handleConfirm);
-        this.modalOverlay.removeEventListener('click', this.handleOverlayClick);
-        this.workerSelection.removeEventListener('touchstart', this.handleTouchStart);
-        this.workerSelection.removeEventListener('touchmove', this.handleTouchMove);
-        this.workerSelection.removeEventListener('touchend', this.handleTouchEnd);
-        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
-
-        // 清空容器
+        // 清理事件监听器和DOM
         this.container.innerHTML = '';
     }
 }
 
-// 导出模块
 export default AssignOrder;
