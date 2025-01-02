@@ -69,10 +69,10 @@ class AssignOrder {
         // // 过滤出待分配的订单（status = '0'）
         // const pendingOrders = orders.filter(order => order.status === '0');
 
-        if (!pendingOrders || pendingOrders.length === 0) {
-            this.showNoOrders();
-            return;
-        }
+        // if (!pendingOrders || pendingOrders.length === 0) {
+        //     this.showNoOrders();
+        //     return;
+        // }
 
         const ordersHTML = pendingOrders.map(order => `
             <div class="order-item">
