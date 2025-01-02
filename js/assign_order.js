@@ -358,15 +358,20 @@ class AssignOrder {
                 const reportId = e.target.dataset.reportId;
                 const overlay = this.container.querySelector('#assignOrderModalOverlay');
                 const selection = overlay.querySelector('.assign-order-worker-selection');
-
-                // 显示选择框前先加载维修人员列表
-                await this.loadWorkers();
-
-                overlay.classList.add('active');
-                selection.classList.add('active');
+                const select = this.container.querySelector('#workerSelect');
 
                 // 存储当前选中的订单ID
                 this.currentReportId = reportId;
+
+                // 显示选择框
+                overlay.classList.add('active');
+                selection.classList.add('active');
+
+                // 如果下拉框为空或只有加载中选项，则加载维修人员列表
+                if (!select.options.length || select.options[0].value === '') {
+                    select.innerHTML = '<option value="">加载中...</option>';
+                    await this.loadWorkers();
+                }
             }
         });
 
