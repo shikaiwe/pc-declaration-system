@@ -1237,6 +1237,93 @@
             -webkit-overflow-scrolling: touch;
             padding: 10px 0;
         }
+        /* 订单列表项样式 */
+        
+        .order-item {
+            background: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .order-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .order-info {
+            flex: 1;
+        }
+        
+        .order-id {
+            font-weight: bold;
+            color: #2196F3;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        
+        .order-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .order-details-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .order-details-label {
+            color: #999;
+            min-width: 60px;
+        }
+        
+        .assign-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+        
+        .assign-btn:hover {
+            background-color: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+        }
+        
+        .assign-btn:active {
+            transform: scale(0.98);
+        }
+        /* 深色模式适配 */
+        
+        @media (prefers-color-scheme: dark) {
+            .order-item {
+                background-color: #333;
+            }
+            .order-details {
+                color: #ccc;
+            }
+            .order-details-label {
+                color: #888;
+            }
+            .order-id {
+                color: #64B5F6;
+            }
+        }
         
         .assign-order-modal-overlay {
             position: absolute;
@@ -3630,5 +3717,7 @@
         }
     </script>
 </body>
+
+</html>
 
 </html>
