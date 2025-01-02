@@ -219,7 +219,6 @@ class AssignOrder {
             <div class="assign-order-message"></div>
         `;
 
-        this.loadOrders();
         this.bindEvents();
     }
 
