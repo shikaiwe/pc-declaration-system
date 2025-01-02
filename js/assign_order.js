@@ -49,7 +49,7 @@ class AssignOrder {
             console.log('获取到的订单数据:', data);
 
             if (data.message === 'Success') {
-                console.log('订单信息:', data.report_info);
+                console.log('订单信息:', data.reports);
                 this.displayOrders(data.report_info);
             } else if (data.message === 'No report') {
                 console.log('没有订单信息');
