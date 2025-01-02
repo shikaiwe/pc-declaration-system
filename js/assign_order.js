@@ -331,7 +331,7 @@ class AssignOrder {
     formatDate(dateString) {
         try {
             const date = new Date(dateString.replace(/-/g, '/'));
-            return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
         } catch (error) {
             console.error('日期格式化失败:', error);
             return dateString;

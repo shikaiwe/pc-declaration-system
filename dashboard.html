@@ -3100,6 +3100,43 @@
                         console.error(error);
                         this.ui.showMessage(customMessage || '操作失败，请重试');
                     }
+                },
+
+                // 日期格式化
+                date: {
+                    format: (dateString) => {
+                        try {
+                            if (typeof dateString === 'string' && dateString.includes(' ')) {
+                                const [datePart, timePart] = dateString.split(' ');
+                                const [year, month, day] = datePart.replace(/-/g, '/').split('/');
+                                return `${year}-${String(parseInt(month)).padStart(2, '0')}-${String(parseInt(day)).padStart(2, '0')} ${timePart}`;
+                            }
+                            if (typeof dateString === 'string' && (dateString.includes('/') || dateString.includes('-'))) {
+                                const [year, month, day] = dateString.replace(/-/g, '/').split('/');
+                                return `${year}-${String(parseInt(month)).padStart(2, '0')}-${String(parseInt(day)).padStart(2, '0')}`;
+                            }
+                            if (typeof dateString === 'string' && dateString.includes('年') && dateString.includes('月')) {
+                                const year = dateString.match(/(\d+)年/)[1];
+                                const month = dateString.match(/(\d+)月/)[1];
+                                const day = dateString.match(/(\d+)日/)[1];
+                                const time = dateString.split(' ')[1] || '00:00';
+                                return `${year}-${String(parseInt(month)).padStart(2, '0')}-${String(parseInt(day)).padStart(2, '0')} ${time}`;
+                            }
+                            const date = new Date(dateString);
+                            if (isNaN(date.getTime())) {
+                                throw new Error('无效的日期格式');
+                            }
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const hours = String(date.getHours()).padStart(2, '0');
+                            const minutes = String(date.getMinutes()).padStart(2, '0');
+                            return `${year}-${month}-${day} ${hours}:${minutes}`;
+                        } catch (error) {
+                            console.error('日期格式化错误:', error, '原始日期:', dateString);
+                            return '时间格式错误';
+                        }
+                    }
                 }
             };
 
@@ -4333,8 +4370,8 @@
 
                 const ordersHTML = orders.map(order => {
                             // 检查并确保日期存在
-                            const displayDate = order.date ? formatDate(order.date) : '日期未知';
-                            const displayCallDate = order.call_date ? formatDate(order.call_date) : '日期未知';
+                            const displayDate = order.date ? utils.date.format(order.date) : '日期未知';
+                            const displayCallDate = order.call_date ? utils.date.format(order.call_date) : '日期未知';
 
                             // 根据状态获取对应的显示文本和样式
                             let statusText, statusClass;
@@ -4481,37 +4518,6 @@
             `;
             }
 
-            // 修改日期格式化函数
-            function formatDate(dateString) {
-                // 检查输入是否为 Date 对象
-                if (dateString instanceof Date) {
-                    const date = dateString;
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    return `${year}年${month}月${day}日 ${hours}:${minutes}`;
-                }
-
-                // 处理字符串格式的日期
-                try {
-                    const date = new Date(dateString);
-                    if (isNaN(date.getTime())) {
-                        throw new Error('Invalid date');
-                    }
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    return `${year}年${month}月${day}日 ${hours}:${minutes}`;
-                } catch (error) {
-                    console.error('日期格式化错误:', error, '原始日期字符串:', dateString);
-                    return '日期格式错误';
-                }
-            }
-
             // 修改显示订单详情的函数
             function showOrderDetail(order) {
                 const orderDetailModal = document.getElementById('orderDetailModal');
@@ -4519,8 +4525,8 @@
                 if (!orderDetailModal || !orderDetailBody) return;
 
                 try {
-                    const formattedDate = formatDate(order.date);
-                    const formattedCallDate = formatDate(order.call_date);
+                    const formattedDate = utils.date.format(order.date);
+                    const formattedCallDate = utils.date.format(order.call_date);
 
                     orderDetailBody.innerHTML = `
                     <div class="detail-item">
@@ -4730,8 +4736,8 @@
                 }
 
                 const ordersHTML = orders.map(order => {
-                    const displayDate = order.date ? formatDate(order.date) : '日期未知';
-                    const displayCallDate = order.call_date ? formatDate(order.call_date) : '日期未知';
+                    const displayDate = order.date ? utils.date.format(order.date) : '日期未知';
+                    const displayCallDate = order.call_date ? utils.date.format(order.call_date) : '日期未知';
 
                     let statusText, statusClass;
                     switch (order.status) {
