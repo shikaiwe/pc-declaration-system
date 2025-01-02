@@ -161,7 +161,15 @@ class AssignOrder {
 
         try {
             const select = this.container.querySelector('#workerSelect');
+            if (!select) {
+                console.error('找不到维修人员选择下拉框');
+                return;
+            }
+
+            // 设置加载状态
+            select.classList.add('loading');
             select.innerHTML = '<option value="">加载中...</option>';
+            select.disabled = true;
 
             const response = await $.ajax({
                 url: API_URLS.TODAY_WORKERS,
@@ -171,19 +179,43 @@ class AssignOrder {
                 }
             });
 
-            if (response.message === 'Success' && response.worker_list && response.worker_list.length > 0) {
-                const options = response.worker_list.map(worker =>
-                    `<option value="${worker.username}">${worker.username}</option>`
-                ).join('');
-                select.innerHTML = '<option value="">请选择维修人员</option>' + options;
-                this.workersLoaded = true; // 标记为已加载
-            } else {
+            // 移除加载状态
+            select.classList.remove('loading');
+            select.disabled = false;
+
+            if (response.message === 'Success' && Array.isArray(response.worker_list) && response.worker_list.length > 0) {
+                // 清空现有选项
+                select.innerHTML = '';
+
+                // 添加默认选项
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = '请选择维修人员';
+                select.appendChild(defaultOption);
+
+                // 添加维修人员选项
+                response.worker_list.forEach(worker => {
+                    const option = document.createElement('option');
+                    option.value = worker.username;
+                    option.textContent = worker.username;
+                    select.appendChild(option);
+                });
+
+                this.workersLoaded = true;
+            } else if (response.message === 'Success' && (!response.worker_list || response.worker_list.length === 0)) {
                 select.innerHTML = '<option value="">暂无可用维修人员</option>';
+                select.disabled = true;
+            } else {
+                this.handleSessionError(response.message);
             }
         } catch (error) {
             console.error('加载维修人员列表失败:', error);
             const select = this.container.querySelector('#workerSelect');
-            select.innerHTML = '<option value="">加载失败，请重试</option>';
+            if (select) {
+                select.classList.remove('loading');
+                select.disabled = true;
+                select.innerHTML = '<option value="">加载失败，请重试</option>';
+            }
         }
     }
 

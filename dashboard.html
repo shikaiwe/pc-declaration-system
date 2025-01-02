@@ -2338,6 +2338,17 @@
             transition: all 0.3s ease;
         }
         
+        .assign-order-select option {
+            padding: 12px;
+            font-size: 16px;
+            background-color: #fff;
+            color: #333;
+        }
+        
+        .assign-order-select option:first-child {
+            color: #666;
+        }
+        
         .assign-order-select:focus {
             outline: none;
             border-color: #2196F3;
@@ -2347,6 +2358,22 @@
         .assign-order-select:disabled {
             background-color: #f5f5f5;
             cursor: not-allowed;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .assign-order-select {
+                background-color: #333;
+                color: #fff;
+                border-color: #444;
+            }
+            .assign-order-select option {
+                background-color: #333;
+                color: #fff;
+            }
+            .assign-order-select:disabled {
+                background-color: #222;
+                color: #666;
+            }
         }
         
         .assign-order-select-icon {
@@ -2397,26 +2424,6 @@
         
         .assign-order-select.error+.assign-order-select-icon {
             color: #dc3545;
-        }
-        /* 暗色模式适配 */
-        
-        @media (prefers-color-scheme: dark) {
-            .assign-order-select {
-                background-color: #333;
-                color: #fff;
-                border-color: #444;
-            }
-            .assign-order-select option {
-                background-color: #333;
-                color: #fff;
-            }
-            .assign-order-select:disabled {
-                background-color: #222;
-                color: #666;
-            }
-            .assign-order-select-label {
-                color: #fff;
-            }
         }
     </style>
 </head>
