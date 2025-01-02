@@ -2139,6 +2139,18 @@
 
                 submitOrder: function(formData) {
                     utils.ui.showLoading(true);
+                    // 禁用提交按钮，防止重复提交
+                    const submitButton = document.querySelector('#newOrderForm button[type="submit"]');
+                    const form = document.getElementById('newOrderForm');
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                    }
+
+                    // 添加表单提交状态标记
+                    if (form) {
+                        form.dataset.submitting = 'true';
+                    }
+
                     $.ajax({
                         url: API_URLS.REPORT,
                         method: 'POST',
@@ -2152,19 +2164,34 @@
                             if (data.message === 'Success') {
                                 utils.ui.showMessage('报单提交成功', 'success');
                                 // 重置表单
-                                const form = document.getElementById('newOrderForm');
                                 if (form) {
                                     form.reset();
+                                    delete form.dataset.submitting;
                                     // 重置问题描述文本框的高度
                                     const issueTextarea = document.getElementById('issue');
                                     if (issueTextarea) {
                                         issueTextarea.style.height = 'auto';
+                                    }
+                                    // 重置时间选择器
+                                    const preferredTimeInput = document.getElementById('preferredTime');
+                                    if (preferredTimeInput) {
+                                        preferredTimeInput.value = '';
+                                        preferredTimeInput.dataset.submitValue = '';
                                     }
                                 }
                                 // 如果在历史订单页面，刷新订单列表
                                 if (document.getElementById('orderHistory').style.display === 'block') {
                                     orderManager.fetchHistoryOrders();
                                 }
+                                // 关闭订单管理模态框
+                                setTimeout(() => {
+                                    utils.ui.hideModal('orderManagementModal');
+                                    // 移除卡片的active状态
+                                    const orderManagementCard = document.getElementById('order-management');
+                                    if (orderManagementCard) {
+                                        orderManagementCard.classList.remove('active');
+                                    }
+                                }, 1500);
                             } else {
                                 utils.ui.showMessage(data.message || '提交失败，请重试');
                                 auth.handleSessionError(data.message);
@@ -2174,6 +2201,16 @@
                             console.error('报单提交失败:', error);
                             utils.ui.showMessage('报单提交失败，请重试');
                             utils.ui.showLoading(false);
+                            // 移除表单提交状态标记
+                            if (form) {
+                                delete form.dataset.submitting;
+                            }
+                        },
+                        complete: function() {
+                            // 重新启用提交按钮
+                            if (submitButton) {
+                                submitButton.disabled = false;
+                            }
                         }
                     });
                 },
