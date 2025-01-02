@@ -3517,7 +3517,9 @@
                 document.getElementById('assign-order')?.addEventListener('click', function() {
                     utils.ui.showModal('assignOrderModal');
                     this.classList.add('active');
-                    initAssignOrder();
+                    if (!assignOrderInstance) {
+                        initAssignOrder();
+                    }
                 });
 
                 // 被分配订单卡片点击事件

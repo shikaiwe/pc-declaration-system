@@ -8,31 +8,29 @@ const API_URLS = {
 class AssignOrder {
     constructor(container) {
         this.container = container;
+        this.workersLoaded = false; // 添加标志位跟踪是否已加载维修人员
         this.init();
     }
 
     init() {
+        // 创建基本DOM结构
         this.container.innerHTML = `
             <div class="assign-order-list" id="assignOrderList">
-                <!-- 订单列表将在这里动态生成 -->
+                <div class="loading">加载中...</div>
             </div>
             <div class="assign-order-modal-overlay" id="assignOrderModalOverlay">
                 <div class="assign-order-worker-selection">
                     <div class="assign-order-modal-header">
                         <h3 class="assign-order-modal-title">选择维修人员</h3>
-                        <p class="assign-order-modal-subtitle">请为此订单分配一名维修人员</p>
+                        <p class="assign-order-modal-subtitle">请为此订单选择一位维修人员</p>
                     </div>
                     <div class="assign-order-modal-body">
                         <div class="assign-order-select-wrapper">
-                            <label class="assign-order-select-label" for="workerSelect">维修人员列表</label>
+                            <label class="assign-order-select-label">维修人员</label>
                             <select id="workerSelect" class="assign-order-select">
-                                <option value="">加载中...</option>
+                                <option value="">请选择维修人员</option>
                             </select>
-                            <div class="assign-order-select-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="6 9 12 15 18 9"></polyline>
-                                </svg>
-                            </div>
+                            <span class="assign-order-select-icon">▼</span>
                         </div>
                     </div>
                     <div class="assign-order-modal-footer">
@@ -41,187 +39,11 @@ class AssignOrder {
                     </div>
                 </div>
             </div>
-            <style>
-                .assign-order-modal-overlay {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    background-color: rgba(0, 0, 0, 0);
-                    z-index: 1010;
-                    opacity: 0;
-                    visibility: hidden;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    backdrop-filter: blur(0);
-                    -webkit-backdrop-filter: blur(0);
-                }
-
-                .assign-order-modal-overlay.active {
-                    opacity: 1;
-                    visibility: visible;
-                    background-color: rgba(0, 0, 0, 0.6);
-                    backdrop-filter: blur(4px);
-                    -webkit-backdrop-filter: blur(4px);
-                }
-
-                .assign-order-worker-selection {
-                    position: relative;
-                    width: 90%;
-                    max-width: 420px;
-                    background-color: white;
-                    border-radius: 20px;
-                    padding: 28px;
-                    z-index: 1011;
-                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-                    transform: scale(0.95) translateY(20px);
-                    opacity: 0;
-                    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-                }
-
-                .assign-order-modal-overlay.active .assign-order-worker-selection {
-                    transform: scale(1) translateY(0);
-                    opacity: 1;
-                }
-
-                .assign-order-modal-header {
-                    text-align: center;
-                    margin-bottom: 28px;
-                }
-
-                .assign-order-modal-title {
-                    margin: 0;
-                    font-size: 22px;
-                    color: #333;
-                    font-weight: 600;
-                }
-
-                .assign-order-modal-subtitle {
-                    margin: 8px 0 0;
-                    color: #666;
-                    font-size: 14px;
-                }
-
-                .assign-order-modal-body {
-                    margin-bottom: 28px;
-                }
-
-                .assign-order-select-wrapper {
-                    position: relative;
-                }
-
-                .assign-order-select-label {
-                    display: block;
-                    margin-bottom: 8px;
-                    color: #555;
-                    font-size: 14px;
-                    font-weight: 500;
-                }
-
-                .assign-order-select {
-                    width: 100%;
-                    padding: 14px 16px;
-                    border: 2px solid #e0e0e0;
-                    border-radius: 12px;
-                    font-size: 16px;
-                    color: #333;
-                    background-color: #fff;
-                    transition: all 0.3s ease;
-                    cursor: pointer;
-                    appearance: none;
-                    padding-right: 40px;
-                }
-
-                .assign-order-select:hover {
-                    border-color: #2196F3;
-                }
-
-                .assign-order-select:focus {
-                    outline: none;
-                    border-color: #2196F3;
-                    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-                }
-
-                .assign-order-select-icon {
-                    position: absolute;
-                    right: 14px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    color: #666;
-                    pointer-events: none;
-                    transition: transform 0.3s ease;
-                }
-
-                .assign-order-select:focus + .assign-order-select-icon {
-                    color: #2196F3;
-                    transform: translateY(-50%) rotate(180deg);
-                }
-
-                .assign-order-modal-footer {
-                    display: flex;
-                    gap: 12px;
-                    justify-content: flex-end;
-                    margin-top: 20px;
-                }
-
-                .assign-order-btn {
-                    padding: 12px 24px;
-                    border: none;
-                    border-radius: 12px;
-                    font-size: 15px;
-                    font-weight: 500;
-                    cursor: pointer;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-
-                .assign-order-btn-cancel {
-                    background-color: #f5f5f5;
-                    color: #666;
-                }
-
-                .assign-order-btn-confirm {
-                    background-color: #2196F3;
-                    color: white;
-                    padding-left: 32px !important;
-                    padding-right: 32px !important;
-                }
-
-                .assign-order-btn-cancel:hover {
-                    background-color: #eeeeee;
-                    transform: translateY(-2px);
-                }
-
-                .assign-order-btn-confirm:hover {
-                    background-color: #1976D2;
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
-                }
-
-                @media (max-width: 480px) {
-                    .assign-order-worker-selection {
-                        width: 95%;
-                        padding: 24px;
-                    }
-
-                    .assign-order-modal-title {
-                        font-size: 20px;
-                    }
-
-                    .assign-order-btn {
-                        padding: 10px 20px;
-                        font-size: 14px;
-                    }
-                }
-            </style>
             <div class="assign-order-message"></div>
         `;
 
         this.bindEvents();
-        // 初始化后立即加载订单
-        this.loadOrders();
+        this.loadOrders(); // 只在init时加载一次订单
     }
 
     async loadOrders() {
@@ -334,6 +156,10 @@ class AssignOrder {
     }
 
     async loadWorkers() {
+        if (this.workersLoaded) {
+            return; // 如果已经加载过，直接返回
+        }
+
         try {
             const select = this.container.querySelector('#workerSelect');
             select.innerHTML = '<option value="">加载中...</option>';
@@ -350,7 +176,8 @@ class AssignOrder {
                 const options = response.worker_list.map(worker =>
                     `<option value="${worker.username}">${worker.username}</option>`
                 ).join('');
-                select.innerHTML = options;
+                select.innerHTML = '<option value="">请选择维修人员</option>' + options;
+                this.workersLoaded = true; // 标记为已加载
             } else {
                 select.innerHTML = '<option value="">暂无可用维修人员</option>';
             }
@@ -487,6 +314,7 @@ class AssignOrder {
     destroy() {
         // 清理事件监听器和DOM
         this.container.innerHTML = '';
+        this.workersLoaded = false; // 重置加载状态
     }
 }
 
