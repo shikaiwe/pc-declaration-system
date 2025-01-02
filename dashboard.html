@@ -3597,7 +3597,7 @@
                                 userPhoneNumber,
                                 address,
                                 issue,
-                                date: preferredTime.replace(/-/g, '/'),
+                                date: preferredTime.replace(/\//g, '-'),
                                 call_date: call_date
                             }),
                             contentType: 'application/json',
