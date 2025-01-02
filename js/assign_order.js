@@ -87,33 +87,26 @@ class AssignOrder {
     }
 
     displayOrders(orders) {
-        const orderList = this.container.querySelector('#assignOrderList');
-        if (!orderList) {
-            console.error('找不到订单列表容器');
-            return;
-        }
+            const orderList = this.container.querySelector('#assignOrderList');
+            if (!orderList) {
+                console.error('找不到订单列表容器');
+                return;
+            }
 
-        console.log('所有订单:', orders);
+            console.log('所有订单:', orders);
 
-        if (!orders || orders.length === 0) {
-            this.showNoOrders();
-            return;
-        }
+            if (!orders || orders.length === 0) {
+                this.showNoOrders();
+                return;
+            }
 
-        const ordersHTML = orders.map(order => {
-            const isAssigned = order.status !== '0';
-            const statusText = isAssigned ? '已分配' : '待分配';
-            const buttonClass = isAssigned ? 'assign-btn assigned' : 'assign-btn';
-            const buttonText = isAssigned ? '已分配给: ' + (order.workerName || '未知') : '分配订单';
-            const buttonDisabled = isAssigned ? 'disabled' : '';
+            const ordersHTML = orders.map(order => {
+                        const isAssigned = order.status !== '0';
 
-            return `
-                <div class="order-item ${isAssigned ? 'assigned' : ''}">
+                        return `
+                <div class="order-item">
                     <div class="order-info">
                         <div class="order-id">订单编号: ${order.reportId || '未知'}</div>
-                        <div class="order-status ${isAssigned ? 'status-assigned' : 'status-pending'}">
-                            ${statusText}
-                        </div>
                         <div class="order-details">
                             <div class="order-details-item">
                                 <span class="order-details-label">联系电话:</span>
@@ -133,9 +126,13 @@ class AssignOrder {
                             </div>
                         </div>
                     </div>
-                    <button class="${buttonClass}" data-report-id="${order.reportId}" ${buttonDisabled}>
-                        ${buttonText}
-                    </button>
+                    ${isAssigned ? `
+                        <div class="assigned-info">
+                            <span class="assigned-text">已分配给: ${order.workerName || '未知'}</span>
+                        </div>
+                    ` : `
+                        <button class="assign-btn" data-report-id="${order.reportId}">分配订单</button>
+                    `}
                 </div>
             `;
         }).join('');
