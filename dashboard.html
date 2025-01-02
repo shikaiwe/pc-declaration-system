@@ -4889,6 +4889,116 @@
                 orderManager.submitOrder(formData);
                 return false; // 确保不会触发表单默认提交
             });
+
+            // 订单管理对象（只保留一次定义）
+            const orderManager = {
+                // 获取订单状态信息
+                getStatusInfo: function(status) {
+                    switch (status) {
+                        case '0':
+                            return { text: '待分配', class: 'status-pending' };
+                        case '1':
+                            return { text: '已分配', class: 'status-allocated' };
+                        case '2':
+                            return { text: '已完成', class: 'status-completed' };
+                        case '3':
+                            return { text: '已撤单', class: 'status-cancelled' };
+                        default:
+                            return { text: '未知状态', class: 'status-unknown' };
+                    }
+                },
+
+                // 完成订单
+                completeOrder: function(reportId) {
+                    if (!reportId) {
+                        utils.ui.showMessage('订单ID无效');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: API_URLS.COMPLETE_REPORT,
+                        method: 'POST',
+                        data: JSON.stringify({ reportId }),
+                        contentType: 'application/json',
+                        xhrFields: {
+                            withCredentials: true
+                        }
+                    })
+                    .done(function(data) {
+                        if (data.message === 'Success') {
+                            utils.ui.showMessage('订单已完成');
+                            fetchHistoryOrders(); // 刷新订单列表
+                            if (typeof updateCalendarEvent === 'function') {
+                                updateCalendarEvent(reportId, 'completed');
+                            }
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    })
+                    .fail(function(error) {
+                        console.error('完成订单失败:', error);
+                        utils.ui.showMessage('完成订单失败，请重试');
+                    });
+                },
+
+                // 撤销订单
+                cancelOrder: function(reportId) {
+                    if (!reportId) {
+                        utils.ui.showMessage('订单ID无效');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: API_URLS.CANCEL_REPORT,
+                        method: 'POST',
+                        data: JSON.stringify({ reportId }),
+                        contentType: 'application/json',
+                        xhrFields: {
+                            withCredentials: true
+                        }
+                    })
+                    .done(function(data) {
+                        if (data.message === 'Success') {
+                            utils.ui.showMessage('订单已撤销');
+                            fetchHistoryOrders(); // 刷新订单列表
+                            if (typeof updateCalendarEvent === 'function') {
+                                updateCalendarEvent(reportId, 'cancelled');
+                            }
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    })
+                    .fail(function(error) {
+                        console.error('撤销订单失败:', error);
+                        utils.ui.showMessage('撤销订单失败，请重试');
+                    });
+                },
+
+                // 提交订单
+                submitOrder: function(formData) {
+                    $.ajax({
+                        url: API_URLS.CALL_REPORT,
+                        method: 'POST',
+                        data: JSON.stringify(formData),
+                        contentType: 'application/json',
+                        xhrFields: {
+                            withCredentials: true
+                        }
+                    })
+                    .done(function(data) {
+                        if (data.message === 'Success') {
+                            utils.ui.showMessage('报单成功！');
+                            document.getElementById('reportOrderForm').reset();
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    })
+                    .fail(function(error) {
+                        console.error('报单失败:', error);
+                        utils.ui.showMessage('报单失败，请重试');
+                    });
+                }
+            };
         </script>
         <!-- 修改assign_order.js模块引入 -->
         <script type="module">
