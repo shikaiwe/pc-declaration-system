@@ -3265,7 +3265,7 @@
                                     if (dateSwiper && dateSwiper.slides && dateSwiper.slides[dateSwiper.activeIndex]) {
                                         // 自动设置初始值
                                         const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
-                                        const selectedTime = this.slides[defaultTimeIndex].querySelector('.time-item').textContent.trim();
+                                        const selectedTime = timeSwiper.slides[defaultTimeIndex].querySelector('.time-item').textContent.trim();
                                         const year = new Date().getFullYear();
                                         const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
                                         const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
@@ -3303,7 +3303,6 @@
 
                                 const year = new Date().getFullYear();
                                 const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
-
                                 const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
                                 const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
 
@@ -3465,12 +3464,13 @@
                     event.preventDefault();  // 确保这行代码执行
                     event.stopPropagation(); // 阻止事件冒泡
                     
+                    const now = new Date();
                     const formData = {
                         userPhoneNumber: document.getElementById('userPhoneNumber').value.trim(),
                         address: document.getElementById('address').value.trim(),
                         issue: document.getElementById('issue').value.trim(),
                         date: document.getElementById('preferredTime').dataset.submitValue,
-                        call_date: new Date().toISOString()
+                        call_date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
                     };
 
                     // 表单验证
