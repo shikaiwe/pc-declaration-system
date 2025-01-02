@@ -220,6 +220,8 @@ class AssignOrder {
         `;
 
         this.bindEvents();
+        // 初始化后立即加载订单
+        this.loadOrders();
     }
 
     async loadOrders() {
