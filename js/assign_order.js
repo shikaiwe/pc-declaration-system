@@ -224,6 +224,14 @@ class AssignOrder {
 
     async loadOrders() {
         try {
+            const orderList = this.container.querySelector('#assignOrderList');
+            if (!orderList) {
+                console.error('找不到订单列表容器');
+                return;
+            }
+
+            orderList.innerHTML = '<div class="loading">加载中...</div>';
+
             $.ajax({
                     url: API_URLS.GET_REPORT_OF_SAME_DAY,
                     method: 'GET',
@@ -234,10 +242,10 @@ class AssignOrder {
                 .done((data) => {
                     console.log('获取到的订单数据:', data);
 
-                    if (data.message === 'Success') {
+                    if (data.message === 'Success' && Array.isArray(data.reports)) {
                         console.log('订单信息:', data.reports);
                         this.displayOrders(data.reports);
-                    } else if (data.message === 'No report') {
+                    } else if (data.message === 'No report' || !Array.isArray(data.reports) || data.reports.length === 0) {
                         console.log('没有订单信息');
                         this.showNoOrders();
                     } else {
@@ -257,9 +265,15 @@ class AssignOrder {
 
     displayOrders(orders) {
         const orderList = this.container.querySelector('#assignOrderList');
-        // // 过滤出待分配的订单（status = '0'）
-        console.log('orders:', orders);
-        const pendingOrders = orders.filter(order => order.status === '0');
+        if (!orderList) {
+            console.error('找不到订单列表容器');
+            return;
+        }
+
+        // 过滤出待分配的订单（status = '0'）
+        console.log('所有订单:', orders);
+        const pendingOrders = orders.filter(order => order && order.status === '0');
+        console.log('待分配订单:', pendingOrders);
 
         if (!pendingOrders || pendingOrders.length === 0) {
             this.showNoOrders();
@@ -269,19 +283,19 @@ class AssignOrder {
         const ordersHTML = pendingOrders.map(order => `
             <div class="order-item">
                 <div class="order-info">
-                    <div class="order-id">订单编号: ${order.reportId}</div>
+                    <div class="order-id">订单编号: ${order.reportId || '未知'}</div>
                     <div class="order-details">
                         <div class="order-details-item">
                             <span class="order-details-label">联系电话:</span>
-                            <span>${order.userPhoneNumber}</span>
+                            <span>${order.userPhoneNumber || '未知'}</span>
                         </div>
                         <div class="order-details-item">
                             <span class="order-details-label">地址:</span>
-                            <span>${order.address}</span>
+                            <span>${order.address || '未知'}</span>
                         </div>
                         <div class="order-details-item">
                             <span class="order-details-label">问题:</span>
-                            <span>${order.issue}</span>
+                            <span>${order.issue || '未知'}</span>
                         </div>
                         <div class="order-details-item">
                             <span class="order-details-label">预约时间:</span>
