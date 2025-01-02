@@ -8,7 +8,9 @@ const API_URLS = {
 class AssignOrder {
     constructor(container) {
         this.container = container;
-        this.workersLoaded = false; // 添加标志位跟踪是否已加载维修人员
+        this.workersLoaded = false;
+        this.ordersLoaded = false;
+        this.currentReportId = null;
         this.init();
     }
 
@@ -43,10 +45,16 @@ class AssignOrder {
         `;
 
         this.bindEvents();
-        this.loadOrders(); // 只在init时加载一次订单
+
+        // 只在首次初始化时加载订单
+        if (!this.ordersLoaded) {
+            this.loadOrders();
+        }
     }
 
     async loadOrders() {
+        if (this.ordersLoaded) return;
+
         try {
             const orderList = this.container.querySelector('#assignOrderList');
             if (!orderList) {
@@ -56,31 +64,22 @@ class AssignOrder {
 
             orderList.innerHTML = '<div class="loading">加载中...</div>';
 
-            $.ajax({
-                    url: API_URLS.GET_REPORT_OF_SAME_DAY,
-                    method: 'GET',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                })
-                .done((data) => {
-                    console.log('获取到的订单数据:', data);
+            const response = await $.ajax({
+                url: API_URLS.GET_REPORT_OF_SAME_DAY,
+                method: 'GET',
+                xhrFields: {
+                    withCredentials: true
+                }
+            });
 
-                    if (data.message === 'Success' && Array.isArray(data.reports)) {
-                        console.log('订单信息:', data.reports);
-                        this.displayOrders(data.reports);
-                    } else if (data.message === 'No report' || !Array.isArray(data.reports) || data.reports.length === 0) {
-                        console.log('没有订单信息');
-                        this.showNoOrders();
-                    } else {
-                        console.log('API响应消息:', data.message);
-                        this.handleSessionError(data.message);
-                    }
-                })
-                .fail((error) => {
-                    console.error('加载订单失败:', error);
-                    this.showError();
-                });
+            if (response.message === 'Success' && Array.isArray(response.reports)) {
+                this.ordersLoaded = true;
+                this.displayOrders(response.reports);
+            } else if (response.message === 'No report' || !Array.isArray(response.reports) || response.reports.length === 0) {
+                this.showNoOrders();
+            } else {
+                this.handleSessionError(response.message);
+            }
         } catch (error) {
             console.error('加载订单失败:', error);
             this.showError();
@@ -314,7 +313,9 @@ class AssignOrder {
     destroy() {
         // 清理事件监听器和DOM
         this.container.innerHTML = '';
-        this.workersLoaded = false; // 重置加载状态
+        this.workersLoaded = false;
+        this.ordersLoaded = false;
+        this.currentReportId = null;
     }
 }
 

@@ -3617,42 +3617,10 @@
         // 初始化分配订单功能
         function initAssignOrder() {
             const assignOrderContent = document.getElementById('assignOrderContent');
-            if (!assignOrderContent) return;
+            if (!assignOrderContent || assignOrderInstance) return;
 
-            // 确保先完全销毁旧实例
-            if (assignOrderInstance) {
-                try {
-                    assignOrderInstance.destroy();
-                    assignOrderInstance = null;
-                } catch (error) {
-                    console.error('销毁旧实例失败:', error);
-                }
-            }
-
-            utils.ui.showLoading(true);
             try {
-                // 添加延迟初始化
-                setTimeout(() => {
-                    try {
-                        assignOrderInstance = new window.AssignOrder(assignOrderContent);
-                        assignOrderInstance.loadOrders(); // 手动调用loadOrders
-                        utils.ui.showLoading(false);
-                    } catch (error) {
-                        console.error('分配订单页面初始化失败:', error);
-                        assignOrderContent.innerHTML = `
-                            <div class="error-message" style="text-align: center; padding: 20px;">
-                                <i class="error-icon" style="font-size: 48px; display: block; margin-bottom: 10px;">❌</i>
-                                <p style="color: #ff4d4f; margin-bottom: 15px;">加载失败，请重试</p>
-                                <button class="retry-button" 
-                                        style="padding: 8px 20px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;"
-                                        onclick="loadAssignOrderContent()">
-                                    重试
-                                </button>
-                            </div>
-                        `;
-                        utils.ui.showLoading(false);
-                    }
-                }, 100);
+                assignOrderInstance = new window.AssignOrder(assignOrderContent);
             } catch (error) {
                 console.error('分配订单页面初始化失败:', error);
                 assignOrderContent.innerHTML = `
@@ -3661,22 +3629,22 @@
                         <p style="color: #ff4d4f; margin-bottom: 15px;">加载失败，请重试</p>
                         <button class="retry-button" 
                                 style="padding: 8px 20px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;"
-                                onclick="loadAssignOrderContent()">
+                                onclick="initAssignOrder()">
                             重试
                         </button>
                     </div>
                 `;
-                utils.ui.showLoading(false);
             }
         }
 
         // 监听模态框显示和隐藏
         document.addEventListener('DOMContentLoaded', () => {
+            // 分配订单卡片点击事件
             const assignOrderBtn = document.getElementById('assign-order');
             if (assignOrderBtn) {
                 assignOrderBtn.addEventListener('click', () => {
                     utils.ui.showModal('assignOrderModal');
-                    loadAssignOrderContent();
+                    initAssignOrder();
                 });
             }
 
@@ -3710,18 +3678,11 @@
                 });
             }
         });
-
-        // 替换原来的loadAssignOrderContent函数
-        function loadAssignOrderContent() {
-            initAssignOrder();
-        }
     </script>
     <!-- 添加assign_order.js模块引入 -->
     <script type="module">
         import AssignOrder from './js/assign_order.js'; window.AssignOrder = AssignOrder;
     </script>
 </body>
-
-</html>
 
 </html>
