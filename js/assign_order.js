@@ -68,6 +68,7 @@ class AssignOrder {
         const orderList = this.container.querySelector('#assignOrderList');
         // // 过滤出待分配的订单（status = '0'）
         // const pendingOrders = orders.filter(order => order.status === '0');
+        const pendingOrders = orders;
 
         // if (!pendingOrders || pendingOrders.length === 0) {
         //     this.showNoOrders();
