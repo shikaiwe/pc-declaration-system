@@ -985,32 +985,38 @@
         
         .status-badge {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            border-radius: 20px;
             font-size: 14px;
             font-weight: 500;
+            text-align: center;
         }
         
+        .status-badge.pending,
         .status-pending {
             background-color: #ffc107;
             color: #000;
         }
         
+        .status-badge.allocated,
         .status-allocated {
             background-color: #28a745;
             color: #fff;
         }
         
+        .status-badge.completed,
         .status-completed {
             background-color: #17a2b8;
             color: #fff;
         }
         
+        .status-badge.cancelled,
         .status-cancelled {
             background-color: #dc3545;
             color: #fff;
         }
         
+        .status-badge.unknown,
         .status-unknown {
             background-color: #6c757d;
             color: #fff;
@@ -1095,11 +1101,13 @@
         }
         
         .order-status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.9em;
             font-weight: 500;
-            margin-left: auto;
         }
         
         .order-buttons {
@@ -1250,7 +1258,7 @@
         }
         /* 已分配订单样式 */
         
-        .order-item.assigned {
+        .order-item.allocated {
             background: #f8f9fa;
             border-left: 4px solid #28a745;
         }
@@ -1289,7 +1297,7 @@
         }
         
         @media (prefers-color-scheme: dark) {
-            .order-item.assigned {
+            .order-item.allocated {
                 background: #2a2a2a;
                 border-left-color: #28a745;
             }

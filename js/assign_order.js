@@ -5,6 +5,26 @@ const API_URLS = {
     ASSIGN_ORDER: 'https://8.134.178.71/api/dashboard/assign_order/'
 };
 
+// 订单状态映射
+const ORDER_STATUS = {
+    '0': {
+        text: '待分配',
+        class: 'status-pending'
+    },
+    '1': {
+        text: '已分配',
+        class: 'status-allocated'
+    },
+    '2': {
+        text: '已完成',
+        class: 'status-completed'
+    },
+    '3': {
+        text: '已撤单',
+        class: 'status-cancelled'
+    }
+};
+
 class AssignOrder {
     constructor(container) {
         this.container = container;
@@ -87,26 +107,28 @@ class AssignOrder {
     }
 
     displayOrders(orders) {
-            const orderList = this.container.querySelector('#assignOrderList');
-            if (!orderList) {
-                console.error('找不到订单列表容器');
-                return;
-            }
+        const orderList = this.container.querySelector('#assignOrderList');
+        if (!orderList) {
+            console.error('找不到订单列表容器');
+            return;
+        }
 
-            console.log('所有订单:', orders);
+        console.log('所有订单:', orders);
 
-            if (!orders || orders.length === 0) {
-                this.showNoOrders();
-                return;
-            }
+        if (!orders || orders.length === 0) {
+            this.showNoOrders();
+            return;
+        }
 
-            const ordersHTML = orders.map(order => {
-                        const isAssigned = order.status !== '0';
+        const ordersHTML = orders.map(order => {
+            const status = ORDER_STATUS[order.status] || ORDER_STATUS['0'];
+            const isAssigned = order.status !== '0';
 
-                        return `
-                <div class="order-item">
+            return `
+                <div class="order-item ${isAssigned ? 'allocated' : ''}">
                     <div class="order-info">
                         <div class="order-id">订单编号: ${order.reportId || '未知'}</div>
+                        <span class="status-badge ${status.class}">${status.text}</span>
                         <div class="order-details">
                             <div class="order-details-item">
                                 <span class="order-details-label">联系电话:</span>
