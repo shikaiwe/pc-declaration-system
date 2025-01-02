@@ -1995,7 +1995,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1010;
+            z-index: 2000;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -2009,101 +2009,93 @@
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
+            transform: translate(-50%, -50%);
             width: 90%;
             max-width: 400px;
             background-color: white;
             border-radius: 12px;
             padding: 20px;
-            z-index: 1011;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
+            z-index: 2001;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: none;
         }
         
         .assign-order-worker-selection.active {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-            visibility: visible;
+            display: block;
+            animation: modalFadeIn 0.3s ease forwards;
         }
         
         @keyframes modalFadeIn {
             from {
                 opacity: 0;
-                transform: translate(-50%, -60%) scale(0.9);
+                transform: translate(-50%, -48%);
             }
             to {
                 opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
+                transform: translate(-50%, -50%);
             }
         }
         
-        .assign-order-header {
+        .assign-order-modal-header {
             text-align: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
         }
         
-        .assign-order-header h3 {
+        .assign-order-modal-title {
             margin: 0;
-            font-size: 18px;
+            font-size: 20px;
             color: #333;
             font-weight: 500;
         }
         
-        .assign-order-body {
+        .assign-order-modal-subtitle {
+            margin: 8px 0 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .assign-order-modal-body {
             margin-bottom: 20px;
         }
         
-        .assign-order-body select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            color: #333;
-            background-color: #fff;
-            transition: border-color 0.3s ease;
-        }
-        
-        .assign-order-body select:focus {
-            outline: none;
-            border-color: #2196F3;
-        }
-        
-        .assign-order-footer {
+        .assign-order-modal-footer {
             display: flex;
-            gap: 10px;
             justify-content: flex-end;
+            gap: 10px;
             padding-top: 15px;
             border-top: 1px solid #eee;
         }
         
-        .assign-order-footer button {
+        .assign-order-btn {
             padding: 10px 20px;
             border: none;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
         
-        .assign-order-cancel {
+        .assign-order-btn-cancel {
             background-color: #f5f5f5;
             color: #666;
         }
         
-        .assign-order-confirm {
+        .assign-order-btn-confirm {
             background-color: #2196F3;
             color: white;
         }
         
-        .assign-order-cancel:hover {
+        .assign-order-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .assign-order-btn-cancel:hover {
             background-color: #e0e0e0;
         }
         
-        .assign-order-confirm:hover {
+        .assign-order-btn-confirm:hover {
             background-color: #1976D2;
         }
         
@@ -2354,6 +2346,115 @@
             }
             .order-details-label {
                 color: #888;
+            }
+        }
+        
+        .assign-order-select-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .assign-order-select-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .assign-order-select {
+            width: 100%;
+            padding: 12px 35px 12px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #333;
+            background-color: #fff;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .assign-order-select:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+        
+        .assign-order-select:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+        
+        .assign-order-select-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #666;
+            transition: transform 0.3s ease;
+        }
+        
+        .assign-order-select:focus+.assign-order-select-icon {
+            transform: translateY(-50%) rotate(180deg);
+            color: #2196F3;
+        }
+        
+        .assign-order-select option {
+            padding: 12px;
+            font-size: 16px;
+        }
+        
+        .assign-order-select option:first-child {
+            color: #666;
+        }
+        /* 加载状态样式 */
+        
+        .assign-order-select.loading {
+            background-image: linear-gradient(45deg, #f3f3f3 25%, transparent 25%, transparent 50%, #f3f3f3 50%, #f3f3f3 75%, transparent 75%, transparent);
+            background-size: 1rem 1rem;
+            animation: loading-animation 1s linear infinite;
+        }
+        
+        @keyframes loading-animation {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: 1rem 0;
+            }
+        }
+        /* 错误状态样式 */
+        
+        .assign-order-select.error {
+            border-color: #dc3545;
+            background-color: #fff8f8;
+        }
+        
+        .assign-order-select.error+.assign-order-select-icon {
+            color: #dc3545;
+        }
+        /* 暗色模式适配 */
+        
+        @media (prefers-color-scheme: dark) {
+            .assign-order-select {
+                background-color: #333;
+                color: #fff;
+                border-color: #444;
+            }
+            .assign-order-select option {
+                background-color: #333;
+                color: #fff;
+            }
+            .assign-order-select:disabled {
+                background-color: #222;
+                color: #666;
+            }
+            .assign-order-select-label {
+                color: #fff;
             }
         }
     </style>
