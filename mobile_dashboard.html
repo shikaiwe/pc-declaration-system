@@ -2363,7 +2363,6 @@
 
                 const ordersHTML = orders.map(order => {
                     const { text: statusText, class: statusClass } = orderManager.getStatusInfo(order.status);
-                    const showCompleteButton = order.status === '1';
 
                     return `
                         <div class="order-card">
@@ -2397,13 +2396,6 @@
                                     <strong>提交时间：</strong>
                                     ${utils.date.format(order.call_date)}
                                 </p>
-                                ${showCompleteButton ? `
-                                    <div class="order-buttons">
-                                        <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}')">
-                                            结单
-                                        </button>
-                                    </div>
-                                ` : ''}
                             </div>
                         </div>
                     `;
