@@ -320,30 +320,25 @@ class AssignOrder {
 
     async loadWorkers() {
         try {
-            $.ajax({
-                    url: API_URLS.TODAY_WORKERS,
-                    method: 'GET',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                })
-                .done((data) => {
-                    const select = this.container.querySelector('#workerSelect');
+            const select = this.container.querySelector('#workerSelect');
+            select.innerHTML = '<option value="">加载中...</option>';
 
-                    if (data.message === 'Success' && data.worker_list && data.worker_list.length > 0) {
-                        const options = data.worker_list.map(worker =>
-                            `<option value="${worker.username}">${worker.username}</option>`
-                        ).join('');
-                        select.innerHTML = options;
-                    } else {
-                        select.innerHTML = '<option value="">暂无可用维修人员</option>';
-                    }
-                })
-                .fail((error) => {
-                    console.error('加载维修人员列表失败:', error);
-                    const select = this.container.querySelector('#workerSelect');
-                    select.innerHTML = '<option value="">加载失败，请重试</option>';
-                });
+            const response = await $.ajax({
+                url: API_URLS.TODAY_WORKERS,
+                method: 'GET',
+                xhrFields: {
+                    withCredentials: true
+                }
+            });
+
+            if (response.message === 'Success' && response.worker_list && response.worker_list.length > 0) {
+                const options = response.worker_list.map(worker =>
+                    `<option value="${worker.username}">${worker.username}</option>`
+                ).join('');
+                select.innerHTML = options;
+            } else {
+                select.innerHTML = '<option value="">暂无可用维修人员</option>';
+            }
         } catch (error) {
             console.error('加载维修人员列表失败:', error);
             const select = this.container.querySelector('#workerSelect');
@@ -368,8 +363,7 @@ class AssignOrder {
                 selection.classList.add('active');
 
                 // 如果下拉框为空或只有加载中选项，则加载维修人员列表
-                if (!select.options.length || select.options[0].value === '') {
-                    select.innerHTML = '<option value="">加载中...</option>';
+                if (!select.options.length || (select.options.length === 1 && select.options[0].value === '')) {
                     await this.loadWorkers();
                 }
             }
