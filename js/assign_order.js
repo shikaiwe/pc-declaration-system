@@ -183,7 +183,7 @@ class AssignOrder {
             select.classList.remove('loading');
             select.disabled = false;
 
-            if (response.message === 'Success' && Array.isArray(response.worker_list) && response.worker_list.length > 0) {
+            if (response.message === 'Success' && Array.isArray(response.workers) && response.workers.length > 0) {
                 // 清空现有选项
                 select.innerHTML = '';
 
@@ -191,27 +191,19 @@ class AssignOrder {
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
                 defaultOption.textContent = '请选择维修人员';
-                defaultOption.style.color = '#666';
                 select.appendChild(defaultOption);
 
                 // 添加维修人员选项
-                response.worker_list.forEach(worker => {
+                response.workers.forEach(worker => {
                     const option = document.createElement('option');
                     option.value = worker.username;
                     option.textContent = worker.username;
-                    option.style.padding = '12px';
                     select.appendChild(option);
                 });
 
                 this.workersLoaded = true;
-
-                // 确保选择框可见
-                select.style.display = 'block';
-                select.style.visibility = 'visible';
-                select.style.opacity = '1';
-            } else if (response.message === 'Success' && (!response.worker_list || response.worker_list.length === 0)) {
+            } else if (response.message === 'Success' && (!response.workers || response.workers.length === 0)) {
                 select.innerHTML = '<option value="">暂无可用维修人员</option>';
-                select.disabled = true;
             } else {
                 this.handleSessionError(response.message);
             }
@@ -220,7 +212,6 @@ class AssignOrder {
             const select = this.container.querySelector('#workerSelect');
             if (select) {
                 select.classList.remove('loading');
-                select.disabled = true;
                 select.innerHTML = '<option value="">加载失败，请重试</option>';
             }
         }
