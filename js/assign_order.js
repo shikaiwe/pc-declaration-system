@@ -50,7 +50,7 @@ class AssignOrder {
 
             if (data.message === 'Success') {
                 console.log('订单信息:', data.reports);
-                this.displayOrders(data.report_info);
+                this.displayOrders(data.reports);
             } else if (data.message === 'No report') {
                 console.log('没有订单信息');
                 this.showNoOrders();
