@@ -46,11 +46,16 @@ class AssignOrder {
             });
             const data = await response.json();
 
+            console.log('获取到的订单数据:', data);
+
             if (data.message === 'Success') {
+                console.log('订单信息:', data.report_info);
                 this.displayOrders(data.report_info);
             } else if (data.message === 'No report') {
+                console.log('没有订单信息');
                 this.showNoOrders();
             } else {
+                console.log('API响应消息:', data.message);
                 this.handleSessionError(data.message);
             }
         } catch (error) {
@@ -61,12 +66,15 @@ class AssignOrder {
 
     displayOrders(orders) {
         const orderList = this.container.querySelector('#assignOrderList');
-        if (!orders || orders.length === 0) {
+        // 过滤出待分配的订单（status = '0'）
+        const pendingOrders = orders.filter(order => order.status === '0');
+
+        if (!pendingOrders || pendingOrders.length === 0) {
             this.showNoOrders();
             return;
         }
 
-        const ordersHTML = orders.map(order => `
+        const ordersHTML = pendingOrders.map(order => `
             <div class="order-item">
                 <div class="order-info">
                     <div class="order-id">订单编号: ${order.reportId}</div>
