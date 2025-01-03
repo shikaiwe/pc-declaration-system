@@ -843,17 +843,16 @@ class AssignOrder {
      */
     async _handleAssignResponse(response, reportId, workerName) {
         if (response.message === 'Success') {
+            await this._updateOrderStatus(reportId, workerName);
             this.showMessage('订单分配成功', 'success');
             this.closeWorkerSelection();
-            await this.loadOrders();  // 重新加载订单列表
-        } else if (response.message === 'Worker is unavailable') {
-            this.showMessage(ERROR_MESSAGES.WORKER_UNAVAILABLE, 'error');
-        } else if (response.message === 'Report is assigned') {
-            this.showMessage(ERROR_MESSAGES.REPORT_ASSIGNED, 'error');
-            this.closeWorkerSelection();
-            await this.loadOrders();  // 重新加载订单列表
+            
+            // 调用全局回调函数更新订单信息
+            if (typeof window.onOrderAssigned === 'function') {
+                window.onOrderAssigned();
+            }
         } else {
-            this.handleSessionError(response.message);
+            this._handleAssignError(response.message);
         }
     }
 

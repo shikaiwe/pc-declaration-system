@@ -4433,6 +4433,24 @@
                         console.error('报单失败:', error);
                         utils.ui.showMessage('报单失败，请重试');
                     });
+                },
+
+                // 添加分配订单后的更新函数
+                updateAfterAssign: function() {
+                    // 刷新历史订单列表
+                    fetchHistoryOrders();
+                    
+                    // 如果日历存在，刷新日历事件
+                    const calendarEl = document.querySelector('#calendar');
+                    if (calendarEl && calendarEl.FullCalendar) {
+                        calendarEl.FullCalendar.refetchEvents();
+                    }
+                    
+                    // 如果在分配订单页面，刷新分配订单列表
+                    const assignOrderContent = document.getElementById('assignOrderContent');
+                    if (assignOrderContent && window.assignOrderInstance) {
+                        window.assignOrderInstance.refreshOrders();
+                    }
                 }
             };
         </script>
@@ -4444,6 +4462,12 @@
                     const module = await
                     import ('./js/assign_order.js');
                     window.AssignOrder = module.default;
+
+                    // 添加订单分配成功的回调
+                    window.onOrderAssigned = function() {
+                        orderManager.updateAfterAssign();
+                        utils.ui.showMessage('订单分配成功');
+                    };
                 } catch (error) {
                     console.error('加载分配订单模块失败:', error);
                 }
