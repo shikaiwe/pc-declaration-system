@@ -289,7 +289,7 @@ class AssignOrder {
             .assign-order-select-icon {
                 position: absolute;
                 right: 14px;
-                top: 50%;
+                top: calc(50% + 12px);
                 transform: translateY(-50%);
                 color: #666;
                 pointer-events: none;
