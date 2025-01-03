@@ -2850,32 +2850,51 @@
                 try {
                     utils.ui.showLoading(true);
                     // 首先获取用户角色
-                    const userResponse = await fetch(API_URLS.GET_USER_INFO, {
-                        credentials: 'include'
+                    $.ajax({
+                        url: API_URLS.GET_USER_INFO,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(userData) {
+                            if (userData.message !== 'Success') {
+                                failureCallback(new Error(userData.message));
+                                return;
+                            }
+
+                            // 根据用户角色选择获取订单的API
+                            const apiUrl = userData.label === 'worker' ? API_URLS.GET_REPORT_LIST : API_URLS.GET_HISTORY;
+                            
+                            $.ajax({
+                                url: apiUrl,
+                                method: 'GET',
+                                xhrFields: {
+                                    withCredentials: true
+                                },
+                                success: function(data) {
+                                    utils.ui.showLoading(false);
+                                    if (data.message === 'Success') {
+                                        const events = data.report_info.map(this.convertOrderToEvent);
+                                        successCallback(events);
+                                    } else if (data.message === 'No history report' || data.message === 'No my report') {
+                                        successCallback([]);
+                                    } else {
+                                        failureCallback(new Error(data.message));
+                                    }
+                                }.bind(this),
+                                error: function(xhr, status, error) {
+                                    utils.ui.showLoading(false);
+                                    console.error('获取日程数据失败:', error);
+                                    failureCallback(error);
+                                }
+                            });
+                        }.bind(this),
+                        error: function(xhr, status, error) {
+                            utils.ui.showLoading(false);
+                            console.error('获取用户角色失败:', error);
+                            failureCallback(error);
+                        }
                     });
-                    const userData = await userResponse.json();
-
-                    if (userData.message !== 'Success') {
-                        throw new Error(userData.message);
-                    }
-
-                    // 根据用户角色选择获取订单的API
-                    const apiUrl = userData.label === 'worker' ? API_URLS.GET_REPORT_LIST : API_URLS.GET_HISTORY;
-                    
-                    const response = await fetch(apiUrl, {
-                        credentials: 'include'
-                    });
-                    const data = await response.json();
-                    utils.ui.showLoading(false);
-
-                    if (data.message === 'Success') {
-                        const events = data.report_info.map(this.convertOrderToEvent);
-                        successCallback(events);
-                    } else if (data.message === 'No history report' || data.message === 'No my report') {
-                        successCallback([]);
-                    } else {
-                        failureCallback(new Error(data.message));
-                    }
                 } catch (error) {
                     utils.ui.showLoading(false);
                     console.error('获取日程数据失败:', error);
@@ -3832,15 +3851,6 @@
 
         // 监听模态框显示和隐藏
         document.addEventListener('DOMContentLoaded', () => {
-            // 分配订单卡片点击事件
-            const assignOrderBtn = document.getElementById('assign-order');
-            if (assignOrderBtn) {
-                assignOrderBtn.addEventListener('click', () => {
-                    utils.ui.showModal('assignOrderModal');
-                    initAssignOrder();
-                });
-            }
-
             // 监听模态框关闭
             const closeButtons = document.querySelectorAll('.close-button');
             closeButtons.forEach(button => {
