@@ -2137,6 +2137,10 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 0;
         }
         
         .order-item {
@@ -2191,12 +2195,13 @@
         
         .assign-btn:hover {
             background-color: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
         }
         
         .assign-btn:active {
             transform: scale(0.98);
         }
-        /* 已分配信息样式 */
         
         .assigned-info {
             margin-top: 8px;
@@ -2211,156 +2216,8 @@
             font-weight: 500;
             font-size: 14px;
         }
-        /* 深色模式适配 */
         
         @media (prefers-color-scheme: dark) {
-            .assigned-info {
-                background-color: #2a2a2a;
-            }
-            .assigned-text {
-                color: #4caf50;
-            }
-        }
-        
-        .assign-order-modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1010;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .assign-order-modal-overlay.active {
-            display: block;
-            opacity: 1;
-        }
-        
-        .assign-order-worker-selection {
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            min-width: 320px;
-            max-width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            z-index: 1005;
-        }
-        
-        .assign-order-worker-selection.active {
-            transform: translate(-50%, -50%);
-        }
-        
-        .assign-order-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .assign-order-header h3 {
-            margin: 0;
-            font-size: 18px;
-            color: #333;
-        }
-        
-        .assign-order-body {
-            margin-bottom: 20px;
-        }
-        
-        .assign-order-body select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            color: #333;
-        }
-        
-        .assign-order-footer {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-        
-        .assign-order-footer button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        
-        .assign-order-cancel {
-            background-color: #f5f5f5;
-            color: #666;
-        }
-        
-        .assign-order-confirm {
-            background-color: #2196F3;
-            color: white;
-        }
-        
-        .assign-order-cancel:hover {
-            background-color: #e0e0e0;
-        }
-        
-        .assign-order-confirm:hover {
-            background-color: #1976D2;
-        }
-        
-        .assign-order-message {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            z-index: 1012;
-            font-size: 16px;
-            text-align: center;
-            min-width: 200px;
-            max-width: 80%;
-            display: none;
-        }
-        
-        .assign-order-message.error {
-            background-color: rgba(244, 67, 54, 0.9);
-        }
-        
-        .assign-order-message.success {
-            background-color: rgba(76, 175, 80, 0.9);
-        }
-        
-        @media (prefers-color-scheme: dark) {
-            .assign-order-worker-selection {
-                background-color: #333;
-            }
-            .assign-order-header h3 {
-                color: #fff;
-            }
-            .assign-order-body select {
-                background-color: #444;
-                border-color: #555;
-                color: #fff;
-            }
-            .assign-order-cancel {
-                background-color: #444;
-                color: #fff;
-            }
-            .assign-order-cancel:hover {
-                background-color: #555;
-            }
             .order-item {
                 background-color: #333;
             }
@@ -2369,6 +2226,12 @@
             }
             .order-details-label {
                 color: #888;
+            }
+            .assigned-info {
+                background-color: #2a2a2a;
+            }
+            .assigned-text {
+                color: #4caf50;
             }
         }
         
@@ -2400,17 +2263,6 @@
             transition: all 0.3s ease;
         }
         
-        .assign-order-select option {
-            padding: 12px;
-            font-size: 16px;
-            background-color: #fff;
-            color: #333;
-        }
-        
-        .assign-order-select option:first-child {
-            color: #666;
-        }
-        
         .assign-order-select:focus {
             outline: none;
             border-color: #2196F3;
@@ -2420,22 +2272,6 @@
         .assign-order-select:disabled {
             background-color: #f5f5f5;
             cursor: not-allowed;
-        }
-        
-        @media (prefers-color-scheme: dark) {
-            .assign-order-select {
-                background-color: #333;
-                color: #fff;
-                border-color: #444;
-            }
-            .assign-order-select option {
-                background-color: #333;
-                color: #fff;
-            }
-            .assign-order-select:disabled {
-                background-color: #222;
-                color: #666;
-            }
         }
         
         .assign-order-select-icon {
@@ -2451,360 +2287,6 @@
         .assign-order-select:focus+.assign-order-select-icon {
             transform: translateY(-50%) rotate(180deg);
             color: #2196F3;
-        }
-        
-        .assign-order-select option {
-            padding: 12px;
-            font-size: 16px;
-        }
-        
-        .assign-order-select option:first-child {
-            color: #666;
-        }
-        /* 加载状态样式 */
-        
-        .assign-order-select.loading {
-            background-image: linear-gradient(45deg, #f3f3f3 25%, transparent 25%, transparent 50%, #f3f3f3 50%, #f3f3f3 75%, transparent 75%, transparent);
-            background-size: 1rem 1rem;
-            animation: loading-animation 1s linear infinite;
-        }
-        
-        @keyframes loading-animation {
-            from {
-                background-position: 0 0;
-            }
-            to {
-                background-position: 1rem 0;
-            }
-        }
-        /* 错误状态样式 */
-        
-        .assign-order-select.error {
-            border-color: #dc3545;
-            background-color: #fff8f8;
-        }
-        
-        .assign-order-select.error+.assign-order-select-icon {
-            color: #dc3545;
-        }
-        /* 分配订单相关样式 */
-        
-        .assign-order-container {
-            padding: 15px;
-            max-width: 100%;
-            margin: 0 auto;
-            background: transparent;
-        }
-        
-        .assign-order-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-height: calc(100vh - 200px);
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 10px 0;
-        }
-        /* 订单列表项样式 */
-        
-        .order-item {
-            background: #fff;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-        /* 已分配订单样式 */
-        
-        .order-item.assigned {
-            background: #f8f9fa;
-            border-left: 4px solid #28a745;
-        }
-        
-        .order-status {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 500;
-        }
-        
-        .status-pending {
-            background-color: #ffc107;
-            color: #000;
-        }
-        
-        .status-assigned {
-            background-color: #28a745;
-            color: #fff;
-        }
-        
-        .assign-btn.assigned {
-            background-color: #6c757d;
-            cursor: not-allowed;
-            opacity: 0.8;
-            pointer-events: none;
-        }
-        
-        .assign-btn.assigned:hover {
-            background-color: #6c757d;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .order-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .order-info {
-            flex: 1;
-        }
-        
-        .order-id {
-            font-weight: bold;
-            color: #2196F3;
-            font-size: 1.1em;
-            margin-bottom: 8px;
-        }
-        
-        .order-details {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        .order-details-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-        }
-        
-        .order-details-label {
-            color: #999;
-            min-width: 60px;
-        }
-        
-        .assign-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 8px;
-        }
-        
-        .assign-btn:hover {
-            background-color: #1976D2;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
-        }
-        
-        .assign-btn:active {
-            transform: scale(0.98);
-        }
-        /* 深色模式适配 */
-        
-        @media (prefers-color-scheme: dark) {
-            .order-item {
-                background-color: #333;
-            }
-            .order-item.assigned {
-                background: #2a2a2a;
-                border-left-color: #28a745;
-            }
-            .order-details {
-                color: #ccc;
-            }
-            .order-details-label {
-                color: #888;
-            }
-            .order-id {
-                color: #64B5F6;
-            }
-        }
-        /* 分配订单模态框样式 */
-        
-        .assign-order-modal-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(0, 0, 0, 0);
-            z-index: 1010;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(0);
-            -webkit-backdrop-filter: blur(0);
-        }
-        
-        .assign-order-modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-        }
-        
-        .assign-order-worker-selection {
-            position: relative;
-            width: 90%;
-            max-width: 420px;
-            background-color: white;
-            border-radius: 20px;
-            padding: 28px;
-            z-index: 1011;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            transform: scale(0.95) translateY(20px);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .assign-order-modal-overlay.active .assign-order-worker-selection {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-        }
-        
-        .assign-order-modal-header {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-        
-        .assign-order-modal-title {
-            margin: 0;
-            font-size: 22px;
-            color: #333;
-            font-weight: 600;
-        }
-        
-        .assign-order-modal-subtitle {
-            margin: 8px 0 0;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .assign-order-modal-body {
-            margin-bottom: 28px;
-        }
-        
-        .assign-order-select-wrapper {
-            position: relative;
-        }
-        
-        .assign-order-select-label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .assign-order-select {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 16px;
-            color: #333;
-            background-color: #fff;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            padding-right: 40px;
-        }
-        
-        .assign-order-select:hover {
-            border-color: #2196F3;
-        }
-        
-        .assign-order-select:focus {
-            outline: none;
-            border-color: #2196F3;
-            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-        }
-        
-        .assign-order-select:disabled {
-            background-color: #f5f5f5;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
-        .assign-order-select.loading {
-            background-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" fill="none" stroke="%23333" stroke-width="8" r="40" stroke-dasharray="180 100"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 20px;
-            animation: rotate 1s linear infinite;
-        }
-        
-        @keyframes rotate {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        
-        .assign-order-modal-footer {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-        
-        .assign-order-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .assign-order-btn-cancel {
-            background-color: #f5f5f5;
-            color: #666;
-        }
-        
-        .assign-order-btn-confirm {
-            background-color: #2196F3;
-            color: white;
-            padding-left: 32px !important;
-            padding-right: 32px !important;
-        }
-        
-        .assign-order-btn-cancel:hover {
-            background-color: #eeeeee;
-            transform: translateY(-2px);
-        }
-        
-        .assign-order-btn-confirm:hover {
-            background-color: #1976D2;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
         }
         
         .assign-order-message {
@@ -2831,21 +2313,8 @@
         .assign-order-message.success {
             background-color: rgba(76, 175, 80, 0.9);
         }
-        /* 深色模式适配 */
         
         @media (prefers-color-scheme: dark) {
-            .assign-order-worker-selection {
-                background-color: #333;
-            }
-            .assign-order-modal-title {
-                color: #fff;
-            }
-            .assign-order-modal-subtitle {
-                color: #aaa;
-            }
-            .assign-order-select-label {
-                color: #ccc;
-            }
             .assign-order-select {
                 background-color: #444;
                 border-color: #555;
@@ -2855,86 +2324,8 @@
                 background-color: #222;
                 color: #666;
             }
-            .assign-order-select.loading {
-                background-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" fill="none" stroke="%23fff" stroke-width="8" r="40" stroke-dasharray="180 100"/></svg>');
-            }
-            .assign-order-btn-cancel {
-                background-color: #444;
-                color: #fff;
-            }
-            .assign-order-btn-cancel:hover {
-                background-color: #555;
-            }
-        }
-        /* 订单状态标签统一样式 */
-        
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            text-align: center;
-        }
-        /* 订单状态颜色定义 */
-        
-        .status-badge.pending,
-        .status-pending {
-            background-color: #ffc107;
-            color: #000;
-        }
-        
-        .status-badge.allocated,
-        .status-allocated {
-            background-color: #28a745;
-            color: #fff;
-        }
-        
-        .status-badge.completed,
-        .status-completed {
-            background-color: #17a2b8;
-            color: #fff;
-        }
-        
-        .status-badge.cancelled,
-        .status-cancelled {
-            background-color: #dc3545;
-            color: #fff;
-        }
-        
-        .status-badge.unknown,
-        .status-unknown {
-            background-color: #6c757d;
-            color: #fff;
-        }
-        /* 订单卡片中的状态样式 */
-        
-        .order-status {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 500;
-        }
-        /* 订单详情中的状态样式 */
-        
-        .detail-value .status-badge {
-            padding: 4px 12px;
-            font-size: 12px;
-        }
-        /* 已分配订单样式 */
-        
-        .order-item.allocated {
-            background: #f8f9fa;
-            border-left: 4px solid #28a745;
-        }
-        
-        @media (prefers-color-scheme: dark) {
-            .order-item.allocated {
-                background: #2a2a2a;
-                border-left-color: #28a745;
+            .assign-order-select-label {
+                color: #ccc;
             }
         }
     </style>
