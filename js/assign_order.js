@@ -92,10 +92,10 @@ class AssignOrder {
                 }
             });
 
-            if (response.message === 'Success' && Array.isArray(response.report_info)) {
+            if (response.message === 'Success' && Array.isArray(response.reports)) {
                 this.ordersLoaded = true;
-                this.displayOrders(response.report_info);
-            } else if (response.message === 'No report' || !Array.isArray(response.report_info) || response.report_info.length === 0) {
+                this.displayOrders(response.reports);
+            } else if (response.message === 'No report' || !Array.isArray(response.reports) || response.reports.length === 0) {
                 this.showNoOrders();
             } else {
                 this.handleSessionError(response.message);
