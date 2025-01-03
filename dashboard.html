@@ -1626,42 +1626,66 @@
         
         .flatpickr-calendar .numInputWrapper span {
             position: absolute !important;
-            right: 2px !important;
-            width: 16px !important;
-            height: 16px !important;
+            width: 20px !important;
+            height: 20px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             cursor: pointer !important;
             background: transparent !important;
-            transition: all 0.15s ease !important;
+            right: 8px !important;
+            color: #666 !important;
+            transition: color 0.2s ease !important;
         }
         /* 上箭头 */
         
         .flatpickr-calendar .numInputWrapper span.arrowUp {
-            top: 4px !important;
+            top: 0 !important;
+        }
+        
+        .flatpickr-calendar .numInputWrapper span.arrowUp:after {
+            content: '▲' !important;
+            font-size: 10px !important;
         }
         /* 下箭头 */
         
         .flatpickr-calendar .numInputWrapper span.arrowDown {
-            bottom: 4px !important;
+            bottom: 0 !important;
+        }
+        
+        .flatpickr-calendar .numInputWrapper span.arrowDown:after {
+            content: '▼' !important;
+            font-size: 10px !important;
         }
         /* 悬停效果 */
         
-        .flatpickr-calendar .numInputWrapper span:hover:before {
+        .flatpickr-calendar .numInputWrapper span:hover {
             color: #007bff !important;
-            transform: scale(1.2) !important;
         }
+        /* 禁用状态 */
         
         .flatpickr-calendar .numInputWrapper span.disabled {
-            opacity: 0.4 !important;
+            opacity: 0.3 !important;
             cursor: not-allowed !important;
-            background-color: transparent !important;
         }
+        /* 时间输入框 */
         
-        .flatpickr-calendar .numInputWrapper span.disabled:hover:after {
-            border-bottom-color: #888 !important;
-            border-top-color: #888 !important;
+        .flatpickr-time input.flatpickr-hour,
+        .flatpickr-time input.flatpickr-minute {
+            font-size: 16px !important;
+            font-weight: bold !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            text-align: center !important;
+            padding-right: 30px !important;
+            width: 100% !important;
+        }
+        /* 分隔符样式 */
+        
+        .flatpickr-time .flatpickr-time-separator {
+            line-height: 40px !important;
+            padding: 0 5px !important;
+            font-size: 16px !important;
         }
         /* 确保时间选择器内容不会溢出 */
         
