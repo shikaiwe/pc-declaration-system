@@ -1022,14 +1022,14 @@
             background-color: #6c757d;
             color: #fff;
         }
-        
         /* 订单卡片中的状态样式 */
+        
         .order-info p .status-badge {
             margin-left: auto;
             font-size: 0.9em;
         }
-        
         /* 订单详情中的状态样式 */
+        
         .detail-value .status-badge {
             padding: 4px 12px;
             font-size: 12px;
@@ -1040,11 +1040,9 @@
                 background: #2a2a2a;
                 border-left-color: #28a745;
             }
-            
             .order-info p {
                 color: #fff;
             }
-            
             .order-info p strong {
                 color: #aaa;
             }
@@ -3537,9 +3535,8 @@
 
                 // 订单表单提交
                 document.getElementById('newOrderForm')?.addEventListener('submit', (event) => {
-                    event.preventDefault();  // 确保这行代码执行
-                    event.stopPropagation(); // 阻止事件冒泡
-                    
+                    event.preventDefault(); // 阻止默认表单提交行为
+
                     const now = new Date();
                     const formData = {
                         userPhoneNumber: document.getElementById('userPhoneNumber').value.trim(),
@@ -3561,7 +3558,7 @@
                         return false;
                     }
 
-                    orderManager.submitOrder(formData);
+                    orderManager.submitOrder(formData); // 使用 AJAX 提交表单数据
                     return false; // 确保不会触发表单默认提交
                 });
 
