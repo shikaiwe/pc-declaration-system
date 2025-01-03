@@ -440,9 +440,14 @@ class AssignOrder {
         return await $.ajax({
             url: API_URLS.ASSIGN_ORDER,
             method: 'POST',
-            data: JSON.stringify({ reportId, workerName }),
+            data: JSON.stringify({
+                reportId: reportId,
+                workerName: workerName
+            }),
             contentType: 'application/json',
-            xhrFields: { withCredentials: true }
+            xhrFields: {
+                withCredentials: true
+            }
         });
     }
 
@@ -452,11 +457,17 @@ class AssignOrder {
      */
     async _handleAssignResponse(response, reportId, workerName) {
         if (response.message === 'Success') {
-            this.showMessage('分配成功', 'success');
+            this.showMessage('订单分配成功', 'success');
             this.closeWorkerSelection();
-            await this._updateOrderStatus(reportId, workerName);
+            await this.loadOrders();  // 重新加载订单列表
+        } else if (response.message === 'Worker is unavailable') {
+            this.showMessage(ERROR_MESSAGES.WORKER_UNAVAILABLE, 'error');
+        } else if (response.message === 'Report is assigned') {
+            this.showMessage(ERROR_MESSAGES.REPORT_ASSIGNED, 'error');
+            this.closeWorkerSelection();
+            await this.loadOrders();  // 重新加载订单列表
         } else {
-            this._handleAssignError(response.message);
+            this.handleSessionError(response.message);
         }
     }
 
@@ -517,42 +528,86 @@ class AssignOrder {
 
     /**
      * 显示消息提示
+     * @param {string} message 消息内容
+     * @param {string} type 消息类型 (success/error/info)
      */
-    showMessage(text, type = 'info') {
-        const messageEl = this.container.querySelector('.assign-order-message');
-        if (!messageEl) return;
+    showMessage(message, type = 'info') {
+        const messageElement = this.container.querySelector('.assign-order-message');
+        if (!messageElement) return;
 
-        messageEl.textContent = text;
-        messageEl.className = `assign-order-message ${type}`;
-        messageEl.style.display = 'block';
+        messageElement.textContent = message;
+        messageElement.className = `assign-order-message ${type}`;
+        messageElement.style.display = 'block';
 
+        // 3秒后自动隐藏
         setTimeout(() => {
-            messageEl.style.display = 'none';
+            messageElement.style.display = 'none';
         }, 3000);
     }
 
     /**
-     * 格式化日期
+     * 处理会话错误
+     * @param {string} message 错误消息
      */
-    formatDate(dateString) {
-        try {
-            const date = new Date(dateString.replace(/-/g, '/'));
-            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-        } catch (error) {
-            console.error('日期格式化失败:', error);
-            return dateString;
+    handleSessionError(message) {
+        switch (message) {
+            case 'Session has expired':
+                this.showMessage('会话已过期，请重新登录', 'error');
+                break;
+            case 'Invalid session':
+                this.showMessage('无效的会话，请重新登录', 'error');
+                break;
+            case 'No sessionid cookie':
+                this.showMessage('未找到会话信息，请重新登录', 'error');
+                break;
+            default:
+                this.showMessage('发生未知错误，请重新登录', 'error');
         }
+
+        // 2秒后跳转到登录页
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 2000);
     }
 
     /**
-     * 处理会话错误
+     * 格式化日期
+     * @param {string} dateString 日期字符串
+     * @returns {string} 格式化后的日期字符串
      */
-    handleSessionError(message) {
-        if (['Session has expired', 'Invalid session', 'No sessionid cookie'].includes(message)) {
-            this.showMessage(ERROR_MESSAGES.SESSION_EXPIRED, 'error');
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 2000);
+    formatDate(dateString) {
+        try {
+            if (!dateString) return '未知时间';
+            
+            // 处理包含时间的日期
+            if (dateString.includes(' ')) {
+                const [datePart, timePart] = dateString.split(' ');
+                const [year, month, day] = datePart.replace(/-/g, '/').split('/');
+                return `${year}-${String(parseInt(month)).padStart(2, '0')}-${String(parseInt(day)).padStart(2, '0')} ${timePart}`;
+            }
+            
+            // 处理只有日期的情况
+            if (dateString.includes('/') || dateString.includes('-')) {
+                const [year, month, day] = dateString.replace(/-/g, '/').split('/');
+                return `${year}-${String(parseInt(month)).padStart(2, '0')}-${String(parseInt(day)).padStart(2, '0')}`;
+            }
+            
+            // 处理其他格式
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                throw new Error('无效的日期格式');
+            }
+            
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
+        } catch (error) {
+            console.error('日期格式化错误:', error, '原始日期:', dateString);
+            return '时间格式错误';
         }
     }
 
@@ -564,6 +619,19 @@ class AssignOrder {
         this.workersLoaded = false;
         this.ordersLoaded = false;
         this.currentReportId = null;
+    }
+
+    /**
+     * 关闭维修人员选择模态框
+     */
+    closeWorkerSelection() {
+        const overlay = this.container.querySelector('#assignOrderModalOverlay');
+        const selection = overlay.querySelector('.assign-order-worker-selection');
+        if (overlay && selection) {
+            overlay.classList.remove('active');
+            selection.classList.remove('active');
+            this.currentReportId = null;
+        }
     }
 }
 
