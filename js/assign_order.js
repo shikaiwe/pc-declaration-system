@@ -60,6 +60,7 @@ class AssignOrder {
                 </div>
                 <div class="assign-order-modal-overlay" id="assignOrderModalOverlay">
                     <div class="assign-order-worker-selection">
+                        <div class="pull-indicator"></div>
                         <div class="assign-order-modal-header">
                             <h3 class="assign-order-modal-title">选择维修人员</h3>
                             <p class="assign-order-modal-subtitle">请为此订单选择一位维修人员</p>
@@ -86,6 +87,7 @@ class AssignOrder {
         // 添加样式
         const style = document.createElement('style');
         style.textContent = `
+            /* 通用样式 */
             .assign-order-wrapper {
                 background-color: #f5f7fa;
                 border-radius: 8px;
@@ -110,94 +112,222 @@ class AssignOrder {
                 background: #555;
             }
 
-            .assign-order-modal-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: rgba(0, 0, 0, 0.5);
-                display: none;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
+            /* 桌面端样式 */
+            @media (min-width: 769px) {
+                .assign-order-modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: none;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                }
+
+                .assign-order-modal-overlay.active {
+                    display: flex;
+                }
+
+                .assign-order-worker-selection {
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                    min-width: 320px;
+                    max-width: 90%;
+                    position: relative;
+                    transform: none;
+                    transition: none;
+                }
+
+                .pull-indicator {
+                    display: none;
+                }
+
+                .assign-order-modal-header {
+                    margin-bottom: 20px;
+                    text-align: left;
+                }
+
+                .assign-order-modal-title {
+                    font-size: 18px;
+                    margin: 0 0 8px 0;
+                    color: #333;
+                }
+
+                .assign-order-select {
+                    padding: 8px 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    font-size: 14px;
+                }
+
+                .assign-order-btn {
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    font-size: 14px;
+                }
             }
 
-            .assign-order-modal-overlay.active {
-                display: flex;
+            /* 移动端样式 */
+            @media (max-width: 768px) {
+                .assign-order-modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0);
+                    display: none;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1010;
+                    opacity: 0;
+                    visibility: hidden;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    backdrop-filter: blur(0);
+                    -webkit-backdrop-filter: blur(0);
+                }
+
+                .assign-order-modal-overlay.active {
+                    opacity: 1;
+                    visibility: visible;
+                    background-color: rgba(0, 0, 0, 0.6);
+                    backdrop-filter: blur(4px);
+                    -webkit-backdrop-filter: blur(4px);
+                    display: flex;
+                }
+
+                .assign-order-worker-selection {
+                    background: white;
+                    padding: 28px;
+                    border-radius: 20px;
+                    min-width: 320px;
+                    max-width: 90%;
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: scale(0.95) translateY(20px);
+                    opacity: 0;
+                    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    z-index: 1011;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+                }
+
+                .assign-order-modal-overlay.active .assign-order-worker-selection {
+                    transform: scale(1) translateY(0);
+                    opacity: 1;
+                }
+
+                .pull-indicator {
+                    width: 40px;
+                    height: 4px;
+                    background: #ddd;
+                    border-radius: 2px;
+                    margin: 0 auto 15px;
+                }
+
+                .assign-order-modal-header {
+                    text-align: center;
+                    margin-bottom: 28px;
+                }
+
+                .assign-order-modal-title {
+                    margin: 0;
+                    font-size: 22px;
+                    color: #333;
+                    font-weight: 600;
+                }
+
+                .assign-order-select {
+                    padding: 14px 16px;
+                    border: 2px solid #e0e0e0;
+                    border-radius: 12px;
+                    font-size: 16px;
+                }
+
+                .assign-order-btn {
+                    padding: 12px 24px;
+                    border-radius: 12px;
+                    font-size: 15px;
+                }
             }
 
-            .assign-order-worker-selection {
-                background: white;
-                padding: 25px;
-                border-radius: 12px;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-                min-width: 320px;
-                max-width: 90%;
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                transition: transform 0.3s ease, opacity 0.3s ease;
-                opacity: 0;
-                z-index: 1001;
-            }
-
-            .assign-order-worker-selection.active {
-                opacity: 1;
-            }
-
-            .assign-order-modal-header {
-                margin-bottom: 20px;
-            }
-
-            .assign-order-modal-title {
-                font-size: 18px;
-                margin: 0 0 8px 0;
-                color: #333;
-            }
-
+            /* 通用样式继续 */
             .assign-order-modal-subtitle {
-                font-size: 14px;
                 color: #666;
-                margin: 0;
+                font-size: 14px;
             }
 
             .assign-order-select-wrapper {
-                margin-bottom: 20px;
+                position: relative;
             }
 
             .assign-order-select-label {
                 display: block;
                 margin-bottom: 8px;
-                color: #333;
-                font-size: 14px;
+                color: #555;
+                font-weight: 500;
             }
 
             .assign-order-select {
                 width: 100%;
-                padding: 8px 12px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                font-size: 14px;
                 color: #333;
                 background-color: white;
+                transition: all 0.3s ease;
+                cursor: pointer;
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                padding-right: 40px;
+            }
+
+            .assign-order-select:hover {
+                border-color: #2196F3;
+            }
+
+            .assign-order-select:focus {
+                outline: none;
+                border-color: #2196F3;
+                box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+            }
+
+            .assign-order-select:disabled {
+                background-color: #f5f5f5;
+                cursor: not-allowed;
+                opacity: 0.7;
+            }
+
+            .assign-order-select-icon {
+                position: absolute;
+                right: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #666;
+                pointer-events: none;
+                transition: transform 0.3s ease;
+            }
+
+            .assign-order-select:focus + .assign-order-select-icon {
+                color: #2196F3;
+                transform: translateY(-50%) rotate(180deg);
             }
 
             .assign-order-modal-footer {
                 display: flex;
-                justify-content: flex-end;
                 gap: 12px;
+                justify-content: flex-end;
                 margin-top: 20px;
             }
 
             .assign-order-btn {
-                padding: 8px 16px;
                 border: none;
-                border-radius: 4px;
-                font-size: 14px;
+                font-weight: 500;
                 cursor: pointer;
-                transition: background-color 0.2s ease;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
             .assign-order-btn-cancel {
@@ -206,16 +336,87 @@ class AssignOrder {
             }
 
             .assign-order-btn-confirm {
-                background-color: #007bff;
+                background-color: #2196F3;
                 color: white;
             }
 
             .assign-order-btn-cancel:hover {
-                background-color: #e8e8e8;
+                background-color: #eeeeee;
+                transform: translateY(-2px);
             }
 
             .assign-order-btn-confirm:hover {
-                background-color: #0056b3;
+                background-color: #1976D2;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+            }
+
+            .assign-order-message {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                z-index: 1012;
+                font-size: 16px;
+                text-align: center;
+                min-width: 200px;
+                max-width: 80%;
+                display: none;
+            }
+
+            .assign-order-message.error {
+                background-color: rgba(244, 67, 54, 0.9);
+            }
+
+            .assign-order-message.success {
+                background-color: rgba(76, 175, 80, 0.9);
+            }
+
+            /* 深色模式 */
+            @media (prefers-color-scheme: dark) {
+                .assign-order-worker-selection {
+                    background-color: #333;
+                }
+                .assign-order-modal-title {
+                    color: #fff;
+                }
+                .assign-order-modal-subtitle {
+                    color: #aaa;
+                }
+                .assign-order-select-label {
+                    color: #ccc;
+                }
+                .assign-order-select {
+                    background-color: #444;
+                    border-color: #555;
+                    color: #fff;
+                }
+                .assign-order-select:hover {
+                    border-color: #2196F3;
+                }
+                .assign-order-btn-cancel {
+                    background-color: #444;
+                    color: #fff;
+                }
+                .assign-order-btn-cancel:hover {
+                    background-color: #555;
+                }
+                .assign-order-select.loading {
+                    background-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" fill="none" stroke="%23fff" stroke-width="8" r="40" stroke-dasharray="180 100"/></svg>');
+                }
+            }
+
+            @keyframes rotate {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
             }
         `;
         document.head.appendChild(style);
@@ -260,6 +461,35 @@ class AssignOrder {
                 if (e.target === overlay) {
                     e.preventDefault();
                     this.closeWorkerSelection();
+                }
+            });
+        }
+
+        // 添加触摸滑动关闭功能
+        const selection = this.container.querySelector('.assign-order-worker-selection');
+        if (selection) {
+            let touchStartY = 0;
+            let touchEndY = 0;
+
+            selection.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+            });
+
+            selection.addEventListener('touchmove', (e) => {
+                touchEndY = e.touches[0].clientY;
+                const deltaY = touchEndY - touchStartY;
+
+                if (deltaY > 0) {
+                    selection.style.transform = `translateY(${deltaY}px)`;
+                }
+            });
+
+            selection.addEventListener('touchend', () => {
+                const deltaY = touchEndY - touchStartY;
+                if (deltaY > 100) {
+                    this.closeWorkerSelection();
+                } else {
+                    selection.style.transform = '';
                 }
             });
         }
@@ -793,24 +1023,20 @@ class AssignOrder {
     }
 
     /**
-     * 关闭维修人员选择模态框
+     * 关闭维修人员选择框
      */
     closeWorkerSelection() {
         const overlay = this.container.querySelector('#assignOrderModalOverlay');
         const selection = overlay.querySelector('.assign-order-worker-selection');
         
         if (overlay && selection) {
+            selection.style.transform = 'translateY(100%)';
             overlay.classList.remove('active');
-            selection.classList.remove('active');
-            overlay.style.display = 'none';
             
-            // 重置选择框
-            const select = this.container.querySelector('#workerSelect');
-            if (select) {
-                select.value = '';
-            }
-            
-            this.currentReportId = null;
+            setTimeout(() => {
+                selection.style.transform = '';
+                this.currentReportId = null;
+            }, 300);
         }
     }
 }
