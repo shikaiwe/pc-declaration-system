@@ -334,31 +334,67 @@ class AssignOrder {
 
     async assignOrder(reportId, workerName) {
         try {
-            $.ajax({
-                    url: API_URLS.ASSIGN_ORDER,
-                    method: 'POST',
-                    data: JSON.stringify({
-                        reportId: reportId,
-                        workerName: workerName
-                    }),
-                    contentType: 'application/json',
-                    xhrFields: {
-                        withCredentials: true
+            // 显示加载状态
+            this.showMessage('正在分配...', 'info');
+            
+            const response = await $.ajax({
+                url: API_URLS.ASSIGN_ORDER,
+                method: 'POST',
+                data: JSON.stringify({
+                    reportId: reportId,
+                    workerName: workerName
+                }),
+                contentType: 'application/json',
+                xhrFields: {
+                    withCredentials: true
+                }
+            });
+
+            if (response.message === 'Success') {
+                // 分配成功后的处理
+                this.showMessage('分配成功', 'success');
+                
+                // 关闭选择框
+                this.closeWorkerSelection();
+
+                // 更新订单状态
+                const orderCard = this.container.querySelector(`[data-report-id="${reportId}"]`)?.closest('.order-card');
+                if (orderCard) {
+                    const orderInfo = orderCard.querySelector('.order-info');
+                    if (orderInfo) {
+                        // 更新状态标签
+                        const statusElement = orderInfo.querySelector('.status-badge');
+                        if (statusElement) {
+                            statusElement.className = 'status-badge status-allocated';
+                            statusElement.textContent = '已分配';
+                        }
+
+                        // 替换分配按钮为已分配信息
+                        const buttonContainer = orderInfo.querySelector('.order-buttons');
+                        if (buttonContainer) {
+                            buttonContainer.outerHTML = `
+                                <div class="assigned-info">
+                                    <span class="assigned-text">已分配给: ${workerName}</span>
+                                </div>
+                            `;
+                        }
                     }
-                })
-                .done((data) => {
-                    if (data.message === 'Success') {
-                        this.showMessage('分配成功', 'success');
-                        this.closeWorkerSelection();
-                        this.loadOrders();
-                    } else {
-                        this.showMessage(data.message || '分配失败', 'error');
-                    }
-                })
-                .fail((error) => {
-                    console.error('分配订单失败:', error);
-                    this.showMessage('分配失败，请重试', 'error');
-                });
+                } else {
+                    // 如果找不到对应的订单卡片，则重新加载所有订单
+                    this.loadOrders();
+                }
+            } else {
+                // 处理错误响应
+                if (response.message === 'Worker is not available') {
+                    this.showMessage('该维修人员不可用', 'error');
+                } else if (response.message === 'Report is already assigned') {
+                    this.showMessage('该订单已被分配', 'error');
+                    // 重新加载订单列表以显示最新状态
+                    this.loadOrders();
+                } else {
+                    this.handleSessionError(response.message);
+                }
+            }
         } catch (error) {
             console.error('分配订单失败:', error);
             this.showMessage('分配失败，请重试', 'error');

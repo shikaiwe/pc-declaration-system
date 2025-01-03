@@ -3404,7 +3404,7 @@
             function generateTimeSlides() {
                 const times = [];
                 for (let hour = 18; hour <= 21; hour++) {
-                    for (let minute = 0; minute < 60; minute += 5) {
+                    for (let minute = 0; minute < 60; minute += 15) {
                         if (hour === 21 && minute > 0) break;
                         times.push(`
                             <div class="swiper-slide">
