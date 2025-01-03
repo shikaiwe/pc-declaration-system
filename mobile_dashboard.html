@@ -3840,6 +3840,11 @@
         document.querySelectorAll('.close-button').forEach(button => {
             button.addEventListener('click', () => {
                 const modal = button.closest('.modal');
+                // 如果是日程管理模态框且订单详情卡片正在显示，则不关闭
+                if (modal.id === 'scheduleModal' && 
+                    document.getElementById('orderDetailCard').classList.contains('show')) {
+                    return;
+                }
                 // 找到触发这个模态框的卡片并移除active类
                 const cardId = modal.id.replace('Modal', '');
                 const card = document.getElementById(cardId);
@@ -4106,10 +4111,16 @@
         }
     });
 
-    // 遮罩层点击事件
+    // 修改遮罩层点击事件
     const overlay = document.getElementById('overlay');
     if (overlay) {
         overlay.addEventListener('click', () => {
+            // 如果订单详情卡片正在显示且当前是日程管理模态框，则不关闭
+            if (document.getElementById('orderDetailCard').classList.contains('show') && 
+                document.getElementById('scheduleModal').classList.contains('show')) {
+                return;
+            }
+            
             const assignOrderModal = document.getElementById('assignOrderModal');
             if (assignOrderModal && assignOrderModal.classList.contains('show')) {
                 utils.ui.hideModal('assignOrderModal');
