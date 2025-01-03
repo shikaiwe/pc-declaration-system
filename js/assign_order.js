@@ -136,11 +136,9 @@ class AssignOrder {
                     padding: 25px;
                     border-radius: 12px;
                     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-                    min-width: 320px;
-                    max-width: 90%;
-                    position: relative;
-                    transform: none;
-                    transition: none;
+                    width: 100%;
+                    max-width: 420px;
+                    margin: 20px;
                 }
 
                 .pull-indicator {
@@ -175,16 +173,7 @@ class AssignOrder {
             /* 移动端样式 */
             @media (max-width: 768px) {
                 .assign-order-modal-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
                     background-color: rgba(0, 0, 0, 0);
-                    display: none;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 1010;
                     opacity: 0;
                     visibility: hidden;
                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -198,19 +187,15 @@ class AssignOrder {
                     background-color: rgba(0, 0, 0, 0.6);
                     backdrop-filter: blur(4px);
                     -webkit-backdrop-filter: blur(4px);
-                    display: flex;
                 }
 
                 .assign-order-worker-selection {
-                    background: white;
+                    position: fixed;
+                    left: 50%;
+                    top: 50%;
+                    transform: translate(-50%, -50%) scale(0.95);
                     padding: 28px;
                     border-radius: 20px;
-                    min-width: 320px;
-                    max-width: 90%;
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: scale(0.95) translateY(20px);
                     opacity: 0;
                     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
                     z-index: 1011;
@@ -218,8 +203,8 @@ class AssignOrder {
                 }
 
                 .assign-order-modal-overlay.active .assign-order-worker-selection {
-                    transform: scale(1) translateY(0);
                     opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
                 }
 
                 .pull-indicator {
@@ -521,7 +506,6 @@ class AssignOrder {
             // 显示遮罩层和选择框
             overlay.style.display = 'flex';
             overlay.classList.add('active');
-            selection.classList.add('active');
 
             // 如果还没有加载维修人员列表，则加载
             if (!this.workersLoaded || !select.options.length || (select.options.length === 1 && select.options[0].value === '')) {
@@ -1030,11 +1014,15 @@ class AssignOrder {
         const selection = overlay.querySelector('.assign-order-worker-selection');
         
         if (overlay && selection) {
-            selection.style.transform = 'translateY(100%)';
+            if (window.innerWidth <= 768) {
+                selection.style.transform = 'translate(-50%, -50%) scale(0.95)';
+                selection.style.opacity = '0';
+            }
             overlay.classList.remove('active');
             
             setTimeout(() => {
                 selection.style.transform = '';
+                selection.style.opacity = '';
                 this.currentReportId = null;
             }, 300);
         }
