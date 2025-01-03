@@ -87,48 +87,80 @@ class AssignOrder {
      * @private  
      */
     _bindEvents() {
-        // 分配按钮点击事件
-        this.container.addEventListener('click', async(e) => {
-            if (e.target.classList.contains('assign-btn')) {
-                await this._handleAssignButtonClick(e);
+        // 使用事件委托处理分配按钮点击
+        this.container.addEventListener('click', (e) => {
+            const assignBtn = e.target.closest('.assign-btn');
+            if (assignBtn) {
+                e.preventDefault();
+                this._handleAssignButtonClick(assignBtn);
             }
         });
 
         // 取消按钮点击事件
         const cancelBtn = this.container.querySelector('.assign-order-btn-cancel');
-        cancelBtn.addEventListener('click', () => this.closeWorkerSelection());
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.closeWorkerSelection();
+            });
+        }
 
         // 确认按钮点击事件  
         const confirmBtn = this.container.querySelector('.assign-order-btn-confirm');
-        confirmBtn.addEventListener('click', async() => {
-            await this._handleConfirmAssign();
-        });
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', async(e) => {
+                e.preventDefault();
+                await this._handleConfirmAssign();
+            });
+        }
 
         // 点击遮罩层关闭
         const overlay = this.container.querySelector('#assignOrderModalOverlay');
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                this.closeWorkerSelection();
-            }
-        });
+        if (overlay) {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    e.preventDefault();
+                    this.closeWorkerSelection();
+                }
+            });
+        }
     }
 
     /**
      * 处理分配按钮点击
      * @private
      */
-    async _handleAssignButtonClick(e) {
-        const reportId = e.target.dataset.reportId;
-        const overlay = this.container.querySelector('#assignOrderModalOverlay');
-        const selection = overlay.querySelector('.assign-order-worker-selection');
-        const select = this.container.querySelector('#workerSelect');
+    async _handleAssignButtonClick(assignBtn) {
+        try {
+            const reportId = assignBtn.dataset.reportId;
+            if (!reportId) {
+                console.error('未找到订单ID');
+                return;
+            }
 
-        this.currentReportId = reportId;
-        overlay.classList.add('active');
-        selection.classList.add('active');
+            const overlay = this.container.querySelector('#assignOrderModalOverlay');
+            const selection = overlay.querySelector('.assign-order-worker-selection');
+            const select = this.container.querySelector('#workerSelect');
 
-        if (!select.options.length || (select.options.length === 1 && select.options[0].value === '')) {
-            await this.loadWorkers();
+            if (!overlay || !selection || !select) {
+                console.error('未找到必要的DOM元素');
+                return;
+            }
+
+            this.currentReportId = reportId;
+
+            // 显示遮罩层和选择框
+            overlay.style.display = 'flex';
+            overlay.classList.add('active');
+            selection.classList.add('active');
+
+            // 如果还没有加载维修人员列表，则加载
+            if (!this.workersLoaded || !select.options.length || (select.options.length === 1 && select.options[0].value === '')) {
+                await this.loadWorkers();
+            }
+        } catch (error) {
+            console.error('处理分配按钮点击失败:', error);
+            this.showMessage('操作失败，请重试', 'error');
         }
     }
 
@@ -627,12 +659,22 @@ class AssignOrder {
     closeWorkerSelection() {
         const overlay = this.container.querySelector('#assignOrderModalOverlay');
         const selection = overlay.querySelector('.assign-order-worker-selection');
+        
         if (overlay && selection) {
             overlay.classList.remove('active');
             selection.classList.remove('active');
+            overlay.style.display = 'none';
+            
+            // 重置选择框
+            const select = this.container.querySelector('#workerSelect');
+            if (select) {
+                select.value = '';
+            }
+            
             this.currentReportId = null;
         }
     }
 }
 
+// 导出 AssignOrder 类
 export default AssignOrder;

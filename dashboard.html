@@ -4437,8 +4437,17 @@
             };
         </script>
         <!-- 修改assign_order.js模块引入 -->
-        <script type="module">
-            import AssignOrder from './js/assign_order.js'; window.AssignOrder = AssignOrder;
+        <script>
+            // 确保在文档加载完成后执行
+            document.addEventListener('DOMContentLoaded', async() => {
+                try {
+                    const module = await
+                    import ('./js/assign_order.js');
+                    window.AssignOrder = module.default;
+                } catch (error) {
+                    console.error('加载分配订单模块失败:', error);
+                }
+            });
         </script>
 
 
