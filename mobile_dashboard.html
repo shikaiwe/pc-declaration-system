@@ -2984,10 +2984,10 @@
                 </div>
                 ${showButtons ? `
                     <div class="detail-actions">
-                        <button class="detail-button primary" onclick="orderManager.completeOrder('${order.reportId}')">
+                        <button class="detail-button primary" id="completeOrderBtn">
                             完成订单
                         </button>
-                        <button class="detail-button danger" onclick="orderManager.cancelOrder('${order.reportId}')">
+                        <button class="detail-button danger" id="cancelOrderBtn">
                             撤销订单
                         </button>
                     </div>
@@ -3003,6 +3003,86 @@
                 detailCard.classList.add('show');
                 overlay.classList.add('show');
             }, 10);
+
+            // 添加按钮事件监听器
+            if (showButtons) {
+                const completeOrderBtn = document.getElementById('completeOrderBtn');
+                const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+                
+                if (completeOrderBtn) {
+                    completeOrderBtn.addEventListener('click', () => {
+                        utils.ui.showLoading(true);
+                        $.ajax({
+                            url: API_URLS.COMPLETE_REPORT,
+                            method: 'POST',
+                            data: JSON.stringify({ reportId: order.reportId }),
+                            contentType: 'application/json',
+                            xhrFields: {
+                                withCredentials: true
+                            }
+                        }).then(response => {
+                            utils.ui.showLoading(false);
+                            if (response.message === 'Success') {
+                                utils.ui.showMessage('订单已完成');
+                                // 更新日历事件状态
+                                if (this.calendar) {
+                                    const event = this.calendar.getEventById(order.reportId);
+                                    if (event) {
+                                        event.setExtendedProp('status', '2');
+                                        event.setProp('backgroundColor', '#17a2b8');
+                                        event.setProp('borderColor', '#17a2b8');
+                                    }
+                                }
+                                // 关闭详情弹窗
+                                this.hideEventDetail();
+                            } else {
+                                auth.handleSessionError(response.message);
+                            }
+                        }).catch(error => {
+                            utils.ui.showLoading(false);
+                            console.error('完成订单失败:', error);
+                            utils.ui.showMessage('完成订单失败，请重试');
+                        });
+                    });
+                }
+                
+                if (cancelOrderBtn) {
+                    cancelOrderBtn.addEventListener('click', () => {
+                        utils.ui.showLoading(true);
+                        $.ajax({
+                            url: API_URLS.CANCEL_REPORT,
+                            method: 'POST',
+                            data: JSON.stringify({ reportId: order.reportId }),
+                            contentType: 'application/json',
+                            xhrFields: {
+                                withCredentials: true
+                            }
+                        }).then(response => {
+                            utils.ui.showLoading(false);
+                            if (response.message === 'Success') {
+                                utils.ui.showMessage('订单已撤销');
+                                // 更新日历事件状态
+                                if (this.calendar) {
+                                    const event = this.calendar.getEventById(order.reportId);
+                                    if (event) {
+                                        event.setExtendedProp('status', '3');
+                                        event.setProp('backgroundColor', '#dc3545');
+                                        event.setProp('borderColor', '#dc3545');
+                                    }
+                                }
+                                // 关闭详情弹窗
+                                this.hideEventDetail();
+                            } else {
+                                auth.handleSessionError(response.message);
+                            }
+                        }).catch(error => {
+                            utils.ui.showLoading(false);
+                            console.error('撤销订单失败:', error);
+                            utils.ui.showMessage('撤销订单失败，请重试');
+                        });
+                    });
+                }
+            }
 
             // 添加滑动关闭功能
             let touchStartY = 0;

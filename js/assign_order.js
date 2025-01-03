@@ -92,10 +92,10 @@ class AssignOrder {
                 }
             });
 
-            if (response.message === 'Success' && Array.isArray(response.reports)) {
+            if (response.message === 'Success' && Array.isArray(response.report_info)) {
                 this.ordersLoaded = true;
-                this.displayOrders(response.reports);
-            } else if (response.message === 'No report' || !Array.isArray(response.reports) || response.reports.length === 0) {
+                this.displayOrders(response.report_info);
+            } else if (response.message === 'No report' || !Array.isArray(response.report_info) || response.report_info.length === 0) {
                 this.showNoOrders();
             } else {
                 this.handleSessionError(response.message);
@@ -107,24 +107,24 @@ class AssignOrder {
     }
 
     displayOrders(orders) {
-        const orderList = this.container.querySelector('#assignOrderList');
-        if (!orderList) {
-            console.error('找不到订单列表容器');
-            return;
-        }
+            const orderList = this.container.querySelector('#assignOrderList');
+            if (!orderList) {
+                console.error('找不到订单列表容器');
+                return;
+            }
 
-        console.log('所有订单:', orders);
+            console.log('所有订单:', orders);
 
-        if (!orders || orders.length === 0) {
-            this.showNoOrders();
-            return;
-        }
+            if (!orders || orders.length === 0) {
+                this.showNoOrders();
+                return;
+            }
 
-        const ordersHTML = orders.map(order => {
-            const status = ORDER_STATUS[order.status] || ORDER_STATUS['0'];
-            const isAssigned = order.status !== '0';
+            const ordersHTML = orders.map(order => {
+                        const status = ORDER_STATUS[order.status] || ORDER_STATUS['0'];
+                        const isAssigned = order.status !== '0';
 
-            return `
+                        return `
                 <div class="order-item ${isAssigned ? 'allocated' : ''}">
                     <div class="order-info">
                         <div class="order-id">订单编号: ${order.reportId || '未知'}</div>
