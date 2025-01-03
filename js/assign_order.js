@@ -37,8 +37,10 @@ class AssignOrder {
     init() {
         // 创建基本DOM结构
         this.container.innerHTML = `
-            <div class="assign-order-list" id="assignOrderList">
-                <div class="loading">加载中...</div>
+            <div class="orders-container">
+                <div class="assign-order-list" id="assignOrderList">
+                    <div class="loading">加载中...</div>
+                </div>
             </div>
             <div class="assign-order-modal-overlay" id="assignOrderModalOverlay">
                 <div class="assign-order-worker-selection">
@@ -194,9 +196,17 @@ class AssignOrder {
             <div class="error-message">
                 <i class="error-icon">❌</i>
                 <p>加载失败，请重试</p>
-                <button class="retry-button" onclick="this.loadOrders()">重试</button>
+                <button class="retry-button">重试</button>
             </div>
         `;
+        
+        // 正确绑定重试按钮的点击事件
+        const retryButton = orderList.querySelector('.retry-button');
+        if (retryButton) {
+            retryButton.addEventListener('click', () => {
+                this.loadOrders();
+            });
+        }
     }
 
     async loadWorkers() {

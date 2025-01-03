@@ -3301,6 +3301,19 @@
             if (tabName === 'newOrder') {
                 // 获取待分配订单
                 orderManager.fetchPendingOrders();
+                // 初始化日期时间选择器
+                setTimeout(() => {
+                    dateTimePicker.init();
+                    // 初始化问题描述文本框的自动调整高度
+                    const issueTextarea = document.getElementById('issue');
+                    if (issueTextarea) {
+                        issueTextarea.style.height = 'auto';
+                        issueTextarea.addEventListener('input', function() {
+                            this.style.height = 'auto';
+                            this.style.height = (this.scrollHeight) + 'px';
+                        });
+                    }
+                }, 100);
             } else if (tabName === 'orderHistory') {
                 // 清空历史订单内容，然后重新加载
                 selectedTab.innerHTML = '';
@@ -3324,9 +3337,22 @@
                 // 初始化新订单表单
                 const newOrderTab = document.getElementById('newOrder');
                 if (newOrderTab) {
+                    // 确保表单存在
                     const orderForm = newOrderTab.querySelector('#newOrderForm');
                     if (orderForm) {
-                        dateTimePicker.init();
+                        // 重新初始化日期时间选择器
+                        setTimeout(() => {
+                            dateTimePicker.init();
+                            // 初始化问题描述文本框的自动调整高度
+                            const issueTextarea = document.getElementById('issue');
+                            if (issueTextarea) {
+                                issueTextarea.style.height = 'auto';
+                                issueTextarea.addEventListener('input', function() {
+                                    this.style.height = 'auto';
+                                    this.style.height = (this.scrollHeight) + 'px';
+                                });
+                            }
+                        }, 100);
                     }
                 }
             }
@@ -3688,9 +3714,22 @@
                     // 初始化新订单表单
                     const newOrderTab = document.getElementById('newOrder');
                     if (newOrderTab) {
+                        // 确保表单存在
                         const orderForm = newOrderTab.querySelector('#newOrderForm');
                         if (orderForm) {
-                            dateTimePicker.init();
+                            // 重新初始化日期时间选择器
+                            setTimeout(() => {
+                                dateTimePicker.init();
+                                // 初始化问题描述文本框的自动调整高度
+                                const issueTextarea = document.getElementById('issue');
+                                if (issueTextarea) {
+                                    issueTextarea.style.height = 'auto';
+                                    issueTextarea.addEventListener('input', function() {
+                                        this.style.height = 'auto';
+                                        this.style.height = (this.scrollHeight) + 'px';
+                                    });
+                                }
+                            }, 100);
                         }
                     }
                 }
