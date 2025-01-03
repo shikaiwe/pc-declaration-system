@@ -57,8 +57,8 @@ class AssignOrder {
                     <div class="loading">加载中...</div>
                 </div>
             </div>
-            <div class="assign-order-modal-overlay" id="assignOrderModalOverlay">
-                <div class="assign-order-worker-selection">
+            <div class="assign-order-modal-overlay" id="assignOrderModalOverlay" style="display: flex; justify-content: center; align-items: center;">
+                <div class="assign-order-worker-selection" style="position: relative; transform: translate(-10%, -10%);">
                     <div class="assign-order-modal-header">
                         <h3 class="assign-order-modal-title">选择维修人员</h3>
                         <p class="assign-order-modal-subtitle">请为此订单选择一位维修人员</p>
