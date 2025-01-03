@@ -52,34 +52,90 @@ class AssignOrder {
      */
     _createDOMStructure() {
         this.container.innerHTML = `
-            <div class="orders-container">
-                <div class="assign-order-list" id="assignOrderList">
-                    <div class="loading">加载中...</div>
-                </div>
-            </div>
-            <div class="assign-order-modal-overlay" id="assignOrderModalOverlay" style="display: flex; justify-content: center; align-items: center;">
-                <div class="assign-order-worker-selection" style="position: relative; transform: translate(-10%, -10%);">
-                    <div class="assign-order-modal-header">
-                        <h3 class="assign-order-modal-title">选择维修人员</h3>
-                        <p class="assign-order-modal-subtitle">请为此订单选择一位维修人员</p>
+            <div class="assign-order-wrapper" style="height: calc(100vh - 120px); overflow-y: auto; padding: 20px;">
+                <div class="orders-container">
+                    <div class="assign-order-list" id="assignOrderList">
+                        <div class="loading">加载中...</div>
                     </div>
-                    <div class="assign-order-modal-body">
-                        <div class="assign-order-select-wrapper">
-                            <label class="assign-order-select-label">维修人员</label>
-                            <select id="workerSelect" class="assign-order-select">
-                                <option value="">请选择维修人员</option>
-                            </select>
-                            <span class="assign-order-select-icon">▼</span>
+                </div>
+                <div class="assign-order-modal-overlay" id="assignOrderModalOverlay">
+                    <div class="assign-order-worker-selection">
+                        <div class="assign-order-modal-header">
+                            <h3 class="assign-order-modal-title">选择维修人员</h3>
+                            <p class="assign-order-modal-subtitle">请为此订单选择一位维修人员</p>
+                        </div>
+                        <div class="assign-order-modal-body">
+                            <div class="assign-order-select-wrapper">
+                                <label class="assign-order-select-label">维修人员</label>
+                                <select id="workerSelect" class="assign-order-select">
+                                    <option value="">请选择维修人员</option>
+                                </select>
+                                <span class="assign-order-select-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="assign-order-modal-footer">
+                            <button class="assign-order-btn assign-order-btn-cancel">取消</button>
+                            <button class="assign-order-btn assign-order-btn-confirm">确认分配</button>
                         </div>
                     </div>
-                    <div class="assign-order-modal-footer">
-                        <button class="assign-order-btn assign-order-btn-cancel">取消</button>
-                        <button class="assign-order-btn assign-order-btn-confirm">确认分配</button>
-                    </div>
                 </div>
+                <div class="assign-order-message"></div>
             </div>
-            <div class="assign-order-message"></div>
         `;
+
+        // 添加样式
+        const style = document.createElement('style');
+        style.textContent = `
+            .assign-order-wrapper {
+                background-color: #f5f7fa;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            .assign-order-wrapper::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .assign-order-wrapper::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 4px;
+            }
+
+            .assign-order-wrapper::-webkit-scrollbar-thumb {
+                background: #888;
+                border-radius: 4px;
+            }
+
+            .assign-order-wrapper::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+
+            .assign-order-modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+
+            .assign-order-worker-selection {
+                background: white;
+                padding: 25px;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                min-width: 320px;
+                max-width: 90%;
+                position: relative;
+                transform: translateY(0);
+                transition: transform 0.3s ease;
+            }
+        `;
+        document.head.appendChild(style);
     }
 
     /**
