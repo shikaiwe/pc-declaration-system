@@ -123,6 +123,10 @@ class AssignOrder {
                 z-index: 1000;
             }
 
+            .assign-order-modal-overlay.active {
+                display: flex;
+            }
+
             .assign-order-worker-selection {
                 background: white;
                 padding: 25px;
@@ -130,9 +134,88 @@ class AssignOrder {
                 box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
                 min-width: 320px;
                 max-width: 90%;
-                position: relative;
-                transform: translateY(0);
-                transition: transform 0.3s ease;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                transition: transform 0.3s ease, opacity 0.3s ease;
+                opacity: 0;
+                z-index: 1001;
+            }
+
+            .assign-order-worker-selection.active {
+                opacity: 1;
+            }
+
+            .assign-order-modal-header {
+                margin-bottom: 20px;
+            }
+
+            .assign-order-modal-title {
+                font-size: 18px;
+                margin: 0 0 8px 0;
+                color: #333;
+            }
+
+            .assign-order-modal-subtitle {
+                font-size: 14px;
+                color: #666;
+                margin: 0;
+            }
+
+            .assign-order-select-wrapper {
+                margin-bottom: 20px;
+            }
+
+            .assign-order-select-label {
+                display: block;
+                margin-bottom: 8px;
+                color: #333;
+                font-size: 14px;
+            }
+
+            .assign-order-select {
+                width: 100%;
+                padding: 8px 12px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 14px;
+                color: #333;
+                background-color: white;
+            }
+
+            .assign-order-modal-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+                margin-top: 20px;
+            }
+
+            .assign-order-btn {
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+                font-size: 14px;
+                cursor: pointer;
+                transition: background-color 0.2s ease;
+            }
+
+            .assign-order-btn-cancel {
+                background-color: #f5f5f5;
+                color: #666;
+            }
+
+            .assign-order-btn-confirm {
+                background-color: #007bff;
+                color: white;
+            }
+
+            .assign-order-btn-cancel:hover {
+                background-color: #e8e8e8;
+            }
+
+            .assign-order-btn-confirm:hover {
+                background-color: #0056b3;
             }
         `;
         document.head.appendChild(style);
