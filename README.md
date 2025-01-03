@@ -14,8 +14,12 @@
 | `mobile_dashboard.html` | 移动端控制面板页面，针对移动设备优化 |
 | `login.html` | 用户登录页面，支持记住密码和自动登录 |
 | `register.html` | 用户注册页面，包含邮箱验证功能 |
+| `worker_register.html` | 志愿者注册页面，专门用于志愿者注册 |
 | `forgot-password.html` | 密码找回页面，支持邮箱验证重置密码 |
 | `assign_order.html` | 订单分配页面，管理员专用功能 |
+| `js/assign_order.js` | 订单分配功能的核心JavaScript实现 |
+| `jquery.js` | jQuery库文件，用于DOM操作和AJAX请求 |
+| `LICENSE` | MIT许可证文件，说明项目的使用条款 |
 
 ## 功能概述
 
@@ -45,6 +49,10 @@
 ### 💻 PC端控制面板
 - 用户信息显示和管理
 - 天气信息实时展示
+  - 实时天气数据更新
+  - 风向风力显示
+  - 上次登录天气记录
+- 智能问候语（根据时间段显示）
 - 订单管理功能
   - 提交新订单
   - 查看历史订单
