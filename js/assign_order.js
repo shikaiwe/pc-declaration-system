@@ -493,7 +493,7 @@ class AssignOrder {
             }
 
             const overlay = this.container.querySelector('#assignOrderModalOverlay');
-            const selection = overlay.querySelector('.assign-order-worker-selection');
+            const selection = this.container.querySelector('.assign-order-worker-selection');
             const select = this.container.querySelector('#workerSelect');
 
             if (!overlay || !selection || !select) {
@@ -506,6 +506,7 @@ class AssignOrder {
             // 显示遮罩层和选择框
             overlay.style.display = 'flex';
             overlay.classList.add('active');
+            selection.style.display = 'block';
 
             // 如果还没有加载维修人员列表，则加载
             if (!this.workersLoaded || !select.options.length || (select.options.length === 1 && select.options[0].value === '')) {
@@ -1011,7 +1012,7 @@ class AssignOrder {
      */
     closeWorkerSelection() {
         const overlay = this.container.querySelector('#assignOrderModalOverlay');
-        const selection = overlay.querySelector('.assign-order-worker-selection');
+        const selection = this.container.querySelector('.assign-order-worker-selection');
         
         if (overlay && selection) {
             if (window.innerWidth <= 768) {
@@ -1019,6 +1020,8 @@ class AssignOrder {
                 selection.style.opacity = '0';
             }
             overlay.classList.remove('active');
+            overlay.style.display = 'none';
+            selection.style.display = 'none';
             
             setTimeout(() => {
                 selection.style.transform = '';
