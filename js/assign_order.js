@@ -403,6 +403,67 @@ class AssignOrder {
                     transform: rotate(360deg);
                 }
             }
+
+            /* 状态标签样式 */
+            .status-badge {
+                display: inline-block;
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 14px;
+                font-weight: 500;
+                text-align: center;
+                margin-left: auto;
+            }
+
+            .status-badge.status-pending {
+                background-color: #ffc107;
+                color: #000;
+            }
+
+            .status-badge.status-allocated {
+                background-color: #28a745;
+                color: #fff;
+            }
+
+            .status-badge.status-completed {
+                background-color: #17a2b8;
+                color: #fff;
+            }
+
+            .status-badge.status-cancelled {
+                background-color: #dc3545;
+                color: #fff;
+            }
+
+            .status-badge.status-unknown {
+                background-color: #6c757d;
+                color: #fff;
+            }
+
+            /* 订单卡片中的状态样式 */
+            .order-info p .status-badge {
+                margin-left: auto;
+                font-size: 0.9em;
+            }
+
+            /* 订单详情中的状态样式 */
+            .detail-value .status-badge {
+                padding: 4px 12px;
+                font-size: 12px;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                .order-item.allocated {
+                    background: #2a2a2a;
+                    border-left-color: #28a745;
+                }
+                .order-info p {
+                    color: #fff;
+                }
+                .order-info p strong {
+                    color: #aaa;
+                }
+            }
         `;
         document.head.appendChild(style);
     }
