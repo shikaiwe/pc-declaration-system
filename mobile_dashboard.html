@@ -2792,9 +2792,10 @@
                     windowResize: (view) => {
                         this.handleResize();
                     },
-                    events: this.fetchEvents.bind(this),
+                    events: this.fetchCalendarOrders.bind(this),
                     eventClick: this.handleEventClick.bind(this),
                     eventDidMount: this.handleEventMount.bind(this),
+                    lazyFetching: true,  // 启用懒加载
                     // 添加日历渲染完成的回调
                     datesSet: () => {
                         if (this.calendar) {
@@ -2810,12 +2811,15 @@
                     setTimeout(() => {
                         if (this.calendar) {
                             this.calendar.updateSize();
-                            this.calendar.refetchEvents();
+                            // 只在首次显示时加载数据
+                            if (!this.calendar.getEvents().length) {
+                                this.calendar.refetchEvents();
+                            }
                         }
                     }, 300);
                 });
 
-                // 初始化渲染
+                // 初始化渲染，但不立即加载数据
                 this.calendar.render();
                 
                 // 添加触摸支持
@@ -2846,63 +2850,51 @@
                 }
             },
 
-            async fetchEvents(fetchInfo, successCallback, failureCallback) {
-                try {
-                    utils.ui.showLoading(true);
-                    // 首先获取用户角色
-                    $.ajax({
-                        url: API_URLS.GET_USER_INFO,
-                        method: 'GET',
-                        xhrFields: {
-                            withCredentials: true
-                        },
-                        success: function(userData) {
-                            if (userData.message !== 'Success') {
-                                failureCallback(new Error(userData.message));
-                                return;
-                            }
+            fetchCalendarOrders(fetchInfo, successCallback, failureCallback) {
+                // 获取当前视图的时间范围
+                const start = fetchInfo.start;
+                const end = fetchInfo.end;
 
-                            // 根据用户角色选择获取订单的API
-                            const apiUrl = userData.label === 'worker' ? API_URLS.GET_REPORT_LIST : API_URLS.GET_HISTORY;
-                            
-                            $.ajax({
-                                url: apiUrl,
-                                method: 'GET',
-                                xhrFields: {
-                                    withCredentials: true
-                                },
-                                success: function(data) {
-                                    utils.ui.showLoading(false);
-                                    if (data.message === 'Success') {
-                                        const events = data.report_info.map(this.convertOrderToEvent);
-                                        successCallback(events);
-                                    } else if (data.message === 'No history report' || data.message === 'No my report') {
-                                        successCallback([]);
-                                    } else {
-                                        failureCallback(new Error(data.message));
-                                    }
-                                }.bind(this),
-                                error: function(xhr, status, error) {
-                                    utils.ui.showLoading(false);
-                                    console.error('获取日程数据失败:', error);
-                                    failureCallback(error);
-                                }
-                            });
-                        }.bind(this),
-                        error: function(xhr, status, error) {
-                            utils.ui.showLoading(false);
-                            console.error('获取用户角色失败:', error);
-                            failureCallback(error);
+                utils.ui.showLoading(true);
+                $.ajax({
+                    url: API_URLS.GET_REPORT_LIST,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    data: {
+                        start: start.toISOString(),
+                        end: end.toISOString()
+                    },
+                    success: (data) => {
+                        utils.ui.showLoading(false);
+                        if (data.message === 'Success') {
+                            const events = data.report_info
+                                .map(this.convertOrderToEvent.bind(this))
+                                .filter(event => event !== null)
+                                // 过滤出在请求时间范围内的事件
+                                .filter(event => {
+                                    const eventDate = new Date(event.start);
+                                    return eventDate >= start && eventDate < end;
+                                });
+                            successCallback(events);
+                        } else if (data.message === 'No my report') {
+                            successCallback([]);
+                        } else {
+                            failureCallback(new Error(data.message));
                         }
-                    });
-                } catch (error) {
-                    utils.ui.showLoading(false);
-                    console.error('获取日程数据失败:', error);
-                    failureCallback(error);
-                }
+                    },
+                    error: (xhr, status, error) => {
+                        utils.ui.showLoading(false);
+                        console.error('获取日程数据失败:', error);
+                        failureCallback(error);
+                    }
+                });
             },
 
             convertOrderToEvent(order) {
+                if (!order) return null;
+                
                 const statusInfo = orderManager.getStatusInfo(order.status);
                 const backgroundColor = {
                     'status-pending': '#ffc107',
@@ -2912,10 +2904,14 @@
                     'status-unknown': '#6c757d'
                 }[statusInfo.class] || '#6c757d';
 
+                const issue = order.issue || '';
+                const title = issue.length > 8 ? `${issue.substring(0, 8)}...` : issue;
+                const date = order.date ? new Date(order.date.replace(/-/g, '/')) : new Date();
+
                 return {
-                    id: order.reportId,
-                    title: order.issue.length > 8 ? `${order.issue.substring(0, 8)}...` : order.issue,
-                    start: new Date(order.date.replace(/-/g, '/')),
+                    id: order.reportId || '',
+                    title: title,
+                    start: date,
                     extendedProps: {
                         ...order,
                         statusText: statusInfo.text
