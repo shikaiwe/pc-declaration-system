@@ -113,56 +113,69 @@ class AssignOrder {
                 return;
             }
 
-            console.log('所有订单:', orders);
-
             if (!orders || orders.length === 0) {
                 this.showNoOrders();
                 return;
             }
 
             const ordersHTML = orders.map(order => {
-                        const status = ORDER_STATUS[order.status] || ORDER_STATUS['0'];
+                        const { text: statusText, class: statusClass } = ORDER_STATUS[order.status] || ORDER_STATUS['0'];
                         const isAssigned = order.status !== '0';
 
                         return `
-                <div class="order-item ${isAssigned ? 'allocated' : ''}">
+                <div class="order-card">
                     <div class="order-info">
-                        <div class="order-id">订单编号: ${order.reportId || '未知'}</div>
-                        <div class="order-details">
-                            <div class="order-details-item">
-                                <span class="order-details-label">联系电话:</span>
-                                <span>${order.userPhoneNumber || '未知'}</span>
+                        ${order.reportId ? `
+                            <p>
+                                <strong>订单编号：</strong>
+                                ${order.reportId}
+                            </p>
+                        ` : ''}
+                        <p>
+                            <strong>手机号码：</strong>
+                            ${order.userPhoneNumber}
+                        </p>
+                        <p>
+                            <strong>状态：</strong>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </p>
+                        <p>
+                            <strong>地址：</strong>
+                            ${order.address}
+                        </p>
+                        <p>
+                            <strong>问题描述：</strong>
+                            ${order.issue}
+                        </p>
+                        <p>
+                            <strong>预约时间：</strong>
+                            ${this.formatDate(order.date)}
+                        </p>
+                        <p>
+                            <strong>提交时间：</strong>
+                            ${this.formatDate(order.call_date)}
+                        </p>
+                        ${isAssigned ? `
+                            <div class="assigned-info">
+                                <span class="assigned-text">已分配给: ${order.workerName || '未知'}</span>
                             </div>
-                            <div class="order-details-item">
-                                <span class="order-details-label">状态:</span>
-                                <span class="status-badge ${status.class}">${status.text}</span>
+                        ` : `
+                            <div class="order-buttons">
+                                <button class="assign-btn" data-report-id="${order.reportId}">
+                                    分配订单
+                                </button>
                             </div>
-                            <div class="order-details-item">
-                                <span class="order-details-label">地址:</span>
-                                <span>${order.address || '未知'}</span>
-                            </div>
-                            <div class="order-details-item">
-                                <span class="order-details-label">问题:</span>
-                                <span>${order.issue || '未知'}</span>
-                            </div>
-                            <div class="order-details-item">
-                                <span class="order-details-label">预约时间:</span>
-                                <span>${this.formatDate(order.date)}</span>
-                            </div>
-                        </div>
+                        `}
                     </div>
-                    ${isAssigned ? `
-                        <div class="assigned-info">
-                            <span class="assigned-text">已分配给: ${order.workerName || '未知'}</span>
-                        </div>
-                    ` : `
-                        <button class="assign-btn" data-report-id="${order.reportId}">分配订单</button>
-                    `}
                 </div>
             `;
         }).join('');
 
-        orderList.innerHTML = ordersHTML;
+        orderList.innerHTML = `
+            <div class="orders-container" style="opacity: 1;">
+                ${ordersHTML}
+            </div>
+        `;
     }
 
     showNoOrders() {
