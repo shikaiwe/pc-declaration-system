@@ -578,7 +578,7 @@ class AssignOrder {
         try {
             const reportId = assignBtn.dataset.reportId;
             if (!reportId) {
-                console.error('未找到订单ID');
+                this.handleError(new Error('订单ID缺失'), '无法处理订单');
                 return;
             }
 
@@ -587,24 +587,20 @@ class AssignOrder {
             const select = this.container.querySelector('#workerSelect');
 
             if (!overlay || !selection || !select) {
-                console.error('未找到必要的DOM元素');
+                this.handleError(new Error('DOM元素缺失'), '页面初始化失败');
                 return;
             }
 
             this.currentReportId = reportId;
-
-            // 显示遮罩层和选择框
             overlay.style.display = 'flex';
             overlay.classList.add('active');
             selection.style.display = 'block';
 
-            // 如果还没有加载维修人员列表，则加载
             if (!this.workersLoaded || !select.options.length || (select.options.length === 1 && select.options[0].value === '')) {
                 await this.loadWorkers();
             }
         } catch (error) {
-            console.error('处理分配按钮点击失败:', error);
-            this.showMessage('操作失败，请重试', 'error');
+            this.handleError(error, '处理分配按钮点击失败');
         }
     }
 
@@ -639,7 +635,7 @@ class AssignOrder {
             const response = await this._fetchOrders();
             this._handleOrdersResponse(response);
         } catch (error) {
-            console.error('加载订单失败:', error);
+            this.handleError(error, '加载订单失败');
             this.showError();
         }
     }
@@ -651,7 +647,7 @@ class AssignOrder {
     _getOrderListElement() {
         const orderList = this.container.querySelector('#assignOrderList');
         if (!orderList) {
-            console.error('找不到订单列表容器');
+            this.handleError(new Error('订单列表容器未找到'), '页面初始化失败');
             return null;
         }
         return orderList;
@@ -811,7 +807,7 @@ class AssignOrder {
 
         const select = this.container.querySelector('#workerSelect');
         if (!select) {
-            console.error('找不到维修人员选择下拉框');
+            this.handleError(new Error('维修人员选择框未找到'), '页面初始化失败');
             return;
         }
 
@@ -820,7 +816,7 @@ class AssignOrder {
             const response = await this._fetchWorkers();
             await this._handleWorkersResponse(response, select);
         } catch (error) {
-            console.error('加载维修人员列表失败:', error);
+            this.handleError(error, '加载维修人员列表失败');
             this._handleWorkerLoadError(select);
         }
     }
@@ -902,8 +898,7 @@ class AssignOrder {
             const response = await this._assignOrderRequest(reportId, workerName);
             await this._handleAssignResponse(response, reportId, workerName);
         } catch (error) {
-            console.error('分配订单失败:', error);
-            this.showMessage(ERROR_MESSAGES.ASSIGN_FAILED, 'error');
+            this.handleError(error, ERROR_MESSAGES.ASSIGN_FAILED);
         }
     }
 
@@ -1076,7 +1071,7 @@ class AssignOrder {
             
             return `${year}-${month}-${day} ${hours}:${minutes}`;
         } catch (error) {
-            console.error('日期格式化错误:', error, '原始日期:', dateString);
+            this.handleError(error, '日期格式化失败');
             return '时间格式错误';
         }
     }
