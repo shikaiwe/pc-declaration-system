@@ -737,8 +737,7 @@ class AssignOrder {
             ` : ''}
             <p><strong>手机号码：</strong>${order.userPhoneNumber}</p>
             <p>
-                <strong>状态：</strong>
-                <span class="status-badge ${statusClass}">${statusText}</span>
+                <strong>状态：</strong><span class="status-badge ${statusClass}">${statusText}</span>
             </p>
             <p><strong>地址：</strong>${order.address}</p>
             <p><strong>问题描述：</strong>${order.issue}</p>
