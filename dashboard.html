@@ -4068,6 +4068,32 @@
                 try {
                     const formattedDate = utils.date.format(order.date);
                     const formattedCallDate = utils.date.format(order.call_date);
+                    
+                    // 获取状态信息
+                    let statusText, statusClass;
+                    switch (order.status) {
+                        case '0':
+                            statusText = '待分配';
+                            statusClass = 'status-pending';
+                            break;
+                        case '1':
+                            statusText = '已分配';
+                            statusClass = 'status-allocated';
+                            break;
+                        case '2':
+                            statusText = '已完成';
+                            statusClass = 'status-completed';
+                            break;
+                        case '3':
+                            statusText = '已撤单';
+                            statusClass = 'status-cancelled';
+                            break;
+                        default:
+                            statusText = '未知状态';
+                            statusClass = 'status-unknown';
+                    }
+
+                    console.log('订单详情状态:', order.status, statusText, statusClass); // 添加调试日志
 
                     orderDetailBody.innerHTML = `
                     <div class="detail-item">
@@ -4077,9 +4103,7 @@
                     <div class="detail-item">
                         <span class="detail-label">订单状态：</span>
                         <span class="detail-value">
-                            <span class="status-badge ${order.status === 'allocated' ? 'allocated' : 'pending'}">
-                                ${order.status === 'allocated' ? '已分配' : '待分配'}
-                            </span>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
                         </span>
                     </div>
                     <div class="detail-item">
