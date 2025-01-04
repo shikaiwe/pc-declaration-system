@@ -7,10 +7,10 @@ const API_URLS = {
 
 // 订单状态配置
 const ORDER_STATUS = {
-    '0': { text: '待分配', class: 'status-pending' },
-    '1': { text: '已分配', class: 'status-allocated' },
-    '2': { text: '已完成', class: 'status-completed' },
-    '3': { text: '已撤单', class: 'status-cancelled' }
+    '0': { text: '待分配', class: 'status-pending', color: '#ef6c00', bgColor: '#fff3e0' },
+    '1': { text: '已分配', class: 'status-allocated', color: '#2e7d32', bgColor: '#e8f5e9' },
+    '2': { text: '已完成', class: 'status-completed', color: '#1976d2', bgColor: '#e3f2fd' },
+    '3': { text: '已撤单', class: 'status-cancelled', color: '#d32f2f', bgColor: '#ffebee' }
 };
 
 // 错误信息配置  
@@ -405,7 +405,7 @@ class AssignOrder {
             }
 
             /* 状态标签样式 */
-            .status-badge {
+            .assign-order-wrapper .status-badge {
                 display: inline-block;
                 padding: 6px 12px;
                 border-radius: 20px;
@@ -415,52 +415,52 @@ class AssignOrder {
                 margin-left: auto;
             }
 
-            .status-badge.status-pending {
+            .assign-order-wrapper .status-badge.status-pending {
                 background-color: #ffc107;
                 color: #000;
             }
 
-            .status-badge.status-allocated {
+            .assign-order-wrapper .status-badge.status-allocated {
                 background-color: #28a745;
                 color: #fff;
             }
 
-            .status-badge.status-completed {
+            .assign-order-wrapper .status-badge.status-completed {
                 background-color: #17a2b8;
                 color: #fff;
             }
 
-            .status-badge.status-cancelled {
+            .assign-order-wrapper .status-badge.status-cancelled {
                 background-color: #dc3545;
                 color: #fff;
             }
 
-            .status-badge.status-unknown {
+            .assign-order-wrapper .status-badge.status-unknown {
                 background-color: #6c757d;
                 color: #fff;
             }
 
             /* 订单卡片中的状态样式 */
-            .order-info p .status-badge {
+            .assign-order-wrapper .order-info p .status-badge {
                 margin-left: auto;
                 font-size: 0.9em;
             }
 
             /* 订单详情中的状态样式 */
-            .detail-value .status-badge {
+            .assign-order-wrapper .detail-value .status-badge {
                 padding: 4px 12px;
                 font-size: 12px;
             }
 
             @media (prefers-color-scheme: dark) {
-                .order-item.allocated {
+                .assign-order-wrapper .order-item.allocated {
                     background: #2a2a2a;
                     border-left-color: #28a745;
                 }
-                .order-info p {
+                .assign-order-wrapper .order-info p {
                     color: #fff;
                 }
-                .order-info p strong {
+                .assign-order-wrapper .order-info p strong {
                     color: #aaa;
                 }
             }
