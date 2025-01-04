@@ -2794,8 +2794,6 @@
                             }
                         });
 
-                        console.log('天气API响应:', response); // 调试日志
-
                         if (response.message === 'Success') {
                             if (!response.weather || !response.IP || !response.IP.city) {
                                 throw new Error('天气数据格式不正确');
@@ -3778,13 +3776,10 @@
                             }
                         }).then(function(response) {
                             if (response.message === 'Success') {
-                                console.log('订单数据:', response.report_info); // 添加调试日志
                                 const events = response.report_info.map(order => {
                                     let backgroundColor, borderColor, textColor, title;
                                     const issueText = order.issue || '';
                                     const status = order.status || '0';
-                                    
-                                    console.log('处理订单:', order.reportId, '状态:', status); // 添加调试日志
                                     
                                     switch (status) {
                                         case '0':
@@ -3818,7 +3813,7 @@
                                             title = `[未知] ${issueText.substring(0, 8)}...`;
                                     }
                                     
-                                    const eventData = {
+                                    return {
                                         id: order.reportId,
                                         title: title,
                                         start: new Date(order.date.replace(/-/g, '/')),
@@ -3830,12 +3825,8 @@
                                         displayEventTime: true,
                                         eventDisplay: 'block'
                                     };
-                                    
-                                    console.log('创建事件:', eventData); // 添加调试日志
-                                    return eventData;
                                 });
                                 
-                                console.log('最终事件列表:', events); // 添加调试日志
                                 successCallback(events);
                             } else if (response.message === 'No history report' || response.message === 'No my report') {
                                 successCallback([]);
@@ -4154,22 +4145,11 @@
             // 修改更新日历事件的函数
             function updateCalendarEvent(orderId, newStatus) {
                 const calendarEl = document.querySelector('#calendar');
-                if (!calendarEl) {
-                    console.log('未找到日历元素');
-                    return;
-                }
+                if (!calendarEl || !calendarEl._fullCalendar) return;
                 
                 const calendar = calendarEl._fullCalendar;
-                if (!calendar) {
-                    console.log('未找到日历实例');
-                    return;
-                }
-
-                console.log('更新订单:', orderId, '新状态:', newStatus); // 添加调试日志
-
                 const event = calendar.getEventById(orderId);
                 if (event) {
-                    console.log('找到事件:', event); // 添加调试日志
                     let backgroundColor, borderColor, textColor, title;
                     const issueText = event.extendedProps.issue || '';
                     
@@ -4202,27 +4182,12 @@
                             title = `[待分配] ${issueText.substring(0, 8)}...`;
                     }
 
-                    console.log('更新事件属性:', {
-                        title,
-                        backgroundColor,
-                        borderColor,
-                        textColor,
-                        status: newStatus
-                    }); // 添加调试日志
-
                     event.setProp('title', title);
                     event.setProp('backgroundColor', backgroundColor);
                     event.setProp('borderColor', borderColor);
                     event.setProp('textColor', textColor);
-                    
-                    // 更新事件的状态
                     event.setExtendedProp('status', newStatus);
-                    
-                    // 强制重新渲染日历
                     calendar.rerenderEvents();
-                    console.log('事件更新完成'); // 添加调试日志
-                } else {
-                    console.log('未找到对应的事件:', orderId); // 添加调试日志
                 }
             }
 
@@ -4474,11 +4439,8 @@
                     .done(function(data) {
                         if (data.message === 'Success') {
                             utils.ui.showMessage('订单已完成');
-                            // 更新日历显示
                             updateCalendarEvent(reportId, '2');
-                            // 刷新订单列表
                             fetchHistoryOrders();
-                            // 刷新日历事件
                             const calendarEl = document.querySelector('#calendar');
                             if (calendarEl && calendarEl._fullCalendar) {
                                 calendarEl._fullCalendar.refetchEvents();
@@ -4512,11 +4474,8 @@
                     .done(function(data) {
                         if (data.message === 'Success') {
                             utils.ui.showMessage('订单已撤销');
-                            // 更新日历显示
                             updateCalendarEvent(reportId, '3');
-                            // 刷新订单列表
                             fetchHistoryOrders();
-                            // 刷新日历事件
                             const calendarEl = document.querySelector('#calendar');
                             if (calendarEl && calendarEl._fullCalendar) {
                                 calendarEl._fullCalendar.refetchEvents();
@@ -4558,16 +4517,11 @@
 
                 // 更新分配后的状态
                 updateAfterAssign: function() {
-                    // 刷新历史订单列表
                     fetchHistoryOrders();
-                    
-                    // 刷新日历事件
                     const calendarEl = document.querySelector('#calendar');
                     if (calendarEl && calendarEl._fullCalendar) {
                         calendarEl._fullCalendar.refetchEvents();
                     }
-                    
-                    // 如果在分配订单页面，刷新分配订单列表
                     const assignOrderContent = document.getElementById('assignOrderContent');
                     if (assignOrderContent && window.assignOrderInstance) {
                         window.assignOrderInstance.refreshOrders();
