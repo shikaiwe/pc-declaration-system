@@ -3778,11 +3778,15 @@
                             }
                         }).then(function(response) {
                             if (response.message === 'Success') {
+                                console.log('订单数据:', response.report_info); // 添加调试日志
                                 const events = response.report_info.map(order => {
                                     let backgroundColor, borderColor, textColor, title;
                                     const issueText = order.issue || '';
+                                    const status = order.status || '0';
                                     
-                                    switch (order.status) {
+                                    console.log('处理订单:', order.reportId, '状态:', status); // 添加调试日志
+                                    
+                                    switch (status) {
                                         case '0':
                                             backgroundColor = '#ffc107';
                                             borderColor = '#ffc107';
@@ -3814,11 +3818,11 @@
                                             title = `[未知] ${issueText.substring(0, 8)}...`;
                                     }
                                     
-                                    return {
+                                    const eventData = {
                                         id: order.reportId,
                                         title: title,
                                         start: new Date(order.date.replace(/-/g, '/')),
-                                        extendedProps: order,
+                                        extendedProps: {...order},
                                         backgroundColor: backgroundColor,
                                         borderColor: borderColor,
                                         textColor: textColor,
@@ -3826,7 +3830,12 @@
                                         displayEventTime: true,
                                         eventDisplay: 'block'
                                     };
+                                    
+                                    console.log('创建事件:', eventData); // 添加调试日志
+                                    return eventData;
                                 });
+                                
+                                console.log('最终事件列表:', events); // 添加调试日志
                                 successCallback(events);
                             } else if (response.message === 'No history report' || response.message === 'No my report') {
                                 successCallback([]);
@@ -3959,8 +3968,22 @@
                 .done(function(data) {
                     if (data.message === 'Success') {
                         utils.ui.showMessage('订单已完成');
-                        updateCalendarEvent(reportId, 'completed'); // 更新日历显示
-                        fetchHistoryOrders(); // 刷新订单列表
+                        console.log('订单完成，准备更新状态:', reportId); // 添加调试日志
+                        
+                        // 先更新日历显示
+                        updateCalendarEvent(reportId, '2');
+                        
+                        // 延迟执行刷新操作
+                        setTimeout(() => {
+                            // 刷新订单列表
+                            fetchHistoryOrders();
+                            
+                            // 刷新日历事件
+                            const calendarEl = document.querySelector('#calendar');
+                            if (calendarEl && calendarEl._fullCalendar) {
+                                calendarEl._fullCalendar.refetchEvents();
+                            }
+                        }, 500);
                     } else {
                         auth.handleSessionError(data.message);
                     }
@@ -3990,14 +4013,29 @@
                 .done(function(data) {
                     if (data.message === 'Success') {
                         utils.ui.showMessage('订单已撤销');
-                        updateCalendarEvent(reportId, 'cancelled'); // 更新日历显示
-                        fetchHistoryOrders(); // 刷新订单列表
+                        console.log('订单撤销，准备更新状态:', reportId); // 添加调试日志
+                        
+                        // 先更新日历显示
+                        updateCalendarEvent(reportId, '3');
+                        
+                        // 延迟执行刷新操作
+                        setTimeout(() => {
+                            // 刷新订单列表
+                            fetchHistoryOrders();
+                            
+                            // 刷新日历事件
+                            const calendarEl = document.querySelector('#calendar');
+                            if (calendarEl && calendarEl._fullCalendar) {
+                                calendarEl._fullCalendar.refetchEvents();
+                            }
+                        }, 500);
                     } else {
                         auth.handleSessionError(data.message);
                     }
                 })
                 .fail(function(error) {
-                    handleApiError(error, '撤销订单失败，请重试');
+                    console.error('撤销订单失败:', error);
+                    utils.ui.showMessage('撤销订单失败，请重试');
                 });
             }
 
@@ -4092,13 +4130,22 @@
             // 修改更新日历事件的函数
             function updateCalendarEvent(orderId, newStatus) {
                 const calendarEl = document.querySelector('#calendar');
-                if (!calendarEl) return;
+                if (!calendarEl) {
+                    console.log('未找到日历元素');
+                    return;
+                }
                 
                 const calendar = calendarEl._fullCalendar;
-                if (!calendar) return;
+                if (!calendar) {
+                    console.log('未找到日历实例');
+                    return;
+                }
+
+                console.log('更新订单:', orderId, '新状态:', newStatus); // 添加调试日志
 
                 const event = calendar.getEventById(orderId);
                 if (event) {
+                    console.log('找到事件:', event); // 添加调试日志
                     let backgroundColor, borderColor, textColor, title;
                     const issueText = event.extendedProps.issue || '';
                     
@@ -4131,14 +4178,27 @@
                             title = `[待分配] ${issueText.substring(0, 8)}...`;
                     }
 
+                    console.log('更新事件属性:', {
+                        title,
+                        backgroundColor,
+                        borderColor,
+                        textColor,
+                        status: newStatus
+                    }); // 添加调试日志
+
                     event.setProp('title', title);
                     event.setProp('backgroundColor', backgroundColor);
                     event.setProp('borderColor', borderColor);
                     event.setProp('textColor', textColor);
                     
                     // 更新事件的状态
-                    const newProps = {...event.extendedProps, status: newStatus};
                     event.setExtendedProp('status', newStatus);
+                    
+                    // 强制重新渲染日历
+                    calendar.rerenderEvents();
+                    console.log('事件更新完成'); // 添加调试日志
+                } else {
+                    console.log('未找到对应的事件:', orderId); // 添加调试日志
                 }
             }
 
