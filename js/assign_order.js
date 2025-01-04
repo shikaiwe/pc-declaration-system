@@ -451,7 +451,7 @@ class AssignOrder {
 
             /* 订单卡片中的状态样式 */
             .order-info p .status-badge {
-                margin-left: auto;
+                margin-left: 4px;
                 font-size: 0.9em;
             }
 
