@@ -907,11 +907,7 @@ class AssignOrder {
             await this._updateOrderStatus(reportId, workerName);
             this.showMessage('订单分配成功', 'success');
             this.closeWorkerSelection();
-            
-            // 调用全局回调函数更新订单信息
-            if (typeof window.onOrderAssigned === 'function') {
-                window.onOrderAssigned();
-            }
+            await this.refreshOrders();
         } else {
             this._handleAssignError(response.message);
         }
@@ -1089,6 +1085,14 @@ class AssignOrder {
                 this.currentReportId = null;
             }, 300);
         }
+    }
+
+    /**
+     * 刷新订单列表
+     */
+    async refreshOrders() {
+        this.ordersLoaded = false;
+        await this.loadOrders();
     }
 }
 
