@@ -400,7 +400,7 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1003;
+            z-index: 1003;  /* 保持退出登录窗口的z-index值低于消息弹窗 */
             left: 0;
             top: 0;
             width: 100%;
@@ -869,7 +869,7 @@
         .message-modal {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 2000;  /* 提高z-index值，确保在最上层 */
             left: 0;
             top: 0;
             width: 100%;
