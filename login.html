@@ -296,6 +296,10 @@
                     $.ajax({
                         url: loginUrl,
                         type: 'POST',
+                        contentType: 'application/json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
                         data: JSON.stringify({
                             name: username,
                             password: password
@@ -316,7 +320,14 @@
                             }
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
-                            reject(new Error('登录失败: ' + textStatus));
+                            if (jqXHR.status === 400) {
+                                resolve({
+                                    success: false,
+                                    message: jqXHR.responseJSON.message
+                                });
+                            } else {
+                                reject(new Error('登录失败: ' + textStatus));
+                            }
                         }
                     });
                 });

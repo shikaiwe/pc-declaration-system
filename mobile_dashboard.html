@@ -2186,8 +2186,12 @@
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.error('退出登录失败:', error);
-                        utils.ui.showMessage('退出登录失败，请重试');
+                        if (xhr.status === 400) {
+                            handleSessionError(xhr.responseJSON.message);
+                        } else {
+                            console.error('退出登录失败:', error);
+                            utils.ui.showMessage('退出登录失败，请重试');
+                        }
                     }
                 });
             },
@@ -2205,7 +2209,7 @@
                         errorMessage = '未找到会话信息，请重新登录';
                         break;
                     default:
-                        errorMessage = '发生未知错误，请重新登录';
+                        errorMessage = message || '发生未知错误，请重新登录';
                 }
                 utils.ui.showMessage(errorMessage);
                 setTimeout(() => {

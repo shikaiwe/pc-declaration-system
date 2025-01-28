@@ -2719,28 +2719,35 @@
                             this.handleSessionError(response.message);
                         }
                     }).catch(error => {
-                        console.error('退出登录失败:', error);
-                        utils.ui.showMessage('退出登录失败，请重试');
+                        if (error.status === 400) {
+                            this.handleSessionError(error.responseJSON.message);
+                        } else {
+                            console.error('退出登录失败:', error);
+                            utils.ui.showMessage('退出登录失败，请重试');
+                        }
                     });
                 },
 
                 handleSessionError: function(message) {
+                    let errorMessage;
                     switch (message) {
                         case 'Session has expired':
-                            utils.ui.showMessage('会话已过期，请重新登录');
+                            errorMessage = '会话已过期，请重新登录';
                             break;
                         case 'Invalid session':
-                            utils.ui.showMessage('无效的会话，请重新登录');
+                            errorMessage = '无效会话，请重新登录';
                             break;
                         case 'No sessionid cookie':
-                            utils.ui.showMessage('未找到会话信息，请重新登录');
+                            errorMessage = '未找到会话信息，请重新登录';
                             break;
                         default:
-                            utils.ui.showMessage('发生未知错误，请重新登录');
+                            errorMessage = message || '发生未知错误，请重新登录';
                     }
-
-                    utils.storage.remove('loginData');
+                    utils.ui.showMessage(errorMessage);
                     setTimeout(() => {
+                        utils.storage.remove('username');
+                        utils.storage.remove('loginData');
+                        utils.storage.remove('rememberMe');
                         window.location.href = 'login.html';
                     }, 2000);
                 }
