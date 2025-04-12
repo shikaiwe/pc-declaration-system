@@ -1,8 +1,8 @@
 // 常量配置
 const API_URLS = {
-    GET_REPORT_OF_SAME_DAY: 'https://8.134.178.71/api/dashboard/get_report_of_same_day/',
-    TODAY_WORKERS: 'https://8.134.178.71/api/dashboard/today_workers/',
-    ASSIGN_ORDER: 'https://8.134.178.71/api/dashboard/assign_order/'
+    GET_REPORT_OF_SAME_DAY: 'https://8.138.207.95/api/dashboard/get_report_of_same_day/',
+    TODAY_WORKERS: 'https://8.138.207.95/api/dashboard/today_workers/',
+    ASSIGN_ORDER: 'https://8.138.207.95/api/dashboard/assign_order/'
 };
 
 // 订单状态配置
