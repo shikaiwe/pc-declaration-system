@@ -1005,61 +1005,85 @@
             font-size: 14px;
             font-weight: 500;
             text-align: center;
-            margin-left: auto;
         }
         
+        /* 待分配状态 */
         .status-badge.pending,
         .status-pending {
-            background-color: #ffc107;
-            color: #000;
+            background-color: #fff3e0;
+            color: #ef6c00;
         }
         
+        /* 已分配状态 */
         .status-badge.allocated,
         .status-allocated {
-            background-color: #28a745;
-            color: #fff;
+            background-color: #e8f5e9;
+            color: #2e7d32;
         }
         
+        /* 已完成状态 */
         .status-badge.completed,
         .status-completed {
-            background-color: #17a2b8;
-            color: #fff;
+            background-color: #e3f2fd;
+            color: #1976d2;
         }
         
+        /* 已撤单状态 */
         .status-badge.cancelled,
         .status-cancelled {
-            background-color: #dc3545;
-            color: #fff;
+            background-color: #ffebee;
+            color: #d32f2f;
         }
         
+        /* 未知状态 */
         .status-badge.unknown,
         .status-unknown {
-            background-color: #6c757d;
-            color: #fff;
+            background-color: #f5f5f5;
+            color: #757575;
         }
-        /* 订单卡片中的状态样式 */
         
+        /* 订单卡片中的状态样式 */
         .order-info p .status-badge {
             margin-left: auto;
             font-size: 0.9em;
         }
-        /* 订单详情中的状态样式 */
         
+        /* 订单详情中的状态样式 */
         .detail-value .status-badge {
             padding: 4px 12px;
             font-size: 12px;
         }
         
+        /* 深色模式适配 */
         @media (prefers-color-scheme: dark) {
-            .order-item.allocated {
-                background: #2a2a2a;
-                border-left-color: #28a745;
+            .status-badge.pending,
+            .status-pending {
+                background-color: rgba(239, 108, 0, 0.15);
+                color: #ffb74d;
             }
-            .order-info p {
-                color: #fff;
+            
+            .status-badge.allocated,
+            .status-allocated {
+                background-color: rgba(46, 125, 50, 0.15);
+                color: #81c784;
             }
-            .order-info p strong {
-                color: #aaa;
+            
+            .status-badge.completed,
+            .status-completed {
+                background-color: rgba(25, 118, 210, 0.15);
+                color: #64b5f6;
+            }
+            
+            .status-badge.cancelled,
+            .status-cancelled {
+                background-color: rgba(211, 47, 47, 0.15);
+                color: #e57373;
+            }
+            
+            .status-badge.unknown,
+            .status-unknown {
+                background-color: rgba(117, 117, 117, 0.15);
+                color: #bdbdbd;
             }
         }
         /* 文本输入区域 */
@@ -1978,8 +2002,8 @@
     <script>
         // 配置
         const CONFIG = {
-            ip: '8.134.178.71',
-            baseUrl: 'https://8.134.178.71/api',
+            ip: '8.138.207.95',
+            baseUrl: 'https://8.138.207.95/api',
             weatherApiKey: null
         };
 
@@ -2162,8 +2186,12 @@
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.error('退出登录失败:', error);
-                        utils.ui.showMessage('退出登录失败，请重试');
+                        if (xhr.status === 400) {
+                            handleSessionError(xhr.responseJSON.message);
+                        } else {
+                            console.error('退出登录失败:', error);
+                            utils.ui.showMessage('退出登录失败，请重试');
+                        }
                     }
                 });
             },
@@ -2181,7 +2209,7 @@
                         errorMessage = '未找到会话信息，请重新登录';
                         break;
                     default:
-                        errorMessage = '发生未知错误，请重新登录';
+                        errorMessage = message || '发生未知错误，请重新登录';
                 }
                 utils.ui.showMessage(errorMessage);
                 setTimeout(() => {

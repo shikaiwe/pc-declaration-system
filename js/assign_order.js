@@ -1,16 +1,16 @@
 // 常量配置
 const API_URLS = {
-    GET_REPORT_OF_SAME_DAY: 'https://8.134.178.71/api/dashboard/get_report_of_same_day/',
-    TODAY_WORKERS: 'https://8.134.178.71/api/dashboard/today_workers/',
-    ASSIGN_ORDER: 'https://8.134.178.71/api/dashboard/assign_order/'
+    GET_REPORT_OF_SAME_DAY: 'https://8.138.207.95/api/dashboard/get_report_of_same_day/',
+    TODAY_WORKERS: 'https://8.138.207.95/api/dashboard/today_workers/',
+    ASSIGN_ORDER: 'https://8.138.207.95/api/dashboard/assign_order/'
 };
 
 // 订单状态配置
 const ORDER_STATUS = {
-    '0': { text: '待分配', class: 'status-pending' },
-    '1': { text: '已分配', class: 'status-allocated' },
-    '2': { text: '已完成', class: 'status-completed' },
-    '3': { text: '已撤单', class: 'status-cancelled' }
+    '0': { text: '待分配', class: 'status-pending', color: '#ef6c00', bgColor: '#fff3e0' },
+    '1': { text: '已分配', class: 'status-allocated', color: '#2e7d32', bgColor: '#e8f5e9' },
+    '2': { text: '已完成', class: 'status-completed', color: '#1976d2', bgColor: '#e3f2fd' },
+    '3': { text: '已撤单', class: 'status-cancelled', color: '#d32f2f', bgColor: '#ffebee' }
 };
 
 // 错误信息配置  
@@ -412,37 +412,46 @@ class AssignOrder {
                 font-size: 14px;
                 font-weight: 500;
                 text-align: center;
-                margin-left: auto;
             }
 
-            .status-badge.status-pending {
-                background-color: #ffc107;
-                color: #000;
+            /* 待分配状态 */
+            .status-badge.pending,
+            .status-pending {
+                background-color: #fff3e0;
+                color: #ef6c00;
             }
 
-            .status-badge.status-allocated {
-                background-color: #28a745;
-                color: #fff;
+            /* 已分配状态 */
+            .status-badge.allocated,
+            .status-allocated {
+                background-color: #e8f5e9;
+                color: #2e7d32;
             }
 
-            .status-badge.status-completed {
-                background-color: #17a2b8;
-                color: #fff;
+            /* 已完成状态 */
+            .status-badge.completed,
+            .status-completed {
+                background-color: #e3f2fd;
+                color: #1976d2;
             }
 
-            .status-badge.status-cancelled {
-                background-color: #dc3545;
-                color: #fff;
+            /* 已撤单状态 */
+            .status-badge.cancelled,
+            .status-cancelled {
+                background-color: #ffebee;
+                color: #d32f2f;
             }
 
-            .status-badge.status-unknown {
-                background-color: #6c757d;
-                color: #fff;
+            /* 未知状态 */
+            .status-badge.unknown,
+            .status-unknown {
+                background-color: #f5f5f5;
+                color: #757575;
             }
 
             /* 订单卡片中的状态样式 */
             .order-info p .status-badge {
-                margin-left: auto;
+                margin-left: 4px;
                 font-size: 0.9em;
             }
 
@@ -452,16 +461,36 @@ class AssignOrder {
                 font-size: 12px;
             }
 
+            /* 深色模式适配 */
             @media (prefers-color-scheme: dark) {
-                .order-item.allocated {
-                    background: #2a2a2a;
-                    border-left-color: #28a745;
+                .status-badge.pending,
+                .status-pending {
+                    background-color: rgba(239, 108, 0, 0.15);
+                    color: #ffb74d;
                 }
-                .order-info p {
-                    color: #fff;
+                
+                .status-badge.allocated,
+                .status-allocated {
+                    background-color: rgba(46, 125, 50, 0.15);
+                    color: #81c784;
                 }
-                .order-info p strong {
-                    color: #aaa;
+                
+                .status-badge.completed,
+                .status-completed {
+                    background-color: rgba(25, 118, 210, 0.15);
+                    color: #64b5f6;
+                }
+                
+                .status-badge.cancelled,
+                .status-cancelled {
+                    background-color: rgba(211, 47, 47, 0.15);
+                    color: #e57373;
+                }
+                
+                .status-badge.unknown,
+                .status-unknown {
+                    background-color: rgba(117, 117, 117, 0.15);
+                    color: #bdbdbd;
                 }
             }
         `;
@@ -549,7 +578,7 @@ class AssignOrder {
         try {
             const reportId = assignBtn.dataset.reportId;
             if (!reportId) {
-                console.error('未找到订单ID');
+                this.handleError(new Error('订单ID缺失'), '无法处理订单');
                 return;
             }
 
@@ -558,24 +587,20 @@ class AssignOrder {
             const select = this.container.querySelector('#workerSelect');
 
             if (!overlay || !selection || !select) {
-                console.error('未找到必要的DOM元素');
+                this.handleError(new Error('DOM元素缺失'), '页面初始化失败');
                 return;
             }
 
             this.currentReportId = reportId;
-
-            // 显示遮罩层和选择框
             overlay.style.display = 'flex';
             overlay.classList.add('active');
             selection.style.display = 'block';
 
-            // 如果还没有加载维修人员列表，则加载
             if (!this.workersLoaded || !select.options.length || (select.options.length === 1 && select.options[0].value === '')) {
                 await this.loadWorkers();
             }
         } catch (error) {
-            console.error('处理分配按钮点击失败:', error);
-            this.showMessage('操作失败，请重试', 'error');
+            this.handleError(error, '处理分配按钮点击失败');
         }
     }
 
@@ -610,7 +635,7 @@ class AssignOrder {
             const response = await this._fetchOrders();
             this._handleOrdersResponse(response);
         } catch (error) {
-            console.error('加载订单失败:', error);
+            this.handleError(error, '加载订单失败');
             this.showError();
         }
     }
@@ -622,7 +647,7 @@ class AssignOrder {
     _getOrderListElement() {
         const orderList = this.container.querySelector('#assignOrderList');
         if (!orderList) {
-            console.error('找不到订单列表容器');
+            this.handleError(new Error('订单列表容器未找到'), '页面初始化失败');
             return null;
         }
         return orderList;
@@ -708,8 +733,7 @@ class AssignOrder {
             ` : ''}
             <p><strong>手机号码：</strong>${order.userPhoneNumber}</p>
             <p>
-                <strong>状态：</strong>
-                <span class="status-badge ${statusClass}">${statusText}</span>
+                <strong>状态：</strong><span class="status-badge ${statusClass}">${statusText}</span>
             </p>
             <p><strong>地址：</strong>${order.address}</p>
             <p><strong>问题描述：</strong>${order.issue}</p>
@@ -783,7 +807,7 @@ class AssignOrder {
 
         const select = this.container.querySelector('#workerSelect');
         if (!select) {
-            console.error('找不到维修人员选择下拉框');
+            this.handleError(new Error('维修人员选择框未找到'), '页面初始化失败');
             return;
         }
 
@@ -792,7 +816,7 @@ class AssignOrder {
             const response = await this._fetchWorkers();
             await this._handleWorkersResponse(response, select);
         } catch (error) {
-            console.error('加载维修人员列表失败:', error);
+            this.handleError(error, '加载维修人员列表失败');
             this._handleWorkerLoadError(select);
         }
     }
@@ -874,8 +898,7 @@ class AssignOrder {
             const response = await this._assignOrderRequest(reportId, workerName);
             await this._handleAssignResponse(response, reportId, workerName);
         } catch (error) {
-            console.error('分配订单失败:', error);
-            this.showMessage(ERROR_MESSAGES.ASSIGN_FAILED, 'error');
+            this.handleError(error, ERROR_MESSAGES.ASSIGN_FAILED);
         }
     }
 
@@ -907,11 +930,7 @@ class AssignOrder {
             await this._updateOrderStatus(reportId, workerName);
             this.showMessage('订单分配成功', 'success');
             this.closeWorkerSelection();
-            
-            // 调用全局回调函数更新订单信息
-            if (typeof window.onOrderAssigned === 'function') {
-                window.onOrderAssigned();
-            }
+            await this.refreshOrders();
         } else {
             this._handleAssignError(response.message);
         }
@@ -1052,7 +1071,7 @@ class AssignOrder {
             
             return `${year}-${month}-${day} ${hours}:${minutes}`;
         } catch (error) {
-            console.error('日期格式化错误:', error, '原始日期:', dateString);
+            this.handleError(error, '日期格式化失败');
             return '时间格式错误';
         }
     }
@@ -1089,6 +1108,14 @@ class AssignOrder {
                 this.currentReportId = null;
             }, 300);
         }
+    }
+
+    /**
+     * 刷新订单列表
+     */
+    async refreshOrders() {
+        this.ordersLoaded = false;
+        await this.loadOrders();
     }
 }
 

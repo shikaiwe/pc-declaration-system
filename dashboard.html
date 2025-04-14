@@ -399,7 +399,7 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1003;
+            z-index: 1003;  /* 保持退出登录窗口的z-index值低于消息弹窗 */
             left: 0;
             top: 0;
             width: 100%;
@@ -746,40 +746,94 @@
             position: relative;
             margin-right: 12px;
         }
-        /* 订单状态样式 */
-        
-        .order-status {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-left: 8px;
+        /* 订单状态标签样式 */
+        .status-badge {
             display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
         }
-        
+
+        /* 待分配状态 */
+        .status-badge.pending,
         .status-pending {
             background-color: #fff3e0;
-            color: #f57c00;
+            color: #ef6c00;
         }
-        
+
+        /* 已分配状态 */
+        .status-badge.allocated,
         .status-allocated {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        /* 已完成状态 */
+        .status-badge.completed,
+        .status-completed {
             background-color: #e3f2fd;
             color: #1976d2;
         }
-        
-        .status-completed {
-            background-color: #e8f5e9;
-            color: #388e3c;
-        }
-        
+
+        /* 已撤单状态 */
+        .status-badge.cancelled,
         .status-cancelled {
             background-color: #ffebee;
             color: #d32f2f;
         }
-        
+
+        /* 未知状态 */
+        .status-badge.unknown,
         .status-unknown {
             background-color: #f5f5f5;
             color: #757575;
+        }
+
+        /* 订单卡片中的状态样式 */
+        .order-info p .status-badge {
+            margin-left: 4px;
+            font-size: 0.9em;
+        }
+
+        /* 订单详情中的状态样式 */
+        .detail-value .status-badge {
+            padding: 4px 12px;
+            font-size: 12px;
+        }
+
+        /* 深色模式适配 */
+        @media (prefers-color-scheme: dark) {
+            .status-badge.pending,
+            .status-pending {
+                background-color: rgba(239, 108, 0, 0.15);
+                color: #ffb74d;
+            }
+            
+            .status-badge.allocated,
+            .status-allocated {
+                background-color: rgba(46, 125, 50, 0.15);
+                color: #81c784;
+            }
+            
+            .status-badge.completed,
+            .status-completed {
+                background-color: rgba(25, 118, 210, 0.15);
+                color: #64b5f6;
+            }
+            
+            .status-badge.cancelled,
+            .status-cancelled {
+                background-color: rgba(211, 47, 47, 0.15);
+                color: #e57373;
+            }
+            
+            .status-badge.unknown,
+            .status-unknown {
+                background-color: rgba(117, 117, 117, 0.15);
+                color: #bdbdbd;
+            }
         }
         /* 空状态和错误状态样式 */
         
@@ -814,7 +868,7 @@
         .message-modal {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 2000;  /* 提高z-index值，确保在最上层 */
             left: 0;
             top: 0;
             width: 100%;
@@ -2518,7 +2572,7 @@
         <script>
             // 配置常量
             const CONFIG = {
-                baseUrl: 'https://8.134.178.71/api'
+                baseUrl: 'https://8.138.207.95/api'
             };
 
             // API 端点配置
@@ -2664,28 +2718,35 @@
                             this.handleSessionError(response.message);
                         }
                     }).catch(error => {
-                        console.error('退出登录失败:', error);
-                        utils.ui.showMessage('退出登录失败，请重试');
+                        if (error.status === 400) {
+                            this.handleSessionError(error.responseJSON.message);
+                        } else {
+                            console.error('退出登录失败:', error);
+                            utils.ui.showMessage('退出登录失败，请重试');
+                        }
                     });
                 },
 
                 handleSessionError: function(message) {
+                    let errorMessage;
                     switch (message) {
                         case 'Session has expired':
-                            utils.ui.showMessage('会话已过期，请重新登录');
+                            errorMessage = '会话已过期，请重新登录';
                             break;
                         case 'Invalid session':
-                            utils.ui.showMessage('无效的会话，请重新登录');
+                            errorMessage = '无效会话，请重新登录';
                             break;
                         case 'No sessionid cookie':
-                            utils.ui.showMessage('未找到会话信息，请重新登录');
+                            errorMessage = '未找到会话信息，请重新登录';
                             break;
                         default:
-                            utils.ui.showMessage('发生未知错误，请重新登录');
+                            errorMessage = message || '发生未知错误，请重新登录';
                     }
-
-                    utils.storage.remove('loginData');
+                    utils.ui.showMessage(errorMessage);
                     setTimeout(() => {
+                        utils.storage.remove('username');
+                        utils.storage.remove('loginData');
+                        utils.storage.remove('rememberMe');
                         window.location.href = 'login.html';
                     }, 2000);
                 }
@@ -2738,8 +2799,6 @@
                                 withCredentials: true
                             }
                         });
-
-                        console.log('天气API响应:', response); // 调试日志
 
                         if (response.message === 'Success') {
                             if (!response.weather || !response.IP || !response.IP.city) {
@@ -3654,6 +3713,8 @@
             // 在 script 标签中添加日历初始化函数
             function initializeCalendar() {
                 const calendarEl = document.getElementById('calendar');
+                if (!calendarEl) return;
+
                 const calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'dayGridMonth',
                     locale: 'zh-cn',
@@ -3723,42 +3784,46 @@
                             if (response.message === 'Success') {
                                 const events = response.report_info.map(order => {
                                     let backgroundColor, borderColor, textColor, title;
-                                    switch (order.status) {
+                                    const issueText = order.issue || '';
+                                    const status = order.status || '0';
+                                    
+                                    switch (status) {
                                         case '0':
                                             backgroundColor = '#ffc107';
                                             borderColor = '#ffc107';
                                             textColor = '#000';
-                                            title = `[待分配] ${order.issue.substring(0, 6)}...`;
+                                            title = `[待分配] ${issueText.substring(0, 8)}...`;
                                             break;
                                         case '1':
                                             backgroundColor = '#28a745';
                                             borderColor = '#28a745';
                                             textColor = '#fff';
-                                            title = `[已分配] ${order.issue.substring(0, 6)}...`;
+                                            title = `[已分配] ${issueText.substring(0, 8)}...`;
                                             break;
                                         case '2':
                                             backgroundColor = '#17a2b8';
                                             borderColor = '#17a2b8';
                                             textColor = '#fff';
-                                            title = `[已完成] ${order.issue.substring(0, 6)}...`;
+                                            title = `[已完成] ${issueText.substring(0, 8)}...`;
                                             break;
                                         case '3':
                                             backgroundColor = '#dc3545';
                                             borderColor = '#dc3545';
                                             textColor = '#fff';
-                                            title = `[已撤单] ${order.issue.substring(0, 6)}...`;
+                                            title = `[已撤单] ${issueText.substring(0, 8)}...`;
                                             break;
                                         default:
                                             backgroundColor = '#6c757d';
                                             borderColor = '#6c757d';
                                             textColor = '#fff';
-                                            title = `[未知] ${order.issue.substring(0, 8)}...`;
+                                            title = `[未知] ${issueText.substring(0, 8)}...`;
                                     }
+                                    
                                     return {
                                         id: order.reportId,
                                         title: title,
                                         start: new Date(order.date.replace(/-/g, '/')),
-                                        extendedProps: order,
+                                        extendedProps: {...order},
                                         backgroundColor: backgroundColor,
                                         borderColor: borderColor,
                                         textColor: textColor,
@@ -3767,6 +3832,7 @@
                                         eventDisplay: 'block'
                                     };
                                 });
+                                
                                 successCallback(events);
                             } else if (response.message === 'No history report' || response.message === 'No my report') {
                                 successCallback([]);
@@ -3778,54 +3844,14 @@
                             console.error('获取订单失败:', error);
                             failureCallback(error);
                         });
-                    },
-                    eventTimeFormat: {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                    },
-                    dayMaxEvents: 3,
-                    moreLinkContent: function(args) {
-                        return '+' + args.num;
-                    },
-                    slotEventOverlap: false,
-                    nowIndicator: true,
-                    scrollTime: '18:00:00',
-                    eventDidMount: function(info) {
-                        info.el.style.cursor = 'pointer';
-                        info.el.style.transition = 'transform 0.2s ease';
-
-                        info.el.addEventListener('mouseover', function() {
-                            this.style.transform = 'scale(1.02)';
-                        });
-
-                        info.el.addEventListener('mouseout', function() {
-                            this.style.transform = 'scale(1)';
-                        });
                     }
                 });
 
-                // 添加响应式处理
-                function handleResize() {
-                    const width = window.innerWidth;
-                    if (width < 768) {
-                        calendar.setOption('headerToolbar', {
-                            left: 'prev,next',
-                            center: 'title',
-                            right: 'dayGridMonth,timeGridDay'
-                        });
-                    } else {
-                        calendar.setOption('headerToolbar', {
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                        });
-                    }
-                }
-
-                handleResize();
-                window.addEventListener('resize', handleResize);
+                // 存储日历实例
+                calendarEl._fullCalendar = calendar;
                 calendar.render();
+
+                return calendar;
             }
 
             // 在 script 标签中添加历史订单功能
@@ -3886,10 +3912,7 @@
                                     <strong>手机号码：</strong>
                                     ${order.userPhoneNumber}
                                 </p>
-                                <p>
-                                    <strong>状态：</strong>
-                                    <span class="status-badge ${statusClass}">${statusText}</span>
-                                </p>
+                                <p><strong>状态：</strong><span class="status-badge ${statusClass}">${statusText}</span></p>
                                 <p>
                                     <strong>地址：</strong>
                                     ${order.address}
@@ -3942,8 +3965,22 @@
                 .done(function(data) {
                     if (data.message === 'Success') {
                         utils.ui.showMessage('订单已完成');
-                        updateCalendarEvent(reportId, 'completed'); // 更新日历显示
-                        fetchHistoryOrders(); // 刷新订单列表
+                        console.log('订单完成，准备更新状态:', reportId); // 添加调试日志
+                        
+                        // 先更新日历显示
+                        updateCalendarEvent(reportId, '2');
+                        
+                        // 延迟执行刷新操作
+                        setTimeout(() => {
+                            // 刷新订单列表
+                            fetchHistoryOrders();
+                            
+                            // 刷新日历事件
+                            const calendarEl = document.querySelector('#calendar');
+                            if (calendarEl && calendarEl._fullCalendar) {
+                                calendarEl._fullCalendar.refetchEvents();
+                            }
+                        }, 500);
                     } else {
                         auth.handleSessionError(data.message);
                     }
@@ -3973,14 +4010,29 @@
                 .done(function(data) {
                     if (data.message === 'Success') {
                         utils.ui.showMessage('订单已撤销');
-                        updateCalendarEvent(reportId, 'cancelled'); // 更新日历显示
-                        fetchHistoryOrders(); // 刷新订单列表
+                        console.log('订单撤销，准备更新状态:', reportId); // 添加调试日志
+                        
+                        // 先更新日历显示
+                        updateCalendarEvent(reportId, '3');
+                        
+                        // 延迟执行刷新操作
+                        setTimeout(() => {
+                            // 刷新订单列表
+                            fetchHistoryOrders();
+                            
+                            // 刷新日历事件
+                            const calendarEl = document.querySelector('#calendar');
+                            if (calendarEl && calendarEl._fullCalendar) {
+                                calendarEl._fullCalendar.refetchEvents();
+                            }
+                        }, 500);
                     } else {
                         auth.handleSessionError(data.message);
                     }
                 })
                 .fail(function(error) {
-                    handleApiError(error, '撤销订单失败，请重试');
+                    console.error('撤销订单失败:', error);
+                    utils.ui.showMessage('撤销订单失败，请重试');
                 });
             }
 
@@ -4013,6 +4065,32 @@
                 try {
                     const formattedDate = utils.date.format(order.date);
                     const formattedCallDate = utils.date.format(order.call_date);
+                    
+                    // 获取状态信息
+                    let statusText, statusClass;
+                    switch (order.status) {
+                        case '0':
+                            statusText = '待分配';
+                            statusClass = 'status-pending';
+                            break;
+                        case '1':
+                            statusText = '已分配';
+                            statusClass = 'status-allocated';
+                            break;
+                        case '2':
+                            statusText = '已完成';
+                            statusClass = 'status-completed';
+                            break;
+                        case '3':
+                            statusText = '已撤单';
+                            statusClass = 'status-cancelled';
+                            break;
+                        default:
+                            statusText = '未知状态';
+                            statusClass = 'status-unknown';
+                    }
+
+                    console.log('订单详情状态:', order.status, statusText, statusClass); // 添加调试日志
 
                     orderDetailBody.innerHTML = `
                     <div class="detail-item">
@@ -4022,9 +4100,7 @@
                     <div class="detail-item">
                         <span class="detail-label">订单状态：</span>
                         <span class="detail-value">
-                            <span class="status-badge ${order.status === 'allocated' ? 'allocated' : 'pending'}">
-                                ${order.status === 'allocated' ? '已分配' : '待分配'}
-                            </span>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
                         </span>
                     </div>
                     <div class="detail-item">
@@ -4072,48 +4148,52 @@
                 }
             }
 
-            // 添加更新日历事件的函数
+            // 修改更新日历事件的函数
             function updateCalendarEvent(orderId, newStatus) {
-                const calendar = document.querySelector('#calendar').FullCalendar;
-                if (!calendar) return;
-
-                // 找到对应的事件并更新
+                const calendarEl = document.querySelector('#calendar');
+                if (!calendarEl || !calendarEl._fullCalendar) return;
+                
+                const calendar = calendarEl._fullCalendar;
                 const event = calendar.getEventById(orderId);
                 if (event) {
-                    // 设置新的样式和标题
                     let backgroundColor, borderColor, textColor, title;
+                    const issueText = event.extendedProps.issue || '';
+                    
                     switch (newStatus) {
-                        case 'allocated':
-                            backgroundColor = '#28a745';
-                            borderColor = '#28a745';
-                            textColor = '#fff';
-                            title = `订单: ${event.extendedProps.issue.substring(0, 10)}...`;
-                            break;
                         case 'completed':
+                        case '2':
                             backgroundColor = '#17a2b8';
                             borderColor = '#17a2b8';
                             textColor = '#fff';
-                            title = `[已完成] ${event.extendedProps.issue.substring(0, 8)}...`;
+                            title = `[已完成] ${issueText.substring(0, 8)}...`;
                             break;
                         case 'cancelled':
+                        case '3':
                             backgroundColor = '#dc3545';
                             borderColor = '#dc3545';
                             textColor = '#fff';
-                            title = `[已撤单] ${event.extendedProps.issue.substring(0, 8)}...`;
+                            title = `[已撤单] ${issueText.substring(0, 8)}...`;
+                            break;
+                        case 'allocated':
+                        case '1':
+                            backgroundColor = '#28a745';
+                            borderColor = '#28a745';
+                            textColor = '#fff';
+                            title = `[已分配] ${issueText.substring(0, 8)}...`;
                             break;
                         default:
                             backgroundColor = '#ffc107';
                             borderColor = '#ffc107';
                             textColor = '#000';
-                            title = `订单: ${event.extendedProps.issue.substring(0, 10)}...`;
+                            title = `[待分配] ${issueText.substring(0, 8)}...`;
                     }
 
-                    // 更新事件属性
                     event.setProp('title', title);
                     event.setProp('backgroundColor', backgroundColor);
                     event.setProp('borderColor', borderColor);
                     event.setProp('textColor', textColor);
                     event.setExtendedProp('status', newStatus);
+                    calendar.rerenderEvents();
                 }
             }
 
@@ -4256,6 +4336,9 @@
                                     ${order.reportId || '未知'}
                                 </p>
                                 <p>
+                                    <strong>状态：</strong><span class="status-badge ${statusClass}">${statusText}</span>
+                                </p>
+                                <p>
                                     <strong>手机号码：</strong>
                                     ${order.userPhoneNumber || '未知'}
                                 </p>
@@ -4362,9 +4445,11 @@
                     .done(function(data) {
                         if (data.message === 'Success') {
                             utils.ui.showMessage('订单已完成');
-                            fetchHistoryOrders(); // 刷新订单列表
-                            if (typeof updateCalendarEvent === 'function') {
-                                updateCalendarEvent(reportId, 'completed');
+                            updateCalendarEvent(reportId, '2');
+                            fetchHistoryOrders();
+                            const calendarEl = document.querySelector('#calendar');
+                            if (calendarEl && calendarEl._fullCalendar) {
+                                calendarEl._fullCalendar.refetchEvents();
                             }
                         } else {
                             auth.handleSessionError(data.message);
@@ -4395,9 +4480,11 @@
                     .done(function(data) {
                         if (data.message === 'Success') {
                             utils.ui.showMessage('订单已撤销');
-                            fetchHistoryOrders(); // 刷新订单列表
-                            if (typeof updateCalendarEvent === 'function') {
-                                updateCalendarEvent(reportId, 'cancelled');
+                            updateCalendarEvent(reportId, '3');
+                            fetchHistoryOrders();
+                            const calendarEl = document.querySelector('#calendar');
+                            if (calendarEl && calendarEl._fullCalendar) {
+                                calendarEl._fullCalendar.refetchEvents();
                             }
                         } else {
                             auth.handleSessionError(data.message);
@@ -4434,18 +4521,13 @@
                     });
                 },
 
-                // 添加分配订单后的更新函数
+                // 更新分配后的状态
                 updateAfterAssign: function() {
-                    // 刷新历史订单列表
                     fetchHistoryOrders();
-                    
-                    // 如果日历存在，刷新日历事件
                     const calendarEl = document.querySelector('#calendar');
-                    if (calendarEl && calendarEl.FullCalendar) {
-                        calendarEl.FullCalendar.refetchEvents();
+                    if (calendarEl && calendarEl._fullCalendar) {
+                        calendarEl._fullCalendar.refetchEvents();
                     }
-                    
-                    // 如果在分配订单页面，刷新分配订单列表
                     const assignOrderContent = document.getElementById('assignOrderContent');
                     if (assignOrderContent && window.assignOrderInstance) {
                         window.assignOrderInstance.refreshOrders();
