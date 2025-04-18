@@ -2481,6 +2481,10 @@
                         <textarea id="issue" name="issue" required rows="1" style="resize: none; overflow: hidden;"></textarea>
                     </div>
                     <div>
+                        <label for="remark">备注:</label>
+                        <textarea id="remark" name="remark" rows="1" style="resize: none; overflow: hidden;" placeholder="可选，添加额外说明"></textarea>
+                    </div>
+                    <div>
                         <label for="preferredTime">期望上门时间:</label>
                         <div class="time-picker-wrapper">
                             <input type="datetime-local" id="preferredTime" name="preferredTime" required>
@@ -3650,12 +3654,19 @@
 
                 // 处理问题文本框自动调整高度
                 const issueTextarea = document.getElementById('issue');
-                if (issueTextarea) {
-                    issueTextarea.addEventListener('input', function() {
-                        this.style.height = 'auto';
-                        this.style.height = (this.scrollHeight) + 'px';
-                    });
+                const remarkTextarea = document.getElementById('remark');
+
+                function autoResizeTextarea(textarea) {
+                    if (textarea) {
+                        textarea.addEventListener('input', function() {
+                            this.style.height = 'auto';
+                            this.style.height = (this.scrollHeight) + 'px';
+                        });
+                    }
                 }
+
+                autoResizeTextarea(issueTextarea);
+                autoResizeTextarea(remarkTextarea);
 
                 // 在 DOMContentLoaded 事件监听器中添加
                 // 用户下拉菜单处理
@@ -3959,6 +3970,12 @@
                                     <strong>问题描述：</strong>
                                     ${order.issue}
                                 </p>
+                                ${order.remark ? `
+                                <p>
+                                    <strong>备注：</strong>
+                                    ${order.remark}
+                                </p>
+                                ` : ''}
                                 <p>
                                     <strong>预约时间：</strong>
                                     ${utils.date.format(order.date)}
@@ -4153,6 +4170,12 @@
                         <span class="detail-label">问题描述：</span>
                         <span class="detail-value">${order.issue}</span>
                     </div>
+                    ${order.remark ? `
+                    <div class="detail-item">
+                        <span class="detail-label">备注：</span>
+                        <span class="detail-value">${order.remark}</span>
+                    </div>
+                    ` : ''}
                     <div class="detail-item">
                         <span class="detail-label">报单时间：</span>
                         <span class="detail-value">${formattedCallDate}</span>
@@ -4427,7 +4450,8 @@
                     address: document.getElementById('address').value.trim(),
                     issue: document.getElementById('issue').value.trim(),
                     date: document.getElementById('preferredTime').dataset.submitValue,
-                    call_date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+                    call_date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
+                    remark: document.getElementById('remark').value.trim()
                 };
 
                 // 表单验证
