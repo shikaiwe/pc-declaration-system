@@ -1,5 +1,5 @@
 // WebSocket连接
-let ws = null;
+let wsConnections = new Map(); // 存储所有WebSocket连接
 let currentReportId = null;
 let currentUser = null;
 let currentOrders = []; // 存储当前订单列表
@@ -52,19 +52,24 @@ function initWebSocket(reportId) {
         return;
     }
 
-    if (ws) {
-        ws.close();
-        ws = null;
+    // 如果已经存在此订单的连接，直接返回
+    if (wsConnections.has(reportId)) {
+        const existingWs = wsConnections.get(reportId);
+        if (existingWs.readyState === WebSocket.OPEN) {
+            console.log('已存在连接，无需重新建立');
+            return;
+        }
     }
 
     try {
         currentReportId = reportId;
-        ws = new WebSocket(`wss://8.138.207.95/ws/message/?report_id=${reportId}`);
+        const ws = new WebSocket(`wss://8.138.207.95/ws/message/?report_id=${reportId}`);
 
         ws.onopen = function() {
-            console.log('WebSocket连接已建立');
+            console.log(`订单 ${reportId} 的WebSocket连接已建立`);
             const messageList = document.getElementById('messageList');
             messageList.innerHTML += '<div class="system-message">已连接到聊天室</div>';
+            wsConnections.set(reportId, ws);
         };
 
         ws.onmessage = function(event) {
@@ -79,17 +84,17 @@ function initWebSocket(reportId) {
         };
 
         ws.onclose = function() {
-            console.log('WebSocket连接已关闭');
+            console.log(`订单 ${reportId} 的WebSocket连接已关闭`);
             const messageList = document.getElementById('messageList');
             messageList.innerHTML += '<div class="system-message">连接已断开</div>';
-            ws = null;
+            wsConnections.delete(reportId);
         };
 
         ws.onerror = function(error) {
-            console.error('WebSocket错误:', error);
+            console.error(`订单 ${reportId} 的WebSocket错误:`, error);
             const messageList = document.getElementById('messageList');
             messageList.innerHTML += '<div class="system-message error">连接发生错误</div>';
-            ws = null;
+            wsConnections.delete(reportId);
         };
     } catch (error) {
         console.error('创建WebSocket连接失败:', error);
@@ -119,9 +124,10 @@ function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const orderSelector = document.getElementById('orderSelector');
     const message = messageInput.value.trim();
+    const selectedReportId = orderSelector.value;
 
     // 检查是否选择了订单
-    if (!orderSelector.value) {
+    if (!selectedReportId) {
         alert('请先选择一个订单');
         return;
     }
@@ -132,9 +138,13 @@ function sendMessage() {
         return;
     }
 
+    // 获取当前选中订单的WebSocket连接
+    const ws = wsConnections.get(selectedReportId);
+
     // 检查WebSocket连接状态
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-        alert('连接已断开，请重新选择订单');
+        alert('连接已断开，正在重新连接...');
+        initWebSocket(selectedReportId);
         return;
     }
 
@@ -160,6 +170,15 @@ function sendMessage() {
     } catch (error) {
         console.error('发送消息失败:', error);
         alert('发送消息失败，请重试');
+    }
+}
+
+// 清理无效的WebSocket连接
+function cleanupConnections() {
+    for (const [reportId, ws] of wsConnections.entries()) {
+        if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+            wsConnections.delete(reportId);
+        }
     }
 }
 
@@ -192,12 +211,8 @@ async function initMessageBoard() {
         if (selectedReportId) {
             clearMessageList();
             initWebSocket(selectedReportId);
-        } else {
-            if (ws) {
-                ws.close();
-                ws = null;
-            }
-            clearMessageList();
+            // 定期清理无效连接
+            cleanupConnections();
         }
     });
 
@@ -209,6 +224,13 @@ async function initMessageBoard() {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
+        }
+    });
+
+    // 页面关闭时清理所有连接
+    window.addEventListener('beforeunload', function() {
+        for (const ws of wsConnections.values()) {
+            ws.close();
         }
     });
 }
