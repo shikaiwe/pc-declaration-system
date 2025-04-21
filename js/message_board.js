@@ -139,10 +139,23 @@ function sendMessage() {
     }
 
     try {
-        ws.send(JSON.stringify({
+        // 构造消息对象
+        const messageObj = {
             type: 'chat_message',
             message: message
-        }));
+        };
+
+        // 发送消息
+        ws.send(JSON.stringify(messageObj));
+
+        // 立即在本地显示消息
+        appendMessage({
+            username: currentUser,
+            message: message,
+            time: new Date().toLocaleTimeString()
+        });
+
+        // 清空输入框
         messageInput.value = '';
     } catch (error) {
         console.error('发送消息失败:', error);
