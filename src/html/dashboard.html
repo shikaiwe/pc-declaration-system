@@ -2443,28 +2443,22 @@
         }
         
         .message-item {
-            max-width: 70%;
-            position: relative;
             display: flex;
+            align-items: flex-start;
             margin-bottom: 16px;
-            width: 100%;
+            padding: 0 10px;
         }
         
         .message-item.sent {
             flex-direction: row-reverse;
-            align-self: flex-end;
-        }
-        
-        .message-item.received {
-            align-self: flex-start;
         }
         
         .avatar-container {
+            width: 40px;
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 0 12px;
-            width: 40px;
         }
         
         .message-username {
@@ -2488,36 +2482,35 @@
             justify-content: center;
             font-size: 16px;
             color: #fff;
-            flex-shrink: 0;
         }
         
-        .message-content-container {
-            display: flex;
-            flex-direction: column;
+        .message-content-wrapper {
             max-width: calc(100% - 120px);
+            margin: 0 12px;
         }
         
         .message-bubble {
-            padding: 10px 16px;
+            display: inline-block;
+            padding: 9px 13px;
             border-radius: 4px;
             font-size: 16px;
             line-height: 1.4;
             word-wrap: break-word;
-            display: inline-block;
             max-width: 100%;
         }
         
         .message-item.sent .message-bubble {
             background-color: #95ec69;
-            margin-right: 4px;
+            float: right;
         }
         
         .message-item.received .message-bubble {
             background-color: #ffffff;
-            margin-left: 4px;
+            float: left;
         }
         
         .message-content {
+            color: #000;
             font-size: 16px;
             line-height: 1.4;
             white-space: pre-wrap;
@@ -2528,8 +2521,8 @@
             font-size: 12px;
             color: rgba(0, 0, 0, 0.45);
             text-align: center;
-            margin: 8px 0;
-            width: 100%;
+            margin: 16px 0 8px;
+            clear: both;
         }
         
         .message-input {

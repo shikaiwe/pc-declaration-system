@@ -192,6 +192,18 @@ function initWebSocket(reportId) {
 // 添加消息到聊天界面
 function appendMessage(message) {
     const messageList = document.getElementById('messageList');
+    
+    // 添加时间戳
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'message-time';
+    timeDiv.textContent = new Date().toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+    messageList.appendChild(timeDiv);
+
+    // 创建消息项
     const messageItem = document.createElement('div');
     messageItem.className = `message-item ${message.username === currentUser ? 'sent' : 'received'}`;
 
@@ -213,9 +225,9 @@ function appendMessage(message) {
     avatar.textContent = message.username.charAt(0).toUpperCase();
     avatarContainer.appendChild(avatar);
 
-    // 创建消息内容容器
-    const contentContainer = document.createElement('div');
-    contentContainer.className = 'message-content-container';
+    // 创建消息内容包装器
+    const contentWrapper = document.createElement('div');
+    contentWrapper.className = 'message-content-wrapper';
 
     // 创建消息气泡
     const bubble = document.createElement('div');
@@ -226,26 +238,16 @@ function appendMessage(message) {
     content.className = 'message-content';
     content.textContent = message.message;
     bubble.appendChild(content);
-    contentContainer.appendChild(bubble);
+    contentWrapper.appendChild(bubble);
 
     // 根据消息方向添加组件
     if (message.username === currentUser) {
-        messageItem.appendChild(contentContainer);
+        messageItem.appendChild(contentWrapper);
         messageItem.appendChild(avatarContainer);
     } else {
         messageItem.appendChild(avatarContainer);
-        messageItem.appendChild(contentContainer);
+        messageItem.appendChild(contentWrapper);
     }
-
-    // 添加时间戳
-    const timeDiv = document.createElement('div');
-    timeDiv.className = 'message-time';
-    timeDiv.textContent = new Date().toLocaleTimeString('zh-CN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-    });
-    messageList.appendChild(timeDiv);
 
     messageList.appendChild(messageItem);
     messageList.scrollTop = messageList.scrollHeight;
