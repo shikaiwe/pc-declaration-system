@@ -12,16 +12,21 @@
 ```
 pc-declaration-system/
 ├── src/                    # 源代码目录
-│   ├── dashboard.html      # PC端控制面板页面
-│   ├── mobile_dashboard.html # 移动端控制面板页面
-│   ├── login.html         # 用户登录页面
-│   ├── register.html      # 用户注册页面
-│   ├── worker_register.html # 志愿者注册页面
-│   └── forgot-password.html # 密码找回页面
-├── js/                     # JavaScript文件目录
-│   ├── assign_order.js    # 订单分配功能实现
-│   ├── message_board.js   # 消息板功能实现
-│   └── jquery.js          # jQuery库文件（本地备份）
+│   ├── html/              # HTML页面目录
+│   │   ├── dashboard.html      # PC端控制面板页面
+│   │   ├── mobile_dashboard.html # 移动端控制面板页面
+│   │   ├── login.html         # 用户登录页面
+│   │   ├── register.html      # 用户注册页面
+│   │   ├── worker_register.html # 志愿者注册页面
+│   │   └── forgot-password.html # 密码找回页面
+│   ├── js/                 # JavaScript文件目录
+│   │   ├── assign_order.js    # 订单分配功能实现
+│   │   ├── message_board.js   # 消息板功能实现
+│   │   └── jquery.js          # jQuery库文件（本地备份）
+│   └── css/                # CSS样式文件目录
+│       ├── login.css         # 登录页面样式
+│       ├── register.css      # 注册页面样式
+│       └── forgot-password.css # 找回密码页面样式
 ├── .gitignore             # Git忽略规则配置
 ├── README.md              # 项目说明文档
 └── LICENSE                # Apache 2.0 许可证
@@ -30,8 +35,9 @@ pc-declaration-system/
 ### 目录说明
 | 目录/文件 | 描述 |
 |----------|------|
-| `src/` | 存放所有HTML源文件的主目录 |
-| `js/` | JavaScript文件目录，包含功能实现和库文件 |
+| `src/html/` | 存放所有HTML页面文件 |
+| `src/js/` | JavaScript文件目录，包含功能实现和库文件 |
+| `src/css/` | CSS样式文件目录，包含各页面的样式定义 |
 | `README.md` | 项目文档，包含功能说明和使用指南 |
 | `LICENSE` | 开源许可证文件 |
 | `.gitignore` | Git版本控制忽略规则配置 |
@@ -121,7 +127,7 @@ pc-declaration-system/
 ## 依赖项
 | 依赖 | 用途 | 加载方式 |
 |------|------|----------|
-| ![jQuery](https://img.shields.io/badge/jQuery-v3.6.0-blue) | DOM操作和AJAX请求 | CDN，本地备份 |
+| ![jQuery](https://img.shields.io/badge/jQuery-v3.6.0-blue) | DOM操作和AJAX请求 | 本地文件（src/js/jquery.js） |
 | ![CryptoJS](https://img.shields.io/badge/CryptoJS-v4.1.1-green) | 数据加密 | CDN |
 | ![FullCalendar](https://img.shields.io/badge/FullCalendar-v5.10.1-orange) | 日程管理 | CDN |
 | ![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.1.3-purple) | UI组件和样式 | CDN |

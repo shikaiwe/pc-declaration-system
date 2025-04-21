@@ -1,0 +1,178 @@
+/* 页面样式 */
+body {
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: white;
+    padding: 40px 50px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    max-width: 400px;
+    width: 90%;
+}
+
+.container:hover {
+    transform: translateY(-5px);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    color: #555;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+input {
+    padding: 12px;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+input:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+button {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+button:hover {
+    background: linear-gradient(45deg, #45a049, #3d8b40);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.links {
+    text-align: center;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.links a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.links a:hover {
+    color: #45a049;
+    text-decoration: none;
+}
+
+.links span {
+    color: #ccc;
+    margin: 0 12px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.remember-me input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.remember-me label {
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.error-message {
+    color: #ff5252;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    background-color: rgba(255, 82, 82, 0.1);
+    display: none;
+}
+
+.loading {
+    display: none;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 16px;
+    color: #4CAF50;
+    animation: loadingAnimation 1s infinite;
+}
+
+@keyframes loadingAnimation {
+    0% {
+        opacity: 0.2;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.2;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 30px 25px;
+    }
+    h2 {
+        font-size: 24px;
+    }
+    button {
+        padding: 12px;
+    }
+} 

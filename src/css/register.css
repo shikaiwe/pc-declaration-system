@@ -1,0 +1,201 @@
+body {
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: white;
+    padding: 40px 50px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    max-width: 400px;
+    width: 90%;
+}
+
+.container:hover {
+    transform: translateY(-5px);
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+
+input:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+button {
+    width: 100%;
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+button:hover {
+    background: linear-gradient(45deg, #45a049, #3d8b40);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+button:disabled {
+    background: linear-gradient(45deg, #cccccc, #bbbbbb);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.loading {
+    display: none;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 16px;
+    color: #4CAF50;
+    animation: loadingAnimation 1s infinite;
+}
+
+@keyframes loadingAnimation {
+    0% {
+        opacity: 0.2;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.2;
+    }
+}
+
+.error-message {
+    display: none;
+    color: #ff5252;
+    text-align: center;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    background-color: rgba(255, 82, 82, 0.1);
+    font-size: 14px;
+}
+
+.links {
+    text-align: center;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.links a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.links a:hover {
+    color: #45a049;
+    text-decoration: none;
+}
+
+.password-requirements {
+    font-size: 13px;
+    color: #666;
+    margin-top: 8px;
+    padding-left: 5px;
+}
+
+.success-message {
+    display: none;
+    color: #4CAF50;
+    text-align: center;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    background-color: rgba(76, 175, 80, 0.1);
+    font-size: 14px;
+}
+
+.email-group {
+    display: flex;
+    gap: 10px;
+}
+
+.send-code-btn {
+    width: auto;
+    padding: 12px 20px;
+    white-space: nowrap;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.send-code-btn:hover {
+    background-color: #1976D2;
+}
+
+.send-code-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 30px 25px;
+    }
+    h2 {
+        font-size: 24px;
+    }
+    button {
+        padding: 12px;
+    }
+} 
