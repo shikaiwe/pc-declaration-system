@@ -165,26 +165,6 @@ pc-declaration-system/
 - 建议分辨率不低于320px（移动端）
 - Git版本控制系统（用于开发）
 
-## 开发说明
-### 版本控制
-- 项目使用Git进行版本控制
-- 已配置.gitignore忽略以下内容：
-  - IDE和编辑器配置文件
-  - 操作系统临时文件
-  - Node.js相关文件
-  - 日志和临时文件
-  - 编译输出目录
-  - 环境配置文件
-  - 依赖包备份文件
-
-### CDN使用说明
-- 项目默认使用CDN加载第三方库
-- jQuery提供本地备份，位于js/jquery.js
-- 如需切换至本地jQuery，将HTML文件中的CDN引用改为：
-  ```html
-  <script src="js/jquery.js"></script>
-  ```
-
 ---
 © 2024 广州南方学院PC志愿者服务队管理系统. Licensed under the Apache License, Version 2.0.
 
