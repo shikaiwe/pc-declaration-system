@@ -195,11 +195,41 @@ function appendMessage(message) {
     const messageItem = document.createElement('div');
     messageItem.className = `message-item ${message.username === currentUser ? 'sent' : 'received'}`;
 
-    messageItem.innerHTML = `
-        <div class="message-username">${message.username}</div>
-        <div class="message-content">${message.message}</div>
-        <div class="message-time">${new Date().toLocaleTimeString()}</div>
-    `;
+    // 创建头像
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.textContent = message.username.charAt(0).toUpperCase();
+
+    // 创建消息气泡
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+
+    // 添加用户名
+    const username = document.createElement('div');
+    username.className = 'message-username';
+    username.textContent = message.username;
+    bubble.appendChild(username);
+
+    // 添加消息内容
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    content.textContent = message.message;
+    bubble.appendChild(content);
+
+    // 根据消息方向添加组件
+    if (message.username === currentUser) {
+        messageItem.appendChild(bubble);
+        messageItem.appendChild(avatar);
+    } else {
+        messageItem.appendChild(avatar);
+        messageItem.appendChild(bubble);
+    }
+
+    // 添加时间戳
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'message-time';
+    timeDiv.textContent = new Date().toLocaleTimeString();
+    messageList.appendChild(timeDiv);
 
     messageList.appendChild(messageItem);
     messageList.scrollTop = messageList.scrollHeight;
