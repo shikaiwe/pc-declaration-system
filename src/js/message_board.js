@@ -245,18 +245,6 @@ function appendMessage(message) {
     const messageItem = document.createElement('div');
     messageItem.className = `message-item ${message.username === currentUser ? 'sent' : 'received'}`;
 
-    // 创建头像
-    const avatar = document.createElement('div');
-    avatar.className = 'avatar';
-    
-    // 生成固定的头像背景色（基于用户名）
-    const colors = ['#f56a00', '#7265e6', '#ffbf00', '#00a2ae', '#f56a00', '#7265e6', '#ffbf00'];
-    const colorIndex = Math.abs(message.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % colors.length;
-    avatar.style.backgroundColor = colors[colorIndex];
-    
-    // 设置头像文本（用户名首字母）
-    avatar.textContent = message.username.charAt(0).toUpperCase();
-
     // 如果是接收到的消息，检查是否需要显示用户名
     if (message.username !== currentUser) {
         const lastMessage = messageList.querySelector('.message-item:last-of-type');
@@ -272,19 +260,26 @@ function appendMessage(message) {
         }
     }
 
+    // 创建头像
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    
+    // 生成固定的头像背景色（基于用户名）
+    const colors = ['#f56a00', '#7265e6', '#ffbf00', '#00a2ae', '#f56a00', '#7265e6', '#ffbf00'];
+    const colorIndex = Math.abs(message.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % colors.length;
+    avatar.style.backgroundColor = colors[colorIndex];
+    
+    // 设置头像文本（用户名首字母）
+    avatar.textContent = message.username.charAt(0).toUpperCase();
+
     // 创建消息气泡
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
     bubble.textContent = message.message;
 
-    // 根据消息方向添加组件
-    if (message.username === currentUser) {
-        messageItem.appendChild(bubble);
-        messageItem.appendChild(avatar);
-    } else {
-        messageItem.appendChild(avatar);
-        messageItem.appendChild(bubble);
-    }
+    // 添加头像和气泡到消息项
+    messageItem.appendChild(avatar);
+    messageItem.appendChild(bubble);
 
     messageList.appendChild(messageItem);
     

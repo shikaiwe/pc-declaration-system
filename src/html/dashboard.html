@@ -2489,7 +2489,7 @@
         }
         
         .message-item.sent {
-            flex-direction: row-reverse;
+            flex-direction: row;
         }
         
         /* 头像 */
@@ -2505,6 +2505,11 @@
             font-size: 16px;
             color: #fff;
             flex-shrink: 0;
+            order: 1;
+        }
+        
+        .message-item.sent .avatar {
+            order: 2;
         }
         
         /* 用户名 */
@@ -2533,9 +2538,11 @@
             line-height: 1.4;
             position: relative;
             word-wrap: break-word;
+            order: 2;
         }
         
         .message-item.sent .message-bubble {
+            order: 1;
             background-color: #95ec69;
             margin-right: 12px;
             border-radius: 4px 0 4px 4px;
