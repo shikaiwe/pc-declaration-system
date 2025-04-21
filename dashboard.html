@@ -2528,6 +2528,31 @@
             border: 2px solid #007BFF;
             box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
         }
+        /* 订单选择器样式 */
+        
+        .order-selector {
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .order-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .order-select:focus {
+            border-color: #007BFF;
+        }
+        
+        .order-select option {
+            padding: 8px;
+        }
     </style>
 </head>
 
@@ -2628,6 +2653,11 @@
         <div class="content" id="dataStatisticsContent" style="display: none;">
             <h2>留言板</h2>
             <div class="message-board">
+                <div class="order-selector">
+                    <select id="orderSelector" class="order-select">
+                        <option value="">请选择订单</option>
+                    </select>
+                </div>
                 <div class="message-list" id="messageList">
                     <!-- 消息列表将在这里动态显示 -->
                 </div>
