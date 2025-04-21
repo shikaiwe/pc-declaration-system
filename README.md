@@ -22,7 +22,7 @@ pc-declaration-system/
 │   ├── js/                 # JavaScript文件目录
 │   │   ├── assign_order.js    # 订单分配功能实现
 │   │   ├── message_board.js   # 消息板功能实现
-│   │   └── jquery.js          # jQuery库文件（本地备份）
+│   │   └── jquery.js          # jQuery库文件
 │   └── css/                # CSS样式文件目录
 │       ├── login.css         # 登录页面样式
 │       ├── register.css      # 注册页面样式
