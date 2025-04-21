@@ -8,18 +8,32 @@
 这是一个专门为PC志愿者服务队开发的管理系统，包含用户登录、注册、找回密码、控制面板和移动端适配等功能。系统使用HTML、CSS和JavaScript进行前端开发，并使用CryptoJS库进行数据加密。系统支持PC端和移动端自适应界面，提供完整的用户认证、订单管理、日程管理和天气信息展示功能。
 
 ## 项目结构
-| 文件名 | 描述 |
-|-------|------|
-| `dashboard.html` | PC端控制面板页面，提供完整的管理功能 |
-| `mobile_dashboard.html` | 移动端控制面板页面，针对移动设备优化 |
-| `login.html` | 用户登录页面，支持记住密码和自动登录 |
-| `register.html` | 用户注册页面，包含邮箱验证功能 |
-| `worker_register.html` | 志愿者注册页面，专门用于志愿者注册 |
-| `forgot-password.html` | 密码找回页面，支持邮箱验证重置密码 |
-| `assign_order.html` | 订单分配页面，管理员专用功能 |
-| `js/assign_order.js` | 订单分配功能的核心JavaScript实现 |
-| `jquery.js` | jQuery库文件，用于DOM操作和AJAX请求 |
-| `LICENSE` | Apache License 2.0 许可证文件，说明项目的使用条款 |
+```
+pc-declaration-system/
+├── src/                    # 源代码目录
+│   ├── dashboard.html      # PC端控制面板页面
+│   ├── mobile_dashboard.html # 移动端控制面板页面
+│   ├── login.html         # 用户登录页面
+│   ├── register.html      # 用户注册页面
+│   ├── worker_register.html # 志愿者注册页面
+│   └── forgot-password.html # 密码找回页面
+├── js/                     # JavaScript文件目录
+│   ├── assign_order.js    # 订单分配功能实现
+│   ├── message_board.js   # 消息板功能实现
+│   └── jquery.js          # jQuery库文件（本地备份）
+├── .gitignore             # Git忽略规则配置
+├── README.md              # 项目说明文档
+└── LICENSE                # Apache 2.0 许可证
+```
+
+### 目录说明
+| 目录/文件 | 描述 |
+|----------|------|
+| `src/` | 存放所有HTML源文件的主目录 |
+| `js/` | JavaScript文件目录，包含功能实现和库文件 |
+| `README.md` | 项目文档，包含功能说明和使用指南 |
+| `LICENSE` | 开源许可证文件 |
+| `.gitignore` | Git版本控制忽略规则配置 |
 
 ## 功能概述
 
@@ -100,16 +114,18 @@
 - 完整的订单生命周期管理
 - 用户友好的界面设计
 - 优化的移动端体验
+- jQuery CDN加载（备用本地文件）
+- Git版本控制
 
 ## 依赖项
-| 依赖 | 用途 |
-|------|------|
-| ![jQuery](https://img.shields.io/badge/jQuery-v3.6.0-blue) | DOM操作和AJAX请求 |
-| ![CryptoJS](https://img.shields.io/badge/CryptoJS-v4.1.1-green) | 数据加密 |
-| ![FullCalendar](https://img.shields.io/badge/FullCalendar-v5.10.1-orange) | 日程管理 |
-| ![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.1.3-purple) | UI组件和样式 |
-| ![Swiper](https://img.shields.io/badge/Swiper-latest-red) | 移动端滑动交互 |
-| ![Flatpickr](https://img.shields.io/badge/Flatpickr-latest-yellow) | 日期时间选择器 |
+| 依赖 | 用途 | 加载方式 |
+|------|------|----------|
+| ![jQuery](https://img.shields.io/badge/jQuery-v3.6.0-blue) | DOM操作和AJAX请求 | CDN，本地备份 |
+| ![CryptoJS](https://img.shields.io/badge/CryptoJS-v4.1.1-green) | 数据加密 | CDN |
+| ![FullCalendar](https://img.shields.io/badge/FullCalendar-v5.10.1-orange) | 日程管理 | CDN |
+| ![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.1.3-purple) | UI组件和样式 | CDN |
+| ![Swiper](https://img.shields.io/badge/Swiper-latest-red) | 移动端滑动交互 | CDN |
+| ![Flatpickr](https://img.shields.io/badge/Flatpickr-latest-yellow) | 日期时间选择器 | CDN |
 
 ## 安全特性
 - AES加密保护敏感数据
@@ -146,6 +162,27 @@
 - 启用JavaScript
 - 启用Cookie
 - 建议分辨率不低于320px（移动端）
+- Git版本控制系统（用于开发）
+
+## 开发说明
+### 版本控制
+- 项目使用Git进行版本控制
+- 已配置.gitignore忽略以下内容：
+  - IDE和编辑器配置文件
+  - 操作系统临时文件
+  - Node.js相关文件
+  - 日志和临时文件
+  - 编译输出目录
+  - 环境配置文件
+  - 依赖包备份文件
+
+### CDN使用说明
+- 项目默认使用CDN加载第三方库
+- jQuery提供本地备份，位于js/jquery.js
+- 如需切换至本地jQuery，将HTML文件中的CDN引用改为：
+  ```html
+  <script src="js/jquery.js"></script>
+  ```
 
 ---
 © 2024 广州南方学院PC志愿者服务队管理系统. Licensed under the Apache License, Version 2.0.
