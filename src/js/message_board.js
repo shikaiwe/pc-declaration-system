@@ -243,10 +243,11 @@ function appendMessage(message) {
 
     // 创建消息项
     const messageItem = document.createElement('div');
-    messageItem.className = `message-item ${message.username === currentUser ? 'sent' : 'received'}`;
+    const isSentMessage = message.username === currentUser;
+    messageItem.className = `message-item ${isSentMessage ? 'sent' : 'received'}`;
 
     // 如果是接收到的消息，检查是否需要显示用户名
-    if (message.username !== currentUser) {
+    if (!isSentMessage) {
         const lastMessage = messageList.querySelector('.message-item:last-of-type');
         const shouldShowUsername = !lastMessage || 
             lastMessage.querySelector('.message-username')?.textContent !== message.username ||
