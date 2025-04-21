@@ -2426,9 +2426,9 @@
             display: flex;
             flex-direction: column;
             height: 600px;
-            background: #f5f5f5;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background: #ededed;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             position: relative;
         }
@@ -2439,14 +2439,27 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            background-color: #f5f5f5;
+            background-color: #ededed;
         }
         
         .message-item {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             padding: 0 10px;
+            animation: messageSlideIn 0.3s ease-out;
+            position: relative;
+        }
+        
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .message-item.sent {
@@ -2456,20 +2469,23 @@
         .avatar-container {
             width: 40px;
             flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin-top: 20px;
         }
         
         .message-username {
-            font-size: 12px;
+            font-size: 13px;
             color: #999;
-            margin-bottom: 4px;
-            width: 100%;
-            text-align: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            margin-bottom: 6px;
+            position: absolute;
+            top: 0;
+        }
+        
+        .message-item.received .message-username {
+            left: 60px;
+        }
+        
+        .message-item.sent .message-username {
+            display: none;
         }
         
         .message-avatar {
@@ -2482,31 +2498,59 @@
             justify-content: center;
             font-size: 16px;
             color: #fff;
+            overflow: hidden;
         }
         
         .message-content-wrapper {
             max-width: calc(100% - 120px);
-            margin: 0 12px;
+            margin: 20px 12px 0;
+            position: relative;
         }
         
         .message-bubble {
             display: inline-block;
             padding: 9px 13px;
-            border-radius: 4px;
             font-size: 16px;
             line-height: 1.4;
             word-wrap: break-word;
             max-width: 100%;
+            position: relative;
         }
         
         .message-item.sent .message-bubble {
-            background-color: #95ec69;
+            background-color: #95EC69;
+            border-radius: 3px 0 3px 3px;
             float: right;
+        }
+        
+        .message-item.sent .message-bubble::before {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 6px 0 0 10px;
+            border-color: transparent transparent transparent #95EC69;
         }
         
         .message-item.received .message-bubble {
             background-color: #ffffff;
+            border-radius: 0 3px 3px 3px;
             float: left;
+        }
+        
+        .message-item.received .message-bubble::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 10px 6px 0;
+            border-color: transparent #ffffff transparent transparent;
         }
         
         .message-content {
@@ -2548,11 +2592,12 @@
             line-height: 20px;
             background: #ffffff;
             outline: none;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
         }
         
         .message-input textarea:focus {
             border-color: #07c160;
+            box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.1);
         }
         
         .send-button {
@@ -2563,7 +2608,7 @@
             border: none;
             border-radius: 4px;
             font-size: 15px;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2571,15 +2616,18 @@
         
         .send-button:hover {
             background-color: #06ae56;
+            transform: translateY(-1px);
         }
         
         .send-button:active {
             background-color: #06ae56;
+            transform: translateY(1px);
         }
         
         .send-button:disabled {
             background-color: #9fd7b5;
             cursor: not-allowed;
+            transform: none;
         }
         
         /* 系统消息样式 */
@@ -2589,7 +2637,7 @@
             margin: 8px auto;
             color: rgba(0, 0, 0, 0.45);
             font-size: 12px;
-            background-color: rgba(0, 0, 0, 0.05);
+            background-color: rgba(0, 0, 0, 0.04);
             border-radius: 100px;
             max-width: 80%;
             width: fit-content;
@@ -2638,12 +2686,77 @@
             border-radius: 4px;
             font-size: 14px;
             outline: none;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
             background: #ffffff;
         }
         
         .order-select:focus {
             border-color: #07c160;
+            box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.1);
+        }
+        
+        /* 暗色模式适配 */
+        @media (prefers-color-scheme: dark) {
+            .message-board {
+                background: #2d2d2d;
+            }
+            
+            .message-list {
+                background-color: #1e1e1e;
+            }
+            
+            .message-item.received .message-bubble {
+                background-color: #2d2d2d;
+                color: #fff;
+            }
+            
+            .message-item.received .message-bubble::before {
+                border-color: transparent #2d2d2d transparent transparent;
+            }
+            
+            .message-item.sent .message-bubble {
+                background-color: #07c160;
+                color: #fff;
+            }
+            
+            .message-item.sent .message-bubble::before {
+                border-color: transparent transparent transparent #07c160;
+            }
+            
+            .message-input {
+                background: #2d2d2d;
+                border-top-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .message-input textarea {
+                background: #1e1e1e;
+                color: #fff;
+                border-color: #444;
+            }
+            
+            .message-input textarea:focus {
+                border-color: #07c160;
+            }
+            
+            .system-message {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: rgba(255, 255, 255, 0.6);
+            }
+            
+            .order-selector {
+                background: #2d2d2d;
+                border-bottom-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .order-select {
+                background: #1e1e1e;
+                color: #fff;
+                border-color: #444;
+            }
+            
+            .message-username {
+                color: rgba(255, 255, 255, 0.6);
+            }
         }
     </style>
 </head>
