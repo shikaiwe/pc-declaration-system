@@ -1,11 +1,12 @@
 # PC志愿者服务队管理系统
 
-![Version](https://img.shields.io/badge/版本-1.0.0-blue)
 ![Status](https://img.shields.io/badge/状态-开发中-green)
 ![License](https://img.shields.io/badge/许可证-Apache%202.0-yellow)
 
 ## 简介
 这是一个专门为PC志愿者服务队开发的管理系统，包含用户登录、注册、找回密码、控制面板和移动端适配等功能。系统使用HTML、CSS和JavaScript进行前端开发，并使用CryptoJS库进行数据加密。系统支持PC端和移动端自适应界面，提供完整的用户认证、订单管理、日程管理和天气信息展示功能。
+
+> 后端服务仓库地址：[NanFangCollegePC](https://github.com/luogangsama/NanFangCollegePC)
 
 ## 项目结构
 ```
