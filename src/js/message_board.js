@@ -2,7 +2,8 @@
 const API_URLS = {
     GET_USER_INFO: 'https://8.138.207.95/api/dashboard/get_user_info/',
     GET_HISTORY: 'https://8.138.207.95/api/dashboard/user_get_history_report/',
-    GET_WORKER_REPORTS: 'https://8.138.207.95/api/dashboard/worker_get_report_list/'
+    GET_WORKER_REPORTS: 'https://8.138.207.95/api/dashboard/worker_get_report_list/',
+    GET_REPORT_OF_SAME_DAY: 'https://8.138.207.95/api/dashboard/get_report_of_same_day/'
 };
 
 // WebSocket配置
@@ -41,8 +42,8 @@ async function fetchOrders() {
                     apiUrl = API_URLS.GET_WORKER_REPORTS;
                     break;
                 case 'admin':
-                    // 管理员可以看到所有订单
-                    apiUrl = API_URLS.GET_HISTORY;
+                    // 管理员可以看到当天的所有订单
+                    apiUrl = API_URLS.GET_REPORT_OF_SAME_DAY;
                     break;
                 case 'customer':
                 default:
@@ -60,13 +61,27 @@ async function fetchOrders() {
                 }
             });
 
-            if (response.message === 'Success' && response.report_info) {
-                // 如果是普通用户，过滤只显示自己的订单
-                if (currentUserRole === 'customer') {
+            if (response.message === 'Success') {
+                // 根据不同的API响应格式处理数据
+                if (currentUserRole === 'admin') {
+                    // 处理管理员API返回的数据格式
+                    currentOrders = response.reports.map(report => ({
+                        reportId: report.reportId,
+                        username: report.userPhoneNumber, // 使用电话号码作为用户名
+                        address: report.address,
+                        issue: report.issue,
+                        status: report.status,
+                        date: report.date,
+                        call_date: report.call_date,
+                        workerName: report.workerName
+                    }));
+                } else if (currentUserRole === 'customer') {
+                    // 处理普通用户API返回的数据格式
                     currentOrders = response.report_info.filter(order => 
                         order.username === currentUser
                     );
                 } else {
+                    // 处理维修人员API返回的数据格式
                     currentOrders = response.report_info;
                 }
                 return currentOrders;
@@ -84,6 +99,22 @@ async function fetchOrders() {
         }
     } catch (error) {
         console.error('获取订单列表失败:', error);
+        // 处理API错误响应
+        if (error.status === 403) {
+            alert('权限错误：您没有访问此资源的权限');
+        } else if (error.status === 401) {
+            if (error.responseJSON && error.responseJSON.message === 'Session has expired') {
+                window.location.href = 'login.html';
+            } else {
+                alert('会话无效，请重新登录');
+                window.location.href = 'login.html';
+            }
+        } else if (error.status === 400 && error.responseJSON && error.responseJSON.message === 'No sessionid cookie') {
+            alert('未找到会话信息，请重新登录');
+            window.location.href = 'login.html';
+        } else {
+            alert('获取订单列表失败，请稍后重试');
+        }
         return [];
     }
 }
