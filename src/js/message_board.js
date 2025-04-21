@@ -195,40 +195,56 @@ function appendMessage(message) {
     const messageItem = document.createElement('div');
     messageItem.className = `message-item ${message.username === currentUser ? 'sent' : 'received'}`;
 
+    // 创建头像容器
+    const avatarContainer = document.createElement('div');
+    avatarContainer.className = 'avatar-container';
+
+    // 如果是接收到的消息，显示用户名
+    if (message.username !== currentUser) {
+        const username = document.createElement('div');
+        username.className = 'message-username';
+        username.textContent = message.username;
+        avatarContainer.appendChild(username);
+    }
+
     // 创建头像
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';
     avatar.textContent = message.username.charAt(0).toUpperCase();
+    avatarContainer.appendChild(avatar);
+
+    // 创建消息内容容器
+    const contentContainer = document.createElement('div');
+    contentContainer.className = 'message-content-container';
 
     // 创建消息气泡
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
-
-    // 添加用户名
-    const username = document.createElement('div');
-    username.className = 'message-username';
-    username.textContent = message.username;
-    bubble.appendChild(username);
 
     // 添加消息内容
     const content = document.createElement('div');
     content.className = 'message-content';
     content.textContent = message.message;
     bubble.appendChild(content);
+    contentContainer.appendChild(bubble);
 
     // 根据消息方向添加组件
     if (message.username === currentUser) {
-        messageItem.appendChild(bubble);
-        messageItem.appendChild(avatar);
+        messageItem.appendChild(contentContainer);
+        messageItem.appendChild(avatarContainer);
     } else {
-        messageItem.appendChild(avatar);
-        messageItem.appendChild(bubble);
+        messageItem.appendChild(avatarContainer);
+        messageItem.appendChild(contentContainer);
     }
 
     // 添加时间戳
     const timeDiv = document.createElement('div');
     timeDiv.className = 'message-time';
-    timeDiv.textContent = new Date().toLocaleTimeString();
+    timeDiv.textContent = new Date().toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
     messageList.appendChild(timeDiv);
 
     messageList.appendChild(messageItem);
