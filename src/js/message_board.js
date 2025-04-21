@@ -224,21 +224,19 @@ function initWebSocket(reportId) {
 function appendMessage(message) {
     const messageList = document.getElementById('messageList');
     const now = new Date();
-    const messageTime = now.toLocaleTimeString('zh-CN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-    });
     
     // 检查是否需要添加新的时间戳
     const lastTimeDiv = messageList.querySelector('.message-time:last-of-type');
     const lastMessageTime = lastTimeDiv ? lastTimeDiv.getAttribute('data-time') : null;
     
-    // 检查是否需要显示新的时间戳（超过5分钟或第一条消息）
     if (!lastMessageTime || now - new Date(lastMessageTime) > 5 * 60 * 1000) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'message-time';
-        timeDiv.textContent = messageTime;
+        timeDiv.textContent = now.toLocaleTimeString('zh-CN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
         timeDiv.setAttribute('data-time', now.toISOString());
         messageList.appendChild(timeDiv);
     }
@@ -247,13 +245,20 @@ function appendMessage(message) {
     const messageItem = document.createElement('div');
     messageItem.className = `message-item ${message.username === currentUser ? 'sent' : 'received'}`;
 
-    // 创建头像容器
-    const avatarContainer = document.createElement('div');
-    avatarContainer.className = 'avatar-container';
+    // 创建头像
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    
+    // 生成固定的头像背景色（基于用户名）
+    const colors = ['#f56a00', '#7265e6', '#ffbf00', '#00a2ae', '#f56a00', '#7265e6', '#ffbf00'];
+    const colorIndex = Math.abs(message.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % colors.length;
+    avatar.style.backgroundColor = colors[colorIndex];
+    
+    // 设置头像文本（用户名首字母）
+    avatar.textContent = message.username.charAt(0).toUpperCase();
 
-    // 如果是接收到的消息，显示用户名
+    // 如果是接收到的消息，检查是否需要显示用户名
     if (message.username !== currentUser) {
-        // 检查是否需要显示用户名（与上一条消息比较）
         const lastMessage = messageList.querySelector('.message-item:last-of-type');
         const shouldShowUsername = !lastMessage || 
             lastMessage.querySelector('.message-username')?.textContent !== message.username ||
@@ -267,41 +272,18 @@ function appendMessage(message) {
         }
     }
 
-    // 创建头像
-    const avatar = document.createElement('div');
-    avatar.className = 'message-avatar';
-    
-    // 生成固定的头像背景色（基于用户名）
-    const colors = ['#f56a00', '#7265e6', '#ffbf00', '#00a2ae', '#f56a00', '#7265e6', '#ffbf00'];
-    const colorIndex = Math.abs(message.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % colors.length;
-    avatar.style.backgroundColor = colors[colorIndex];
-    
-    // 设置头像文本（用户名首字母）
-    avatar.textContent = message.username.charAt(0).toUpperCase();
-    avatarContainer.appendChild(avatar);
-
-    // 创建消息内容包装器
-    const contentWrapper = document.createElement('div');
-    contentWrapper.className = 'message-content-wrapper';
-
     // 创建消息气泡
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
-
-    // 添加消息内容
-    const content = document.createElement('div');
-    content.className = 'message-content';
-    content.textContent = message.message;
-    bubble.appendChild(content);
-    contentWrapper.appendChild(bubble);
+    bubble.textContent = message.message;
 
     // 根据消息方向添加组件
     if (message.username === currentUser) {
-        messageItem.appendChild(contentWrapper);
-        messageItem.appendChild(avatarContainer);
+        messageItem.appendChild(bubble);
+        messageItem.appendChild(avatar);
     } else {
-        messageItem.appendChild(avatarContainer);
-        messageItem.appendChild(contentWrapper);
+        messageItem.appendChild(avatar);
+        messageItem.appendChild(bubble);
     }
 
     messageList.appendChild(messageItem);
