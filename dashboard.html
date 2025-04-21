@@ -2418,6 +2418,116 @@
                 color: #ccc;
             }
         }
+        /* 留言板样式 */
+        
+        .message-board {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .message-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message-item {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .message-item.sent {
+            align-self: flex-end;
+            background-color: #007BFF;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message-item.received {
+            align-self: flex-start;
+            background-color: #f0f0f0;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message-username {
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: #666;
+        }
+        
+        .message-content {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            text-align: right;
+        }
+        
+        .message-input {
+            display: flex;
+            padding: 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+        
+        .message-input textarea {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            resize: none;
+            height: 40px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .message-input textarea:focus {
+            border-color: #007BFF;
+        }
+        
+        .send-button {
+            margin-left: 10px;
+            padding: 0 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .send-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .send-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        /* 订单卡片选中状态 */
+        
+        .order-card.selected {
+            border: 2px solid #007BFF;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+        }
     </style>
 </head>
 
@@ -2429,7 +2539,7 @@
             <li id="assignOrder" style="display: none;"><span><i>📋</i>分配订单</span></li>
             <li id="assignedOrder" style="display: none;"><span><i>🔧</i>被分配订单</span></li>
             <li id="scheduleManagement"><span><i>📅</i>日程管理</span></li>
-            <li id="dataStatistics"><span><i>📊</i>数据统计</span></li>
+            <li id="dataStatistics"><span><i>💬</i>留言板</span></li>
             <li id="accountManagement"><span><i>👤</i>账号管理</span></li>
         </ul>
         <div class="weather-info" id="weatherInfo">
@@ -2516,8 +2626,16 @@
         </div>
 
         <div class="content" id="dataStatisticsContent" style="display: none;">
-            <h2>数据统计</h2>
-            <p>数据统计功能即将推出</p>
+            <h2>留言板</h2>
+            <div class="message-board">
+                <div class="message-list" id="messageList">
+                    <!-- 消息列表将在这里动态显示 -->
+                </div>
+                <div class="message-input">
+                    <textarea id="messageInput" placeholder="请输入留言内容..."></textarea>
+                    <button id="sendMessage" class="send-button">发送</button>
+                </div>
+            </div>
         </div>
 
         <div class="content" id="accountSettings" style="display: none;">
@@ -4617,6 +4735,28 @@
             });
         </script>
 
+        <!-- 引入留言板模块 -->
+        <script type="module">
+            import messageBoard from './js/message_board.js'; window.messageBoard = messageBoard; document.addEventListener('DOMContentLoaded', () => { messageBoard.initMessageBoard(); });
+        </script>
+
+        <script>
+            // 添加订单卡片的点击事件处理
+            document.addEventListener('DOMContentLoaded', function() {
+                // 为所有订单卡片添加点击事件
+                document.addEventListener('click', function(e) {
+                    const orderCard = e.target.closest('.order-card');
+                    if (orderCard) {
+                        // 移除其他卡片的选中状态
+                        document.querySelectorAll('.order-card').forEach(card => {
+                            card.classList.remove('selected');
+                        });
+                        // 设置当前卡片的选中状态
+                        orderCard.classList.add('selected');
+                    }
+                });
+            });
+        </script>
 
 </body>
 
