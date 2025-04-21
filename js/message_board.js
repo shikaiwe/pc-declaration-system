@@ -47,31 +47,55 @@ function clearMessageList() {
 
 // 初始化WebSocket连接
 function initWebSocket(reportId) {
-    if (ws) {
-        ws.close();
+    if (!reportId) {
+        console.error('reportId不能为空');
+        return;
     }
 
-    currentReportId = reportId;
-    ws = new WebSocket(`wss://8.138.207.95/ws/message/?report_id=${reportId}`);
+    if (ws) {
+        ws.close();
+        ws = null;
+    }
 
-    ws.onopen = function() {
-        console.log('WebSocket连接已建立');
-    };
+    try {
+        currentReportId = reportId;
+        ws = new WebSocket(`wss://8.138.207.95/ws/message/?report_id=${reportId}`);
 
-    ws.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        if (data.type === 'chat_message') {
-            appendMessage(data.message);
-        }
-    };
+        ws.onopen = function() {
+            console.log('WebSocket连接已建立');
+            const messageList = document.getElementById('messageList');
+            messageList.innerHTML += '<div class="system-message">已连接到聊天室</div>';
+        };
 
-    ws.onclose = function() {
-        console.log('WebSocket连接已关闭');
-    };
+        ws.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'chat_message') {
+                    appendMessage(data.message);
+                }
+            } catch (error) {
+                console.error('处理消息失败:', error);
+            }
+        };
 
-    ws.onerror = function(error) {
-        console.error('WebSocket错误:', error);
-    };
+        ws.onclose = function() {
+            console.log('WebSocket连接已关闭');
+            const messageList = document.getElementById('messageList');
+            messageList.innerHTML += '<div class="system-message">连接已断开</div>';
+            ws = null;
+        };
+
+        ws.onerror = function(error) {
+            console.error('WebSocket错误:', error);
+            const messageList = document.getElementById('messageList');
+            messageList.innerHTML += '<div class="system-message error">连接发生错误</div>';
+            ws = null;
+        };
+    } catch (error) {
+        console.error('创建WebSocket连接失败:', error);
+        const messageList = document.getElementById('messageList');
+        messageList.innerHTML += '<div class="system-message error">创建连接失败</div>';
+    }
 }
 
 // 添加消息到聊天界面
@@ -93,15 +117,36 @@ function appendMessage(message) {
 // 发送消息
 function sendMessage() {
     const messageInput = document.getElementById('messageInput');
+    const orderSelector = document.getElementById('orderSelector');
     const message = messageInput.value.trim();
 
-    if (message && ws && ws.readyState === WebSocket.OPEN) {
+    // 检查是否选择了订单
+    if (!orderSelector.value) {
+        alert('请先选择一个订单');
+        return;
+    }
+
+    // 检查消息是否为空
+    if (!message) {
+        alert('请输入消息内容');
+        return;
+    }
+
+    // 检查WebSocket连接状态
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+        alert('连接已断开，请重新选择订单');
+        return;
+    }
+
+    try {
         ws.send(JSON.stringify({
             type: 'chat_message',
             message: message
         }));
-
         messageInput.value = '';
+    } catch (error) {
+        console.error('发送消息失败:', error);
+        alert('发送消息失败，请重试');
     }
 }
 
