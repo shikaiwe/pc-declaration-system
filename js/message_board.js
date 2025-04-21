@@ -1,25 +1,87 @@
+// API端点配置
+const API_URLS = {
+    GET_USER_INFO: 'https://8.138.207.95/api/dashboard/get_user_info/',
+    GET_HISTORY: 'https://8.138.207.95/api/dashboard/user_get_history_report/',
+    GET_WORKER_REPORTS: 'https://8.138.207.95/api/dashboard/worker_get_report_list/'
+};
+
+// WebSocket配置
+const WS_CONFIG = {
+    BASE_URL: 'wss://8.138.207.95/ws/message/'
+};
+
 // WebSocket连接
 let wsConnections = new Map(); // 存储所有WebSocket连接
 let currentReportId = null;
 let currentUser = null;
+let currentUserRole = null; // 存储用户角色
 let currentOrders = []; // 存储当前订单列表
 
 // 获取历史订单
 async function fetchOrders() {
     try {
-        const response = await $.ajax({
-            url: API_URLS.GET_HISTORY,
+        // 首先获取用户身份信息
+        const userInfo = await $.ajax({
+            url: API_URLS.GET_USER_INFO,
             method: 'GET',
             xhrFields: {
                 withCredentials: true
             }
         });
 
-        if (response.message === 'Success' && response.report_info) {
-            currentOrders = response.report_info;
-            return currentOrders;
+        if (userInfo.message === 'Success') {
+            currentUser = userInfo.username;
+            currentUserRole = userInfo.label;
+
+            // 根据用户角色选择不同的API端点
+            let apiUrl;
+            switch (currentUserRole) {
+                case 'worker':
+                    // 维修人员只看到分配给自己的订单
+                    apiUrl = API_URLS.GET_WORKER_REPORTS;
+                    break;
+                case 'admin':
+                    // 管理员可以看到所有订单
+                    apiUrl = API_URLS.GET_HISTORY;
+                    break;
+                case 'customer':
+                default:
+                    // 普通用户只看到自己的订单
+                    apiUrl = API_URLS.GET_HISTORY;
+                    break;
+            }
+
+            // 获取订单列表
+            const response = await $.ajax({
+                url: apiUrl,
+                method: 'GET',
+                xhrFields: {
+                    withCredentials: true
+                }
+            });
+
+            if (response.message === 'Success' && response.report_info) {
+                // 如果是普通用户，过滤只显示自己的订单
+                if (currentUserRole === 'customer') {
+                    currentOrders = response.report_info.filter(order => 
+                        order.username === currentUser
+                    );
+                } else {
+                    currentOrders = response.report_info;
+                }
+                return currentOrders;
+            }
+            return [];
+        } else {
+            // 处理用户信息获取失败的情况
+            console.error('获取用户信息失败:', userInfo.message);
+            if (userInfo.message === 'Session has expired' || 
+                userInfo.message === 'Invalid session' || 
+                userInfo.message === 'No sessionid cookie') {
+                window.location.href = 'login.html';
+            }
+            return [];
         }
-        return [];
     } catch (error) {
         console.error('获取订单列表失败:', error);
         return [];
@@ -31,10 +93,34 @@ function updateOrderSelector(orders) {
     const orderSelector = document.getElementById('orderSelector');
     orderSelector.innerHTML = '<option value="">请选择订单</option>';
 
+    if (orders.length === 0) {
+        orderSelector.innerHTML = '<option value="">暂无可用订单</option>';
+        return;
+    }
+
+    // 根据用户角色显示不同的订单标题
     orders.forEach(order => {
         const option = document.createElement('option');
         option.value = order.reportId;
-        option.textContent = `订单 ${order.reportId} - ${order.issue.substring(0, 20)}${order.issue.length > 20 ? '...' : ''}`;
+        
+        let orderTitle = '';
+        switch (currentUserRole) {
+            case 'admin':
+                // 管理员看到用户名和问题
+                orderTitle = `订单 ${order.reportId} - ${order.username} - ${order.issue.substring(0, 20)}`;
+                break;
+            case 'worker':
+                // 维修人员看到订单号和问题
+                orderTitle = `订单 ${order.reportId} - ${order.issue.substring(0, 20)}`;
+                break;
+            case 'customer':
+            default:
+                // 普通用户看到订单号和问题
+                orderTitle = `订单 ${order.reportId} - ${order.issue.substring(0, 20)}`;
+                break;
+        }
+        
+        option.textContent = orderTitle + (order.issue.length > 20 ? '...' : '');
         orderSelector.appendChild(option);
     });
 }
@@ -63,7 +149,7 @@ function initWebSocket(reportId) {
 
     try {
         currentReportId = reportId;
-        const ws = new WebSocket(`wss://8.138.207.95/ws/message/?report_id=${reportId}`);
+        const ws = new WebSocket(`${WS_CONFIG.BASE_URL}?report_id=${reportId}`);
 
         ws.onopen = function() {
             console.log(`订单 ${reportId} 的WebSocket连接已建立`);
