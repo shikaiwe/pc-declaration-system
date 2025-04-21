@@ -52,7 +52,7 @@ function initWebSocket(reportId) {
     }
 
     currentReportId = reportId;
-    ws = new WebSocket(`ws://8.138.207.95:8000/ws/message/?report_id=${reportId}`);
+    ws = new WebSocket(`wss://8.138.207.95:8000/ws/message/?report_id=${reportId}`);
 
     ws.onopen = function() {
         console.log('WebSocket连接已建立');
