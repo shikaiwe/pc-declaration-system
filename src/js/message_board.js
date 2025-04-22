@@ -257,8 +257,8 @@ function appendMessage(message) {
     if (!isSentMessage) {
         const lastMessage = messageList.querySelector('.message-item:last-of-type');
         const shouldShowUsername = !lastMessage ||
-            lastMessage.querySelector('.message-username') ? .textContent !== message.username ||
-            now - new Date(lastTimeDiv ? .getAttribute('data-time') || 0) > 5 * 60 * 1000;
+            (lastMessage.querySelector('.message-username') ? .textContent !== message.username) ||
+            (now - new Date(lastTimeDiv ? .getAttribute('data-time') || 0) > 5 * 60 * 1000);
 
         if (shouldShowUsername) {
             const username = document.createElement('div');
