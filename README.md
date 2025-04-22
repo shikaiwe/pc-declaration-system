@@ -86,4 +86,4 @@ pc-declaration-system/
 ---
 © 2025 广州南方学院PC志愿者服务队管理系统. Licensed under the Apache License, Version 2.0.
 
-Made with ❤️ by <span style="color: #FF6B6B">QiannanYou</span> and <span style="color: #4ECDC4">luogangsama</span>
+Made with ❤️ by **QiannanYou** and **luogangsama**
