@@ -337,16 +337,16 @@ function sendMessage() {
         // 发送消息
         ws.send(JSON.stringify(messageObj));
 
-        // 立即在本地显示消息
-        appendMessage({
-            username: currentUser,
-            message: message,
-            time: new Date().toLocaleTimeString()
-        });
-        console.log({
-            username: currentUser,
-            message: message,
-        })
+        // // 立即在本地显示消息
+        // appendMessage({
+        //     username: currentUser,
+        //     message: message,
+        //     time: new Date().toLocaleTimeString()
+        // });
+        // console.log({
+        //     username: currentUser,
+        //     message: message,
+        // })
 
         // 清空输入框
         messageInput.value = '';
