@@ -2538,36 +2538,36 @@
         
         .message-item.sent .message-bubble {
             background-color: #95ec69;
-            margin-right: 12px;
+            margin-right: 8px;  /* 从12px减小到8px */
             border-radius: 4px 0 4px 4px;
         }
         
         .message-item.sent .message-bubble::before {
             content: '';
             position: absolute;
-            right: -12px;
-            top: 50%;  /* 改为50% */
-            transform: translateY(-50%);  /* 添加垂直居中 */
-            border: 6px solid transparent;
+            right: -8px;  /* 从-12px改为-8px */
+            top: 50%;
+            transform: translateY(-50%);
+            border: 4px solid transparent;  /* 从6px减小到4px，使尖角更小巧 */
             border-left-color: #95ec69;
-            border-top: none;  /* 移除上边框 */
+            border-top: none;
         }
         
         .message-item.received .message-bubble {
             background-color: #fff;
-            margin-left: 12px;
+            margin-left: 8px;  /* 从12px减小到8px */
             border-radius: 0 4px 4px 4px;
         }
         
         .message-item.received .message-bubble::before {
             content: '';
             position: absolute;
-            left: -12px;
-            top: 50%;  /* 改为50% */
-            transform: translateY(-50%);  /* 添加垂直居中 */
-            border: 6px solid transparent;
+            left: -8px;  /* 从-12px改为-8px */
+            top: 50%;
+            transform: translateY(-50%);
+            border: 4px solid transparent;  /* 从6px减小到4px，使尖角更小巧 */
             border-right-color: #fff;
-            border-top: none;  /* 移除上边框 */
+            border-top: none;
         }
         
         /* 底部输入区域 */
@@ -2730,6 +2730,14 @@
             .system-message {
                 background-color: rgba(255, 255, 255, 0.1);
                 color: #666;
+            }
+            .message-item.received .message-bubble::before {
+                border-right-color: #2a2a2a;
+                border-top: none;
+            }
+            .message-item.sent .message-bubble::before {
+                border-left-color: #07c160;
+                border-top: none;
             }
         }
     </style>
