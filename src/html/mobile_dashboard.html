@@ -1916,10 +1916,11 @@
             content: '';
             position: absolute;
             right: -12px;
-            top: 0;
+            top: 50%;  /* 改为50% */
+            transform: translateY(-50%);  /* 添加垂直居中 */
             border: 6px solid transparent;
             border-left-color: #95ec69;
-            border-top-color: #95ec69;
+            border-top: none;  /* 移除上边框 */
         }
         
         .message-item.received .message-bubble {
@@ -1932,10 +1933,11 @@
             content: '';
             position: absolute;
             left: -12px;
-            top: 0;
+            top: 50%;  /* 改为50% */
+            transform: translateY(-50%);  /* 添加垂直居中 */
             border: 6px solid transparent;
             border-right-color: #fff;
-            border-top-color: #fff;
+            border-top: none;  /* 移除上边框 */
         }
         
         .message-input {
@@ -2026,7 +2028,7 @@
             }
             .message-item.received .message-bubble::before {
                 border-right-color: #2a2a2a;
-                border-top-color: #2a2a2a;
+                border-top: none;  /* 移除上边框 */
             }
             .message-item.sent .message-bubble {
                 background-color: #07c160;
@@ -2034,7 +2036,7 @@
             }
             .message-item.sent .message-bubble::before {
                 border-left-color: #07c160;
-                border-top-color: #07c160;
+                border-top: none;  /* 移除上边框 */
             }
             .message-input {
                 background-color: #1f1f1f;
