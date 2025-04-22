@@ -46,10 +46,11 @@ async function fetchOrders() {
                     apiUrl = API_URLS.GET_REPORT_OF_SAME_DAY;
                     break;
                 case 'customer':
-                default:
                     // 普通用户只看到自己的订单
                     apiUrl = API_URLS.GET_HISTORY;
                     break;
+                default:
+                    throw new Error('未知的用户角色');
             }
 
             // 获取订单列表
@@ -77,23 +78,24 @@ async function fetchOrders() {
                     }));
                 } else if (currentUserRole === 'customer') {
                     // 处理普通用户API返回的数据格式
-                    currentOrders = response.report_info.filter(order =>
-                        order.username === currentUser
-                    );
+                    currentOrders = response.report_info;
                 } else {
                     // 处理维修人员API返回的数据格式
                     currentOrders = response.report_info;
                 }
                 return currentOrders;
+            } else if (response.message === 'No history report' || response.message === 'No my report') {
+                return [];
+            } else {
+                throw new Error(response.message);
             }
-            return [];
         } else {
             // 处理用户信息获取失败的情况
             console.error('获取用户信息失败:', userInfo.message);
             if (userInfo.message === 'Session has expired' ||
                 userInfo.message === 'Invalid session' ||
                 userInfo.message === 'No sessionid cookie') {
-                window.location.href = 'login.html';
+                window.location.href = '../html/login.html';
             }
             return [];
         }
@@ -104,14 +106,14 @@ async function fetchOrders() {
             alert('权限错误：您没有访问此资源的权限');
         } else if (error.status === 401) {
             if (error.responseJSON && error.responseJSON.message === 'Session has expired') {
-                window.location.href = 'login.html';
+                window.location.href = '../html/login.html';
             } else {
                 alert('会话无效，请重新登录');
-                window.location.href = 'login.html';
+                window.location.href = '../html/login.html';
             }
         } else if (error.status === 400 && error.responseJSON && error.responseJSON.message === 'No sessionid cookie') {
             alert('未找到会话信息，请重新登录');
-            window.location.href = 'login.html';
+            window.location.href = '../html/login.html';
         } else {
             alert('获取订单列表失败，请稍后重试');
         }
