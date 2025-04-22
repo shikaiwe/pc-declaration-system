@@ -192,9 +192,7 @@ function initWebSocket(reportId) {
         ws.onmessage = function(event) {
             try {
                 const data = JSON.parse(event.data);
-                if (data.type === 'chat_message') {
-                    appendMessage(data.message);
-                }
+                appendMessage(data.message);
             } catch (error) {
                 console.error('处理消息失败:', error);
             }
