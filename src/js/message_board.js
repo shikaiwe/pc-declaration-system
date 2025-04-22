@@ -192,7 +192,8 @@ function initWebSocket(reportId) {
         ws.onmessage = function(event) {
             try {
                 const data = JSON.parse(event.data);
-                appendMessage(data.message);
+                message = data.message.message;
+                appendMessage(message);
             } catch (error) {
                 console.error('处理消息失败:', error);
             }
