@@ -147,8 +147,13 @@ function updateOrderSelector(orders) {
     const orderSelector = document.getElementById('orderSelector');
     orderSelector.innerHTML = ''; // 清空选择器
 
+    // 添加默认选项
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = '请选择订单';
+    orderSelector.appendChild(defaultOption);
+
     if (orders.length === 0) {
-        orderSelector.innerHTML = '<option value="">暂无可用订单</option>';
         return;
     }
 
@@ -177,14 +182,6 @@ function updateOrderSelector(orders) {
         option.textContent = orderTitle + (order.issue.length > 20 ? '...' : '');
         orderSelector.appendChild(option);
     });
-
-    // 如果只有一个订单，自动选择并建立连接
-    if (orders.length === 1) {
-        const singleOrder = orders[0];
-        orderSelector.value = singleOrder.reportId;
-        clearMessageList();
-        initWebSocket(singleOrder.reportId);
-    }
 }
 
 // 清空消息列表
@@ -200,12 +197,18 @@ function initWebSocket(reportId) {
         return;
     }
 
-    // 如果已经存在此订单的连接，直接返回
+    // 如果已经存在此订单的连接，检查状态
     if (wsConnections.has(reportId)) {
         const existingWs = wsConnections.get(reportId);
         if (existingWs.readyState === WebSocket.OPEN) {
             console.log('已存在连接，无需重新建立');
             return;
+        } else if (existingWs.readyState === WebSocket.CONNECTING) {
+            console.log('连接正在建立中，请稍候');
+            return;
+        } else {
+            // 如果连接已关闭或正在关闭，则删除旧连接
+            wsConnections.delete(reportId);
         }
     }
 
@@ -213,7 +216,18 @@ function initWebSocket(reportId) {
         currentReportId = reportId;
         const ws = new WebSocket(`${WS_CONFIG.BASE_URL}?report_id=${reportId}`);
 
+        // 设置连接超时
+        const connectionTimeout = setTimeout(() => {
+            if (ws.readyState === WebSocket.CONNECTING) {
+                console.error('WebSocket连接超时');
+                ws.close();
+                const messageList = document.getElementById('messageList');
+                messageList.innerHTML += '<div class="system-message error">连接超时，请重试</div>';
+            }
+        }, 10000); // 10秒超时
+
         ws.onopen = function() {
+            clearTimeout(connectionTimeout);
             console.log(`订单 ${reportId} 的WebSocket连接已建立`);
             const messageList = document.getElementById('messageList');
             messageList.innerHTML += '<div class="system-message">已连接到聊天室</div>';
@@ -223,9 +237,8 @@ function initWebSocket(reportId) {
         ws.onmessage = function(event) {
             try {
                 const data = JSON.parse(event.data);
-                // const message = JSON.parse(data.message['message'])
-                var message = data.message
-                message['time'] = new Date().toLocaleTimeString()
+                var message = data.message;
+                message['time'] = new Date().toLocaleTimeString();
                 appendMessage(message);
             } catch (error) {
                 console.error('处理消息失败:', error);
@@ -233,6 +246,7 @@ function initWebSocket(reportId) {
         };
 
         ws.onclose = function() {
+            clearTimeout(connectionTimeout);
             console.log(`订单 ${reportId} 的WebSocket连接已关闭`);
             const messageList = document.getElementById('messageList');
             messageList.innerHTML += '<div class="system-message">连接已断开</div>';
@@ -240,6 +254,7 @@ function initWebSocket(reportId) {
         };
 
         ws.onerror = function(error) {
+            clearTimeout(connectionTimeout);
             console.error(`订单 ${reportId} 的WebSocket错误:`, error);
             const messageList = document.getElementById('messageList');
             messageList.innerHTML += '<div class="system-message error">连接发生错误</div>';
@@ -430,6 +445,10 @@ async function initMessageBoard() {
             initWebSocket(selectedReportId);
             // 定期清理无效连接
             cleanupConnections();
+        } else {
+            // 如果没有选择订单，清空消息列表并关闭所有连接
+            clearMessageList();
+            closeAllConnections();
         }
     });
 
@@ -446,10 +465,19 @@ async function initMessageBoard() {
 
     // 页面关闭时清理所有连接
     window.addEventListener('beforeunload', function() {
-        for (const ws of wsConnections.values()) {
+        closeAllConnections();
+    });
+}
+
+// 关闭所有WebSocket连接
+function closeAllConnections() {
+    for (const [reportId, ws] of wsConnections.entries()) {
+        if (ws.readyState === WebSocket.OPEN) {
             ws.close();
         }
-    });
+        wsConnections.delete(reportId);
+    }
+    currentReportId = null;
 }
 
 // 导出模块
