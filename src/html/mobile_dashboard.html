@@ -4480,9 +4480,10 @@
     document.getElementById('message-board-card')?.addEventListener('click', function() {
         utils.ui.showModal('messageBoardModal');
         this.classList.add('active');
-        // 确保留言板已初始化
-        if (window.messageBoard) {
+        // 确保留言板只初始化一次
+        if (window.messageBoard && !window.messageBoard.isInitialized) {
             window.messageBoard.initMessageBoard();
+            window.messageBoard.isInitialized = true;
         }
     });
 
@@ -4525,12 +4526,15 @@
     </script>
     <!-- 添加assign_order.js模块引入 -->
     <script type="module">
-        import AssignOrder from '../js/assign_order.js'; window.AssignOrder = AssignOrder;
+        import AssignOrder from '../js/assign_order.js'; 
+        window.AssignOrder = AssignOrder;
     </script>
 
     <!-- 引入留言板模块 -->
     <script type="module">
-        import messageBoard from '../js/message_board.js'; window.messageBoard = messageBoard; document.addEventListener('DOMContentLoaded', () => { messageBoard.initMessageBoard(); });
+        import messageBoard from '../js/message_board.js'; 
+        window.messageBoard = messageBoard;
+        // 不在这里直接初始化，而是在点击留言板卡片时初始化
     </script>
 </body>
 

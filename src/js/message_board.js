@@ -416,6 +416,11 @@ function cleanupConnections() {
 
 // 初始化留言板
 async function initMessageBoard() {
+    // 如果已经初始化过，则直接返回
+    if (this.isInitialized) {
+        return;
+    }
+
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendMessage');
     const orderSelector = document.getElementById('orderSelector');
@@ -467,6 +472,9 @@ async function initMessageBoard() {
     window.addEventListener('beforeunload', function() {
         closeAllConnections();
     });
+
+    // 标记为已初始化
+    this.isInitialized = true;
 }
 
 // 关闭所有WebSocket连接
@@ -485,5 +493,6 @@ export default {
     initMessageBoard,
     initWebSocket,
     sendMessage,
-    fetchOrders
+    fetchOrders,
+    isInitialized: false
 };
