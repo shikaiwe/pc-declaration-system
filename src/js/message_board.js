@@ -77,7 +77,7 @@ async function fetchOrders() {
                     }));
                 } else if (currentUserRole === 'customer') {
                     // 处理普通用户API返回的数据格式
-                    currentOrders = response.report_info.filter(order => 
+                    currentOrders = response.report_info.filter(order =>
                         order.username === currentUser
                     );
                 } else {
@@ -90,8 +90,8 @@ async function fetchOrders() {
         } else {
             // 处理用户信息获取失败的情况
             console.error('获取用户信息失败:', userInfo.message);
-            if (userInfo.message === 'Session has expired' || 
-                userInfo.message === 'Invalid session' || 
+            if (userInfo.message === 'Session has expired' ||
+                userInfo.message === 'Invalid session' ||
                 userInfo.message === 'No sessionid cookie') {
                 window.location.href = 'login.html';
             }
@@ -122,7 +122,7 @@ async function fetchOrders() {
 // 更新订单选择器
 function updateOrderSelector(orders) {
     const orderSelector = document.getElementById('orderSelector');
-    orderSelector.innerHTML = '<option value="">请选择订单</option>';
+    orderSelector.innerHTML = ''; // 清空选择器
 
     if (orders.length === 0) {
         orderSelector.innerHTML = '<option value="">暂无可用订单</option>';
@@ -133,7 +133,7 @@ function updateOrderSelector(orders) {
     orders.forEach(order => {
         const option = document.createElement('option');
         option.value = order.reportId;
-        
+
         let orderTitle = '';
         switch (currentUserRole) {
             case 'admin':
@@ -150,7 +150,7 @@ function updateOrderSelector(orders) {
                 orderTitle = `订单 ${order.reportId} - ${order.issue.substring(0, 20)}`;
                 break;
         }
-        
+
         option.textContent = orderTitle + (order.issue.length > 20 ? '...' : '');
         orderSelector.appendChild(option);
     });
@@ -231,11 +231,11 @@ function appendMessage(message) {
     // }
     const messageList = document.getElementById('messageList');
     const now = new Date();
-    
+
     // 检查是否需要添加新的时间戳
     const lastTimeDiv = messageList.querySelector('.message-time:last-of-type');
     const lastMessageTime = lastTimeDiv ? lastTimeDiv.getAttribute('data-time') : null;
-    
+
     if (!lastMessageTime || now - new Date(lastMessageTime) > 5 * 60 * 1000) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'message-time';
@@ -256,9 +256,9 @@ function appendMessage(message) {
     // 如果是接收到的消息，检查是否需要显示用户名
     if (!isSentMessage) {
         const lastMessage = messageList.querySelector('.message-item:last-of-type');
-        const shouldShowUsername = !lastMessage || 
-            lastMessage.querySelector('.message-username')?.textContent !== message.username ||
-            now - new Date(lastTimeDiv?.getAttribute('data-time') || 0) > 5 * 60 * 1000;
+        const shouldShowUsername = !lastMessage ||
+            lastMessage.querySelector('.message-username') ? .textContent !== message.username ||
+            now - new Date(lastTimeDiv ? .getAttribute('data-time') || 0) > 5 * 60 * 1000;
 
         if (shouldShowUsername) {
             const username = document.createElement('div');
@@ -271,12 +271,12 @@ function appendMessage(message) {
     // 创建头像
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
-    
+
     // 生成固定的头像背景色（基于用户名）
     const colors = ['#f56a00', '#7265e6', '#ffbf00', '#00a2ae', '#f56a00', '#7265e6', '#ffbf00'];
     const colorIndex = Math.abs(message.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % colors.length;
     avatar.style.backgroundColor = colors[colorIndex];
-    
+
     // 设置头像文本（用户名首字母）
     avatar.textContent = message.username.charAt(0).toUpperCase();
 
@@ -290,7 +290,7 @@ function appendMessage(message) {
     messageItem.appendChild(bubble);
 
     messageList.appendChild(messageItem);
-    
+
     // 平滑滚动到底部
     messageList.scrollTo({
         top: messageList.scrollHeight,
