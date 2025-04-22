@@ -177,6 +177,14 @@ function updateOrderSelector(orders) {
         option.textContent = orderTitle + (order.issue.length > 20 ? '...' : '');
         orderSelector.appendChild(option);
     });
+
+    // 如果只有一个订单，自动选择并建立连接
+    if (orders.length === 1) {
+        const singleOrder = orders[0];
+        orderSelector.value = singleOrder.reportId;
+        clearMessageList();
+        initWebSocket(singleOrder.reportId);
+    }
 }
 
 // 清空消息列表
