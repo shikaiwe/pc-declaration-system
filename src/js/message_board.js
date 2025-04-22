@@ -34,41 +34,23 @@ async function fetchOrders() {
             currentUser = userInfo.username;
             currentUserRole = userInfo.label;
 
-            // 根据用户角色选择不同的API端点
-            let apiUrl;
-            switch (currentUserRole) {
-                case 'worker':
-                    // 维修人员只看到分配给自己的订单
-                    apiUrl = API_URLS.GET_WORKER_REPORTS;
-                    break;
-                case 'admin':
-                    // 管理员可以看到当天的所有订单
-                    apiUrl = API_URLS.GET_REPORT_OF_SAME_DAY;
-                    break;
-                case 'customer':
-                    // 普通用户只看到自己的订单
-                    apiUrl = API_URLS.GET_HISTORY;
-                    break;
-                default:
-                    throw new Error('未知的用户角色');
-            }
+            // 根据用户角色获取订单
+            let orders = [];
 
-            // 获取订单列表
-            const response = await $.ajax({
-                url: apiUrl,
-                method: 'GET',
-                xhrFields: {
-                    withCredentials: true
-                }
-            });
+            if (currentUserRole === 'admin') {
+                // 管理员可以看到当天的所有订单
+                const response = await $.ajax({
+                    url: API_URLS.GET_REPORT_OF_SAME_DAY,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                });
 
-            if (response.message === 'Success') {
-                // 根据不同的API响应格式处理数据
-                if (currentUserRole === 'admin') {
-                    // 处理管理员API返回的数据格式
-                    currentOrders = response.reports.map(report => ({
+                if (response.message === 'Success') {
+                    orders = response.reports.map(report => ({
                         reportId: report.reportId,
-                        username: report.userPhoneNumber, // 使用电话号码作为用户名
+                        username: report.userPhoneNumber,
                         address: report.address,
                         issue: report.issue,
                         status: report.status,
@@ -76,19 +58,58 @@ async function fetchOrders() {
                         call_date: report.call_date,
                         workerName: report.workerName
                     }));
-                } else if (currentUserRole === 'customer') {
-                    // 处理普通用户API返回的数据格式
-                    currentOrders = response.report_info;
-                } else {
-                    // 处理维修人员API返回的数据格式
-                    currentOrders = response.report_info;
                 }
-                return currentOrders;
-            } else if (response.message === 'No history report' || response.message === 'No my report') {
-                return [];
+            } else if (currentUserRole === 'worker') {
+                // 工作人员可以看到自己报的单和被分配的单
+                try {
+                    // 获取被分配的订单
+                    const workerResponse = await $.ajax({
+                        url: API_URLS.GET_WORKER_REPORTS,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        }
+                    });
+
+                    if (workerResponse.message === 'Success') {
+                        orders = orders.concat(workerResponse.report_info);
+                    }
+
+                    // 获取自己报的订单
+                    const userResponse = await $.ajax({
+                        url: API_URLS.GET_HISTORY,
+                        method: 'GET',
+                        xhrFields: {
+                            withCredentials: true
+                        }
+                    });
+
+                    if (userResponse.message === 'Success') {
+                        orders = orders.concat(userResponse.report_info);
+                    }
+
+                    // 去重（可能有重复的订单）
+                    orders = Array.from(new Map(orders.map(order => [order.reportId, order])).values());
+                } catch (error) {
+                    console.error('获取工作人员订单失败:', error);
+                }
             } else {
-                throw new Error(response.message);
+                // 普通用户只看到自己的订单
+                const response = await $.ajax({
+                    url: API_URLS.GET_HISTORY,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                });
+
+                if (response.message === 'Success') {
+                    orders = response.report_info;
+                }
             }
+
+            currentOrders = orders;
+            return orders;
         } else {
             // 处理用户信息获取失败的情况
             console.error('获取用户信息失败:', userInfo.message);
