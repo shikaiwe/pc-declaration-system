@@ -192,7 +192,9 @@ function initWebSocket(reportId) {
         ws.onmessage = function(event) {
             try {
                 const data = JSON.parse(event.data);
-                message = data.message.message;
+                // const message = JSON.parse(data.message['message'])
+                var message = data.message
+                message['time'] = new Date().toLocaleTimeString()
                 appendMessage(message);
             } catch (error) {
                 console.error('处理消息失败:', error);
@@ -221,6 +223,12 @@ function initWebSocket(reportId) {
 
 // 添加消息到聊天界面
 function appendMessage(message) {
+    // message的结构:
+    // {
+    //     'username': 'Steve',
+    //     'message': 'Hello world',
+    //     'time': ''
+    // }
     const messageList = document.getElementById('messageList');
     const now = new Date();
     
@@ -335,6 +343,10 @@ function sendMessage() {
             message: message,
             time: new Date().toLocaleTimeString()
         });
+        console.log({
+            username: currentUser,
+            message: message,
+        })
 
         // 清空输入框
         messageInput.value = '';
