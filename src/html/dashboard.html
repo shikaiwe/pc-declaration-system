@@ -2546,10 +2546,11 @@
             content: '';
             position: absolute;
             right: -12px;
-            top: 0;
+            top: 50%;  /* 改为50% */
+            transform: translateY(-50%);  /* 添加垂直居中 */
             border: 6px solid transparent;
             border-left-color: #95ec69;
-            border-top-color: #95ec69;
+            border-top: none;  /* 移除上边框 */
         }
         
         .message-item.received .message-bubble {
@@ -2562,10 +2563,11 @@
             content: '';
             position: absolute;
             left: -12px;
-            top: 0;
+            top: 50%;  /* 改为50% */
+            transform: translateY(-50%);  /* 添加垂直居中 */
             border: 6px solid transparent;
             border-right-color: #fff;
-            border-top-color: #fff;
+            border-top: none;  /* 移除上边框 */
         }
         
         /* 底部输入区域 */
