@@ -1813,6 +1813,306 @@
                 background-color: rgba(255, 255, 255, 0.2);
             }
         }
+        /* 留言板样式 */
+        
+        .message-board {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: #ebebeb;
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        .order-selector {
+            padding: 12px;
+            background-color: #fff;
+            border-bottom: 1px solid #d6d6d6;
+            z-index: 1;
+        }
+        
+        .order-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d6d6d6;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #fff;
+        }
+        
+        .message-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .message-time {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            margin: 16px 0;
+        }
+        
+        .message-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        
+        .message-item.sent {
+            flex-direction: row-reverse;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .message-username {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+            position: absolute;
+            top: -18px;
+        }
+        
+        .message-item.received .message-username {
+            left: 64px;
+        }
+        
+        .message-item.sent .message-username {
+            display: none;
+        }
+        
+        .message-bubble {
+            max-width: 60%;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 16px;
+            line-height: 1.4;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .message-item.sent .message-bubble {
+            background-color: #95ec69;
+            margin-right: 12px;
+            border-radius: 4px 0 4px 4px;
+        }
+        
+        .message-item.sent .message-bubble::before {
+            content: '';
+            position: absolute;
+            right: -12px;
+            top: 0;
+            border: 6px solid transparent;
+            border-left-color: #95ec69;
+            border-top-color: #95ec69;
+        }
+        
+        .message-item.received .message-bubble {
+            background-color: #fff;
+            margin-left: 12px;
+            border-radius: 0 4px 4px 4px;
+        }
+        
+        .message-item.received .message-bubble::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 0;
+            border: 6px solid transparent;
+            border-right-color: #fff;
+            border-top-color: #fff;
+        }
+        
+        .message-input {
+            background-color: #f5f5f5;
+            border-top: 1px solid #d6d6d6;
+            padding: 12px;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+        
+        .message-input textarea {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d6d6d6;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 100px;
+            resize: none;
+            background-color: #fff;
+        }
+        
+        .message-input textarea:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+        
+        .send-button {
+            padding: 8px 16px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .send-button:hover {
+            background-color: #1976D2;
+        }
+        
+        .send-button:active {
+            transform: scale(0.98);
+        }
+        
+        .system-message {
+            text-align: center;
+            padding: 8px 12px;
+            margin: 10px auto;
+            font-size: 12px;
+            color: #999;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: 100px;
+            max-width: 80%;
+            width: fit-content;
+        }
+        
+        .system-message.error {
+            color: #fa5151;
+            background-color: rgba(250, 81, 81, 0.1);
+        }
+        /* 暗色模式 */
+        
+        @media (prefers-color-scheme: dark) {
+            .message-board {
+                background-color: #111;
+            }
+            .order-selector {
+                background-color: #1f1f1f;
+                border-bottom-color: #2a2a2a;
+            }
+            .order-select {
+                background-color: #2a2a2a;
+                border-color: #333;
+                color: #fff;
+            }
+            .message-list {
+                background-color: #111;
+            }
+            .message-time {
+                color: #666;
+            }
+            .message-item.received .message-bubble {
+                background-color: #2a2a2a;
+                color: #fff;
+            }
+            .message-item.received .message-bubble::before {
+                border-right-color: #2a2a2a;
+                border-top-color: #2a2a2a;
+            }
+            .message-item.sent .message-bubble {
+                background-color: #07c160;
+                color: #fff;
+            }
+            .message-item.sent .message-bubble::before {
+                border-left-color: #07c160;
+                border-top-color: #07c160;
+            }
+            .message-input {
+                background-color: #1f1f1f;
+                border-top-color: #2a2a2a;
+            }
+            .message-input textarea {
+                background-color: #2a2a2a;
+                border-color: #333;
+                color: #fff;
+            }
+        }
+        /* 留言板模态框样式 */
+        
+        #messageBoardModal .modal-content {
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            max-height: 90vh;
+            margin: 20px;
+            width: calc(100% - 40px);
+            position: relative;
+        }
+        
+        #messageBoardModal .modal-content h2 {
+            padding: 15px;
+            margin: 0;
+            border-bottom: 1px solid #d6d6d6;
+            font-size: 18px;
+            background: #fff;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+        
+        #messageBoardModal .message-board {
+            height: calc(100vh - 120px);
+            border-radius: 0;
+        }
+        
+        #messageBoardModal .close-button {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            z-index: 2;
+            background: none;
+            border: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s ease;
+        }
+        
+        #messageBoardModal .close-button:hover {
+            color: #333;
+        }
+        /* 暗色模式适配 */
+        
+        @media (prefers-color-scheme: dark) {
+            #messageBoardModal .modal-content h2 {
+                background: #1f1f1f;
+                border-bottom-color: #2a2a2a;
+                color: #fff;
+            }
+            #messageBoardModal .close-button {
+                color: #999;
+            }
+            #messageBoardModal .close-button:hover {
+                color: #fff;
+            }
+        }
     </style>
 </head>
 
@@ -1836,6 +2136,11 @@
     <div class="card hover" id="order-management">
         <h2>订单管理</h2>
         <p>更多信息...</p>
+    </div>
+
+    <div class="card hover" id="message-board-card">
+        <h2>留言板</h2>
+        <p>查看订单留言...</p>
     </div>
 
     <div class="card" id="schedule-management">
@@ -1998,6 +2303,27 @@
     <div class="order-detail-card" id="orderDetailCard">
         <div id="orderDetailContent">
             <!-- 内容将通过JavaScript动态填充 -->
+        </div>
+    </div>
+
+    <div id="messageBoardModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>留言板</h2>
+            <div class="message-board">
+                <div class="order-selector">
+                    <select id="orderSelector" class="order-select">
+                        <option value="">请选择订单</option>
+                    </select>
+                </div>
+                <div class="message-list" id="messageList">
+                    <!-- 消息列表将在这里动态显示 -->
+                </div>
+                <div class="message-input">
+                    <textarea id="messageInput" placeholder="请输入留言内容..."></textarea>
+                    <button id="sendMessage" class="send-button">发送</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -4150,6 +4476,16 @@
         }
     });
 
+    // 留言板卡片点击事件
+    document.getElementById('message-board-card')?.addEventListener('click', function() {
+        utils.ui.showModal('messageBoardModal');
+        this.classList.add('active');
+        // 确保留言板已初始化
+        if (window.messageBoard) {
+            window.messageBoard.initMessageBoard();
+        }
+    });
+
     // 被分配订单卡片点击事件
     document.getElementById('assigned-order')?.addEventListener('click', function() {
         utils.ui.showModal('assignedOrderModal');
@@ -4190,6 +4526,11 @@
     <!-- 添加assign_order.js模块引入 -->
     <script type="module">
         import AssignOrder from './js/assign_order.js'; window.AssignOrder = AssignOrder;
+    </script>
+
+    <!-- 引入留言板模块 -->
+    <script type="module">
+        import messageBoard from './js/message_board.js'; window.messageBoard = messageBoard; document.addEventListener('DOMContentLoaded', () => { messageBoard.initMessageBoard(); });
     </script>
 </body>
 

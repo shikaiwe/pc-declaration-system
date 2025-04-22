@@ -256,9 +256,12 @@ function appendMessage(message) {
     // 如果是接收到的消息，检查是否需要显示用户名
     if (!isSentMessage) {
         const lastMessage = messageList.querySelector('.message-item:last-of-type');
+        const lastMessageUsername = lastMessage && lastMessage.querySelector('.message-username');
+        const lastMessageTime = lastTimeDiv && lastTimeDiv.getAttribute('data-time');
+
         const shouldShowUsername = !lastMessage ||
-            (lastMessage.querySelector('.message-username') ? .textContent !== message.username) ||
-            (now - new Date(lastTimeDiv ? .getAttribute('data-time') || 0) > 5 * 60 * 1000);
+            (lastMessageUsername && lastMessageUsername.textContent !== message.username) ||
+            (now - new Date(lastMessageTime || 0) > 5 * 60 * 1000);
 
         if (shouldShowUsername) {
             const username = document.createElement('div');
