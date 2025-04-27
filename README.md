@@ -4,7 +4,7 @@
 ![License](https://img.shields.io/badge/许可证-Apache%202.0-yellow)
 
 ## 项目简介
-基于Web的综合性管理平台，专为PC志愿者服务队设计开发。采用现代化前端技术栈，实现用户认证、订单管理、日程规划等核心功能。支持PC端和移动端自适应。
+基于Web的综合性管理平台，专为PC志愿者服务队设计开发。实现用户认证、订单管理、日程规划等核心功能。支持PC端和移动端自适应。
 
 > 后端服务仓库地址：[NanFangCollegePC](https://github.com/luogangsama/NanFangCollegePC)
 
