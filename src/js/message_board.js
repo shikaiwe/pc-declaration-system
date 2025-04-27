@@ -264,14 +264,19 @@ async function initWebSocket(reportId) {
             // 加载历史消息
             try {
                 const historyMessages = await fetchMessageHistory(reportId);
-                if (historyMessages.length > 0) {
+                console.log('准备显示的历史消息:', historyMessages); // 添加调试日志
+                
+                if (historyMessages && historyMessages.length > 0) {
                     messageList.innerHTML += '<div class="system-message">正在加载历史消息...</div>';
                     // 清空现有消息
                     messageList.innerHTML = '';
                     // 添加历史消息
                     historyMessages.forEach(message => {
-                        message.time = new Date().toLocaleTimeString();
-                        appendMessage(message);
+                        console.log('正在显示消息:', message); // 添加调试日志
+                        if (message.username && message.message) {
+                            message.time = new Date().toLocaleTimeString();
+                            appendMessage(message);
+                        }
                     });
                     messageList.innerHTML += '<div class="system-message">历史消息加载完成</div>';
                 } else {
@@ -318,12 +323,13 @@ async function initWebSocket(reportId) {
 
 // 添加消息到聊天界面
 function appendMessage(message) {
-    // message的结构:
-    // {
-    //     'username': 'Steve',
-    //     'message': 'Hello world',
-    //     'time': ''
-    // }
+    console.log('appendMessage收到的消息:', message); // 添加调试日志
+    
+    if (!message || !message.username || !message.message) {
+        console.error('消息格式不正确:', message);
+        return;
+    }
+
     const messageList = document.getElementById('messageList');
     const now = new Date();
 
@@ -572,6 +578,8 @@ async function fetchMessageHistory(reportId) {
                 withCredentials: true
             }
         });
+
+        console.log('获取到的历史消息:', response); // 添加调试日志
 
         if (response.message === 'Success' && response.message_record && response.message_record.record) {
             return response.message_record.record;
