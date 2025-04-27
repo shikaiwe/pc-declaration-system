@@ -338,10 +338,8 @@ function appendMessage(message) {
     const messageList = document.getElementById('messageList');
     const now = new Date();
 
-    // 存储消息
-    if (currentReportId) {
-        messageStorage.addMessage(currentReportId, message);
-    }
+    // 使用displayTime或time显示时间
+    const messageTime = message.displayTime || message.time || '';
 
     // 检查是否需要添加新的时间戳
     const lastTimeDiv = messageList.querySelector('.message-time:last-of-type');
@@ -350,12 +348,12 @@ function appendMessage(message) {
     if (!lastMessageTime || now - new Date(lastMessageTime) > 5 * 60 * 1000) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'message-time';
-        timeDiv.textContent = now.toLocaleTimeString('zh-CN', {
+        timeDiv.textContent = messageTime || now.toLocaleTimeString('zh-CN', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false
         });
-        timeDiv.setAttribute('data-time', now.toISOString());
+        timeDiv.setAttribute('data-time', message.originalTime || now.toISOString());
         messageList.appendChild(timeDiv);
     }
 
@@ -600,7 +598,7 @@ async function fetchMessageHistory(reportId) {
                     let msgObj = {
                         username: item.username,
                         message: '',
-                        time: null // 初始化为null，稍后再赋值
+                        time: null // 初始化为null
                     };
                     
                     // 处理嵌套的消息结构
@@ -712,29 +710,44 @@ async function fetchMessageHistory(reportId) {
                         console.log('从timestamp获取时间:', item.timestamp);
                     }
                     
-                    // 最后才使用当前时间作为后备
+                    // 如果没有时间信息，不设置时间（不使用当前时间）
                     if (!msgObj.time) {
-                        msgObj.time = new Date().toISOString();
-                        console.log('使用当前时间作为后备:', msgObj.time);
+                        console.log('未找到时间信息');
                     }
                     
                     // 格式化时间
                     if (msgObj.time) {
                         try {
                             console.log('格式化时间前:', msgObj.time);
-                            // 如果是ISO格式时间，转换为本地可读时间格式
-                            const date = new Date(msgObj.time);
-                            if (!isNaN(date)) {
-                                msgObj.time = date.toLocaleTimeString('zh-CN', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    second: '2-digit',
-                                    hour12: false
-                                });
-                                console.log('格式化时间后:', msgObj.time);
+                            // 如果是ISO格式时间，保留原始格式但提取可读部分
+                            if (msgObj.time.includes('T')) {
+                                // 从ISO格式中提取日期和时间部分
+                                const date = new Date(msgObj.time);
+                                if (!isNaN(date)) {
+                                    // 显示完整的日期和时间
+                                    msgObj.displayTime = date.toLocaleString('zh-CN', {
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        second: '2-digit',
+                                        hour12: false
+                                    });
+                                    console.log('格式化显示时间:', msgObj.displayTime);
+                                    // 保留原始时间用于排序和比较
+                                    msgObj.originalTime = msgObj.time;
+                                } else {
+                                    console.warn('无效的日期格式:', msgObj.time);
+                                }
+                            } else {
+                                // 如果不是ISO格式，直接使用
+                                msgObj.displayTime = msgObj.time;
+                                msgObj.originalTime = msgObj.time;
                             }
                         } catch (e) {
                             console.warn('时间格式化失败:', e);
+                            msgObj.displayTime = msgObj.time;
                         }
                     }
                     
@@ -751,22 +764,31 @@ async function fetchMessageHistory(reportId) {
                     if (msg.time) {
                         try {
                             console.log('record项原始时间:', msg.time);
-                            const date = new Date(msg.time);
-                            if (!isNaN(date)) {
-                                msg.time = date.toLocaleTimeString('zh-CN', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    second: '2-digit',
-                                    hour12: false
-                                });
-                                console.log('record项格式化后时间:', msg.time);
+                            if (msg.time.includes('T')) {
+                                const date = new Date(msg.time);
+                                if (!isNaN(date)) {
+                                    // 显示完整的日期和时间
+                                    msg.displayTime = date.toLocaleString('zh-CN', {
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        second: '2-digit',
+                                        hour12: false
+                                    });
+                                    console.log('record项格式化后显示时间:', msg.displayTime);
+                                    // 保留原始时间
+                                    msg.originalTime = msg.time;
+                                }
+                            } else {
+                                msg.displayTime = msg.time;
+                                msg.originalTime = msg.time;
                             }
                         } catch (e) {
                             console.warn('时间格式化失败:', e);
+                            msg.displayTime = msg.time;
                         }
-                    } else if (!msg.time) {
-                        msg.time = new Date().toLocaleTimeString();
-                        console.log('record项使用当前时间:', msg.time);
                     }
                     
                     return msg;
@@ -774,6 +796,14 @@ async function fetchMessageHistory(reportId) {
             } else {
                 console.warn('未知的消息记录格式:', response.message_record);
             }
+            
+            // 按原始时间排序
+            messages.sort((a, b) => {
+                if (a.originalTime && b.originalTime) {
+                    return new Date(a.originalTime) - new Date(b.originalTime);
+                }
+                return 0;
+            });
             
             console.log('最终处理后的消息数组:', messages);
             return messages;
