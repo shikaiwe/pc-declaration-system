@@ -274,7 +274,7 @@ async function initWebSocket(reportId) {
                     historyMessages.forEach(message => {
                         console.log('正在显示消息:', message); // 添加调试日志
                         if (message.username && message.message) {
-                            message.time = new Date().toLocaleTimeString();
+                            // 不再覆盖原有的时间信息
                             appendMessage(message);
                         }
                     });
@@ -514,7 +514,7 @@ async function initMessageBoard() {
                     const messageList = document.getElementById('messageList');
                     messageList.innerHTML += '<div class="system-message">正在加载历史消息...</div>';
                     historyMessages.forEach(message => {
-                        message.time = new Date().toLocaleTimeString();
+                        // 不再覆盖原有的时间信息
                         appendMessage(message);
                     });
                     messageList.innerHTML += '<div class="system-message">历史消息加载完成</div>';
@@ -588,6 +588,13 @@ async function fetchMessageHistory(reportId) {
             if (Array.isArray(response.message_record)) {
                 console.log('数组类型的message_record:', response.message_record);
                 messages = response.message_record.map(item => {
+                    // 默认消息对象
+                    let msgObj = {
+                        username: item.username,
+                        message: '',
+                        time: item.time || new Date().toLocaleTimeString() // 尝试使用原始时间，如果有的话
+                    };
+                    
                     // 检查是否存在messageg字段（可能是拼写错误）
                     if (item.messageg) {
                         try {
@@ -596,11 +603,13 @@ async function fetchMessageHistory(reportId) {
                             // 如果messageg是JSON字符串，则解析
                             if (typeof parsedMessage === 'string' && parsedMessage.startsWith('{')) {
                                 try {
-                                    const msgObj = JSON.parse(parsedMessage.replace(/'/g, '"'));
-                                    return {
-                                        username: msgObj.username || item.username,
-                                        message: msgObj.message || '无法解析的消息'
-                                    };
+                                    const parsed = JSON.parse(parsedMessage.replace(/'/g, '"'));
+                                    msgObj.username = parsed.username || item.username;
+                                    msgObj.message = parsed.message || '无法解析的消息';
+                                    // 如果解析出的对象有时间信息，使用该时间
+                                    if (parsed.time) {
+                                        msgObj.time = parsed.time;
+                                    }
                                 } catch (e) {
                                     console.error('解析messageg失败:', e);
                                     // 尝试从字符串中提取信息
@@ -609,40 +618,43 @@ async function fetchMessageHistory(reportId) {
                                                     parsedMessage.match(/'message':\s*"([^"]*)"/) ||
                                                     parsedMessage.match(/'message':\s*([^,}]*)/);
                                         if (msgMatch && msgMatch[1]) {
-                                            return {
-                                                username: item.username,
-                                                message: msgMatch[1]
-                                            };
+                                            msgObj.message = msgMatch[1];
+                                        }
+                                    }
+                                    
+                                    // 尝试提取时间信息
+                                    if (parsedMessage.includes("'time':")) {
+                                        const timeMatch = parsedMessage.match(/'time':\s*'([^']*)'/) || 
+                                                     parsedMessage.match(/'time':\s*"([^"]*)"/) ||
+                                                     parsedMessage.match(/'time':\s*([^,}]*)/);
+                                        if (timeMatch && timeMatch[1]) {
+                                            msgObj.time = timeMatch[1];
                                         }
                                     }
                                 }
+                            } else {
+                                msgObj.message = item.messageg;
                             }
-                            // 如果无法解析，则使用默认值
-                            return {
-                                username: item.username,
-                                message: item.messageg
-                            };
                         } catch (parseError) {
                             console.error('处理消息时出错:', parseError);
-                            return {
-                                username: item.username,
-                                message: '无法解析的消息内容'
-                            };
+                            msgObj.message = '无法解析的消息内容';
                         }
                     } else if (item.message) {
                         // 正常的message字段
-                        return {
-                            username: item.username,
-                            message: item.message
-                        };
+                        msgObj.message = item.message;
                     } else {
                         console.warn('消息缺少必要字段:', item);
                         return null;
                     }
+                    
+                    return msgObj;
                 }).filter(msg => msg !== null);
             } else if (response.message_record && response.message_record.record) {
                 console.log('包含record字段的message_record:', response.message_record.record);
-                messages = response.message_record.record;
+                messages = response.message_record.record.map(item => ({
+                    ...item,
+                    time: item.time || new Date().toLocaleTimeString() // 尝试使用原始时间，否则使用当前时间
+                }));
             } else {
                 console.warn('未知的消息记录格式:', response.message_record);
             }
