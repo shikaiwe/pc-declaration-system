@@ -3,7 +3,8 @@ const API_URLS = {
     GET_USER_INFO: 'https://8.138.207.95/api/dashboard/get_user_info/',
     GET_HISTORY: 'https://8.138.207.95/api/dashboard/user_get_history_report/',
     GET_WORKER_REPORTS: 'https://8.138.207.95/api/dashboard/worker_get_report_list/',
-    GET_REPORT_OF_SAME_DAY: 'https://8.138.207.95/api/dashboard/get_report_of_same_day/'
+    GET_REPORT_OF_SAME_DAY: 'https://8.138.207.95/api/dashboard/get_report_of_same_day/',
+    GET_MESSAGE_RECORD: 'https://8.138.207.95/api/message_board/get_message_record/'
 };
 
 // WebSocket配置
@@ -191,7 +192,7 @@ function clearMessageList() {
 }
 
 // 初始化WebSocket连接
-function initWebSocket(reportId) {
+async function initWebSocket(reportId) {
     if (!reportId) {
         console.error('reportId不能为空');
         return;
@@ -226,12 +227,23 @@ function initWebSocket(reportId) {
             }
         }, 10000); // 10秒超时
 
-        ws.onopen = function() {
+        ws.onopen = async function() {
             clearTimeout(connectionTimeout);
             console.log(`订单 ${reportId} 的WebSocket连接已建立`);
             const messageList = document.getElementById('messageList');
             messageList.innerHTML += '<div class="system-message">已连接到聊天室</div>';
             wsConnections.set(reportId, ws);
+
+            // 加载历史消息
+            const historyMessages = await fetchMessageHistory(reportId);
+            if (historyMessages.length > 0) {
+                messageList.innerHTML += '<div class="system-message">正在加载历史消息...</div>';
+                historyMessages.forEach(message => {
+                    message.time = new Date().toLocaleTimeString();
+                    appendMessage(message);
+                });
+                messageList.innerHTML += '<div class="system-message">历史消息加载完成</div>';
+            }
         };
 
         ws.onmessage = function(event) {
@@ -488,11 +500,50 @@ function closeAllConnections() {
     currentReportId = null;
 }
 
+// 获取历史消息记录
+async function fetchMessageHistory(reportId) {
+    try {
+        const response = await $.ajax({
+            url: API_URLS.GET_MESSAGE_RECORD,
+            method: 'POST',
+            data: JSON.stringify({ reportId: reportId }),
+            contentType: 'application/json',
+            xhrFields: {
+                withCredentials: true
+            }
+        });
+
+        if (response.message === 'Success' && response.message_record && response.message_record.record) {
+            return response.message_record.record;
+        } else {
+            console.log('没有历史消息记录');
+            return [];
+        }
+    } catch (error) {
+        console.error('获取历史消息记录失败:', error);
+        if (error.status === 401) {
+            if (error.responseJSON && error.responseJSON.message === 'Session has expired') {
+                window.location.href = '../html/login.html';
+            } else {
+                alert('会话无效，请重新登录');
+                window.location.href = '../html/login.html';
+            }
+        } else if (error.status === 400 && error.responseJSON && error.responseJSON.message === 'No sessionid cookie') {
+            alert('未找到会话信息，请重新登录');
+            window.location.href = '../html/login.html';
+        } else {
+            alert('获取历史消息记录失败，请稍后重试');
+        }
+        return [];
+    }
+}
+
 // 导出模块
 export default {
     initMessageBoard,
     initWebSocket,
     sendMessage,
     fetchOrders,
+    fetchMessageHistory,
     isInitialized: false
 };
