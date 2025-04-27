@@ -595,45 +595,59 @@ async function fetchMessageHistory(reportId) {
                         time: item.time || new Date().toLocaleTimeString() // 尝试使用原始时间，如果有的话
                     };
                     
+                    // 处理嵌套的消息结构
+                    const processNestedMessage = (data) => {
+                        try {
+                            // 如果是字符串，尝试解析为对象
+                            if (typeof data === 'string') {
+                                // 替换单引号为双引号以便 JSON.parse
+                                const jsonStr = data.replace(/'/g, '"');
+                                try {
+                                    const parsed = JSON.parse(jsonStr);
+                                    return processNestedMessage(parsed);
+                                } catch (e) {
+                                    console.error('解析JSON字符串失败:', e, data);
+                                    return { message: data };
+                                }
+                            }
+                            
+                            // 如果已经是对象
+                            if (data && typeof data === 'object') {
+                                // 检查是否有message字段且是对象
+                                if (data.message && typeof data.message === 'object') {
+                                    // 递归处理嵌套的message对象
+                                    const nestedResult = processNestedMessage(data.message);
+                                    return {
+                                        username: data.username || nestedResult.username,
+                                        message: nestedResult.message,
+                                        time: data.time || nestedResult.time
+                                    };
+                                } else {
+                                    // 直接返回对象字段
+                                    return {
+                                        username: data.username || '',
+                                        message: data.message || '',
+                                        time: data.time || ''
+                                    };
+                                }
+                            }
+                            
+                            // 默认情况下返回原始数据
+                            return { message: String(data) };
+                        } catch (error) {
+                            console.error('处理嵌套消息失败:', error, data);
+                            return { message: '无法解析的消息内容' };
+                        }
+                    };
+                    
                     // 检查是否存在messageg字段（可能是拼写错误）
                     if (item.messageg) {
                         try {
-                            // 尝试解析messageg字段
-                            let parsedMessage = item.messageg;
-                            // 如果messageg是JSON字符串，则解析
-                            if (typeof parsedMessage === 'string' && parsedMessage.startsWith('{')) {
-                                try {
-                                    const parsed = JSON.parse(parsedMessage.replace(/'/g, '"'));
-                                    msgObj.username = parsed.username || item.username;
-                                    msgObj.message = parsed.message || '无法解析的消息';
-                                    // 如果解析出的对象有时间信息，使用该时间
-                                    if (parsed.time) {
-                                        msgObj.time = parsed.time;
-                                    }
-                                } catch (e) {
-                                    console.error('解析messageg失败:', e);
-                                    // 尝试从字符串中提取信息
-                                    if (parsedMessage.includes("'message':")) {
-                                        const msgMatch = parsedMessage.match(/'message':\s*'([^']*)'/) || 
-                                                    parsedMessage.match(/'message':\s*"([^"]*)"/) ||
-                                                    parsedMessage.match(/'message':\s*([^,}]*)/);
-                                        if (msgMatch && msgMatch[1]) {
-                                            msgObj.message = msgMatch[1];
-                                        }
-                                    }
-                                    
-                                    // 尝试提取时间信息
-                                    if (parsedMessage.includes("'time':")) {
-                                        const timeMatch = parsedMessage.match(/'time':\s*'([^']*)'/) || 
-                                                     parsedMessage.match(/'time':\s*"([^"]*)"/) ||
-                                                     parsedMessage.match(/'time':\s*([^,}]*)/);
-                                        if (timeMatch && timeMatch[1]) {
-                                            msgObj.time = timeMatch[1];
-                                        }
-                                    }
-                                }
-                            } else {
-                                msgObj.message = item.messageg;
+                            const result = processNestedMessage(item.messageg);
+                            msgObj.username = result.username || item.username;
+                            msgObj.message = result.message || '无法解析的消息';
+                            if (result.time) {
+                                msgObj.time = result.time;
                             }
                         } catch (parseError) {
                             console.error('处理消息时出错:', parseError);
@@ -641,20 +655,66 @@ async function fetchMessageHistory(reportId) {
                         }
                     } else if (item.message) {
                         // 正常的message字段
-                        msgObj.message = item.message;
+                        try {
+                            const result = processNestedMessage(item.message);
+                            msgObj.message = result.message || item.message;
+                            if (result.time) {
+                                msgObj.time = result.time;
+                            }
+                        } catch (error) {
+                            msgObj.message = item.message;
+                        }
                     } else {
                         console.warn('消息缺少必要字段:', item);
                         return null;
+                    }
+                    
+                    // 格式化时间
+                    if (msgObj.time && msgObj.time.includes('T')) {
+                        try {
+                            // 如果是ISO格式时间，转换为本地时间字符串
+                            const date = new Date(msgObj.time);
+                            if (!isNaN(date)) {
+                                msgObj.time = date.toLocaleTimeString('zh-CN', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    hour12: false
+                                });
+                            }
+                        } catch (e) {
+                            console.warn('时间格式化失败:', e);
+                        }
                     }
                     
                     return msgObj;
                 }).filter(msg => msg !== null);
             } else if (response.message_record && response.message_record.record) {
                 console.log('包含record字段的message_record:', response.message_record.record);
-                messages = response.message_record.record.map(item => ({
-                    ...item,
-                    time: item.time || new Date().toLocaleTimeString() // 尝试使用原始时间，否则使用当前时间
-                }));
+                messages = response.message_record.record.map(item => {
+                    const msg = { ...item };
+                    
+                    // 格式化时间
+                    if (msg.time && msg.time.includes('T')) {
+                        try {
+                            const date = new Date(msg.time);
+                            if (!isNaN(date)) {
+                                msg.time = date.toLocaleTimeString('zh-CN', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    hour12: false
+                                });
+                            }
+                        } catch (e) {
+                            console.warn('时间格式化失败:', e);
+                        }
+                    } else if (!msg.time) {
+                        msg.time = new Date().toLocaleTimeString();
+                    }
+                    
+                    return msg;
+                });
             } else {
                 console.warn('未知的消息记录格式:', response.message_record);
             }
