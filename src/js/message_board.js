@@ -19,6 +19,30 @@ let currentUser = null;
 let currentUserRole = null; // 存储用户角色
 let currentOrders = []; // 存储当前订单列表
 
+// 消息存储
+const messageStorage = {
+    // 存储所有订单的消息记录
+    messages: new Map(),
+
+    // 添加消息到存储
+    addMessage(reportId, message) {
+        if (!this.messages.has(reportId)) {
+            this.messages.set(reportId, []);
+        }
+        this.messages.get(reportId).push(message);
+    },
+
+    // 获取订单的所有消息
+    getMessages(reportId) {
+        return this.messages.get(reportId) || [];
+    },
+
+    // 清空订单的消息
+    clearMessages(reportId) {
+        this.messages.delete(reportId);
+    }
+};
+
 // 获取历史订单
 async function fetchOrders() {
     try {
@@ -189,6 +213,9 @@ function updateOrderSelector(orders) {
 function clearMessageList() {
     const messageList = document.getElementById('messageList');
     messageList.innerHTML = '';
+    if (currentReportId) {
+        messageStorage.clearMessages(currentReportId);
+    }
 }
 
 // 初始化WebSocket连接
@@ -235,14 +262,24 @@ async function initWebSocket(reportId) {
             wsConnections.set(reportId, ws);
 
             // 加载历史消息
-            const historyMessages = await fetchMessageHistory(reportId);
-            if (historyMessages.length > 0) {
-                messageList.innerHTML += '<div class="system-message">正在加载历史消息...</div>';
-                historyMessages.forEach(message => {
-                    message.time = new Date().toLocaleTimeString();
-                    appendMessage(message);
-                });
-                messageList.innerHTML += '<div class="system-message">历史消息加载完成</div>';
+            try {
+                const historyMessages = await fetchMessageHistory(reportId);
+                if (historyMessages.length > 0) {
+                    messageList.innerHTML += '<div class="system-message">正在加载历史消息...</div>';
+                    // 清空现有消息
+                    messageList.innerHTML = '';
+                    // 添加历史消息
+                    historyMessages.forEach(message => {
+                        message.time = new Date().toLocaleTimeString();
+                        appendMessage(message);
+                    });
+                    messageList.innerHTML += '<div class="system-message">历史消息加载完成</div>';
+                } else {
+                    messageList.innerHTML += '<div class="system-message">暂无历史消息</div>';
+                }
+            } catch (error) {
+                console.error('加载历史消息失败:', error);
+                messageList.innerHTML += '<div class="system-message error">加载历史消息失败</div>';
             }
         };
 
@@ -289,6 +326,11 @@ function appendMessage(message) {
     // }
     const messageList = document.getElementById('messageList');
     const now = new Date();
+
+    // 存储消息
+    if (currentReportId) {
+        messageStorage.addMessage(currentReportId, message);
+    }
 
     // 检查是否需要添加新的时间戳
     const lastTimeDiv = messageList.querySelector('.message-time:last-of-type');
@@ -455,10 +497,28 @@ async function initMessageBoard() {
     updateOrderSelector(orders);
 
     // 订单选择器变化事件
-    orderSelector.addEventListener('change', function() {
+    orderSelector.addEventListener('change', async function() {
         const selectedReportId = this.value;
         if (selectedReportId) {
             clearMessageList();
+            // 先加载历史消息
+            try {
+                const historyMessages = await fetchMessageHistory(selectedReportId);
+                if (historyMessages.length > 0) {
+                    const messageList = document.getElementById('messageList');
+                    messageList.innerHTML += '<div class="system-message">正在加载历史消息...</div>';
+                    historyMessages.forEach(message => {
+                        message.time = new Date().toLocaleTimeString();
+                        appendMessage(message);
+                    });
+                    messageList.innerHTML += '<div class="system-message">历史消息加载完成</div>';
+                }
+            } catch (error) {
+                console.error('加载历史消息失败:', error);
+                const messageList = document.getElementById('messageList');
+                messageList.innerHTML += '<div class="system-message error">加载历史消息失败</div>';
+            }
+            // 然后建立WebSocket连接
             initWebSocket(selectedReportId);
             // 定期清理无效连接
             cleanupConnections();
