@@ -292,7 +292,12 @@ async function initWebSocket(reportId) {
             try {
                 const data = JSON.parse(event.data);
                 var message = data.message;
-                message['time'] = new Date().toLocaleTimeString();
+                console.log('接收到WebSocket消息:', message);
+                
+                // 确保时间字段使用原始时间或当前时间
+                if (!message.time) {
+                    message.time = new Date().toLocaleTimeString();
+                }
                 appendMessage(message);
             } catch (error) {
                 console.error('处理消息失败:', error);
@@ -569,6 +574,7 @@ function closeAllConnections() {
 // 获取历史消息记录
 async function fetchMessageHistory(reportId) {
     try {
+        console.log(`正在获取订单 ${reportId} 的历史消息...`);
         const response = await $.ajax({
             url: API_URLS.GET_MESSAGE_RECORD,
             method: 'POST',
@@ -579,24 +585,27 @@ async function fetchMessageHistory(reportId) {
             }
         });
 
-        console.log('原始API响应:', response); // 添加原始响应日志
+        console.log('原始API响应:', JSON.stringify(response, null, 2)); // 更详细的日志
 
         if (response.message === 'Success') {
             // 检查并处理不同的响应格式
             let messages = [];
             
             if (Array.isArray(response.message_record)) {
-                console.log('数组类型的message_record:', response.message_record);
+                console.log('数组类型的message_record:', JSON.stringify(response.message_record, null, 2));
                 messages = response.message_record.map(item => {
+                    console.log('处理消息项:', JSON.stringify(item, null, 2));
+                    
                     // 默认消息对象
                     let msgObj = {
                         username: item.username,
                         message: '',
-                        time: item.time || new Date().toLocaleTimeString() // 尝试使用原始时间，如果有的话
+                        time: null // 初始化为null，稍后再赋值
                     };
                     
                     // 处理嵌套的消息结构
                     const processNestedMessage = (data) => {
+                        console.log('处理嵌套消息:', typeof data, data);
                         try {
                             // 如果是字符串，尝试解析为对象
                             if (typeof data === 'string') {
@@ -604,6 +613,7 @@ async function fetchMessageHistory(reportId) {
                                 const jsonStr = data.replace(/'/g, '"');
                                 try {
                                     const parsed = JSON.parse(jsonStr);
+                                    console.log('解析JSON字符串成功:', parsed);
                                     return processNestedMessage(parsed);
                                 } catch (e) {
                                     console.error('解析JSON字符串失败:', e, data);
@@ -613,22 +623,29 @@ async function fetchMessageHistory(reportId) {
                             
                             // 如果已经是对象
                             if (data && typeof data === 'object') {
+                                console.log('处理对象类型消息:', data);
+                                
                                 // 检查是否有message字段且是对象
                                 if (data.message && typeof data.message === 'object') {
                                     // 递归处理嵌套的message对象
+                                    console.log('发现嵌套message对象:', data.message);
                                     const nestedResult = processNestedMessage(data.message);
-                                    return {
+                                    const result = {
                                         username: data.username || nestedResult.username,
                                         message: nestedResult.message,
                                         time: data.time || nestedResult.time
                                     };
+                                    console.log('处理嵌套message结果:', result);
+                                    return result;
                                 } else {
                                     // 直接返回对象字段
-                                    return {
+                                    const result = {
                                         username: data.username || '',
                                         message: data.message || '',
                                         time: data.time || ''
                                     };
+                                    console.log('直接使用对象字段:', result);
+                                    return result;
                                 }
                             }
                             
@@ -643,11 +660,15 @@ async function fetchMessageHistory(reportId) {
                     // 检查是否存在messageg字段（可能是拼写错误）
                     if (item.messageg) {
                         try {
+                            console.log('处理messageg字段:', item.messageg);
                             const result = processNestedMessage(item.messageg);
+                            console.log('messageg处理结果:', result);
+                            
                             msgObj.username = result.username || item.username;
                             msgObj.message = result.message || '无法解析的消息';
                             if (result.time) {
                                 msgObj.time = result.time;
+                                console.log('从messageg提取到时间:', result.time);
                             }
                         } catch (parseError) {
                             console.error('处理消息时出错:', parseError);
@@ -656,10 +677,14 @@ async function fetchMessageHistory(reportId) {
                     } else if (item.message) {
                         // 正常的message字段
                         try {
+                            console.log('处理message字段:', item.message);
                             const result = processNestedMessage(item.message);
+                            console.log('message处理结果:', result);
+                            
                             msgObj.message = result.message || item.message;
                             if (result.time) {
                                 msgObj.time = result.time;
+                                console.log('从message提取到时间:', result.time);
                             }
                         } catch (error) {
                             msgObj.message = item.message;
@@ -669,10 +694,35 @@ async function fetchMessageHistory(reportId) {
                         return null;
                     }
                     
+                    // 尝试从item直接获取时间
+                    if (!msgObj.time && item.time) {
+                        msgObj.time = item.time;
+                        console.log('从item直接获取时间:', item.time);
+                    }
+                    
+                    // 尝试从item.createTime获取时间
+                    if (!msgObj.time && item.createTime) {
+                        msgObj.time = item.createTime;
+                        console.log('从createTime获取时间:', item.createTime);
+                    }
+                    
+                    // 尝试从item.timestamp获取时间
+                    if (!msgObj.time && item.timestamp) {
+                        msgObj.time = new Date(item.timestamp).toISOString();
+                        console.log('从timestamp获取时间:', item.timestamp);
+                    }
+                    
+                    // 最后才使用当前时间作为后备
+                    if (!msgObj.time) {
+                        msgObj.time = new Date().toISOString();
+                        console.log('使用当前时间作为后备:', msgObj.time);
+                    }
+                    
                     // 格式化时间
-                    if (msgObj.time && msgObj.time.includes('T')) {
+                    if (msgObj.time) {
                         try {
-                            // 如果是ISO格式时间，转换为本地时间字符串
+                            console.log('格式化时间前:', msgObj.time);
+                            // 如果是ISO格式时间，转换为本地可读时间格式
                             const date = new Date(msgObj.time);
                             if (!isNaN(date)) {
                                 msgObj.time = date.toLocaleTimeString('zh-CN', {
@@ -681,22 +731,26 @@ async function fetchMessageHistory(reportId) {
                                     second: '2-digit',
                                     hour12: false
                                 });
+                                console.log('格式化时间后:', msgObj.time);
                             }
                         } catch (e) {
                             console.warn('时间格式化失败:', e);
                         }
                     }
                     
+                    console.log('最终处理结果:', msgObj);
                     return msgObj;
                 }).filter(msg => msg !== null);
             } else if (response.message_record && response.message_record.record) {
                 console.log('包含record字段的message_record:', response.message_record.record);
                 messages = response.message_record.record.map(item => {
+                    console.log('处理record项:', item);
                     const msg = { ...item };
                     
                     // 格式化时间
-                    if (msg.time && msg.time.includes('T')) {
+                    if (msg.time) {
                         try {
+                            console.log('record项原始时间:', msg.time);
                             const date = new Date(msg.time);
                             if (!isNaN(date)) {
                                 msg.time = date.toLocaleTimeString('zh-CN', {
@@ -705,12 +759,14 @@ async function fetchMessageHistory(reportId) {
                                     second: '2-digit',
                                     hour12: false
                                 });
+                                console.log('record项格式化后时间:', msg.time);
                             }
                         } catch (e) {
                             console.warn('时间格式化失败:', e);
                         }
                     } else if (!msg.time) {
                         msg.time = new Date().toLocaleTimeString();
+                        console.log('record项使用当前时间:', msg.time);
                     }
                     
                     return msg;
@@ -719,7 +775,7 @@ async function fetchMessageHistory(reportId) {
                 console.warn('未知的消息记录格式:', response.message_record);
             }
             
-            console.log('处理后的消息:', messages);
+            console.log('最终处理后的消息数组:', messages);
             return messages;
         } else {
             console.log('没有历史消息记录');
