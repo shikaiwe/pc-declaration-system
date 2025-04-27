@@ -270,14 +270,15 @@ async function initWebSocket(reportId) {
                     messageList.innerHTML += '<div class="system-message">正在加载历史消息...</div>';
                     // 清空现有消息
                     messageList.innerHTML = '';
-                    // 添加历史消息
+                    
+                    // 历史消息按从旧到新顺序排列，直接按数组顺序展示
                     historyMessages.forEach(message => {
                         console.log('正在显示消息:', message); // 添加调试日志
                         if (message.username && message.message) {
-                            // 不再覆盖原有的时间信息
                             appendMessage(message);
                         }
                     });
+                    
                     messageList.innerHTML += '<div class="system-message">历史消息加载完成</div>';
                 } else {
                     messageList.innerHTML += '<div class="system-message">暂无历史消息</div>';
@@ -516,10 +517,12 @@ async function initMessageBoard() {
                 if (historyMessages.length > 0) {
                     const messageList = document.getElementById('messageList');
                     messageList.innerHTML += '<div class="system-message">正在加载历史消息...</div>';
+                    
+                    // 历史消息按从旧到新顺序排列，直接按数组顺序展示
                     historyMessages.forEach(message => {
-                        // 不再覆盖原有的时间信息
                         appendMessage(message);
                     });
+                    
                     messageList.innerHTML += '<div class="system-message">历史消息加载完成</div>';
                 }
             } catch (error) {
@@ -797,7 +800,7 @@ async function fetchMessageHistory(reportId) {
                 console.warn('未知的消息记录格式:', response.message_record);
             }
             
-            // 按原始时间排序
+            // 按原始时间排序（较早的消息在前）
             messages.sort((a, b) => {
                 if (a.originalTime && b.originalTime) {
                     return new Date(a.originalTime) - new Date(b.originalTime);
