@@ -579,10 +579,76 @@ async function fetchMessageHistory(reportId) {
             }
         });
 
-        console.log('获取到的历史消息:', response); // 添加调试日志
+        console.log('原始API响应:', response); // 添加原始响应日志
 
-        if (response.message === 'Success' && response.message_record && response.message_record.record) {
-            return response.message_record.record;
+        if (response.message === 'Success') {
+            // 检查并处理不同的响应格式
+            let messages = [];
+            
+            if (Array.isArray(response.message_record)) {
+                console.log('数组类型的message_record:', response.message_record);
+                messages = response.message_record.map(item => {
+                    // 检查是否存在messageg字段（可能是拼写错误）
+                    if (item.messageg) {
+                        try {
+                            // 尝试解析messageg字段
+                            let parsedMessage = item.messageg;
+                            // 如果messageg是JSON字符串，则解析
+                            if (typeof parsedMessage === 'string' && parsedMessage.startsWith('{')) {
+                                try {
+                                    const msgObj = JSON.parse(parsedMessage.replace(/'/g, '"'));
+                                    return {
+                                        username: msgObj.username || item.username,
+                                        message: msgObj.message || '无法解析的消息'
+                                    };
+                                } catch (e) {
+                                    console.error('解析messageg失败:', e);
+                                    // 尝试从字符串中提取信息
+                                    if (parsedMessage.includes("'message':")) {
+                                        const msgMatch = parsedMessage.match(/'message':\s*'([^']*)'/) || 
+                                                    parsedMessage.match(/'message':\s*"([^"]*)"/) ||
+                                                    parsedMessage.match(/'message':\s*([^,}]*)/);
+                                        if (msgMatch && msgMatch[1]) {
+                                            return {
+                                                username: item.username,
+                                                message: msgMatch[1]
+                                            };
+                                        }
+                                    }
+                                }
+                            }
+                            // 如果无法解析，则使用默认值
+                            return {
+                                username: item.username,
+                                message: item.messageg
+                            };
+                        } catch (parseError) {
+                            console.error('处理消息时出错:', parseError);
+                            return {
+                                username: item.username,
+                                message: '无法解析的消息内容'
+                            };
+                        }
+                    } else if (item.message) {
+                        // 正常的message字段
+                        return {
+                            username: item.username,
+                            message: item.message
+                        };
+                    } else {
+                        console.warn('消息缺少必要字段:', item);
+                        return null;
+                    }
+                }).filter(msg => msg !== null);
+            } else if (response.message_record && response.message_record.record) {
+                console.log('包含record字段的message_record:', response.message_record.record);
+                messages = response.message_record.record;
+            } else {
+                console.warn('未知的消息记录格式:', response.message_record);
+            }
+            
+            console.log('处理后的消息:', messages);
+            return messages;
         } else {
             console.log('没有历史消息记录');
             return [];
