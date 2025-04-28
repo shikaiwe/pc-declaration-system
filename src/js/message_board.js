@@ -238,12 +238,10 @@ async function fetchMessageHistory(reportId) {
             let messages = [];
 
             if (Array.isArray(response.message_record)) {
-                console.log('处理消息记录数组:', response.message_record);
                 messages = response.message_record.map(item => {
                     try {
                         // 解析message字段中的JSON字符串
                         const messageData = JSON.parse(item.message.replace(/'/g, '"'));
-
                         // 构建消息对象
                         const msgObj = {
                             username: messageData.username || item.username,
@@ -251,8 +249,6 @@ async function fetchMessageHistory(reportId) {
                             time: item.date,
                             displayTime: item.date
                         };
-
-                        console.log('处理后的消息对象:', msgObj);
                         return msgObj;
                     } catch (error) {
                         console.error('解析消息失败:', error, item);
