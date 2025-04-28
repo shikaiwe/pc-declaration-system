@@ -29,7 +29,15 @@ const messageStorage = {
         if (!this.messages.has(reportId)) {
             this.messages.set(reportId, []);
         }
-        this.messages.get(reportId).push(message);
+        // 检查是否已存在相同的消息
+        const existingMessages = this.messages.get(reportId);
+        const isDuplicate = existingMessages.some(existing =>
+            existing.message === message.message &&
+            existing.time === message.time
+        );
+        if (!isDuplicate) {
+            this.messages.get(reportId).push(message);
+        }
     },
 
     // 获取订单的所有消息
@@ -222,18 +230,38 @@ function updateOrderSelector(orders) {
 // 清空消息列表
 function clearMessageList() {
     const messageList = document.getElementById('messageList');
-    messageList.innerHTML = '';
+    if (messageList) {
+        messageList.innerHTML = '';
+    }
 }
 
 // 显示订单消息
 function displayOrderMessages(reportId) {
     const messageList = document.getElementById('messageList');
-    clearMessageList(); // 只清空显示，不清空存储
+    clearMessageList(); // 清空显示
+
+    // 如果没有选择订单，直接返回
+    if (!reportId) {
+        return;
+    }
 
     const messages = messageStorage.getMessages(reportId);
     if (messages && messages.length > 0) {
-        messages.forEach(message => {
-            appendMessage(message);
+        // 按时间排序
+        const sortedMessages = [...messages].sort((a, b) => {
+            return new Date(a.time) - new Date(b.time);
+        });
+
+        // 使用Set来跟踪已显示的消息，避免重复
+        const displayedMessages = new Set();
+
+        sortedMessages.forEach(message => {
+            // 使用消息内容和时间创建唯一标识
+            const messageId = `${message.message}-${message.time}`;
+            if (!displayedMessages.has(messageId)) {
+                appendMessage(message);
+                displayedMessages.add(messageId);
+            }
         });
     }
 }
@@ -580,19 +608,23 @@ async function initMessageBoard() {
     orderSelector.addEventListener('change', async function() {
         const selectedReportId = this.value;
         if (selectedReportId) {
-            // 先显示已存储的消息（如果有）
-            displayOrderMessages(selectedReportId);
+            // 先清空消息列表
+            clearMessageList();
 
             // 如果该订单没有历史消息，则获取
             if (!messageStorage.hasMessages(selectedReportId)) {
                 try {
-                    await fetchMessageHistory(selectedReportId);
+                    const messages = await fetchMessageHistory(selectedReportId);
+                    // 显示消息
                     displayOrderMessages(selectedReportId);
                 } catch (error) {
                     console.error('加载历史消息失败:', error);
                     const messageList = document.getElementById('messageList');
-                    messageList.innerHTML += '<div class="system-message error">加载历史消息失败</div>';
+                    messageList.innerHTML = '<div class="system-message error">加载历史消息失败</div>';
                 }
+            } else {
+                // 如果已有消息，直接显示
+                displayOrderMessages(selectedReportId);
             }
 
             // 建立WebSocket连接
@@ -600,7 +632,7 @@ async function initMessageBoard() {
             // 定期清理无效连接
             cleanupConnections();
         } else {
-            // 如果没有选择订单，清空显示但不删除存储的消息
+            // 如果没有选择订单，清空显示
             clearMessageList();
             closeAllConnections();
         }
