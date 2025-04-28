@@ -40,6 +40,16 @@ const messageStorage = {
     // 清空订单的消息
     clearMessages(reportId) {
         this.messages.delete(reportId);
+    },
+
+    // 获取所有订单的消息
+    getAllMessages() {
+        return this.messages;
+    },
+
+    // 检查订单是否有消息
+    hasMessages(reportId) {
+        return this.messages.has(reportId) && this.messages.get(reportId).length > 0;
     }
 };
 
@@ -213,8 +223,18 @@ function updateOrderSelector(orders) {
 function clearMessageList() {
     const messageList = document.getElementById('messageList');
     messageList.innerHTML = '';
-    if (currentReportId) {
-        messageStorage.clearMessages(currentReportId);
+}
+
+// 显示订单消息
+function displayOrderMessages(reportId) {
+    const messageList = document.getElementById('messageList');
+    clearMessageList(); // 只清空显示，不清空存储
+
+    const messages = messageStorage.getMessages(reportId);
+    if (messages && messages.length > 0) {
+        messages.forEach(message => {
+            appendMessage(message);
+        });
     }
 }
 
@@ -232,24 +252,19 @@ async function fetchMessageHistory(reportId) {
             }
         });
 
-        console.log('原始API响应:', JSON.stringify(response, null, 2));
-
         if (response.message === 'Success') {
             let messages = [];
 
             if (Array.isArray(response.message_record)) {
                 messages = response.message_record.map(item => {
                     try {
-                        // 解析message字段中的JSON字符串
                         const messageData = JSON.parse(item.message.replace(/'/g, '"'));
-                        // 构建消息对象
-                        const msgObj = {
+                        return {
                             username: messageData.username || item.username,
                             message: messageData.message,
                             time: item.date,
                             displayTime: item.date
                         };
-                        return msgObj;
                     } catch (error) {
                         console.error('解析消息失败:', error, item);
                         return null;
@@ -257,7 +272,7 @@ async function fetchMessageHistory(reportId) {
                 }).filter(msg => msg !== null);
             }
 
-            // 按时间排序（较早的消息在前）
+            // 按时间排序
             messages.sort((a, b) => {
                 if (a.time && b.time) {
                     return new Date(a.time) - new Date(b.time);
@@ -265,7 +280,11 @@ async function fetchMessageHistory(reportId) {
                 return 0;
             });
 
-            console.log('最终处理后的消息数组:', messages);
+            // 将历史消息添加到存储中
+            messages.forEach(message => {
+                messageStorage.addMessage(reportId, message);
+            });
+
             return messages;
         } else {
             console.log('没有历史消息记录');
@@ -561,27 +580,27 @@ async function initMessageBoard() {
     orderSelector.addEventListener('change', async function() {
         const selectedReportId = this.value;
         if (selectedReportId) {
-            clearMessageList();
-            // 先加载历史消息
-            try {
-                const historyMessages = await fetchMessageHistory(selectedReportId);
-                if (historyMessages.length > 0) {
-                    // 历史消息按从旧到新顺序排列，直接按数组顺序展示
-                    historyMessages.forEach(message => {
-                        appendMessage(message);
-                    });
+            // 先显示已存储的消息（如果有）
+            displayOrderMessages(selectedReportId);
+
+            // 如果该订单没有历史消息，则获取
+            if (!messageStorage.hasMessages(selectedReportId)) {
+                try {
+                    await fetchMessageHistory(selectedReportId);
+                    displayOrderMessages(selectedReportId);
+                } catch (error) {
+                    console.error('加载历史消息失败:', error);
+                    const messageList = document.getElementById('messageList');
+                    messageList.innerHTML += '<div class="system-message error">加载历史消息失败</div>';
                 }
-            } catch (error) {
-                console.error('加载历史消息失败:', error);
-                const messageList = document.getElementById('messageList');
-                messageList.innerHTML += '<div class="system-message error">加载历史消息失败</div>';
             }
-            // 然后建立WebSocket连接
+
+            // 建立WebSocket连接
             initWebSocket(selectedReportId);
             // 定期清理无效连接
             cleanupConnections();
         } else {
-            // 如果没有选择订单，清空消息列表并关闭所有连接
+            // 如果没有选择订单，清空显示但不删除存储的消息
             clearMessageList();
             closeAllConnections();
         }
