@@ -394,7 +394,21 @@ function appendMessage(message) {
     if (!lastMessageTime || now - new Date(lastMessageTime) > 5 * 60 * 1000) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'message-time';
-        timeDiv.textContent = messageTime || now.toLocaleTimeString('zh-CN', {
+
+        // 格式化时间为小时:分钟
+        let formattedTime = '';
+        if (messageTime) {
+            const date = new Date(messageTime);
+            if (!isNaN(date.getTime())) {
+                formattedTime = date.toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            }
+        }
+
+        timeDiv.textContent = formattedTime || now.toLocaleTimeString('zh-CN', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false
