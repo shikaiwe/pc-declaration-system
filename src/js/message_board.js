@@ -295,20 +295,12 @@ async function fetchMessageHistory(reportId) {
             let messages = [];
 
             if (Array.isArray(response.message_record)) {
-                messages = response.message_record.map(item => {
-                    try {
-                        const messageData = JSON.parse(item.message.replace(/'/g, '"'));
-                        return {
-                            username: messageData.username || item.username,
-                            message: messageData.message,
-                            time: item.date,
-                            displayTime: item.date
-                        };
-                    } catch (error) {
-                        console.error('解析消息失败:', error, item);
-                        return null;
-                    }
-                }).filter(msg => msg !== null);
+                messages = response.message_record.map(item => ({
+                    username: item.username,
+                    message: item.message,
+                    time: item.date,
+                    displayTime: item.date
+                }));
             }
 
             // 按时间排序
