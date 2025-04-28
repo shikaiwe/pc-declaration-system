@@ -566,15 +566,10 @@ async function initMessageBoard() {
             try {
                 const historyMessages = await fetchMessageHistory(selectedReportId);
                 if (historyMessages.length > 0) {
-                    const messageList = document.getElementById('messageList');
-                    messageList.innerHTML += '<div class="system-message">正在加载历史消息...</div>';
-
                     // 历史消息按从旧到新顺序排列，直接按数组顺序展示
                     historyMessages.forEach(message => {
                         appendMessage(message);
                     });
-
-                    messageList.innerHTML += '<div class="system-message">历史消息加载完成</div>';
                 }
             } catch (error) {
                 console.error('加载历史消息失败:', error);
