@@ -241,8 +241,8 @@ async function fetchMessageHistory(reportId) {
                 console.log('处理消息记录数组:', response.message_record);
                 messages = response.message_record.map(item => {
                     try {
-                        // 解析messageg字段中的JSON字符串
-                        const messageData = JSON.parse(item.messageg.replace(/'/g, '"'));
+                        // 解析message字段中的JSON字符串
+                        const messageData = JSON.parse(item.message.replace(/'/g, '"'));
 
                         // 构建消息对象
                         const msgObj = {
