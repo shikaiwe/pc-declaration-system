@@ -27,27 +27,28 @@ const messageStorage = {
     // 添加消息到存储
     addMessage(reportId, message) {
         if (!this.messages.has(reportId)) {
-            this.messages.set(reportId, []);
+            this.messages.set(reportId, new Map());
         }
-        // 检查是否已存在相同的消息
-        const existingMessages = this.messages.get(reportId);
-        const isDuplicate = existingMessages.some(existing =>
-            existing.message === message.message &&
-            existing.time === message.time
-        );
-        if (!isDuplicate) {
-            this.messages.get(reportId).push(message);
+        // 使用消息内容和时间创建唯一标识
+        const messageId = `${message.message}-${message.time}`;
+        if (!this.messages.get(reportId).has(messageId)) {
+            this.messages.get(reportId).set(messageId, message);
         }
     },
 
     // 获取订单的所有消息
     getMessages(reportId) {
-        return this.messages.get(reportId) || [];
+        if (!this.messages.has(reportId)) {
+            return [];
+        }
+        return Array.from(this.messages.get(reportId).values());
     },
 
     // 清空订单的消息
     clearMessages(reportId) {
-        this.messages.delete(reportId);
+        if (this.messages.has(reportId)) {
+            this.messages.get(reportId).clear();
+        }
     },
 
     // 获取所有订单的消息
@@ -57,7 +58,7 @@ const messageStorage = {
 
     // 检查订单是否有消息
     hasMessages(reportId) {
-        return this.messages.has(reportId) && this.messages.get(reportId).length > 0;
+        return this.messages.has(reportId) && this.messages.get(reportId).size > 0;
     }
 };
 
@@ -252,16 +253,26 @@ function displayOrderMessages(reportId) {
             return new Date(a.time) - new Date(b.time);
         });
 
-        // 使用Set来跟踪已显示的消息，避免重复
-        const displayedMessages = new Set();
-
+        let lastDisplayTime = null;
         sortedMessages.forEach(message => {
-            // 使用消息内容和时间创建唯一标识
-            const messageId = `${message.message}-${message.time}`;
-            if (!displayedMessages.has(messageId)) {
-                appendMessage(message);
-                displayedMessages.add(messageId);
+            // 检查是否需要显示新的时间戳
+            const currentTime = new Date(message.time);
+            const showTimeStamp = !lastDisplayTime ||
+                (currentTime - lastDisplayTime > 5 * 60 * 1000); // 5分钟间隔显示时间戳
+
+            if (showTimeStamp) {
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'message-time';
+                timeDiv.textContent = currentTime.toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+                messageList.appendChild(timeDiv);
+                lastDisplayTime = currentTime;
             }
+
+            appendMessage(message);
         });
     }
 }
@@ -389,9 +400,12 @@ async function initWebSocket(reportId) {
 
                 // 确保时间字段使用原始时间或当前时间
                 if (!message.time) {
-                    message.time = new Date().toLocaleTimeString();
+                    message.time = new Date().toISOString();
                 }
-                appendMessage(message);
+
+                // 添加到存储并显示
+                messageStorage.addMessage(reportId, message);
+                displayOrderMessages(reportId);
             } catch (error) {
                 console.error('处理消息失败:', error);
             }
