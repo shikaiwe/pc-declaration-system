@@ -413,7 +413,8 @@ function appendMessage(message) {
             minute: '2-digit',
             hour12: false
         });
-        timeDiv.setAttribute('data-time', message.originalTime || now.toISOString());
+        // 保存完整的时间戳到data-time属性
+        timeDiv.setAttribute('data-time', message.originalTime || message.time || now.toISOString());
         messageList.appendChild(timeDiv);
     }
 
@@ -503,22 +504,13 @@ function sendMessage() {
         // 构造消息对象
         const messageObj = {
             type: 'chat_message',
-            message: message
+            message: message,
+            time: new Date().toISOString(), // 保存完整的时间戳
+            originalTime: new Date().toISOString() // 保存原始时间戳
         };
 
         // 发送消息
         ws.send(JSON.stringify(messageObj));
-
-        // // 立即在本地显示消息
-        // appendMessage({
-        //     username: currentUser,
-        //     message: message,
-        //     time: new Date().toLocaleTimeString()
-        // });
-        // console.log({
-        //     username: currentUser,
-        //     message: message,
-        // })
 
         // 清空输入框
         messageInput.value = '';
