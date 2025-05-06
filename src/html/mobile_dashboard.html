@@ -1908,34 +1908,40 @@
         
         .message-item.sent .message-bubble {
             background-color: #95ec69;
-            margin-right: 8px;  /* 从12px减小到8px */
+            margin-right: 8px;
+            /* 从12px减小到8px */
             border-radius: 4px 0 4px 4px;
         }
         
         .message-item.sent .message-bubble::before {
             content: '';
             position: absolute;
-            right: -8px;  /* 从-12px改为-8px */
+            right: -8px;
+            /* 从-12px改为-8px */
             top: 50%;
             transform: translateY(-50%);
-            border: 4px solid transparent;  /* 从6px减小到4px，使尖角更小巧 */
+            border: 4px solid transparent;
+            /* 从6px减小到4px，使尖角更小巧 */
             border-left-color: #95ec69;
             border-top: none;
         }
         
         .message-item.received .message-bubble {
             background-color: #fff;
-            margin-left: 8px;  /* 从12px减小到8px */
+            margin-left: 8px;
+            /* 从12px减小到8px */
             border-radius: 0 4px 4px 4px;
         }
         
         .message-item.received .message-bubble::before {
             content: '';
             position: absolute;
-            left: -8px;  /* 从-12px改为-8px */
+            left: -8px;
+            /* 从-12px改为-8px */
             top: 50%;
             transform: translateY(-50%);
-            border: 4px solid transparent;  /* 从6px减小到4px，使尖角更小巧 */
+            border: 4px solid transparent;
+            /* 从6px减小到4px，使尖角更小巧 */
             border-right-color: #fff;
             border-top: none;
         }
@@ -2028,7 +2034,8 @@
             }
             .message-item.received .message-bubble::before {
                 border-right-color: #2a2a2a;
-                border-top: none;  /* 移除上边框 */
+                border-top: none;
+                /* 移除上边框 */
             }
             .message-item.sent .message-bubble {
                 background-color: #07c160;
@@ -2036,7 +2043,8 @@
             }
             .message-item.sent .message-bubble::before {
                 border-left-color: #07c160;
-                border-top: none;  /* 移除上边框 */
+                border-top: none;
+                /* 移除上边框 */
             }
             .message-input {
                 background-color: #1f1f1f;
@@ -2332,8 +2340,7 @@
     <script>
         // 配置
         const CONFIG = {
-            ip: '8.138.207.95',
-            baseUrl: 'https://8.138.207.95/api',
+            baseUrl: `https://8.134.179.34/api`,
             weatherApiKey: null
         };
 
@@ -4528,15 +4535,12 @@
     </script>
     <!-- 添加assign_order.js模块引入 -->
     <script type="module">
-        import AssignOrder from '../js/assign_order.js'; 
-        window.AssignOrder = AssignOrder;
+        import AssignOrder from '../js/assign_order.js'; window.AssignOrder = AssignOrder;
     </script>
 
     <!-- 引入留言板模块 -->
     <script type="module">
-        import messageBoard from '../js/message_board.js'; 
-        window.messageBoard = messageBoard;
-        // 不在这里直接初始化，而是在点击留言板卡片时初始化
+        import messageBoard from '../js/message_board.js'; window.messageBoard = messageBoard; // 不在这里直接初始化，而是在点击留言板卡片时初始化
     </script>
 </body>
 

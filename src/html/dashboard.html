@@ -2432,8 +2432,8 @@
             overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
-        
         /* 顶部标题栏 */
+        
         .chat-header {
             height: 50px;
             background-color: #f5f5f5;
@@ -2445,16 +2445,16 @@
             color: #000;
             font-weight: 500;
         }
-        
         /* 消息列表区域 */
+        
         .message-list {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
             background-color: #f5f5f7;
         }
-        
         /* 自定义滚动条 */
+        
         .message-list::-webkit-scrollbar {
             width: 8px;
         }
@@ -2471,16 +2471,16 @@
         .message-list::-webkit-scrollbar-thumb:hover {
             background-color: rgba(0, 0, 0, 0.2);
         }
-        
         /* 消息时间 */
+        
         .message-time {
             text-align: center;
             margin: 10px 0;
             font-size: 12px;
             color: #b2b2b2;
         }
-        
         /* 消息项 */
+        
         .message-item {
             display: flex;
             margin-bottom: 20px;
@@ -2492,8 +2492,8 @@
             flex-direction: row-reverse;
             justify-content: flex-start;
         }
-        
         /* 头像 */
+        
         .avatar {
             width: 40px;
             height: 40px;
@@ -2507,8 +2507,8 @@
             color: #fff;
             flex-shrink: 0;
         }
-        
         /* 用户名 */
+        
         .message-username {
             font-size: 12px;
             color: #999;
@@ -2524,8 +2524,8 @@
         .message-item.sent .message-username {
             display: none;
         }
-        
         /* 消息气泡 */
+        
         .message-bubble {
             max-width: 60%;
             padding: 10px 16px;
@@ -2538,39 +2538,45 @@
         
         .message-item.sent .message-bubble {
             background-color: #95ec69;
-            margin-right: 8px;  /* 从12px减小到8px */
+            margin-right: 8px;
+            /* 从12px减小到8px */
             border-radius: 4px 0 4px 4px;
         }
         
         .message-item.sent .message-bubble::before {
             content: '';
             position: absolute;
-            right: -8px;  /* 从-12px改为-8px */
+            right: -8px;
+            /* 从-12px改为-8px */
             top: 50%;
             transform: translateY(-50%);
-            border: 4px solid transparent;  /* 从6px减小到4px，使尖角更小巧 */
+            border: 4px solid transparent;
+            /* 从6px减小到4px，使尖角更小巧 */
             border-left-color: #95ec69;
             border-top: none;
         }
         
         .message-item.received .message-bubble {
             background-color: #fff;
-            margin-left: 8px;  /* 从12px减小到8px */
+            margin-left: 8px;
+            /* 从12px减小到8px */
             border-radius: 0 4px 4px 4px;
         }
         
         .message-item.received .message-bubble::before {
             content: '';
             position: absolute;
-            left: -8px;  /* 从-12px改为-8px */
+            left: -8px;
+            /* 从-12px改为-8px */
             top: 50%;
             transform: translateY(-50%);
-            border: 4px solid transparent;  /* 从6px减小到4px，使尖角更小巧 */
+            border: 4px solid transparent;
+            /* 从6px减小到4px，使尖角更小巧 */
             border-right-color: #fff;
             border-top: none;
         }
-        
         /* 底部输入区域 */
+        
         .message-input {
             background-color: #f5f5f5;
             border-top: 1px solid #d6d6d6;
@@ -2623,8 +2629,8 @@
             background-color: #9fd7b5;
             cursor: not-allowed;
         }
-        
         /* 订单选择器 */
+        
         .order-selector {
             padding: 12px 20px;
             background-color: #f5f5f5;
@@ -2646,8 +2652,8 @@
             border-color: #07c160;
             outline: none;
         }
-        
         /* 系统消息 */
+        
         .system-message {
             text-align: center;
             padding: 8px 12px;
@@ -2664,69 +2670,57 @@
             color: #fa5151;
             background-color: rgba(250, 81, 81, 0.1);
         }
-        
         /* 暗色模式 */
+        
         @media (prefers-color-scheme: dark) {
             .message-board {
                 background-color: #111;
             }
-        
             .chat-header {
                 background-color: #1f1f1f;
                 border-bottom-color: #2a2a2a;
                 color: #fff;
             }
-        
             .message-list {
                 background-color: #111;
             }
-        
             .message-time {
                 color: #666;
             }
-        
             .message-item.received .message-bubble {
                 background-color: #2a2a2a;
                 color: #fff;
             }
-        
             .message-item.received .message-bubble::before {
                 border-right-color: #2a2a2a;
                 border-top-color: #2a2a2a;
             }
-        
             .message-item.sent .message-bubble {
                 background-color: #07c160;
                 color: #fff;
             }
-        
             .message-item.sent .message-bubble::before {
                 border-left-color: #07c160;
                 border-top-color: #07c160;
             }
-        
             .message-input {
                 background-color: #1f1f1f;
                 border-top-color: #2a2a2a;
             }
-        
             .message-input textarea {
                 background-color: #2a2a2a;
                 border-color: #333;
                 color: #fff;
             }
-        
             .order-selector {
                 background-color: #1f1f1f;
                 border-bottom-color: #2a2a2a;
             }
-        
             .order-select {
                 background-color: #2a2a2a;
                 border-color: #333;
                 color: #fff;
             }
-        
             .system-message {
                 background-color: rgba(255, 255, 255, 0.1);
                 color: #666;
@@ -2948,7 +2942,7 @@
         <script>
             // 配置常量
             const CONFIG = {
-                baseUrl: 'https://8.138.207.95/api'
+                baseUrl: 'https://8.134.179.34/api'
             };
 
             // API 端点配置
