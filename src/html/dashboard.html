@@ -3941,7 +3941,6 @@
                             }
                         });
 
-                        console.log('Time picker initialized successfully');
                     } catch (error) {
                         console.error('Error initializing flatpickr:', error);
                     }
@@ -4349,8 +4348,7 @@
                 .done(function(data) {
                     if (data.message === 'Success') {
                         utils.ui.showMessage('订单已完成');
-                        console.log('订单完成，准备更新状态:', reportId); // 添加调试日志
-                        
+ 
                         // 先更新日历显示
                         updateCalendarEvent(reportId, '2');
                         
@@ -4394,7 +4392,7 @@
                 .done(function(data) {
                     if (data.message === 'Success') {
                         utils.ui.showMessage('订单已撤销');
-                        console.log('订单撤销，准备更新状态:', reportId); // 添加调试日志
+
                         
                         // 先更新日历显示
                         updateCalendarEvent(reportId, '3');
@@ -4473,8 +4471,6 @@
                             statusText = '未知状态';
                             statusClass = 'status-unknown';
                     }
-
-                    console.log('订单详情状态:', order.status, statusText, statusClass); // 添加调试日志
 
                     orderDetailBody.innerHTML = `
                     <div class="detail-item">

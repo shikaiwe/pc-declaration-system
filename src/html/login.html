@@ -244,7 +244,6 @@
                         }
                     } else if (jqXHR.status === 400 && jqXHR.responseJSON.message === 'No sessionid cookie') {
                         // 无cookie的情况，不显示错误，因为可能是首次登录
-                        console.log('未检测到登录状态');
                     } else {
                         console.error('验证session失败:', textStatus);
                     }

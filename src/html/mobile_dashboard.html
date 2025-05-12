@@ -3198,7 +3198,6 @@
             try {
                 // 获取IP信息
                 const ipInfo = await this.getIpFromIpSb();
-                console.log('获取到IP信息:', ipInfo);
 
                 // 获取天气信息
                 const response = await $.ajax({
@@ -3208,8 +3207,6 @@
                     contentType: 'application/json',
                     xhrFields: { withCredentials: true }
                 });
-
-                console.log('天气API响应:', response);
 
                 if (response.message !== 'Success') {
                     throw new Error(response.message);
@@ -3253,8 +3250,6 @@
                 windpower: weather.windpower || 'N/A',
                 updatetime: weather.updateTime  // 注意这里的大写T
             };
-
-            console.log('处理后的天气数据:', weatherInfo);
 
             const weatherContent = `
                 <div class="weather-content">

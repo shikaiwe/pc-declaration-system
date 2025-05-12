@@ -280,7 +280,6 @@ function displayOrderMessages(reportId) {
 // 获取历史消息记录
 async function fetchMessageHistory(reportId) {
     try {
-        console.log(`正在获取订单 ${reportId} 的历史消息...`);
         const response = await $.ajax({
             url: API_URLS.GET_MESSAGE_RECORD,
             method: 'POST',
@@ -318,7 +317,6 @@ async function fetchMessageHistory(reportId) {
 
             return messages;
         } else {
-            console.log('没有历史消息记录');
             return [];
         }
     } catch (error) {
@@ -351,11 +349,9 @@ async function initWebSocket(reportId) {
     if (wsConnections.has(reportId)) {
         const existingWs = wsConnections.get(reportId);
         if (existingWs.readyState === WebSocket.OPEN) {
-            console.log('已存在连接，无需重新建立');
-            return;
+            return existingWs;
         } else if (existingWs.readyState === WebSocket.CONNECTING) {
-            console.log('连接正在建立中，请稍候');
-            return;
+            return existingWs;
         } else {
             // 如果连接已关闭或正在关闭，则删除旧连接
             wsConnections.delete(reportId);
@@ -378,9 +374,6 @@ async function initWebSocket(reportId) {
 
         ws.onopen = async function() {
             clearTimeout(connectionTimeout);
-            console.log(`订单 ${reportId} 的WebSocket连接已建立`);
-            const messageList = document.getElementById('messageList');
-            messageList.innerHTML += '<div class="system-message">已连接到聊天室</div>';
             wsConnections.set(reportId, ws);
         };
 
@@ -388,7 +381,6 @@ async function initWebSocket(reportId) {
             try {
                 const data = JSON.parse(event.data);
                 var message = data.message;
-                console.log('接收到WebSocket消息:', message);
 
                 // 确保时间字段使用原始时间或当前时间
                 if (!message.time) {
@@ -405,19 +397,16 @@ async function initWebSocket(reportId) {
 
         ws.onclose = function() {
             clearTimeout(connectionTimeout);
-            console.log(`订单 ${reportId} 的WebSocket连接已关闭`);
-            const messageList = document.getElementById('messageList');
-            messageList.innerHTML += '<div class="system-message">连接已断开</div>';
             wsConnections.delete(reportId);
         };
 
         ws.onerror = function(error) {
             clearTimeout(connectionTimeout);
             console.error(`订单 ${reportId} 的WebSocket错误:`, error);
-            const messageList = document.getElementById('messageList');
-            messageList.innerHTML += '<div class="system-message error">连接发生错误</div>';
             wsConnections.delete(reportId);
         };
+
+        return ws;
     } catch (error) {
         console.error('创建WebSocket连接失败:', error);
         const messageList = document.getElementById('messageList');
@@ -427,8 +416,6 @@ async function initWebSocket(reportId) {
 
 // 添加消息到聊天界面
 function appendMessage(message) {
-    console.log('appendMessage收到的消息:', message); // 添加调试日志
-
     if (!message || !message.username || !message.message) {
         console.error('消息格式不正确:', message);
         return;
