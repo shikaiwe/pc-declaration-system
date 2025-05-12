@@ -253,25 +253,8 @@ function displayOrderMessages(reportId) {
             return new Date(a.time) - new Date(b.time);
         });
 
-        let lastDisplayTime = null;
+        // 直接遍历显示消息，不在这里添加时间戳
         sortedMessages.forEach(message => {
-            // 检查是否需要显示新的时间戳
-            const currentTime = new Date(message.time);
-            const showTimeStamp = !lastDisplayTime ||
-                (currentTime - lastDisplayTime > 5 * 60 * 1000); // 5分钟间隔显示时间戳
-
-            if (showTimeStamp) {
-                const timeDiv = document.createElement('div');
-                timeDiv.className = 'message-time';
-                timeDiv.textContent = currentTime.toLocaleTimeString('zh-CN', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                });
-                messageList.appendChild(timeDiv);
-                lastDisplayTime = currentTime;
-            }
-
             appendMessage(message);
         });
     }
