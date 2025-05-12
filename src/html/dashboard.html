@@ -2734,6 +2734,46 @@
                 border-top: none;
             }
         }
+        /* 被分配订单容器样式 */
+        
+        .assigned-order-container {
+            padding: 15px;
+            max-width: 100%;
+            margin: 0 auto;
+            background: transparent;
+        }
+        
+        .assigned-order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 0;
+        }
+        /* 美化被分配订单卡片 */
+        
+        #assignedOrdersContainer .order-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 4px solid #2196F3;
+        }
+        
+        #assignedOrdersContainer .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        #assignedOrdersContainer .order-info p {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        
+        #assignedOrdersContainer .order-info strong {
+            color: #555;
+            min-width: 80px;
+            display: inline-block;
+        }
     </style>
 </head>
 
@@ -2826,8 +2866,10 @@
 
         <div class="content" id="assignedOrderContent" style="display: none;">
             <h2>被分配订单</h2>
-            <div class="orders-container" id="assignedOrdersContainer">
-                <!-- 这里将通过JavaScript动态加载被分配订单的内容 -->
+            <div class="assigned-order-container">
+                <div class="assigned-order-list" id="assignedOrdersContainer">
+                    <!-- 这里将通过JavaScript动态加载被分配订单的内容 -->
+                </div>
             </div>
         </div>
 
@@ -4737,11 +4779,7 @@
                     `;
                 }).join('');
 
-                assignedOrdersContainer.innerHTML = `
-                    <div class="orders-container">
-                        ${ordersHTML}
-                    </div>
-                `;
+                assignedOrdersContainer.innerHTML = ordersHTML;
             }
 
             function showNoAssignedOrders() {
