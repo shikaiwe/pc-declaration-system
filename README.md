@@ -1,6 +1,5 @@
 # PC志愿者服务队管理系统
 
-![Status](https://img.shields.io/badge/状态-开发中-green)
 ![License](https://img.shields.io/badge/许可证-Apache%202.0-yellow)
 
 ## 项目简介
@@ -53,12 +52,6 @@ pc-declaration-system/
 - 会话验证
 - 密码安全
 - XSS/CSRF防护
-
-## 使用指南
-1. 访问 `register.html` 完成注册
-2. 通过 `login.html` 进行登录
-3. 系统自动识别设备类型
-4. 根据用户角色使用对应功能
 
 ---
 © 2025 广州南方学院PC志愿者服务队管理系统. Licensed under the Apache License, Version 2.0.
