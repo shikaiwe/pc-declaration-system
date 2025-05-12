@@ -3169,23 +3169,28 @@
                 // 从 ip.sb 获取 IP 信息
                 getIpInfo: function() {
                     return new Promise((resolve, reject) => {
-                        const script = document.createElement('script');
-                        const callbackName = 'ipCallback_' + Math.random().toString(36).substr(2, 9);
-
-                        window[callbackName] = function(data) {
-                            document.body.removeChild(script);
-                            delete window[callbackName];
-                            resolve(data);
-                        };
-
-                        script.src = `https://api.ip.sb/jsonip?callback=${callbackName}`;
-                        script.onerror = () => {
-                            document.body.removeChild(script);
-                            delete window[callbackName];
-                            reject(new Error('获取IP信息失败'));
-                        };
-
-                        document.body.appendChild(script);
+                        fetch('https://api.vore.top/api/IPdata?ip=')
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('网络请求失败');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.code === 200) {
+                                    resolve({
+                                        ip: data.ipinfo.text,
+                                        // 提供额外信息，供后续处理使用
+                                        ipdata: data.ipdata
+                                    });
+                                } else {
+                                    throw new Error('获取IP信息失败: ' + data.msg);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('获取IP信息出错:', error);
+                                reject(error);
+                            });
                     });
                 },
 
