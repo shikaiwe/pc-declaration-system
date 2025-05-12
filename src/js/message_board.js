@@ -1,15 +1,15 @@
 // API端点配置
 const API_URLS = {
-    GET_USER_INFO: 'https://8.134.179.34/api/dashboard/get_user_info/',
-    GET_HISTORY: 'https://8.134.179.34/api/dashboard/user_get_history_report/',
-    GET_WORKER_REPORTS: 'https://8.134.179.34/api/dashboard/worker_get_report_list/',
-    GET_REPORT_OF_SAME_DAY: 'https://8.134.179.34/api/dashboard/get_report_of_same_day/',
-    GET_MESSAGE_RECORD: 'https://8.134.179.34/api/message_board/get_message_record/'
+    GET_USER_INFO: 'https://gznfpc.cn/api/dashboard/get_user_info/',
+    GET_HISTORY: 'https://gznfpc.cn/api/dashboard/user_get_history_report/',
+    GET_WORKER_REPORTS: 'https://gznfpc.cn/api/dashboard/worker_get_report_list/',
+    GET_REPORT_OF_SAME_DAY: 'https://gznfpc.cn/api/dashboard/get_report_of_same_day/',
+    GET_MESSAGE_RECORD: 'https://gznfpc.cn/api/message_board/get_message_record/'
 };
 
 // WebSocket配置
 const WS_CONFIG = {
-    BASE_URL: 'wss://8.134.179.34/ws/message/'
+    BASE_URL: 'wss://gznfpc.cn/ws/message/'
 };
 
 // WebSocket连接
