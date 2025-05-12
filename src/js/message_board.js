@@ -253,7 +253,7 @@ function displayOrderMessages(reportId) {
             return new Date(a.time) - new Date(b.time);
         });
 
-        // 直接遍历显示消息，不在这里添加时间戳
+        // 直接遍历显示消息
         sortedMessages.forEach(message => {
             appendMessage(message);
         });
