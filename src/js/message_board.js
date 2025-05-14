@@ -374,9 +374,11 @@ async function initWebSocket(reportId) {
                 message.originalTime = message.time; // 保存原始时间用于排序和比较
                 message.displayTime = message.time; // 保存用于显示的时间
 
-                // 添加到存储并显示
+                // 添加到存储
                 messageStorage.addMessage(reportId, message);
-                displayOrderMessages(reportId);
+                
+                // 直接显示新消息，而不是重新加载所有消息
+                appendMessage(message);
             } catch (error) {
                 console.error('处理消息失败:', error);
             }
@@ -576,6 +578,21 @@ function sendMessage() {
 
         // 发送消息
         ws.send(JSON.stringify(messageObj));
+        
+        // 在本地直接显示发送的消息（不等待服务器响应）
+        const localMessage = {
+            username: currentUser,
+            message: message,
+            time: currentTime,
+            originalTime: currentTime,
+            displayTime: currentTime
+        };
+        
+        // 添加到本地存储
+        messageStorage.addMessage(selectedReportId, localMessage);
+        
+        // 直接显示出来
+        appendMessage(localMessage);
 
         // 清空输入框
         messageInput.value = '';
