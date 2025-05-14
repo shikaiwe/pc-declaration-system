@@ -11,12 +11,13 @@
 ```
 pc-declaration-system/
 ├── src/                    # 源代码
-│   ├── html/              # 页面模板
-│   ├── js/                # 业务逻辑
-│   └── css/               # 样式资源
-├── .gitignore             # 版本控制
-├── README.md              # 项目文档
-└── LICENSE                # 开源协议
+│   ├── html/               # 页面模板
+│   ├── js/                 # 业务逻辑
+│   ├── css/                # 样式资源
+│   └── images/             # 图像资源
+├── .gitignore              # 版本控制
+├── README.md               # 项目文档
+└── LICENSE                 # 开源协议
 ```
 
 ## 核心功能
