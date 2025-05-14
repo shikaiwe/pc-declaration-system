@@ -281,7 +281,8 @@ async function fetchMessageHistory(reportId) {
                     username: item.username,
                     message: item.message,
                     time: item.date,
-                    displayTime: item.date
+                    displayTime: item.date,
+                    originalTime: item.date // 保存原始时间戳用于排序和比较
                 }));
             }
 
@@ -366,9 +367,12 @@ async function initWebSocket(reportId) {
                 var message = data.message;
 
                 // 确保时间字段使用原始时间或当前时间
+                const currentTime = new Date().toISOString();
                 if (!message.time) {
-                    message.time = new Date().toISOString();
+                    message.time = currentTime;
                 }
+                message.originalTime = message.time; // 保存原始时间用于排序和比较
+                message.displayTime = message.time; // 保存用于显示的时间
 
                 // 添加到存储并显示
                 messageStorage.addMessage(reportId, message);
@@ -409,33 +413,68 @@ function appendMessage(message) {
 
     // 使用displayTime或time显示时间
     const messageTime = message.displayTime || message.time || '';
-
+    
     // 检查是否需要添加新的时间戳
     const lastTimeDiv = messageList.querySelector('.message-time:last-of-type');
     const lastMessageTime = lastTimeDiv ? lastTimeDiv.getAttribute('data-time') : null;
-
-    if (!lastMessageTime || now - new Date(lastMessageTime) > 5 * 60 * 1000) {
-        const timeDiv = document.createElement('div');
-        timeDiv.className = 'message-time';
-
-        // 格式化时间为小时:分钟
-        let formattedTime = '';
-        if (messageTime) {
-            const date = new Date(messageTime);
-            if (!isNaN(date.getTime())) {
-                formattedTime = date.toLocaleTimeString('zh-CN', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                });
-            }
-        }
-
-        timeDiv.textContent = formattedTime || now.toLocaleTimeString('zh-CN', {
+    
+    // 格式化消息时间的函数
+    function formatMessageTime(time) {
+        if (!time) return '';
+        
+        const msgDate = new Date(time);
+        if (isNaN(msgDate.getTime())) return '';
+        
+        const currentDate = new Date();
+        
+        // 计算日期差异
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth();
+        const currentDay = currentDate.getDate();
+        
+        const msgYear = msgDate.getFullYear();
+        const msgMonth = msgDate.getMonth();
+        const msgDay = msgDate.getDate();
+        
+        // 计算相差的天数
+        const dayDiff = Math.floor((currentDate - msgDate) / (24 * 60 * 60 * 1000));
+        
+        // 显示时间部分的格式
+        const timeFormat = msgDate.toLocaleTimeString('zh-CN', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false
         });
+        
+        // 根据天数差异返回不同的格式
+        if (currentYear === msgYear && currentMonth === msgMonth && currentDay === msgDay) {
+            // 当天消息
+            return timeFormat;
+        } else if (dayDiff === 1) {
+            // 昨天消息
+            return `昨天 ${timeFormat}`;
+        } else if (dayDiff > 1 && dayDiff < 7) {
+            // 一周内消息
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            return `${weekdays[msgDate.getDay()]} ${timeFormat}`;
+        } else if (currentYear === msgYear) {
+            // 今年内消息
+            return `${msgDate.getMonth() + 1}月${msgDate.getDate()}日 ${timeFormat}`;
+        } else {
+            // 往年消息
+            return `${msgYear}年${msgDate.getMonth() + 1}月${msgDate.getDate()}日 ${timeFormat}`;
+        }
+    }
+
+    // 每5分钟显示一次时间戳，或者是新的一天
+    if (!lastMessageTime || now - new Date(lastMessageTime) > 5 * 60 * 1000) {
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'message-time';
+        
+        // 格式化为适合显示的时间格式
+        const formattedTime = formatMessageTime(messageTime);
+        timeDiv.textContent = formattedTime;
+        
         // 保存完整的时间戳到data-time属性
         timeDiv.setAttribute('data-time', message.originalTime || message.time || now.toISOString());
         messageList.appendChild(timeDiv);
@@ -524,12 +563,15 @@ function sendMessage() {
     }
 
     try {
+        // 获取当前时间作为消息时间
+        const currentTime = new Date().toISOString();
+        
         // 构造消息对象
         const messageObj = {
             type: 'chat_message',
             message: message,
-            time: new Date().toISOString(), // 保存完整的时间戳
-            originalTime: new Date().toISOString() // 保存原始时间戳
+            time: currentTime,
+            originalTime: currentTime // 保存原始时间戳
         };
 
         // 发送消息
