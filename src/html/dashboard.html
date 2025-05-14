@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>控制面板</title>
+    <title>PC志愿者服务队</title>
     <!-- CDN 链接 -->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
@@ -3426,6 +3426,8 @@
                                         orderHistoryTab.classList.add('active');
                                         document.getElementById('orderHistory').style.display = 'block';
                                         document.getElementById('reportOrder').style.display = 'none';
+                                        // 对于工作人员和管理员，自动加载历史订单
+                                        fetchHistoryOrders();
                                     }
 
                                     // 根据用户角色显示/隐藏相应的菜单项
@@ -3515,6 +3517,87 @@
                         const sectionToShow = contentSections[item.id];
                         if (sectionToShow) {
                             sectionToShow.style.display = 'block';
+                            // 如果点击的是订单管理，默认显示"我要报单"页面
+                            if (item.id === 'orderManagement') {
+                                $.ajax({
+                                    url: API_URLS.GET_USER_INFO,
+                                    method: 'GET',
+                                    xhrFields: {
+                                        withCredentials: true
+                                    }
+                                })
+                                .done(function(data) {
+                                    if (data.message === 'Success') {
+                                        const reportOrderTab = document.querySelector('[data-tab="reportOrder"]');
+                                        const orderHistoryTab = document.querySelector('[data-tab="orderHistory"]');
+                                        
+                                        if (reportOrderTab && orderHistoryTab) {
+                                            // 移除所有标签页的活动状态
+                                            tabButtons.forEach(btn => btn.classList.remove('active'));
+                                            
+                                            // 隐藏所有标签页内容
+                                            document.querySelectorAll('.tab-content').forEach(content => {
+                                                content.style.display = 'none';
+                                            });
+                                            
+                                            // 根据用户类型设置默认显示的标签页
+                                            if (data.label === 'customer' || data.label === 'admin') {
+                                                reportOrderTab.classList.add('active');
+                                                document.getElementById('reportOrder').style.display = 'block';
+                                            } else {
+                                                // 对于工作人员角色
+                                                orderHistoryTab.classList.add('active');
+                                                const orderHistoryContent = document.getElementById('orderHistory');
+                                                orderHistoryContent.style.display = 'block';
+                                                
+                                                // 立即加载历史订单数据
+                                                showLoading(orderHistoryContent);
+                                                
+                                                $.ajax({
+                                                    url: API_URLS.GET_HISTORY,
+                                                    method: 'GET',
+                                                    xhrFields: {
+                                                        withCredentials: true
+                                                    }
+                                                })
+                                                .done(function(orderData) {
+                                                    if (orderData.message === 'Success') {
+                                                        displayHistoryOrders(orderData.report_info);
+                                                    } else if (orderData.message === 'No history report') {
+                                                        showNoOrders();
+                                                    } else {
+                                                        auth.handleSessionError(orderData.message);
+                                                    }
+                                                })
+                                                .fail(function(error) {
+                                                    console.error('获取历史订单失败:', error);
+                                                    showError();
+                                                })
+                                                .always(function() {
+                                                    hideLoading(orderHistoryContent);
+                                                });
+                                            }
+                                        }
+                                    } else {
+                                        auth.handleSessionError(data.message);
+                                    }
+                                })
+                                .fail(function(error) {
+                                    console.error('获取用户信息失败:', error);
+                                    // 默认显示报单页面
+                                    const reportOrderTab = document.querySelector('[data-tab="reportOrder"]');
+                                    if (reportOrderTab) {
+                                        tabButtons.forEach(btn => btn.classList.remove('active'));
+                                        reportOrderTab.classList.add('active');
+                                        
+                                        document.querySelectorAll('.tab-content').forEach(content => {
+                                            content.style.display = 'none';
+                                        });
+                                        document.getElementById('reportOrder').style.display = 'block';
+                                    }
+                                });
+                            }
+                            
                             // 如果点击的是分配订单，加载其内容
                             if (item.id === 'assignOrder') {
                                 loadAssignOrderContent();
@@ -4283,31 +4366,35 @@
             // 在 script 标签中添加历史订单功能
             async function fetchHistoryOrders() {
                 const orderHistoryContent = document.getElementById('orderHistory');
+                if (!orderHistoryContent) return;
+                
+                // 清空现有内容并显示加载状态
                 showLoading(orderHistoryContent);
 
+                // 发送API请求获取历史订单
                 $.ajax({
-                        url: API_URLS.GET_HISTORY,
-                        method: 'GET',
-                        xhrFields: {
-                            withCredentials: true
-                        }
-                    })
-                    .done(function(data) {
-                        if (data.message === 'Success') {
-                            displayHistoryOrders(data.report_info);
-                        } else if (data.message === 'No history report') {
-                            showNoOrders();
-                        } else {
-                            auth.handleSessionError(data.message);
-                        }
-                    })
-                    .fail(function(error) {
-                        console.error('获取历史订单失败:', error);
-                        showError();
-                    })
-                    .always(function() {
-                        hideLoading(orderHistoryContent);
-                    });
+                    url: API_URLS.GET_HISTORY,
+                    method: 'GET',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                })
+                .done(function(data) {
+                    if (data.message === 'Success') {
+                        displayHistoryOrders(data.report_info);
+                    } else if (data.message === 'No history report') {
+                        showNoOrders();
+                    } else {
+                        auth.handleSessionError(data.message);
+                    }
+                })
+                .fail(function(error) {
+                    console.error('获取历史订单失败:', error);
+                    showError();
+                })
+                .always(function() {
+                    hideLoading(orderHistoryContent);
+                });
             }
 
             // 修改 displayHistoryOrders 函数
