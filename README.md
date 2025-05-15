@@ -38,14 +38,14 @@ pc-declaration-system/
 | 管理员 | 系统管理、订单分配、用户管理 |
 
 ## 技术依赖
-| 依赖 | 用途 | 加载方式 |
-|------|------|----------|
-| ![jQuery](https://img.shields.io/badge/jQuery-v3.6.0-blue) | DOM操作和AJAX | 本地文件 |
-| ![CryptoJS](https://img.shields.io/badge/CryptoJS-v4.1.1-green) | 数据加密 | CDN |
-| ![FullCalendar](https://img.shields.io/badge/FullCalendar-v5.10.1-orange) | 日程管理 | CDN |
-| ![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.1.3-purple) | UI框架 | CDN |
-| ![Swiper](https://img.shields.io/badge/Swiper-latest-red) | 移动端交互 | CDN |
-| ![Flatpickr](https://img.shields.io/badge/Flatpickr-latest-yellow) | 日期选择 | CDN |
+| 依赖 | 用途 |
+|------|------|
+| ![jQuery](https://img.shields.io/badge/jQuery-v3.6.0-blue) | DOM操作和AJAX |
+| ![CryptoJS](https://img.shields.io/badge/CryptoJS-v4.1.1-green) | 数据加密 |
+| ![FullCalendar](https://img.shields.io/badge/FullCalendar-v5.10.1-orange) | 日程管理 |
+| ![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.1.3-purple) | UI框架 |
+| ![Swiper](https://img.shields.io/badge/Swiper-latest-red) | 移动端交互 |
+| ![Flatpickr](https://img.shields.io/badge/Flatpickr-latest-yellow) | 日期选择 |
 
 ## 安全机制
 - AES加密
