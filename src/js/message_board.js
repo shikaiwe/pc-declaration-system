@@ -80,27 +80,57 @@ const messageManager = {
 
         // 移除所有状态类
         messageElement.classList.remove('sending', 'sent', 'delivered', 'failed');
-
-        // 添加当前状态类
         messageElement.classList.add(status);
 
-        // 更新状态指示器
-        const statusIndicator = messageElement.querySelector('.message-status');
-        if (statusIndicator) {
-            switch (status) {
-                case MESSAGE_STATUS.SENDING:
-                    statusIndicator.textContent = '发送中...';
-                    break;
-                case MESSAGE_STATUS.SENT:
-                    statusIndicator.textContent = '已发送';
-                    break;
-                case MESSAGE_STATUS.DELIVERED:
-                    statusIndicator.textContent = '已送达';
-                    break;
-                case MESSAGE_STATUS.FAILED:
-                    statusIndicator.textContent = '发送失败';
-                    break;
-            }
+        // 移除旧的状态图标
+        const oldStatusIcon = messageElement.querySelector('.message-status-icon');
+        if (oldStatusIcon) oldStatusIcon.remove();
+
+        // 只对自己发送的消息处理
+        if (!messageElement.classList.contains('sent')) return;
+
+        // 重新创建状态图标
+        let statusIconDiv = document.createElement('div');
+        statusIconDiv.className = 'message-status-icon';
+        if (status === MESSAGE_STATUS.SENDING) {
+            const icon = document.createElement('span');
+            icon.className = 'icon-sending';
+            statusIconDiv.appendChild(icon);
+        } else if (status === MESSAGE_STATUS.SENT) {
+            const icon = document.createElement('span');
+            icon.className = 'icon-sent';
+            icon.innerHTML = '&#10003;';
+            statusIconDiv.appendChild(icon);
+        } else if (status === MESSAGE_STATUS.DELIVERED) {
+            const icon = document.createElement('span');
+            icon.className = 'icon-delivered';
+            icon.innerHTML = '&#10004;';
+            statusIconDiv.appendChild(icon);
+        } else if (status === MESSAGE_STATUS.FAILED) {
+            const icon = document.createElement('span');
+            icon.className = 'icon-failed';
+            icon.innerHTML = '&#9888;';
+            statusIconDiv.appendChild(icon);
+            // 重试按钮
+            const retryBtn = document.createElement('button');
+            retryBtn.className = 'retry-button-icon';
+            retryBtn.title = '重试';
+            retryBtn.innerHTML = '&#8635;';
+            retryBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var msgObj = messageStorage.findMessageById(messageId);
+                messageManager.retryMessage(messageId, msgObj ? msgObj.reportId : undefined);
+            };
+            statusIconDiv.appendChild(retryBtn);
+        }
+
+        // 插入到头像前
+        const children = messageElement.children;
+        if (children.length >= 2) {
+            messageElement.insertBefore(statusIconDiv, children[children.length - 1]);
+        } else {
+            messageElement.appendChild(statusIconDiv);
         }
     },
 
@@ -728,51 +758,11 @@ function appendMessage(message) {
     bubble.className = 'message-bubble';
     bubble.textContent = message.message;
 
-    // 创建状态图标/重试按钮容器（仅自己发送的消息显示）
-    let statusIconDiv = null;
-    if (isSentMessage) {
-        statusIconDiv = document.createElement('div');
-        statusIconDiv.className = 'message-status-icon';
-        // 状态图标
-        if (message.status === MESSAGE_STATUS.SENDING) {
-            const icon = document.createElement('span');
-            icon.className = 'icon-sending';
-            statusIconDiv.appendChild(icon);
-        } else if (message.status === MESSAGE_STATUS.SENT) {
-            const icon = document.createElement('span');
-            icon.className = 'icon-sent';
-            icon.innerHTML = '&#10003;'; // 单对勾
-            statusIconDiv.appendChild(icon);
-        } else if (message.status === MESSAGE_STATUS.DELIVERED) {
-            const icon = document.createElement('span');
-            icon.className = 'icon-delivered';
-            icon.innerHTML = '&#10004;'; // 双对勾
-            statusIconDiv.appendChild(icon);
-        } else if (message.status === MESSAGE_STATUS.FAILED) {
-            const icon = document.createElement('span');
-            icon.className = 'icon-failed';
-            icon.innerHTML = '&#9888;'; // 感叹号
-            statusIconDiv.appendChild(icon);
-            // 重试按钮
-            const retryBtn = document.createElement('button');
-            retryBtn.className = 'retry-button-icon';
-            retryBtn.title = '重试';
-            retryBtn.innerHTML = '&#8635;'; // ↻
-            retryBtn.onclick = function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                messageManager.retryMessage(message.id, message.reportId);
-            };
-            statusIconDiv.appendChild(retryBtn);
-        }
-    }
-
     // 组装消息项
     if (isSentMessage) {
         // 顺序：头像 → 气泡 → 状态图标，整体靠右
         messageItem.appendChild(avatar);
         messageItem.appendChild(bubble);
-        if (statusIconDiv) messageItem.appendChild(statusIconDiv);
     } else {
         // 左侧：头像 → 气泡（目前接收消息不显示状态图标）
         messageItem.appendChild(avatar);
