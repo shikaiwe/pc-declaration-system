@@ -19,21 +19,168 @@ let currentUser = null;
 let currentUserRole = null; // 存储用户角色
 let currentOrders = []; // 存储当前订单列表
 
+// 消息状态常量
+const MESSAGE_STATUS = {
+    SENDING: 'sending', // 发送中
+    SENT: 'sent', // 已发送到服务器
+    DELIVERED: 'delivered', // 已送达（服务器确认）
+    FAILED: 'failed' // 发送失败
+};
+
+// 消息管理器
+const messageManager = {
+    // 生成唯一消息ID
+    generateMessageId() {
+        return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    },
+
+    // 创建新消息对象
+    createMessage(content, sender, reportId) {
+        const now = new Date();
+        return {
+            id: this.generateMessageId(),
+            message: content,
+            username: sender,
+            time: now.toISOString(),
+            originalTime: now.toISOString(),
+            displayTime: now.toISOString(),
+            status: MESSAGE_STATUS.SENDING,
+            reportId: reportId,
+            isSending: true
+        };
+    },
+
+    // 更新消息状态
+    updateMessageStatus(messageId, reportId, status) {
+        if (!messageStorage.messages.has(reportId)) return null;
+
+        // 获取消息集合
+        const messagesMap = messageStorage.messages.get(reportId);
+
+        // 查找指定ID的消息
+        for (const [key, msg] of messagesMap.entries()) {
+            if (msg.id === messageId) {
+                // 更新状态
+                msg.status = status;
+                msg.isSending = false;
+                messagesMap.set(key, msg);
+
+                // 更新UI中的消息状态
+                this.updateMessageUI(messageId, status);
+                return msg;
+            }
+        }
+        return null;
+    },
+
+    // 更新消息UI
+    updateMessageUI(messageId, status) {
+        const messageElement = document.getElementById(messageId);
+        if (!messageElement) return;
+
+        // 移除所有状态类
+        messageElement.classList.remove('sending', 'sent', 'delivered', 'failed');
+
+        // 添加当前状态类
+        messageElement.classList.add(status);
+
+        // 更新状态指示器
+        const statusIndicator = messageElement.querySelector('.message-status');
+        if (statusIndicator) {
+            switch (status) {
+                case MESSAGE_STATUS.SENDING:
+                    statusIndicator.textContent = '发送中...';
+                    break;
+                case MESSAGE_STATUS.SENT:
+                    statusIndicator.textContent = '已发送';
+                    break;
+                case MESSAGE_STATUS.DELIVERED:
+                    statusIndicator.textContent = '已送达';
+                    break;
+                case MESSAGE_STATUS.FAILED:
+                    statusIndicator.textContent = '发送失败';
+                    break;
+            }
+        }
+    },
+
+    // 重试发送失败的消息
+    retryMessage(messageId, reportId) {
+        if (!messageStorage.messages.has(reportId)) return false;
+
+        // 获取消息集合
+        const messagesMap = messageStorage.messages.get(reportId);
+
+        // 查找指定ID的消息
+        for (const [key, msg] of messagesMap.entries()) {
+            if (msg.id === messageId && msg.status === MESSAGE_STATUS.FAILED) {
+                // 更新状态为发送中
+                msg.status = MESSAGE_STATUS.SENDING;
+                msg.isSending = true;
+                messagesMap.set(key, msg);
+
+                // 更新UI
+                this.updateMessageUI(messageId, MESSAGE_STATUS.SENDING);
+
+                // 重新发送消息
+                const ws = wsConnections.get(reportId);
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    const messageObj = {
+                        type: 'chat_message',
+                        message: msg.message,
+                        time: msg.time,
+                        messageId: msg.id
+                    };
+
+                    try {
+                        ws.send(JSON.stringify(messageObj));
+                        return true;
+                    } catch (error) {
+                        console.error('重试发送消息失败:', error);
+                        this.updateMessageStatus(messageId, reportId, MESSAGE_STATUS.FAILED);
+                        return false;
+                    }
+                } else {
+                    console.error('WebSocket连接不可用');
+                    this.updateMessageStatus(messageId, reportId, MESSAGE_STATUS.FAILED);
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+};
+
 // 消息存储
 const messageStorage = {
     // 存储所有订单的消息记录
     messages: new Map(),
+
+    // 消息缓存 - 用于快速查找
+    messageCache: new Map(),
 
     // 添加消息到存储
     addMessage(reportId, message) {
         if (!this.messages.has(reportId)) {
             this.messages.set(reportId, new Map());
         }
-        // 使用消息内容和时间创建唯一标识
-        const messageId = `${message.message}-${message.time}`;
-        if (!this.messages.get(reportId).has(messageId)) {
-            this.messages.get(reportId).set(messageId, message);
+
+        // 确保消息有ID
+        if (!message.id) {
+            message.id = messageManager.generateMessageId();
         }
+
+        // 使用唯一ID作为键
+        const messageKey = message.id || `${message.message}-${message.time}`;
+        this.messages.get(reportId).set(messageKey, message);
+
+        // 更新缓存
+        this.messageCache.set(message.id, {
+            reportId: reportId,
+            key: messageKey
+        });
+
+        return message;
     },
 
     // 获取订单的所有消息
@@ -44,9 +191,43 @@ const messageStorage = {
         return Array.from(this.messages.get(reportId).values());
     },
 
+    // 通过ID查找消息
+    findMessageById(messageId) {
+        const cacheInfo = this.messageCache.get(messageId);
+        if (!cacheInfo) return null;
+
+        const { reportId, key } = cacheInfo;
+        if (!this.messages.has(reportId)) return null;
+
+        return this.messages.get(reportId).get(key) || null;
+    },
+
+    // 更新消息
+    updateMessage(messageId, updatedProps) {
+        const cacheInfo = this.messageCache.get(messageId);
+        if (!cacheInfo) return false;
+
+        const { reportId, key } = cacheInfo;
+        if (!this.messages.has(reportId)) return false;
+
+        const message = this.messages.get(reportId).get(key);
+        if (!message) return false;
+
+        // 更新属性
+        Object.assign(message, updatedProps);
+        this.messages.get(reportId).set(key, message);
+        return true;
+    },
+
     // 清空订单的消息
     clearMessages(reportId) {
         if (this.messages.has(reportId)) {
+            // 清除缓存
+            for (const message of this.messages.get(reportId).values()) {
+                if (message.id) {
+                    this.messageCache.delete(message.id);
+                }
+            }
             this.messages.get(reportId).clear();
         }
     },
@@ -374,12 +555,27 @@ async function initWebSocket(reportId) {
                 message.originalTime = message.time; // 保存原始时间用于排序和比较
                 message.displayTime = message.time; // 保存用于显示的时间
 
+                // 处理服务器确认消息
+                if (data.type === 'ack' && data.messageId) {
+                    // 更新消息状态为已送达
+                    messageManager.updateMessageStatus(data.messageId, reportId, MESSAGE_STATUS.DELIVERED);
+                    return;
+                }
+
+                // 设置消息的报告ID，用于后续查找
+                message.reportId = reportId;
+
                 // 添加到存储
                 messageStorage.addMessage(reportId, message);
 
-                // 检查是否是自己发送的消息，如果是则不重复显示
-                if (message.username !== currentUser) {
-                    // 只有不是自己发送的消息才在收到服务器响应时显示
+                // 检查是否是自己发送的消息，如果是则更新状态而不重复显示
+                if (message.username === currentUser) {
+                    // 查找本地是否已有此消息（通过ID或内容时间匹配）
+                    if (message.id) {
+                        messageManager.updateMessageStatus(message.id, reportId, MESSAGE_STATUS.DELIVERED);
+                    }
+                } else {
+                    // 显示他人发送的新消息
                     appendMessage(message);
                 }
             } catch (error) {
@@ -490,6 +686,16 @@ function appendMessage(message) {
     const isSentMessage = message.username === currentUser;
     messageItem.className = `message-item ${isSentMessage ? 'sent' : 'received'}`;
 
+    // 设置消息ID，用于状态更新
+    if (message.id) {
+        messageItem.id = message.id;
+    }
+
+    // 如果消息有状态，添加对应的样式类
+    if (message.status) {
+        messageItem.classList.add(message.status);
+    }
+
     // 如果是接收到的消息，检查是否需要显示用户名
     if (!isSentMessage) {
         const lastMessage = messageList.querySelector('.message-item:last-of-type');
@@ -525,6 +731,36 @@ function appendMessage(message) {
     bubble.className = 'message-bubble';
     bubble.textContent = message.message;
 
+    // 为自己发送的消息添加状态指示器
+    if (isSentMessage) {
+        const statusIndicator = document.createElement('div');
+        statusIndicator.className = 'message-status';
+
+        // 根据消息状态显示不同的状态文本
+        if (message.status === MESSAGE_STATUS.SENDING) {
+            statusIndicator.textContent = '发送中...';
+        } else if (message.status === MESSAGE_STATUS.SENT) {
+            statusIndicator.textContent = '已发送';
+        } else if (message.status === MESSAGE_STATUS.DELIVERED) {
+            statusIndicator.textContent = '已送达';
+        } else if (message.status === MESSAGE_STATUS.FAILED) {
+            statusIndicator.textContent = '发送失败';
+
+            // 添加重试按钮
+            const retryButton = document.createElement('button');
+            retryButton.className = 'retry-button';
+            retryButton.textContent = '重试';
+            retryButton.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                messageManager.retryMessage(message.id, message.reportId);
+            };
+            statusIndicator.appendChild(retryButton);
+        }
+
+        bubble.appendChild(statusIndicator);
+    }
+
     // 添加头像和气泡到消息项
     messageItem.appendChild(avatar);
     messageItem.appendChild(bubble);
@@ -542,7 +778,7 @@ function appendMessage(message) {
 function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const orderSelector = document.getElementById('orderSelector');
-    const message = messageInput.value.trim();
+    const messageContent = messageInput.value.trim();
     const selectedReportId = orderSelector.value;
 
     // 检查是否选择了订单
@@ -552,57 +788,80 @@ function sendMessage() {
     }
 
     // 检查消息是否为空
-    if (!message) {
+    if (!messageContent) {
         alert('请输入消息内容');
         return;
     }
+
+    // 提前清空输入框，防止重复发送
+    messageInput.value = '';
 
     // 获取当前选中订单的WebSocket连接
     const ws = wsConnections.get(selectedReportId);
 
     // 检查WebSocket连接状态
     if (!ws || ws.readyState !== WebSocket.OPEN) {
+        // 创建消息对象（失败状态）
+        const failedMessage = messageManager.createMessage(messageContent, currentUser, selectedReportId);
+        failedMessage.status = MESSAGE_STATUS.FAILED;
+        failedMessage.isSending = false;
+
+        // 存储并显示失败的消息
+        messageStorage.addMessage(selectedReportId, failedMessage);
+        appendMessage(failedMessage);
+
+        // 尝试重新连接
         alert('连接已断开，正在重新连接...');
-        initWebSocket(selectedReportId);
+        const newWs = initWebSocket(selectedReportId);
+
         return;
     }
 
     try {
-        // 先清空输入框，防止重复发送
-        const messageToSend = message;
-        messageInput.value = '';
+        // 创建消息对象（发送中状态）
+        const newMessage = messageManager.createMessage(messageContent, currentUser, selectedReportId);
 
-        // 获取当前时间作为消息时间
-        const currentTime = new Date().toISOString();
+        // 存储并显示消息
+        messageStorage.addMessage(selectedReportId, newMessage);
+        appendMessage(newMessage);
 
-        // 构造消息对象
+        // 构造要发送的消息对象
         const messageObj = {
             type: 'chat_message',
-            message: messageToSend,
-            time: currentTime,
-            originalTime: currentTime // 保存原始时间戳
+            message: messageContent,
+            time: newMessage.time,
+            messageId: newMessage.id
         };
 
-        // 在本地直接显示发送的消息（不等待服务器响应）
-        const localMessage = {
-            username: currentUser,
-            message: messageToSend,
-            time: currentTime,
-            originalTime: currentTime,
-            displayTime: currentTime
-        };
+        // 设置发送超时
+        const sendTimeout = setTimeout(() => {
+            // 检查消息是否仍在发送中
+            const message = messageStorage.findMessageById(newMessage.id);
+            if (message && message.status === MESSAGE_STATUS.SENDING) {
+                // 更新为发送失败状态
+                messageManager.updateMessageStatus(newMessage.id, selectedReportId, MESSAGE_STATUS.FAILED);
+            }
+        }, 10000); // 10秒超时
 
-        // 添加到本地存储并显示
-        messageStorage.addMessage(selectedReportId, localMessage);
-        appendMessage(localMessage);
-
-        // 最后才发送消息到服务器
+        // 发送消息
         ws.send(JSON.stringify(messageObj));
+
+        // 发送成功后更新状态为"已发送"
+        setTimeout(() => {
+            clearTimeout(sendTimeout);
+            messageManager.updateMessageStatus(newMessage.id, selectedReportId, MESSAGE_STATUS.SENT);
+        }, 500);
+
     } catch (error) {
         console.error('发送消息失败:', error);
+
+        // 查找消息并标记为失败
+        const message = messageStorage.findMessageById(newMessage.id);
+        if (message) {
+            messageManager.updateMessageStatus(newMessage.id, selectedReportId, MESSAGE_STATUS.FAILED);
+        }
+
         alert('发送消息失败，请重试');
-        // 恢复输入框内容，便于用户重试
-        messageInput.value = message;
     }
 }
 
