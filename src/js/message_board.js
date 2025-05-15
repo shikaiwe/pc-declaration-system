@@ -568,40 +568,41 @@ function sendMessage() {
     }
 
     try {
+        // 先清空输入框，防止重复发送
+        const messageToSend = message;
+        messageInput.value = '';
+
         // 获取当前时间作为消息时间
         const currentTime = new Date().toISOString();
 
         // 构造消息对象
         const messageObj = {
             type: 'chat_message',
-            message: message,
+            message: messageToSend,
             time: currentTime,
             originalTime: currentTime // 保存原始时间戳
         };
 
-        // 发送消息
-        ws.send(JSON.stringify(messageObj));
-
         // 在本地直接显示发送的消息（不等待服务器响应）
         const localMessage = {
             username: currentUser,
-            message: message,
+            message: messageToSend,
             time: currentTime,
             originalTime: currentTime,
             displayTime: currentTime
         };
 
-        // 添加到本地存储
+        // 添加到本地存储并显示
         messageStorage.addMessage(selectedReportId, localMessage);
-
-        // 直接显示出来
         appendMessage(localMessage);
 
-        // 清空输入框
-        messageInput.value = '';
+        // 最后才发送消息到服务器
+        ws.send(JSON.stringify(messageObj));
     } catch (error) {
         console.error('发送消息失败:', error);
         alert('发送消息失败，请重试');
+        // 恢复输入框内容，便于用户重试
+        messageInput.value = message;
     }
 }
 
@@ -618,6 +619,7 @@ function cleanupConnections() {
 async function initMessageBoard() {
     // 如果已经初始化过，则直接返回
     if (this.isInitialized) {
+        console.log('留言板已初始化，跳过重复初始化');
         return;
     }
 
@@ -625,75 +627,98 @@ async function initMessageBoard() {
     const sendButton = document.getElementById('sendMessage');
     const orderSelector = document.getElementById('orderSelector');
 
+    // 清除可能存在的旧事件监听器
+    sendButton.removeEventListener('click', sendMessage);
+    messageInput.removeEventListener('keypress', handleKeyPress);
+
     // 获取当前用户信息
-    $.ajax({
-        url: API_URLS.GET_USER_INFO,
-        method: 'GET',
-        xhrFields: {
-            withCredentials: true
+    try {
+        const userInfo = await $.ajax({
+            url: API_URLS.GET_USER_INFO,
+            method: 'GET',
+            xhrFields: {
+                withCredentials: true
+            }
+        });
+
+        if (userInfo.message === 'Success') {
+            currentUser = userInfo.username;
+            console.log('当前用户:', currentUser);
+        } else {
+            console.error('获取用户信息失败:', userInfo.message);
+            if (userInfo.message === 'Session has expired' ||
+                userInfo.message === 'Invalid session' ||
+                userInfo.message === 'No sessionid cookie') {
+                window.location.href = '../html/login.html';
+                return;
+            }
         }
-    }).done(function(data) {
-        if (data.message === 'Success') {
-            currentUser = data.username;
-        }
-    });
+    } catch (error) {
+        console.error('获取用户信息请求失败:', error);
+        return;
+    }
 
     // 获取订单列表并更新选择器
     const orders = await fetchOrders();
     updateOrderSelector(orders);
 
     // 订单选择器变化事件
-    orderSelector.addEventListener('change', async function() {
-        const selectedReportId = this.value;
-        if (selectedReportId) {
-            // 先清空消息列表
-            clearMessageList();
-
-            // 如果该订单没有历史消息，则获取
-            if (!messageStorage.hasMessages(selectedReportId)) {
-                try {
-                    const messages = await fetchMessageHistory(selectedReportId);
-                    // 显示消息
-                    displayOrderMessages(selectedReportId);
-                } catch (error) {
-                    console.error('加载历史消息失败:', error);
-                    const messageList = document.getElementById('messageList');
-                    messageList.innerHTML = '<div class="system-message error">加载历史消息失败</div>';
-                }
-            } else {
-                // 如果已有消息，直接显示
-                displayOrderMessages(selectedReportId);
-            }
-
-            // 建立WebSocket连接
-            initWebSocket(selectedReportId);
-            // 定期清理无效连接
-            cleanupConnections();
-        } else {
-            // 如果没有选择订单，清空显示
-            clearMessageList();
-            closeAllConnections();
-        }
-    });
+    orderSelector.removeEventListener('change', handleOrderChange);
+    orderSelector.addEventListener('change', handleOrderChange);
 
     // 发送按钮点击事件
     sendButton.addEventListener('click', sendMessage);
 
     // 输入框回车发送
-    messageInput.addEventListener('keypress', function(e) {
+    function handleKeyPress(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
-    });
+    }
+    messageInput.addEventListener('keypress', handleKeyPress);
 
     // 页面关闭时清理所有连接
-    window.addEventListener('beforeunload', function() {
-        closeAllConnections();
-    });
+    window.removeEventListener('beforeunload', closeAllConnections);
+    window.addEventListener('beforeunload', closeAllConnections);
 
     // 标记为已初始化
     this.isInitialized = true;
+    console.log('留言板初始化完成');
+}
+
+// 处理订单选择器变化
+async function handleOrderChange() {
+    const selectedReportId = this.value;
+    if (selectedReportId) {
+        // 先清空消息列表
+        clearMessageList();
+
+        // 如果该订单没有历史消息，则获取
+        if (!messageStorage.hasMessages(selectedReportId)) {
+            try {
+                const messages = await fetchMessageHistory(selectedReportId);
+                // 显示消息
+                displayOrderMessages(selectedReportId);
+            } catch (error) {
+                console.error('加载历史消息失败:', error);
+                const messageList = document.getElementById('messageList');
+                messageList.innerHTML = '<div class="system-message error">加载历史消息失败</div>';
+            }
+        } else {
+            // 如果已有消息，直接显示
+            displayOrderMessages(selectedReportId);
+        }
+
+        // 建立WebSocket连接
+        initWebSocket(selectedReportId);
+        // 定期清理无效连接
+        cleanupConnections();
+    } else {
+        // 如果没有选择订单，清空显示
+        clearMessageList();
+        closeAllConnections();
+    }
 }
 
 // 关闭所有WebSocket连接
