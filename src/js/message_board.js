@@ -717,13 +717,10 @@ function appendMessage(message) {
     // 创建头像
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
-
     // 生成固定的头像背景色（基于用户名）
     const colors = ['#f56a00', '#7265e6', '#ffbf00', '#00a2ae', '#f56a00', '#7265e6', '#ffbf00'];
     const colorIndex = Math.abs(message.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % colors.length;
     avatar.style.backgroundColor = colors[colorIndex];
-
-    // 设置头像文本（用户名首字母）
     avatar.textContent = message.username.charAt(0).toUpperCase();
 
     // 创建消息气泡
@@ -731,39 +728,56 @@ function appendMessage(message) {
     bubble.className = 'message-bubble';
     bubble.textContent = message.message;
 
-    // 为自己发送的消息添加状态指示器
+    // 创建状态图标/重试按钮容器（仅自己发送的消息显示）
+    let statusIconDiv = null;
     if (isSentMessage) {
-        const statusIndicator = document.createElement('div');
-        statusIndicator.className = 'message-status';
-
-        // 根据消息状态显示不同的状态文本
+        statusIconDiv = document.createElement('div');
+        statusIconDiv.className = 'message-status-icon';
+        // 状态图标
         if (message.status === MESSAGE_STATUS.SENDING) {
-            statusIndicator.textContent = '发送中...';
+            const icon = document.createElement('span');
+            icon.className = 'icon-sending';
+            statusIconDiv.appendChild(icon);
         } else if (message.status === MESSAGE_STATUS.SENT) {
-            statusIndicator.textContent = '已发送';
+            const icon = document.createElement('span');
+            icon.className = 'icon-sent';
+            icon.innerHTML = '&#10003;'; // 单对勾
+            statusIconDiv.appendChild(icon);
         } else if (message.status === MESSAGE_STATUS.DELIVERED) {
-            statusIndicator.textContent = '已送达';
+            const icon = document.createElement('span');
+            icon.className = 'icon-delivered';
+            icon.innerHTML = '&#10004;'; // 双对勾
+            statusIconDiv.appendChild(icon);
         } else if (message.status === MESSAGE_STATUS.FAILED) {
-            statusIndicator.textContent = '发送失败';
-
-            // 添加重试按钮
-            const retryButton = document.createElement('button');
-            retryButton.className = 'retry-button';
-            retryButton.textContent = '重试';
-            retryButton.onclick = function(e) {
+            const icon = document.createElement('span');
+            icon.className = 'icon-failed';
+            icon.innerHTML = '&#9888;'; // 感叹号
+            statusIconDiv.appendChild(icon);
+            // 重试按钮
+            const retryBtn = document.createElement('button');
+            retryBtn.className = 'retry-button-icon';
+            retryBtn.title = '重试';
+            retryBtn.innerHTML = '&#8635;'; // ↻
+            retryBtn.onclick = function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 messageManager.retryMessage(message.id, message.reportId);
             };
-            statusIndicator.appendChild(retryButton);
+            statusIconDiv.appendChild(retryBtn);
         }
-
-        bubble.appendChild(statusIndicator);
     }
 
-    // 添加头像和气泡到消息项
-    messageItem.appendChild(avatar);
-    messageItem.appendChild(bubble);
+    // 组装消息项
+    if (isSentMessage) {
+        // 顺序：状态图标 气泡 头像，整体靠右
+        if (statusIconDiv) messageItem.appendChild(statusIconDiv);
+        messageItem.appendChild(bubble);
+        messageItem.appendChild(avatar);
+    } else {
+        // 左侧：状态 头像 气泡（目前接收消息不显示状态图标）
+        messageItem.appendChild(avatar);
+        messageItem.appendChild(bubble);
+    }
 
     messageList.appendChild(messageItem);
 
