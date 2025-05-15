@@ -376,9 +376,12 @@ async function initWebSocket(reportId) {
 
                 // 添加到存储
                 messageStorage.addMessage(reportId, message);
-                
-                // 直接显示新消息，而不是重新加载所有消息
-                appendMessage(message);
+
+                // 检查是否是自己发送的消息，如果是则不重复显示
+                if (message.username !== currentUser) {
+                    // 只有不是自己发送的消息才在收到服务器响应时显示
+                    appendMessage(message);
+                }
             } catch (error) {
                 console.error('处理消息失败:', error);
             }
@@ -415,39 +418,39 @@ function appendMessage(message) {
 
     // 使用displayTime或time显示时间
     const messageTime = message.displayTime || message.time || '';
-    
+
     // 检查是否需要添加新的时间戳
     const lastTimeDiv = messageList.querySelector('.message-time:last-of-type');
     const lastMessageTime = lastTimeDiv ? lastTimeDiv.getAttribute('data-time') : null;
-    
+
     // 格式化消息时间的函数
     function formatMessageTime(time) {
         if (!time) return '';
-        
+
         const msgDate = new Date(time);
         if (isNaN(msgDate.getTime())) return '';
-        
+
         const currentDate = new Date();
-        
+
         // 计算日期差异
         const currentYear = currentDate.getFullYear();
         const currentMonth = currentDate.getMonth();
         const currentDay = currentDate.getDate();
-        
+
         const msgYear = msgDate.getFullYear();
         const msgMonth = msgDate.getMonth();
         const msgDay = msgDate.getDate();
-        
+
         // 计算相差的天数
         const dayDiff = Math.floor((currentDate - msgDate) / (24 * 60 * 60 * 1000));
-        
+
         // 显示时间部分的格式
         const timeFormat = msgDate.toLocaleTimeString('zh-CN', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false
         });
-        
+
         // 根据天数差异返回不同的格式
         if (currentYear === msgYear && currentMonth === msgMonth && currentDay === msgDay) {
             // 当天消息
@@ -472,11 +475,11 @@ function appendMessage(message) {
     if (!lastMessageTime || now - new Date(lastMessageTime) > 5 * 60 * 1000) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'message-time';
-        
+
         // 格式化为适合显示的时间格式
         const formattedTime = formatMessageTime(messageTime);
         timeDiv.textContent = formattedTime;
-        
+
         // 保存完整的时间戳到data-time属性
         timeDiv.setAttribute('data-time', message.originalTime || message.time || now.toISOString());
         messageList.appendChild(timeDiv);
@@ -567,7 +570,7 @@ function sendMessage() {
     try {
         // 获取当前时间作为消息时间
         const currentTime = new Date().toISOString();
-        
+
         // 构造消息对象
         const messageObj = {
             type: 'chat_message',
@@ -578,7 +581,7 @@ function sendMessage() {
 
         // 发送消息
         ws.send(JSON.stringify(messageObj));
-        
+
         // 在本地直接显示发送的消息（不等待服务器响应）
         const localMessage = {
             username: currentUser,
@@ -587,10 +590,10 @@ function sendMessage() {
             originalTime: currentTime,
             displayTime: currentTime
         };
-        
+
         // 添加到本地存储
         messageStorage.addMessage(selectedReportId, localMessage);
-        
+
         // 直接显示出来
         appendMessage(localMessage);
 
