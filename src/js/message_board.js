@@ -769,12 +769,12 @@ function appendMessage(message) {
 
     // 组装消息项
     if (isSentMessage) {
-        // 顺序：状态图标 气泡 头像，整体靠右
+        // 顺序：状态图标 → 气泡 → 头像，整体靠右
         if (statusIconDiv) messageItem.appendChild(statusIconDiv);
         messageItem.appendChild(bubble);
         messageItem.appendChild(avatar);
     } else {
-        // 左侧：状态 头像 气泡（目前接收消息不显示状态图标）
+        // 左侧：头像 → 气泡（目前接收消息不显示状态图标）
         messageItem.appendChild(avatar);
         messageItem.appendChild(bubble);
     }
