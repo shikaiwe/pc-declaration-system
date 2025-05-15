@@ -89,48 +89,40 @@ const messageManager = {
         // 只对自己发送的消息处理
         if (!messageElement.classList.contains('sent')) return;
 
-        // 重新创建状态图标
-        let statusIconDiv = document.createElement('div');
-        statusIconDiv.className = 'message-status-icon';
-        if (status === MESSAGE_STATUS.SENDING) {
-            const icon = document.createElement('span');
-            icon.className = 'icon-sending';
-            statusIconDiv.appendChild(icon);
-        } else if (status === MESSAGE_STATUS.SENT) {
-            const icon = document.createElement('span');
-            icon.className = 'icon-sent';
-            icon.innerHTML = '&#10003;';
-            statusIconDiv.appendChild(icon);
-        } else if (status === MESSAGE_STATUS.DELIVERED) {
-            const icon = document.createElement('span');
-            icon.className = 'icon-delivered';
-            icon.innerHTML = '&#10004;';
-            statusIconDiv.appendChild(icon);
-        } else if (status === MESSAGE_STATUS.FAILED) {
-            const icon = document.createElement('span');
-            icon.className = 'icon-failed';
-            icon.innerHTML = '&#9888;';
-            statusIconDiv.appendChild(icon);
-            // 重试按钮
-            const retryBtn = document.createElement('button');
-            retryBtn.className = 'retry-button-icon';
-            retryBtn.title = '重试';
-            retryBtn.innerHTML = '&#8635;';
-            retryBtn.onclick = function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var msgObj = messageStorage.findMessageById(messageId);
-                messageManager.retryMessage(messageId, msgObj ? msgObj.reportId : undefined);
-            };
-            statusIconDiv.appendChild(retryBtn);
-        }
-
-        // 插入到头像前
-        const children = messageElement.children;
-        if (children.length >= 2) {
-            messageElement.insertBefore(statusIconDiv, children[children.length - 1]);
-        } else {
-            messageElement.appendChild(statusIconDiv);
+        // 重新创建状态图标（只在发送中和失败时显示）
+        let showStatus = (status === MESSAGE_STATUS.SENDING || status === MESSAGE_STATUS.FAILED);
+        if (showStatus) {
+            let statusIconDiv = document.createElement('div');
+            statusIconDiv.className = 'message-status-icon';
+            if (status === MESSAGE_STATUS.SENDING) {
+                const icon = document.createElement('span');
+                icon.className = 'icon-sending';
+                statusIconDiv.appendChild(icon);
+            } else if (status === MESSAGE_STATUS.FAILED) {
+                const icon = document.createElement('span');
+                icon.className = 'icon-failed';
+                icon.innerHTML = '&#9888;';
+                statusIconDiv.appendChild(icon);
+                // 重试按钮
+                const retryBtn = document.createElement('button');
+                retryBtn.className = 'retry-button-icon';
+                retryBtn.title = '重试';
+                retryBtn.innerHTML = '&#8635;';
+                retryBtn.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var msgObj = messageStorage.findMessageById(messageId);
+                    messageManager.retryMessage(messageId, msgObj ? msgObj.reportId : undefined);
+                };
+                statusIconDiv.appendChild(retryBtn);
+            }
+            // 插入到头像前
+            const children = messageElement.children;
+            if (children.length >= 2) {
+                messageElement.insertBefore(statusIconDiv, children[children.length - 1]);
+            } else {
+                messageElement.appendChild(statusIconDiv);
+            }
         }
     },
 
