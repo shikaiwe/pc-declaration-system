@@ -12,9 +12,28 @@
 pc-declaration-system/
 ├── src/                    # 源代码
 │   ├── html/               # 页面模板
+│   │   ├── dashboard.html       # 管理控制台
+│   │   ├── mobile_dashboard.html # 移动端控制台
+│   │   ├── login.html           # 登录页面
+│   │   ├── register.html        # 用户注册
+│   │   ├── worker_register.html # 志愿者注册
+│   │   └── forgot-password.html # 密码找回
 │   ├── js/                 # 业务逻辑
+│   │   ├── assign_order.js      # 订单分配
+│   │   ├── message_board.js     # 留言板功能
+│   │   ├── jquery.js            # jQuery库
+│   │   └── crypto-js.min.js     # 加密库
 │   ├── css/                # 样式资源
-│   └── images/             # 图像资源
+│   │   ├── login.css            # 登录样式
+│   │   ├── register.css         # 注册样式 
+│   │   ├── forgot-password.css  # 找回密码样式
+│   │   └── message_board.css    # 留言板样式
+│   ├── images/             # 图像资源
+│   └── vendor/             # 第三方库
+│       ├── bootstrap/           # UI框架
+│       ├── fullcalendar/        # 日程管理组件
+│       ├── flatpickr/           # 日期选择器
+│       └── swiper/              # 移动端滑动组件
 ├── .gitignore              # 版本控制
 ├── README.md               # 项目文档
 └── LICENSE                 # 开源协议
