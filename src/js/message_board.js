@@ -689,7 +689,7 @@ function appendMessage(message) {
         }
     }
 
-    // 每5分钟显示一次时间戳，或者是新的一天
+    // 每分钟显示一次时间戳，或者是新的一天
     if (!lastMessageTime || now - new Date(lastMessageTime) > 1 * 60 * 1000) {
         const timeDiv = document.createElement('div');
         timeDiv.className = 'message-time';
