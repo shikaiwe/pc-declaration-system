@@ -10,7 +10,6 @@
     <script src='../vendor/fullcalendar/main.min.js' defer></script>
     <link rel="stylesheet" href="../vendor/swiper/swiper-bundle.min.css">
     <script src="../vendor/swiper/swiper-bundle.min.js"></script>
-    <!-- FullCalendar 最新版本 -->
     <script src='../vendor/fullcalendar/main.min.js'></script>
     <script src="../vendor/bootstrap/bootstrap.bundle.min.js"></script>
     <script type="module" src="../js/assign_order.js"></script>
@@ -2124,6 +2123,43 @@
             }
             #messageBoardModal .close-button:hover {
                 color: #fff;
+            }
+        }
+        /* 备案与版权信息footer 开始 */
+        .site-footer {
+            width: 100%;
+            text-align: center;
+            padding: 16px 8px 20px 8px;
+            background: transparent;
+            color: #666;
+            font-size: 15px;
+            font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+            box-sizing: border-box;
+            line-height: 1.6;
+            margin-top: 40px;
+            word-break: break-all;
+        }
+        .site-footer a {
+            color: #666;
+            text-decoration: none;
+            margin-left: 12px;
+            transition: color 0.3s, transform 0.3s;
+            font-size: 15px;
+        }
+        .site-footer a:hover {
+            color: #1890ff;
+            transform: scale(1.05);
+        }
+        @media (max-width: 600px) {
+            .site-footer {
+                font-size: 13px;
+                padding: 12px 4px 16px 4px;
+            }
+            .site-footer a {
+                font-size: 13px;
+                margin-left: 0;
+                display: block;
+                margin-top: 4px;
             }
         }
     </style>
@@ -4540,6 +4576,49 @@
     <script type="module">
         import messageBoard from '../js/message_board.js'; window.messageBoard = messageBoard; // 不在这里直接初始化，而是在点击留言板卡片时初始化
     </script>
+    <!-- 备案与版权信息footer 开始 -->
+    <footer class="site-footer">
+        <span>© 2025 广州南方学院PC志愿者服务队</span>
+        <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备2025413403号</a>
+    </footer>
+    <style>
+        .site-footer {
+            width: 100%;
+            text-align: center;
+            padding: 16px 8px 20px 8px;
+            background: transparent;
+            color: #666;
+            font-size: 15px;
+            font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+            box-sizing: border-box;
+            line-height: 1.6;
+            margin-top: 40px;
+            word-break: break-all;
+        }
+        .site-footer a {
+            color: #666;
+            text-decoration: none;
+            margin-left: 12px;
+            transition: color 0.3s, transform 0.3s;
+            font-size: 15px;
+        }
+        .site-footer a:hover {
+            color: #1890ff;
+            transform: scale(1.05);
+        }
+        @media (max-width: 600px) {
+            .site-footer {
+                font-size: 13px;
+                padding: 12px 4px 16px 4px;
+            }
+            .site-footer a {
+                font-size: 13px;
+                margin-left: 0;
+                display: block;
+                margin-top: 4px;
+            }
+        }
+    </style>
 </body>
 
 </html>
