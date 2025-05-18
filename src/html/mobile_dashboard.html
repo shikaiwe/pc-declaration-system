@@ -1863,10 +1863,12 @@
             align-items: flex-start;
             margin-bottom: 16px;
             position: relative;
+            width: 100%; /* Ensure message item takes full width */
         }
         
         .message-item.sent {
             flex-direction: row-reverse;
+            justify-content: flex-start; /* Align content to the right in row-reverse */
             margin-left: auto;
         }
         
