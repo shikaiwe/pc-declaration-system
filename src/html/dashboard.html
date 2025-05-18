@@ -2780,6 +2780,14 @@
             min-width: 80px;
             display: inline-block;
         }
+        /* 添加欢迎页面图片样式 */
+        .welcome-mascot {
+            max-width: 100%; /* 图片最大宽度为其容器的100% */
+            height: auto; /* 高度自动调整，保持图片比例 */
+            margin-top: 20px; /* 图片上方留白 */
+            border-radius: 8px; /* 图片圆角 */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+        }
     </style>
 </head>
 
@@ -2817,6 +2825,8 @@
 
         <div class="content" id="contentArea">
             <h1>欢迎回来！</h1>
+            <!-- 添加 Mascot 图片 -->
+            <img src="../images/Mascot.jpg" alt="PC志愿者服务队吉祥物" class="welcome-mascot">
         </div>
 
         <div class="content" id="orderContent" style="display: none;">
