@@ -325,6 +325,8 @@ class OrderRating {
     }
 }
 
-// 创建并导出单例实例
-const orderRating = new OrderRating();
-export default orderRating;
+// 将OrderRating类导出为默认导出
+export default OrderRating;
+
+// 同时将其添加到全局对象，方便非模块脚本访问
+window.OrderRating = OrderRating;

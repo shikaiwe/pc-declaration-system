@@ -20,6 +20,7 @@
     <script src="../vendor/bootstrap/bootstrap.bundle.min.js"></script>
     <script type="module" src="../js/assign_order.js"></script>
     <script type="module" src="../js/message_board.js"></script>
+    <script type="module" src="../js/order_rating.js"></script>
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../css/message_board.css">
@@ -4958,44 +4959,48 @@
                         return;
                     }
                     
-                    // 引入订单评价模块
-                    import('../js/order_rating.js').then(module => {
-                        const orderRating = module.default;
-                        
-                        // 显示评价窗口
-                        orderRating.showRating(reportId, () => {
-                            // 评价完成后的回调，执行结单操作
-                            $.ajax({
-                                url: API_URLS.COMPLETE_REPORT,
-                                method: 'POST',
-                                data: JSON.stringify({ reportId }),
-                                contentType: 'application/json',
-                                xhrFields: {
-                                    withCredentials: true
-                                }
-                            })
-                            .done(function(data) {
-                                if (data.message === 'Success') {
-                                    utils.ui.showMessage('订单已完成');
-                                    updateCalendarEvent(reportId, '2');
-                                    fetchHistoryOrders();
-                                    const calendarEl = document.querySelector('#calendar');
-                                    if (calendarEl && calendarEl._fullCalendar) {
-                                        calendarEl._fullCalendar.refetchEvents();
+                    try {
+                        // 引入订单评价模块并显示评价窗口
+                        if (typeof window.OrderRating !== 'undefined') {
+                            const orderRating = new window.OrderRating();
+                            // 显示评价窗口
+                            orderRating.showRating(reportId, () => {
+                                // 评价完成后的回调，执行结单操作
+                                $.ajax({
+                                    url: API_URLS.COMPLETE_REPORT,
+                                    method: 'POST',
+                                    data: JSON.stringify({ reportId }),
+                                    contentType: 'application/json',
+                                    xhrFields: {
+                                        withCredentials: true
                                     }
-                                } else {
-                                    auth.handleSessionError(data.message);
-                                }
-                            })
-                            .fail(function(error) {
-                                console.error('完成订单失败:', error);
-                                utils.ui.showMessage('完成订单失败，请重试');
+                                })
+                                .done(function(data) {
+                                    if (data.message === 'Success') {
+                                        utils.ui.showMessage('订单已完成');
+                                        updateCalendarEvent(reportId, '2');
+                                        fetchHistoryOrders();
+                                        const calendarEl = document.querySelector('#calendar');
+                                        if (calendarEl && calendarEl._fullCalendar) {
+                                            calendarEl._fullCalendar.refetchEvents();
+                                        }
+                                    } else {
+                                        auth.handleSessionError(data.message);
+                                    }
+                                })
+                                .fail(function(error) {
+                                    console.error('完成订单失败:', error);
+                                    utils.ui.showMessage('完成订单失败，请重试');
+                                });
                             });
-                        });
-                    }).catch(error => {
+                        } else {
+                            utils.ui.showMessage('评价模块未加载，请刷新页面后重试');
+                            console.error('OrderRating模块未定义');
+                        }
+                    } catch (error) {
                         console.error('加载评价模块失败:', error);
                         utils.ui.showMessage('加载评价模块失败，请刷新页面后重试');
-                    });
+                    }
                 },
 
                 // 撤销订单
