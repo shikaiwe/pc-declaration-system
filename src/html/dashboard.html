@@ -4439,7 +4439,11 @@
                                 text: statusText,
                                 class: statusClass
                             } = orderManager.getStatusInfo(order.status);
-                            const showButtons = ['0', '1'].includes(order.status);
+                            // 待分配(0)和已分配(1)的订单都可以结单和撤单
+                            // 但只有已分配(1)状态的订单结单时才会弹出评价窗口
+                            const canComplete = ['0', '1'].includes(order.status);
+                            const canCancel = ['0', '1'].includes(order.status);
+                            const showButtons = canComplete || canCancel;
 
                             return `
                         <div class="order-card">
@@ -4479,12 +4483,16 @@
                                 </p>
                                 ${showButtons ? `
                                     <div class="order-buttons">
-                                        <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}')">
-                                            结单
-                                        </button>
-                                        <button class="cancel-order-btn" onclick="orderManager.cancelOrder('${order.reportId}')">
-                                            撤单
-                                        </button>
+                                        ${canComplete ? `
+                                            <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}', '${order.status}')">
+                                                结单
+                                            </button>
+                                        ` : ''}
+                                        ${canCancel ? `
+                                            <button class="cancel-order-btn" onclick="orderManager.cancelOrder('${order.reportId}')">
+                                                撤单
+                                            </button>
+                                        ` : ''}
                                     </div>
                                 ` : ''}
                             </div>
@@ -4500,9 +4508,9 @@
             }
 
             // 添加结单功能函数
-            async function completeOrder(reportId) {
+            async             function completeOrder(reportId, orderStatus) {
                 // 调用orderManager中的完成订单方法
-                orderManager.completeOrder(reportId);
+                orderManager.completeOrder(reportId, orderStatus);
             }
 
             // 添加撤单功能函数
@@ -4918,53 +4926,64 @@
                 },
 
                 // 完成订单
-                completeOrder: function(reportId) {
+                completeOrder: function(reportId, orderStatus) {
                     if (!reportId) {
                         utils.ui.showMessage('订单ID无效');
                         return;
                     }
                     
-                    try {
-                        // 引入订单评价模块并显示评价窗口
-                        if (typeof window.OrderRating !== 'undefined') {
-                            const orderRating = new window.OrderRating();
-                            // 显示评价窗口
-                            orderRating.showRating(reportId, () => {
-                                // 评价完成后的回调，执行结单操作
-                                $.ajax({
-                                    url: API_URLS.COMPLETE_REPORT,
-                                    method: 'POST',
-                                    data: JSON.stringify({ reportId }),
-                                    contentType: 'application/json',
-                                    xhrFields: {
-                                        withCredentials: true
-                                    }
-                                })
-                                .done(function(data) {
-                                    if (data.message === 'Success') {
-                                        utils.ui.showMessage('订单已完成');
-                                        updateCalendarEvent(reportId, '2');
-                                        fetchHistoryOrders();
-                                        const calendarEl = document.querySelector('#calendar');
-                                        if (calendarEl && calendarEl._fullCalendar) {
-                                            calendarEl._fullCalendar.refetchEvents();
-                                        }
-                                    } else {
-                                        auth.handleSessionError(data.message);
-                                    }
-                                })
-                                .fail(function(error) {
-                                    console.error('完成订单失败:', error);
-                                    utils.ui.showMessage('完成订单失败，请重试');
-                                });
-                            });
-                        } else {
-                            utils.ui.showMessage('评价模块未加载，请刷新页面后重试');
-                            console.error('OrderRating模块未定义');
+                    // 检查订单状态，只有已分配状态(1)下才需要评价
+                    const needRating = orderStatus === '1' || orderStatus === 1;
+                    
+                    // 定义执行结单操作的函数
+                    const executeComplete = () => {
+                        $.ajax({
+                            url: API_URLS.COMPLETE_REPORT,
+                            method: 'POST',
+                            data: JSON.stringify({ reportId }),
+                            contentType: 'application/json',
+                            xhrFields: {
+                                withCredentials: true
+                            }
+                        })
+                        .done(function(data) {
+                            if (data.message === 'Success') {
+                                utils.ui.showMessage('订单已完成');
+                                updateCalendarEvent(reportId, '2');
+                                fetchHistoryOrders();
+                                const calendarEl = document.querySelector('#calendar');
+                                if (calendarEl && calendarEl._fullCalendar) {
+                                    calendarEl._fullCalendar.refetchEvents();
+                                }
+                            } else {
+                                auth.handleSessionError(data.message);
+                            }
+                        })
+                        .fail(function(error) {
+                            console.error('完成订单失败:', error);
+                            utils.ui.showMessage('完成订单失败，请重试');
+                        });
+                    };
+                    
+                    // 根据订单状态决定是否显示评价窗口
+                    if (needRating) {
+                        try {
+                            // 引入订单评价模块并显示评价窗口
+                            if (typeof window.OrderRating !== 'undefined') {
+                                const orderRating = new window.OrderRating();
+                                // 显示评价窗口
+                                orderRating.showRating(reportId, executeComplete);
+                            } else {
+                                utils.ui.showMessage('评价模块未加载，请刷新页面后重试');
+                                console.error('OrderRating模块未定义');
+                            }
+                        } catch (error) {
+                            console.error('加载评价模块失败:', error);
+                            utils.ui.showMessage('加载评价模块失败，请刷新页面后重试');
                         }
-                    } catch (error) {
-                        console.error('加载评价模块失败:', error);
-                        utils.ui.showMessage('加载评价模块失败，请刷新页面后重试');
+                    } else {
+                        // 其他状态直接执行结单操作，不需要评价
+                        executeComplete();
                     }
                 },
 
