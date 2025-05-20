@@ -4501,41 +4501,8 @@
 
             // 添加结单功能函数
             async function completeOrder(reportId) {
-                $.ajax({
-                    url: API_URLS.COMPLETE_REPORT,
-                    method: 'POST',
-                    data: JSON.stringify({ reportId }),
-                    contentType: 'application/json',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                })
-                .done(function(data) {
-                    if (data.message === 'Success') {
-                        utils.ui.showMessage('订单已完成');
- 
-                        // 先更新日历显示
-                        updateCalendarEvent(reportId, '2');
-                        
-                        // 延迟执行刷新操作
-                        setTimeout(() => {
-                            // 刷新订单列表
-                            fetchHistoryOrders();
-                            
-                            // 刷新日历事件
-                            const calendarEl = document.querySelector('#calendar');
-                            if (calendarEl && calendarEl._fullCalendar) {
-                                calendarEl._fullCalendar.refetchEvents();
-                            }
-                        }, 500);
-                    } else {
-                        auth.handleSessionError(data.message);
-                    }
-                })
-                .fail(function(error) {
-                    console.error('完成订单失败:', error);
-                    utils.ui.showMessage('完成订单失败，请重试');
-                });
+                // 调用orderManager中的完成订单方法
+                orderManager.completeOrder(reportId);
             }
 
             // 添加撤单功能函数
@@ -4747,8 +4714,6 @@
                     calendar.rerenderEvents();
                 }
             }
-
-                        // 修改订单状态变化的处理函数（在订单完成时）            function completeOrder(orderId) {                // 引入订单评价模块                import('../js/order_rating.js').then(module => {                    const orderRating = module.default;                                        // 显示评价窗口                    orderRating.showRating(orderId, () => {                        // 评价完成后的回调，执行结单操作                        $.ajax({                            url: API_URLS.COMPLETE_REPORT,                            method: 'POST',                            data: JSON.stringify({ reportId: orderId }),                            contentType: 'application/json',                            xhrFields: {                                withCredentials: true                            }                        }).then(response => {                            if (response.message === 'Success') {                                utils.ui.showMessage('订单已完成');                                updateCalendarEvent(orderId, 'completed'); // 更新日历显示                                fetchHistoryOrders(); // 刷新订单列表                            } else {                                auth.handleSessionError(response.message);                            }                        }).catch(error => {                            console.error('完成订单失败:', error);                            utils.ui.showMessage('完成订单失败，请重试');                        });                    });                }).catch(error => {                    console.error('加载评价模块失败:', error);                    utils.ui.showMessage('加载评价模块失败，请刷新页面后重试');                });            }
 
             // 修改订单状态变化的处理函数（在订单撤销时）
             function cancelOrder(orderId) {
