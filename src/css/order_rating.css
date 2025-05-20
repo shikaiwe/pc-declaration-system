@@ -1,0 +1,272 @@
+/* 订单评价样式 */
+
+.rating-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.rating-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.rating-container {
+    width: 90%;
+    max-width: 500px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    padding: 25px;
+    transform: translateY(-20px);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+}
+
+.rating-overlay.active .rating-container {
+    transform: translateY(0);
+}
+
+.rating-header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.rating-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5em;
+}
+
+.rating-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 24px;
+    height: 24px;
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.rating-close:hover {
+    opacity: 1;
+}
+
+.rating-close:before,
+.rating-close:after {
+    position: absolute;
+    left: 12px;
+    content: ' ';
+    height: 24px;
+    width: 2px;
+    background-color: #333;
+}
+
+.rating-close:before {
+    transform: rotate(45deg);
+}
+
+.rating-close:after {
+    transform: rotate(-45deg);
+}
+
+.rating-stars {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.star {
+    font-size: 36px;
+    color: #ddd;
+    cursor: pointer;
+    margin: 0 5px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.star:hover,
+.star.selected {
+    color: #ffc107;
+    transform: scale(1.2);
+}
+
+.star.selected {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+    100% {
+        transform: scale(1.2);
+    }
+}
+
+
+/* 星星效果-鼠标悬浮预览 */
+
+.rating-stars.hover-1 .star:nth-child(1),
+.rating-stars.hover-2 .star:nth-child(-n+2),
+.rating-stars.hover-3 .star:nth-child(-n+3),
+.rating-stars.hover-4 .star:nth-child(-n+4),
+.rating-stars.hover-5 .star:nth-child(-n+5) {
+    color: #ffc107;
+}
+
+
+/* 星星效果-已选状态 */
+
+.rating-stars.selected-1 .star:nth-child(1),
+.rating-stars.selected-2 .star:nth-child(-n+2),
+.rating-stars.selected-3 .star:nth-child(-n+3),
+.rating-stars.selected-4 .star:nth-child(-n+4),
+.rating-stars.selected-5 .star:nth-child(-n+5) {
+    color: #ffc107;
+}
+
+.rating-description {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #666;
+    min-height: 20px;
+    font-size: 16px;
+}
+
+.rating-comment {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.rating-comment textarea {
+    width: 100%;
+    height: 100px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    resize: none;
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+.rating-comment textarea:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+.rating-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.rating-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.rating-button-cancel {
+    background-color: #f1f2f6;
+    color: #333;
+    margin-right: 10px;
+}
+
+.rating-button-cancel:hover {
+    background-color: #e2e6ea;
+}
+
+.rating-button-submit {
+    background-color: #007BFF;
+    color: white;
+}
+
+.rating-button-submit:hover {
+    background-color: #0069d9;
+}
+
+.rating-button-submit:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+
+/* 暗色模式支持 */
+
+@media (prefers-color-scheme: dark) {
+    .rating-container {
+        background-color: #333;
+        color: #f8f9fa;
+    }
+    .rating-header h3 {
+        color: #f8f9fa;
+    }
+    .rating-close:before,
+    .rating-close:after {
+        background-color: #f8f9fa;
+    }
+    .star {
+        color: #555;
+    }
+    .star:hover,
+    .star.selected {
+        color: #ffc107;
+    }
+    .rating-description {
+        color: #aaa;
+    }
+    .rating-comment textarea {
+        background-color: #444;
+        color: #f8f9fa;
+        border-color: #555;
+    }
+    .rating-comment textarea:focus {
+        border-color: #007BFF;
+    }
+    .rating-button-cancel {
+        background-color: #444;
+        color: #f8f9fa;
+    }
+    .rating-button-cancel:hover {
+        background-color: #555;
+    }
+}
+
+
+/* 响应式调整 */
+
+@media screen and (max-width: 480px) {
+    .rating-container {
+        padding: 15px;
+    }
+    .star {
+        font-size: 30px;
+        margin: 0 3px;
+    }
+    .rating-button {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}

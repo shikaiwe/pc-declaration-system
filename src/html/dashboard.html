@@ -23,6 +23,7 @@
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../css/message_board.css">
+    <link rel="stylesheet" href="../css/order_rating.css">
 
     <style>
         /* 全局样式 */
@@ -2784,14 +2785,22 @@
             display: inline-block;
         }
         /* 添加欢迎页面图片样式 */
+        
         .welcome-mascot {
-            max-width: 100%; /* 图片最大宽度为其容器的100% */
-            height: auto; /* 高度自动调整，保持图片比例 */
-            width: auto; /* 宽度自动调整，保持图片比例 */
-            max-height: 80vh; /* 限制最大高度为视口高度的80% */
-            margin-top: 20px; /* 图片上方留白 */
-            border-radius: 8px; /* 图片圆角 */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+            max-width: 100%;
+            /* 图片最大宽度为其容器的100% */
+            height: auto;
+            /* 高度自动调整，保持图片比例 */
+            width: auto;
+            /* 宽度自动调整，保持图片比例 */
+            max-height: 80vh;
+            /* 限制最大高度为视口高度的80% */
+            margin-top: 20px;
+            /* 图片上方留白 */
+            border-radius: 8px;
+            /* 图片圆角 */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            /* 添加阴影效果 */
         }
     </style>
 </head>
@@ -4738,29 +4747,7 @@
                 }
             }
 
-            // 修改订单状态变化的处理函数（在订单完成时）
-            function completeOrder(orderId) {
-                $.ajax({
-                    url: API_URLS.COMPLETE_REPORT,
-                    method: 'POST',
-                    data: JSON.stringify({ reportId: orderId }),
-                    contentType: 'application/json',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                }).then(response => {
-                    if (response.message === 'Success') {
-                        utils.ui.showMessage('订单已完成');
-                        updateCalendarEvent(orderId, 'completed'); // 更新日历显示
-                        fetchHistoryOrders(); // 刷新订单列表
-                    } else {
-                        auth.handleSessionError(response.message);
-                    }
-                }).catch(error => {
-                    console.error('完成订单失败:', error);
-                    utils.ui.showMessage('完成订单失败，请重试');
-                });
-            }
+                        // 修改订单状态变化的处理函数（在订单完成时）            function completeOrder(orderId) {                // 引入订单评价模块                import('../js/order_rating.js').then(module => {                    const orderRating = module.default;                                        // 显示评价窗口                    orderRating.showRating(orderId, () => {                        // 评价完成后的回调，执行结单操作                        $.ajax({                            url: API_URLS.COMPLETE_REPORT,                            method: 'POST',                            data: JSON.stringify({ reportId: orderId }),                            contentType: 'application/json',                            xhrFields: {                                withCredentials: true                            }                        }).then(response => {                            if (response.message === 'Success') {                                utils.ui.showMessage('订单已完成');                                updateCalendarEvent(orderId, 'completed'); // 更新日历显示                                fetchHistoryOrders(); // 刷新订单列表                            } else {                                auth.handleSessionError(response.message);                            }                        }).catch(error => {                            console.error('完成订单失败:', error);                            utils.ui.showMessage('完成订单失败，请重试');                        });                    });                }).catch(error => {                    console.error('加载评价模块失败:', error);                    utils.ui.showMessage('加载评价模块失败，请刷新页面后重试');                });            }
 
             // 修改订单状态变化的处理函数（在订单撤销时）
             function cancelOrder(orderId) {
@@ -4970,32 +4957,44 @@
                         utils.ui.showMessage('订单ID无效');
                         return;
                     }
-
-                    $.ajax({
-                        url: API_URLS.COMPLETE_REPORT,
-                        method: 'POST',
-                        data: JSON.stringify({ reportId }),
-                        contentType: 'application/json',
-                        xhrFields: {
-                            withCredentials: true
-                        }
-                    })
-                    .done(function(data) {
-                        if (data.message === 'Success') {
-                            utils.ui.showMessage('订单已完成');
-                            updateCalendarEvent(reportId, '2');
-                            fetchHistoryOrders();
-                            const calendarEl = document.querySelector('#calendar');
-                            if (calendarEl && calendarEl._fullCalendar) {
-                                calendarEl._fullCalendar.refetchEvents();
-                            }
-                        } else {
-                            auth.handleSessionError(data.message);
-                        }
-                    })
-                    .fail(function(error) {
-                        console.error('完成订单失败:', error);
-                        utils.ui.showMessage('完成订单失败，请重试');
+                    
+                    // 引入订单评价模块
+                    import('../js/order_rating.js').then(module => {
+                        const orderRating = module.default;
+                        
+                        // 显示评价窗口
+                        orderRating.showRating(reportId, () => {
+                            // 评价完成后的回调，执行结单操作
+                            $.ajax({
+                                url: API_URLS.COMPLETE_REPORT,
+                                method: 'POST',
+                                data: JSON.stringify({ reportId }),
+                                contentType: 'application/json',
+                                xhrFields: {
+                                    withCredentials: true
+                                }
+                            })
+                            .done(function(data) {
+                                if (data.message === 'Success') {
+                                    utils.ui.showMessage('订单已完成');
+                                    updateCalendarEvent(reportId, '2');
+                                    fetchHistoryOrders();
+                                    const calendarEl = document.querySelector('#calendar');
+                                    if (calendarEl && calendarEl._fullCalendar) {
+                                        calendarEl._fullCalendar.refetchEvents();
+                                    }
+                                } else {
+                                    auth.handleSessionError(data.message);
+                                }
+                            })
+                            .fail(function(error) {
+                                console.error('完成订单失败:', error);
+                                utils.ui.showMessage('完成订单失败，请重试');
+                            });
+                        });
+                    }).catch(error => {
+                        console.error('加载评价模块失败:', error);
+                        utils.ui.showMessage('加载评价模块失败，请刷新页面后重试');
                     });
                 },
 
@@ -5116,7 +5115,7 @@
             });
         </script>
         <!-- 删除原有的备案信息 -->
-        
+
         <!-- 备案与版权信息footer 开始 -->
         <footer class="site-footer">
             <span>© 2025 广州南方学院PC志愿者服务队</span>
@@ -5136,6 +5135,7 @@
                 margin-top: 40px;
                 word-break: break-all;
             }
+            
             .site-footer a {
                 color: #666;
                 text-decoration: none;
@@ -5143,10 +5143,12 @@
                 transition: color 0.3s, transform 0.3s;
                 font-size: 15px;
             }
+            
             .site-footer a:hover {
                 color: #1890ff;
                 transform: scale(1.05);
             }
+            
             @media (max-width: 600px) {
                 .site-footer {
                     font-size: 13px;
