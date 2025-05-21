@@ -14,9 +14,11 @@
     <script src="../vendor/bootstrap/bootstrap.bundle.min.js"></script>
     <script type="module" src="../js/assign_order.js"></script>
     <script type="module" src="../js/message_board.js"></script>
+    <script type="module" src="../js/order_rating.js"></script>
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../css/message_board.css">
+    <link rel="stylesheet" href="../css/order_rating.css">
 
     <style>
         /* 全局样式 */
@@ -1863,12 +1865,12 @@
             align-items: flex-start;
             margin-bottom: 16px;
             position: relative;
-            width: 100%; /* Ensure message item takes full width */
+            width: 100%;
         }
         
         .message-item.sent {
             flex-direction: row-reverse;
-            justify-content: flex-start; /* Align content to the right in row-reverse */
+            justify-content: flex-start;
             margin-left: auto;
         }
         
@@ -2129,6 +2131,7 @@
             }
         }
         /* 备案与版权信息footer 开始 */
+        
         .site-footer {
             width: 100%;
             text-align: center;
@@ -2142,6 +2145,7 @@
             margin-top: 40px;
             word-break: break-all;
         }
+        
         .site-footer a {
             color: #666;
             text-decoration: none;
@@ -2149,10 +2153,12 @@
             transition: color 0.3s, transform 0.3s;
             font-size: 15px;
         }
+        
         .site-footer a:hover {
             color: #1890ff;
             transform: scale(1.05);
         }
+        
         @media (max-width: 600px) {
             .site-footer {
                 font-size: 13px;
@@ -2163,6 +2169,88 @@
                 margin-left: 0;
                 display: block;
                 margin-top: 4px;
+            }
+        }
+    </style>
+
+    <!-- 移动端订单评价优化样式 -->
+    <style>
+        /* 移动端评价界面适配 */
+        
+        @media (max-width: 480px) {
+            .rating-container {
+                width: 94%;
+                padding: 20px 15px;
+                max-width: none;
+                border-radius: 10px;
+                box-sizing: border-box;
+            }
+            .rating-header {
+                padding-bottom: 12px;
+                margin-bottom: 15px;
+            }
+            .rating-header h3 {
+                font-size: 18px;
+            }
+            .rating-stars {
+                margin: 15px 0;
+            }
+            .star {
+                font-size: 30px;
+                margin: 0 3px;
+            }
+            .rating-description {
+                font-size: 14px;
+                margin-bottom: 15px;
+            }
+            .rating-comment textarea {
+                height: 80px;
+                padding: 10px;
+                font-size: 14px;
+            }
+            .rating-footer {
+                margin-top: 15px;
+            }
+            .rating-button {
+                padding: 10px 15px;
+                font-size: 14px;
+                border-radius: 4px;
+            }
+            /* 确保评价弹窗在iOS Safari上显示正常 */
+            .rating-overlay {
+                -webkit-overflow-scrolling: touch;
+                position: fixed;
+            }
+            /* 适应全面屏手机底部安全区域 */
+            @supports (padding-bottom: env(safe-area-inset-bottom)) {
+                .rating-container {
+                    padding-bottom: calc(15px + env(safe-area-inset-bottom));
+                }
+            }
+            /* 触摸优化 */
+            .rating-button,
+            .star,
+            .rating-close {
+                cursor: default;
+                -webkit-tap-highlight-color: transparent;
+                min-height: 44px;
+                min-width: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            /* 优化评分星星的触摸区域 */
+            .star {
+                position: relative;
+                padding: 5px;
+            }
+            .star::after {
+                content: '';
+                position: absolute;
+                top: -10px;
+                left: -10px;
+                right: -10px;
+                bottom: -10px;
             }
         }
     </style>
@@ -2827,19 +2915,17 @@
                                 preferredTimeInput.dataset.submitValue = '';
                             }
                         }
-                        // 如果在历史订单页面，刷新订单列表
-                        if (document.getElementById('orderHistory').style.display === 'block') {
-                            orderManager.fetchHistoryOrders();
-                        }
-                        // 关闭订单管理模态框
+                        
+                        // 自动跳转到历史订单页面
                         setTimeout(() => {
-                            utils.ui.hideModal('orderManagementModal');
-                            // 移除卡片的active状态
-                            const orderManagementCard = document.getElementById('order-management');
-                            if (orderManagementCard) {
-                                orderManagementCard.classList.remove('active');
+                            const historyTab = document.querySelector('#orderManagementModal .tab-link[onclick*="orderHistory"]');
+                            if (historyTab) {
+                                // 触发点击事件，切换到历史订单标签页
+                                historyTab.click();
+                                // 刷新历史订单数据
+                                orderManager.fetchHistoryOrders(true);
                             }
-                        }, 1500);
+                        }, 1000);
                     } else {
                         utils.ui.showMessage(data.message || '提交失败，请重试');
                         auth.handleSessionError(data.message);
@@ -2944,7 +3030,7 @@
                         </p>
                         ${showButtons ? `
                             <div class="order-buttons">
-                                <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}')">
+                                <button class="complete-order-btn" onclick="orderManager.completeOrder('${order.reportId}', '${order.status}')">
                                     结单
                                 </button>
                                 <button class="cancel-order-btn" onclick="orderManager.cancelOrder('${order.reportId}')">
@@ -2999,33 +3085,63 @@
         }
     },
 
-    completeOrder(reportId) {
+    completeOrder(reportId, orderStatus) {
         if (!reportId) {
             utils.ui.showMessage('订单ID无效');
             return;
         }
-
-        return $.ajax({
-            url: API_URLS.COMPLETE_REPORT,
-            method: 'POST',
-            data: JSON.stringify({ reportId }),
-            contentType: 'application/json',
-            xhrFields: {
-                withCredentials: true
+        
+        // 检查订单状态，只有已分配状态(1)下才需要评价
+        const needRating = orderStatus === '1' || orderStatus === 1;
+        
+        // 定义执行结单操作的函数
+        const executeComplete = () => {
+            utils.ui.showLoading(true);
+            return $.ajax({
+                url: API_URLS.COMPLETE_REPORT,
+                method: 'POST',
+                data: JSON.stringify({ reportId }),
+                contentType: 'application/json',
+                xhrFields: {
+                    withCredentials: true
+                }
+            }).then((data) => {
+                utils.ui.showLoading(false);
+                if (data.message === 'Success') {
+                    utils.ui.showMessage('订单已完成');
+                    this.updateOrderStatus(reportId, '2');
+                    // 强制刷新历史订单列表
+                    this.fetchHistoryOrders(true);
+                } else {
+                    auth.handleSessionError(data.message);
+                }
+            }).catch((error) => {
+                utils.ui.showLoading(false);
+                console.error('完成订单失败:', error);
+                utils.ui.showMessage('完成订单失败，请重试');
+            });
+        };
+        
+        // 根据订单状态决定是否显示评价窗口
+        if (needRating) {
+            try {
+                // 引入订单评价模块并显示评价窗口
+                if (typeof window.OrderRating !== 'undefined') {
+                    const orderRating = new window.OrderRating();
+                    // 显示评价窗口
+                    orderRating.showRating(reportId, executeComplete);
+                } else {
+                    utils.ui.showMessage('评价模块未加载，请刷新页面后重试');
+                    console.error('OrderRating模块未定义');
+                }
+            } catch (error) {
+                console.error('加载评价模块失败:', error);
+                utils.ui.showMessage('加载评价模块失败，请刷新页面后重试');
             }
-        }).then((data) => {
-            if (data.message === 'Success') {
-                utils.ui.showMessage('订单已完成');
-                this.updateOrderStatus(reportId, '2');
-                // 强制刷新历史订单列表
-                this.fetchHistoryOrders(true);
-            } else {
-                auth.handleSessionError(data.message);
-            }
-        }).catch((error) => {
-            console.error('完成订单失败:', error);
-            utils.ui.showMessage('完成订单失败，请重试');
-        });
+        } else {
+            // 其他状态直接执行结单操作，不需要评价
+            executeComplete();
+        }
     },
 
     cancelOrder(reportId) {
@@ -3606,38 +3722,94 @@
                 
                 if (completeOrderBtn) {
                     completeOrderBtn.addEventListener('click', () => {
-                        utils.ui.showLoading(true);
-                        $.ajax({
-                            url: API_URLS.COMPLETE_REPORT,
-                            method: 'POST',
-                            data: JSON.stringify({ reportId: order.reportId }),
-                            contentType: 'application/json',
-                            xhrFields: {
-                                withCredentials: true
-                            }
-                        }).then(response => {
-                            utils.ui.showLoading(false);
-                            if (response.message === 'Success') {
-                                utils.ui.showMessage('订单已完成');
-                                // 更新日历事件状态
-                                if (this.calendar) {
-                                    const event = this.calendar.getEventById(order.reportId);
-                                    if (event) {
-                                        event.setExtendedProp('status', '2');
-                                        event.setProp('backgroundColor', '#17a2b8');
-                                        event.setProp('borderColor', '#17a2b8');
-                                    }
+                        // 获取订单状态
+                        const orderStatus = order.status || '0';
+                        
+                        // 检查订单状态，只有已分配状态(1)下才需要评价
+                        const needRating = orderStatus === '1' || orderStatus === 1;
+                        
+                        // 定义完成订单后的回调
+                        const completeCallback = () => {
+                            // 更新日历事件状态
+                            if (this.calendar) {
+                                const event = this.calendar.getEventById(order.reportId);
+                                if (event) {
+                                    event.setExtendedProp('status', '2');
+                                    event.setProp('backgroundColor', '#17a2b8');
+                                    event.setProp('borderColor', '#17a2b8');
                                 }
-                                // 关闭详情弹窗
-                                this.hideEventDetail();
-                            } else {
-                                auth.handleSessionError(response.message);
                             }
-                        }).catch(error => {
-                            utils.ui.showLoading(false);
-                            console.error('完成订单失败:', error);
-                            utils.ui.showMessage('完成订单失败，请重试');
-                        });
+                            // 关闭详情弹窗
+                            this.hideEventDetail();
+                            
+                            // 刷新订单列表
+                            this.fetchHistoryOrders(true);
+                        };
+                        
+                        // 根据订单状态决定是否显示评价窗口
+                        if (needRating) {
+                            try {
+                                // 引入订单评价模块并显示评价窗口
+                                if (typeof window.OrderRating !== 'undefined') {
+                                    const orderRating = new window.OrderRating();
+                                    // 显示评价窗口
+                                    orderRating.showRating(order.reportId, () => {
+                                        utils.ui.showLoading(true);
+                                        $.ajax({
+                                            url: API_URLS.COMPLETE_REPORT,
+                                            method: 'POST',
+                                            data: JSON.stringify({ reportId: order.reportId }),
+                                            contentType: 'application/json',
+                                            xhrFields: {
+                                                withCredentials: true
+                                            }
+                                        }).then(response => {
+                                            utils.ui.showLoading(false);
+                                            if (response.message === 'Success') {
+                                                utils.ui.showMessage('订单已完成');
+                                                completeCallback();
+                                            } else {
+                                                auth.handleSessionError(response.message);
+                                            }
+                                        }).catch(error => {
+                                            utils.ui.showLoading(false);
+                                            console.error('完成订单失败:', error);
+                                            utils.ui.showMessage('完成订单失败，请重试');
+                                        });
+                                    });
+                                } else {
+                                    utils.ui.showMessage('评价模块未加载，请刷新页面后重试');
+                                    console.error('OrderRating模块未定义');
+                                }
+                            } catch (error) {
+                                console.error('加载评价模块失败:', error);
+                                utils.ui.showMessage('加载评价模块失败，请刷新页面后重试');
+                            }
+                        } else {
+                            // 其他状态直接执行结单操作，不需要评价
+                            utils.ui.showLoading(true);
+                            $.ajax({
+                                url: API_URLS.COMPLETE_REPORT,
+                                method: 'POST',
+                                data: JSON.stringify({ reportId: order.reportId }),
+                                contentType: 'application/json',
+                                xhrFields: {
+                                    withCredentials: true
+                                }
+                            }).then(response => {
+                                utils.ui.showLoading(false);
+                                if (response.message === 'Success') {
+                                    utils.ui.showMessage('订单已完成');
+                                    completeCallback();
+                                } else {
+                                    auth.handleSessionError(response.message);
+                                }
+                            }).catch(error => {
+                                utils.ui.showLoading(false);
+                                console.error('完成订单失败:', error);
+                                utils.ui.showMessage('完成订单失败，请重试');
+                            });
+                        }
                     });
                 }
                 
@@ -4579,6 +4751,11 @@
     <script type="module">
         import messageBoard from '../js/message_board.js'; window.messageBoard = messageBoard; // 不在这里直接初始化，而是在点击留言板卡片时初始化
     </script>
+
+    <!-- 引入订单评价模块 -->
+    <script type="module">
+        import OrderRating from '../js/order_rating.js'; window.OrderRating = OrderRating;
+    </script>
     <!-- 备案与版权信息footer 开始 -->
     <footer class="site-footer">
         <span>© 2025 广州南方学院PC志愿者服务队</span>
@@ -4598,6 +4775,7 @@
             margin-top: 40px;
             word-break: break-all;
         }
+        
         .site-footer a {
             color: #666;
             text-decoration: none;
@@ -4605,10 +4783,12 @@
             transition: color 0.3s, transform 0.3s;
             font-size: 15px;
         }
+        
         .site-footer a:hover {
             color: #1890ff;
             transform: scale(1.05);
         }
+        
         @media (max-width: 600px) {
             .site-footer {
                 font-size: 13px;
