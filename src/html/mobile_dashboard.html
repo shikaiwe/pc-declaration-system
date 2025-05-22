@@ -355,6 +355,13 @@
         .tab-content button:hover {
             background-color: #0056b3;
         }
+        
+        .password-requirements {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
         /* 退出确认模态框样式 */
         
         .logout-modal {
@@ -2337,6 +2344,7 @@
                     <div>
                         <label for="new-password">新密码:</label>
                         <input type="password" id="new-password" name="new-password" required>
+                        <div class="password-requirements">密码至少包含8个字符，需包含字母和数字</div>
                     </div>
                     <div>
                         <label for="confirm-password">确认密码:</label>
@@ -4617,6 +4625,21 @@
         const newPassword = document.getElementById('new-password').value;
         const confirmPassword = document.getElementById('confirm-password').value;
 
+        // 验证密码格式
+        const validatePassword = (password) => {
+            const minLength = 8;
+            const hasLetter = /[a-zA-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            return password.length >= minLength && hasLetter && hasNumber;
+        };
+
+        // 检查新密码是否符合规则
+        if (!validatePassword(newPassword)) {
+            utils.ui.showMessage('密码必须至少包含8个字符，且包含字母和数字');
+            return;
+        }
+
+        // 检查两次密码是否一致
         if (newPassword !== confirmPassword) {
             utils.ui.showMessage('两次输入的新密码不一致');
             return;
