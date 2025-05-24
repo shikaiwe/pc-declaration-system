@@ -7,6 +7,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    padding-bottom: 50px; /* 为底部备案信息预留空间 */
 }
 
 .container {
@@ -168,11 +169,78 @@ h2 {
 @media (max-width: 480px) {
     .container {
         padding: 30px 25px;
+        margin-bottom: 60px; /* 为底部备案信息预留空间 */
     }
     h2 {
         font-size: 24px;
     }
     button {
         padding: 12px;
+    }
+    body {
+        padding-bottom: 70px; /* 在移动设备上增加更多底部间距 */
+        min-height: 100vh;
+        height: auto; /* 允许内容超出视口高度 */
+    }
+} 
+
+/* 底部备案信息样式 */
+.site-footer {
+    width: 100%;
+    text-align: center;
+    padding: 16px 8px 20px 8px;
+    background: transparent;
+    color: #666;
+    font-size: 15px;
+    font-family: 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+    box-sizing: border-box;
+    line-height: 1.6;
+    margin-top: 40px;
+    word-break: break-all;
+    position: fixed;
+    bottom: 0;
+    left: 0; /* 确保左对齐 */
+    z-index: 1000; /* 确保在其他元素之上 */
+}
+
+.site-footer a {
+    color: #666;
+    text-decoration: none;
+    margin-left: 12px;
+    transition: color 0.3s, transform 0.3s;
+    font-size: 15px;
+}
+
+.site-footer a:hover {
+    color: #1890ff;
+    transform: scale(1.05);
+}
+
+@media (max-width: 600px) {
+    .site-footer {
+        font-size: 13px;
+        padding: 12px 4px 16px 4px;
+        position: fixed; /* 确保在移动设备上也是固定的 */
+        bottom: 0;
+    }
+    .site-footer a {
+        font-size: 13px;
+        margin-left: 0;
+        display: inline-block; /* 改为行内块，让版权信息和备案号在同一行 */
+        margin-top: 0;
+        padding: 0 5px;
+    }
+    
+    .container {
+        margin-bottom: 60px; /* 确保内容不被底部footer遮挡 */
+        padding-bottom: 20px;
+    }
+}
+
+@media (max-width: 360px) {
+    .site-footer span, .site-footer a {
+        display: block;
+        text-align: center;
+        margin: 5px auto;
     }
 } 
