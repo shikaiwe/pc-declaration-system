@@ -4246,13 +4246,13 @@
                                     // 如果当前时间早于18:00，默认选择18:00
                                     defaultTimeIndex = 0; // 18:00对应的索引
                                 } else if (hours >= 21) {
-                                    // 如果当前时间晚于或等于21:00，默认选择第二天18:00
+                                    // 如果当前时间晚于或等于21:00，默认选择18:00
                                     defaultTimeIndex = 0; // 18:00对应的索引
                                 } else {
-                                    // 当前时间在18:00-21:00之间，找到最接近的5分钟时间点
+                                    // 当前时间在18:00-21:00之间，找到最接近的15分钟时间点
                                     const totalMinutes = hours * 60 + minutes;
                                     const startMinutes = 18 * 60;
-                                    const minutesDiff = Math.floor((totalMinutes - startMinutes) / 5);
+                                    const minutesDiff = Math.floor((totalMinutes - startMinutes) / 15);
                                     defaultTimeIndex = minutesDiff;
                                 }
                                 
