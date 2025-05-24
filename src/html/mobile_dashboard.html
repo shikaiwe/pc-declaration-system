@@ -4096,6 +4096,8 @@
 
     // 在 script 标签内，初始化代码之前添加日期时间选择器模块
     const dateTimePicker = {
+        activeInstance: null,
+        
         init() {
             const preferredTimeInput = document.getElementById('preferredTime');
             if (!preferredTimeInput) return;
@@ -4104,48 +4106,6 @@
             let existingPicker = document.querySelector('.datetime-picker');
             if (existingPicker) {
                 existingPicker.remove();
-            }
-
-            // 生成日期选项
-            function generateDateSlides() {
-                const dates = [];
-                const now = new Date();
-                const hours = now.getHours();
-                
-                // 如果当前时间晚于21:00，从第二天开始
-                const startDay = hours >= 21 ? 1 : 0;
-                const daysToShow = 14; // 显示14天的选项
-                
-                for (let i = startDay; i < startDay + daysToShow; i++) {
-                    const date = new Date(now);
-                    date.setDate(now.getDate() + i);
-                    dates.push(`
-                        <div class="swiper-slide">
-                            <div class="date-item">
-                                ${date.getMonth() + 1}月${date.getDate()}日
-                            </div>
-                        </div>
-                    `);
-                }
-                return dates.join('');
-            }
-
-            // 生成时间选项
-            function generateTimeSlides() {
-                const times = [];
-                for (let hour = 18; hour <= 21; hour++) {
-                    for (let minute = 0; minute < 60; minute += 15) {
-                        if (hour === 21 && minute > 0) break;
-                        times.push(`
-                            <div class="swiper-slide">
-                                <div class="time-item">
-                                    ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}
-                                </div>
-                            </div>
-                        `);
-                    }
-                }
-                return times.join('');
             }
 
             // 创建选择器HTML
@@ -4161,13 +4121,13 @@
                     <div class="picker-content">
                         <div class="swiper-container date-swiper">
                             <div class="swiper-wrapper">
-                                ${generateDateSlides()}
+                                ${this.generateDateSlides()}
                             </div>
                             <div class="swiper-scrollbar"></div>
                         </div>
                         <div class="swiper-container time-swiper">
                             <div class="swiper-wrapper">
-                                ${generateTimeSlides()}
+                                ${this.generateTimeSlides()}
                             </div>
                             <div class="swiper-scrollbar"></div>
                         </div>
@@ -4176,180 +4136,317 @@
             `;
             document.body.appendChild(pickerContainer);
 
-            // 移除之前的点击事件（如果有）
+            // 保存当前实例引用
+            this.activeInstance = {
+                container: pickerContainer,
+                dateSwiper: null,
+                timeSwiper: null
+            };
+
+            // 清除之前的事件监听器
             preferredTimeInput.removeEventListener('click', this.showPicker);
+            
             // 添加新的点击事件
             preferredTimeInput.addEventListener('click', () => {
-                pickerContainer.classList.add('active');
-                utils.ui.toggleBodyScroll(true);
-                document.body.style.overflow = 'hidden';
-                document.body.style.position = 'fixed';
-                document.body.style.width = '100%';
+                this.showPicker(pickerContainer);
             });
 
             // 初始化Swiper
-            let dateSwiper, timeSwiper;
+            this.initSwipers();
+            
+            // 绑定事件处理器
+            this.bindEvents(pickerContainer, preferredTimeInput);
+        },
+        
+        // 生成日期选项
+        generateDateSlides() {
+            const dates = [];
+            const now = new Date();
+            const hours = now.getHours();
+            
+            // 如果当前时间晚于21:00，从第二天开始
+            const startDay = hours >= 21 ? 1 : 0;
+            const daysToShow = 14; // 显示14天的选项
+            
+            for (let i = startDay; i < startDay + daysToShow; i++) {
+                const date = new Date(now);
+                date.setDate(now.getDate() + i);
+                dates.push(`
+                    <div class="swiper-slide">
+                        <div class="date-item" data-year="${date.getFullYear()}" data-month="${date.getMonth() + 1}" data-day="${date.getDate()}">
+                            ${date.getMonth() + 1}月${date.getDate()}日
+                        </div>
+                    </div>
+                `);
+            }
+            return dates.join('');
+        },
+        
+        // 生成时间选项
+        generateTimeSlides() {
+            const times = [];
+            // 只显示18:00-21:00之间的时间，每15分钟一个选项
+            for (let hour = 18; hour <= 21; hour++) {
+                for (let minute = 0; minute < 60; minute += 15) {
+                    // 21:00之后不显示
+                    if (hour === 21 && minute > 0) break;
+                    
+                    times.push(`
+                        <div class="swiper-slide">
+                            <div class="time-item" data-hour="${hour}" data-minute="${minute}">
+                                ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}
+                            </div>
+                        </div>
+                    `);
+                }
+            }
+            return times.join('');
+        },
+        
+        // 初始化Swiper实例
+        initSwipers() {
+            if (!this.activeInstance) return;
+            
+            const container = this.activeInstance.container;
+            
+            // 初始化日期选择器
             setTimeout(() => {
-                dateSwiper = new Swiper('.date-swiper', {
+                this.activeInstance.dateSwiper = new Swiper(container.querySelector('.date-swiper'), {
                     direction: 'vertical',
                     slidesPerView: 5,
                     centeredSlides: true,
                     spaceBetween: 10,
                     scrollbar: {
-                        el: '.date-swiper .swiper-scrollbar',
+                        el: container.querySelector('.date-swiper .swiper-scrollbar'),
                         draggable: true
                     },
                     mousewheel: true,
                     on: {
                         init: function() {
+                            // 为每个滑块添加点击事件
                             this.slides.forEach((slide, index) => {
                                 slide.addEventListener('click', () => {
-                                    this.slideTo(index, 400);
+                                    this.slideTo(index, 300);
                                 });
                             });
                             
                             // 默认选择第一个可用日期
                             this.slideTo(0, 0);
                         },
-                        // 添加滑动完成后的事件监听
                         slideChange: function() {
                             // 如果时间选择器已初始化，则更新日期时间
-                            if (timeSwiper) {
-                                updateSelectedDateTime(dateSwiper, timeSwiper);
+                            if (dateTimePicker.activeInstance && dateTimePicker.activeInstance.timeSwiper) {
+                                dateTimePicker.updateSelectedDateTime();
                             }
                         }
                     }
                 });
 
-                // 在日期选择器初始化完成后再初始化时间选择器
-                setTimeout(() => {
-                    timeSwiper = new Swiper('.time-swiper', {
-                        direction: 'vertical',
-                        slidesPerView: 5,
-                        centeredSlides: true,
-                        spaceBetween: 10,
-                        scrollbar: {
-                            el: '.time-swiper .swiper-scrollbar',
-                            draggable: true
-                        },
-                        mousewheel: true,
-                        on: {
-                            init: function() {
-                                this.slides.forEach((slide, index) => {
-                                    slide.addEventListener('click', () => {
-                                        this.slideTo(index, 400);
-                                    });
+                // 初始化时间选择器
+                this.activeInstance.timeSwiper = new Swiper(container.querySelector('.time-swiper'), {
+                    direction: 'vertical',
+                    slidesPerView: 5,
+                    centeredSlides: true,
+                    spaceBetween: 10,
+                    scrollbar: {
+                        el: container.querySelector('.time-swiper .swiper-scrollbar'),
+                        draggable: true
+                    },
+                    mousewheel: true,
+                    on: {
+                        init: function() {
+                            // 为每个滑块添加点击事件
+                            this.slides.forEach((slide, index) => {
+                                slide.addEventListener('click', () => {
+                                    this.slideTo(index, 300);
                                 });
-                                
-                                // 获取当前时间
-                                const now = new Date();
-                                const hours = now.getHours();
-                                const minutes = now.getMinutes();
-                                
-                                // 计算默认时间索引
-                                let defaultTimeIndex = 0;
-                                if (hours < 18) {
-                                    // 如果当前时间早于18:00，默认选择18:00
-                                    defaultTimeIndex = 0; // 18:00对应的索引
-                                } else if (hours >= 21) {
-                                    // 如果当前时间晚于或等于21:00，默认选择18:00
-                                    defaultTimeIndex = 0; // 18:00对应的索引
-                                } else {
-                                    // 当前时间在18:00-21:00之间，找到最接近的15分钟时间点
-                                    const totalMinutes = hours * 60 + minutes;
-                                    const startMinutes = 18 * 60;
-                                    const minutesDiff = Math.floor((totalMinutes - startMinutes) / 15);
-                                    defaultTimeIndex = minutesDiff;
-                                }
-                                
-                                // 滑动到默认时间位置
-                                this.slideTo(defaultTimeIndex, 0);
+                            });
+                            
+                            // 设置默认时间索引
+                            let defaultTimeIndex = dateTimePicker.getDefaultTimeIndex();
+                            this.slideTo(defaultTimeIndex, 0);
 
-                                // 初始化默认值
-                                updateSelectedDateTime(dateSwiper, timeSwiper);
-                            },
-                            // 添加滑动完成后的事件监听
-                            slideChange: function() {
-                                updateSelectedDateTime(dateSwiper, timeSwiper);
-                            }
-                        }
-                    });
-
-                    // 添加更新日期时间的辅助函数
-                    function updateSelectedDateTime(dateSwiper, timeSwiper) {
-                        if (!dateSwiper || !timeSwiper || 
-                            !dateSwiper.slides || !timeSwiper.slides || 
-                            !dateSwiper.slides[dateSwiper.activeIndex] || 
-                            !timeSwiper.slides[timeSwiper.activeIndex]) {
-                            return;
-                        }
-                        
-                        const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
-                        const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
-                        const year = new Date().getFullYear();
-                        const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
-                        const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
-                        const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
-                        
-                        const preferredTimeInput = document.getElementById('preferredTime');
-                        if (preferredTimeInput) {
-                            preferredTimeInput.value = displayDateTime;
-                            preferredTimeInput.dataset.submitValue = submitDateTime;
+                            // 初始化默认值
+                            dateTimePicker.updateSelectedDateTime();
+                        },
+                        slideChange: function() {
+                            dateTimePicker.updateSelectedDateTime();
                         }
                     }
-
-                    // 绑定取消按钮事件
-                    pickerContainer.querySelector('.picker-cancel').addEventListener('click', () => {
-                        this.hide(pickerContainer);
-                    });
-
-                    // 绑定确认按钮事件
-                    pickerContainer.querySelector('.picker-confirm').addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        if (dateSwiper && timeSwiper) {
-                            const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
-                            const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
-
-                            const [hours, minutes] = selectedTime.split(':').map(Number);
-                            if (hours < 18 || (hours === 21 && minutes > 0) || hours > 21) {
-                                utils.ui.showMessage('请选择18:00-21:00之间的时间');
-                                return;
-                            }
-
-                            const year = new Date().getFullYear();
-                            const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
-                            const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
-                            const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
-
-                            preferredTimeInput.value = displayDateTime;
-                            preferredTimeInput.dataset.submitValue = submitDateTime;
-
-                            this.hide(pickerContainer);
-                        }
-                    });
-
-                    // 点击背景关闭
-                    pickerContainer.addEventListener('click', (e) => {
-                        if (e.target === pickerContainer) {
-                            this.hide(pickerContainer);
-                        }
-                    });
-                }, 0);
+                });
             }, 0);
         },
+        
+        // 获取默认时间索引
+        getDefaultTimeIndex() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            
+            // 如果当前时间早于18:00，默认选择18:00
+            if (hours < 18) return 0;
+            
+            // 如果当前时间晚于或等于21:00，默认选择18:00
+            if (hours >= 21) return 0;
+            
+            // 当前时间在18:00-21:00之间，找到最接近的15分钟时间点
+            const totalMinutes = (hours - 18) * 60 + minutes;
+            const timeSlotIndex = Math.floor(totalMinutes / 15);
+            
+            // 确保索引在有效范围内
+            return Math.min(timeSlotIndex, 12); // 最多13个时间点(0-12)
+        },
+        
+        // 绑定事件处理器
+        bindEvents(pickerContainer, inputElement) {
+            if (!pickerContainer || !inputElement) return;
+            
+            // 绑定取消按钮事件
+            pickerContainer.querySelector('.picker-cancel').addEventListener('click', () => {
+                this.hide();
+            });
 
-        hide(pickerContainer) {
-            pickerContainer.classList.remove('active');
-            utils.ui.toggleBodyScroll(false);
+            // 绑定确认按钮事件
+            pickerContainer.querySelector('.picker-confirm').addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 确保日期时间有效，然后应用
+                if (this.validateSelectedDateTime()) {
+                    this.applySelectedDateTime(inputElement);
+                    this.hide();
+                }
+            });
+
+            // 点击背景关闭
+            pickerContainer.addEventListener('click', (e) => {
+                if (e.target === pickerContainer) {
+                    this.hide();
+                }
+            });
+        },
+        
+        // 验证选择的日期时间
+        validateSelectedDateTime() {
+            if (!this.activeInstance || !this.activeInstance.dateSwiper || !this.activeInstance.timeSwiper) {
+                return false;
+            }
+            
+            // 获取当前选择的时间
+            const timeSlide = this.activeInstance.timeSwiper.slides[this.activeInstance.timeSwiper.activeIndex];
+            if (!timeSlide) return false;
+            
+            const timeItem = timeSlide.querySelector('.time-item');
+            if (!timeItem) return false;
+            
+            const hours = parseInt(timeItem.getAttribute('data-hour'));
+            const minutes = parseInt(timeItem.getAttribute('data-minute'));
+            
+            // 验证时间范围 (18:00-21:00)
+            if (hours < 18 || (hours === 21 && minutes > 0) || hours > 21) {
+                utils.ui.showMessage('请选择18:00-21:00之间的时间');
+                return false;
+            }
+            
+            return true;
+        },
+        
+        // 更新选择的日期时间显示
+        updateSelectedDateTime() {
+            if (!this.activeInstance || !this.activeInstance.dateSwiper || !this.activeInstance.timeSwiper) {
+                return;
+            }
+            
+            const dateSlide = this.activeInstance.dateSwiper.slides[this.activeInstance.dateSwiper.activeIndex];
+            const timeSlide = this.activeInstance.timeSwiper.slides[this.activeInstance.timeSwiper.activeIndex];
+            
+            if (!dateSlide || !timeSlide) return;
+            
+            const dateItem = dateSlide.querySelector('.date-item');
+            const timeItem = timeSlide.querySelector('.time-item');
+            
+            if (!dateItem || !timeItem) return;
+            
+            // 从data属性获取日期时间值
+            const year = dateItem.getAttribute('data-year');
+            const month = dateItem.getAttribute('data-month');
+            const day = dateItem.getAttribute('data-day');
+            const hour = timeItem.getAttribute('data-hour');
+            const minute = timeItem.getAttribute('data-minute');
+            
+            // 构造显示格式和提交格式
+            const displayDateTime = `${year}年${month}月${day}日 ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+            const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+            
+            // 临时预览
+            const preferredTimeInput = document.getElementById('preferredTime');
+            if (preferredTimeInput) {
+                preferredTimeInput.value = displayDateTime;
+                preferredTimeInput.dataset.previewValue = submitDateTime;
+            }
+        },
+        
+        // 应用选择的日期时间到输入框
+        applySelectedDateTime(inputElement) {
+            if (!inputElement || !inputElement.dataset.previewValue) return;
+            
+            // 将预览值作为最终值
+            inputElement.dataset.submitValue = inputElement.dataset.previewValue;
+        },
+        
+        // 显示选择器
+        showPicker(pickerContainer) {
+            if (!pickerContainer) return;
+            
+            pickerContainer.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            document.body.style.height = '100%';
+            
+            // 刷新选择器大小和位置
+            if (dateTimePicker.activeInstance) {
+                setTimeout(() => {
+                    if (dateTimePicker.activeInstance.dateSwiper) {
+                        dateTimePicker.activeInstance.dateSwiper.update();
+                    }
+                    if (dateTimePicker.activeInstance.timeSwiper) {
+                        dateTimePicker.activeInstance.timeSwiper.update();
+                    }
+                }, 50);
+            }
+        },
+        
+        // 隐藏选择器
+        hide() {
+            if (!this.activeInstance || !this.activeInstance.container) return;
+            
+            this.activeInstance.container.classList.remove('active');
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.width = '';
-            const pickerContent = pickerContainer.querySelector('.picker-container');
-            if (pickerContent) {
-                pickerContent.style.transform = '';
+            document.body.style.height = '';
+        },
+        
+        // 销毁实例
+        destroy() {
+            if (!this.activeInstance) return;
+            
+            // 销毁swiper实例
+            if (this.activeInstance.dateSwiper) {
+                this.activeInstance.dateSwiper.destroy(true, true);
             }
+            
+            if (this.activeInstance.timeSwiper) {
+                this.activeInstance.timeSwiper.destroy(true, true);
+            }
+            
+            // 移除DOM元素
+            if (this.activeInstance.container) {
+                this.activeInstance.container.remove();
+            }
+            
+            this.activeInstance = null;
         }
     };
 
