@@ -874,7 +874,6 @@ function cleanupConnections() {
 async function initMessageBoard() {
     // 如果已经初始化过，则直接返回
     if (this.isInitialized) {
-        console.log('留言板已初始化，跳过重复初始化');
         return;
     }
 
@@ -898,7 +897,6 @@ async function initMessageBoard() {
 
         if (userInfo.message === 'Success') {
             currentUser = userInfo.username;
-            console.log('当前用户:', currentUser);
         } else {
             console.error('获取用户信息失败:', userInfo.message);
             if (userInfo.message === 'Session has expired' ||
@@ -939,7 +937,6 @@ async function initMessageBoard() {
 
     // 标记为已初始化
     this.isInitialized = true;
-    console.log('留言板初始化完成');
 }
 
 // 处理订单选择器变化

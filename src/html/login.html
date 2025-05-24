@@ -237,14 +237,17 @@
                     // 清除本地存储的登录数据
                     auth.clearLoginData();
 
+                    // 获取是否有自动登录标记
+                    const hasRememberMe = localStorage.getItem('rememberMe') === 'true';
+
                     // 根据不同的错误状态显示相应的提示信息
                     if (jqXHR.status === 401) {
-                        if (jqXHR.responseJSON.message === 'Session has expired') {
+                        // 只有当用户之前已经登录过（存在rememberMe标记）才显示错误信息
+                        if (hasRememberMe && jqXHR.responseJSON && jqXHR.responseJSON.message === 'Session has expired') {
                             utils.showError('登录已过期，请重新登录');
-                        } else if (jqXHR.responseJSON.message === 'Invalid session') {
-                            utils.showError('登录状态无效，请重新登录');
-                        }
-                    } else if (jqXHR.status === 400 && jqXHR.responseJSON.message === 'No sessionid cookie') {
+                        } 
+                        // 不再显示"登录状态无效"的提示
+                    } else if (jqXHR.status === 400 && jqXHR.responseJSON && jqXHR.responseJSON.message === 'No sessionid cookie') {
                         // 无cookie的情况，不显示错误，因为可能是首次登录
                     } else {
                         console.error('验证session失败:', textStatus);

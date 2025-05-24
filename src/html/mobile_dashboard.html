@@ -10,7 +10,6 @@
     <script src='../vendor/fullcalendar/main.min.js' defer></script>
     <link rel="stylesheet" href="../vendor/swiper/swiper-bundle.min.css">
     <script src="../vendor/swiper/swiper-bundle.min.js"></script>
-    <script src='../vendor/fullcalendar/main.min.js'></script>
     <script src="../vendor/bootstrap/bootstrap.bundle.min.js"></script>
     <script type="module" src="../js/assign_order.js"></script>
     <script type="module" src="../js/message_board.js"></script>
@@ -4211,6 +4210,13 @@
                             
                             // 默认选择第一个可用日期
                             this.slideTo(0, 0);
+                        },
+                        // 添加滑动完成后的事件监听
+                        slideChange: function() {
+                            // 如果时间选择器已初始化，则更新日期时间
+                            if (timeSwiper) {
+                                updateSelectedDateTime(dateSwiper, timeSwiper);
+                            }
                         }
                     }
                 });
@@ -4259,25 +4265,38 @@
                                 // 滑动到默认时间位置
                                 this.slideTo(defaultTimeIndex, 0);
 
-                                // 确保 dateSwiper 已经完全初始化
-                                if (dateSwiper && dateSwiper.slides && dateSwiper.slides[dateSwiper.activeIndex]) {
-                                    // 自动设置初始值
-                                    const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
-                                    const selectedTime = timeSwiper.slides[defaultTimeIndex].querySelector('.time-item').textContent.trim();
-                                    const year = new Date().getFullYear();
-                                    const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
-                                    const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
-                                    const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
-                                    
-                                    const preferredTimeInput = document.getElementById('preferredTime');
-                                    if (preferredTimeInput) {
-                                        preferredTimeInput.value = displayDateTime;
-                                        preferredTimeInput.dataset.submitValue = submitDateTime;
-                                    }
-                                }
+                                // 初始化默认值
+                                updateSelectedDateTime(dateSwiper, timeSwiper);
+                            },
+                            // 添加滑动完成后的事件监听
+                            slideChange: function() {
+                                updateSelectedDateTime(dateSwiper, timeSwiper);
                             }
                         }
                     });
+
+                    // 添加更新日期时间的辅助函数
+                    function updateSelectedDateTime(dateSwiper, timeSwiper) {
+                        if (!dateSwiper || !timeSwiper || 
+                            !dateSwiper.slides || !timeSwiper.slides || 
+                            !dateSwiper.slides[dateSwiper.activeIndex] || 
+                            !timeSwiper.slides[timeSwiper.activeIndex]) {
+                            return;
+                        }
+                        
+                        const selectedDate = dateSwiper.slides[dateSwiper.activeIndex].querySelector('.date-item').textContent.trim();
+                        const selectedTime = timeSwiper.slides[timeSwiper.activeIndex].querySelector('.time-item').textContent.trim();
+                        const year = new Date().getFullYear();
+                        const [month, day] = selectedDate.match(/(\d+)月(\d+)日/).slice(1);
+                        const displayDateTime = `${year}年${month}月${day}日 ${selectedTime}`;
+                        const submitDateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${selectedTime}`;
+                        
+                        const preferredTimeInput = document.getElementById('preferredTime');
+                        if (preferredTimeInput) {
+                            preferredTimeInput.value = displayDateTime;
+                            preferredTimeInput.dataset.submitValue = submitDateTime;
+                        }
+                    }
 
                     // 绑定取消按钮事件
                     pickerContainer.querySelector('.picker-cancel').addEventListener('click', () => {
