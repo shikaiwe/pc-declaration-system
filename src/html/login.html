@@ -247,9 +247,11 @@
                             utils.showError('登录已过期，请重新登录');
                         } 
                         // 不再显示"登录状态无效"的提示
-                    } else if (jqXHR.status === 400 && jqXHR.responseJSON && jqXHR.responseJSON.message === 'No sessionid cookie') {
-                        // 无cookie的情况，不显示错误，因为可能是首次登录
+                    } else if (jqXHR.status === 400) {
+                        // 完全忽略400错误，不在控制台显示错误信息
+                        // 可能是首次登录或没有会话ID
                     } else {
+                        // 对于其他错误类型，仍然在控制台记录
                         console.error('验证session失败:', textStatus);
                     }
                 }
