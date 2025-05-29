@@ -1,0 +1,359 @@
+/* 时间选择器容器 */
+
+.time-picker-container {
+    position: relative;
+    width: 100%;
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+}
+
+
+/* 时间选择器输入框 */
+
+.time-picker-input {
+    width: 100%;
+    padding: 12px 40px 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #333;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    outline: none;
+}
+
+.time-picker-input:hover {
+    border-color: #b3d4fc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.time-picker-input:focus {
+    border-color: #2196F3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+}
+
+
+/* 时间图标 */
+
+.time-picker-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #757575;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    font-size: 18px;
+}
+
+.time-picker-input:focus+.time-picker-icon {
+    color: #2196F3;
+}
+
+
+/* 时间选择器面板 */
+
+.time-picker-panel {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 100%;
+    max-width: 340px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: hidden;
+}
+
+.time-picker-panel.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+/* 日期选择区域 */
+
+.date-selection {
+    padding: 15px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-bottom: 1px solid #e0e0e0;
+}
+
+
+/* 日期选择器标题 */
+
+.date-selection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.month-year {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #666;
+}
+
+.nav-button:hover {
+    background-color: rgba(33, 150, 243, 0.1);
+    color: #2196F3;
+}
+
+
+/* 日历表格 */
+
+.calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.calendar-table th {
+    padding: 8px 0;
+    color: #666;
+    font-weight: 500;
+    font-size: 14px;
+    text-align: center;
+}
+
+.calendar-table td {
+    padding: 8px 0;
+    text-align: center;
+}
+
+.calendar-day {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin: 2px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: #333;
+}
+
+.calendar-day:hover {
+    background-color: rgba(33, 150, 243, 0.1);
+}
+
+.calendar-day.today {
+    background-color: rgba(33, 150, 243, 0.1);
+    font-weight: bold;
+    color: #2196F3;
+}
+
+.calendar-day.selected {
+    background-color: #2196F3;
+    color: white;
+    font-weight: bold;
+}
+
+.calendar-day.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    background-color: transparent;
+}
+
+
+/* 时间选择区域 */
+
+.time-selection {
+    padding: 15px;
+    background-color: #fff;
+}
+
+.time-selection-header {
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+}
+
+.time-slots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.time-slot {
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    color: #333;
+    font-size: 14px;
+}
+
+.time-slot:hover {
+    background-color: rgba(33, 150, 243, 0.1);
+}
+
+.time-slot.selected {
+    background-color: #2196F3;
+    color: white;
+}
+
+.time-slot.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+}
+
+
+/* 底部按钮区域 */
+
+.time-picker-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 15px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+}
+
+.time-picker-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    margin-left: 10px;
+}
+
+.cancel-button {
+    background-color: #f1f2f6;
+    color: #333;
+}
+
+.cancel-button:hover {
+    background-color: #e0e0e0;
+}
+
+.confirm-button {
+    background-color: #2196F3;
+    color: white;
+}
+
+.confirm-button:hover {
+    background-color: #1976D2;
+}
+
+
+/* 响应式调整 */
+
+@media (max-width: 480px) {
+    .time-picker-panel {
+        max-width: 290px;
+    }
+    .calendar-day {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+    .time-slots {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+
+/* 黑暗模式 */
+
+@media (prefers-color-scheme: dark) {
+    .time-picker-input {
+        background-color: #2a2a2a;
+        border-color: #444;
+        color: #fff;
+    }
+    .time-picker-icon {
+        color: #bbb;
+    }
+    .time-picker-panel {
+        background-color: #333;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .date-selection {
+        background: linear-gradient(135deg, #222, #333);
+        border-bottom-color: #444;
+    }
+    .month-year {
+        color: #fff;
+    }
+    .nav-button {
+        color: #bbb;
+    }
+    .nav-button:hover {
+        background-color: rgba(33, 150, 243, 0.2);
+    }
+    .calendar-table th {
+        color: #aaa;
+    }
+    .calendar-day {
+        color: #eee;
+    }
+    .calendar-day:hover {
+        background-color: rgba(33, 150, 243, 0.2);
+    }
+    .calendar-day.disabled {
+        color: #666;
+    }
+    .time-selection {
+        background-color: #333;
+    }
+    .time-selection-header {
+        color: #eee;
+    }
+    .time-slot {
+        background-color: #444;
+        color: #eee;
+    }
+    .time-slot:hover {
+        background-color: rgba(33, 150, 243, 0.2);
+    }
+    .time-slot.disabled {
+        color: #666;
+        background-color: #444;
+    }
+    .time-picker-footer {
+        background-color: #222;
+        border-top-color: #444;
+    }
+    .cancel-button {
+        background-color: #444;
+        color: #eee;
+    }
+    .cancel-button:hover {
+        background-color: #555;
+    }
+}

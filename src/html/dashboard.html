@@ -20,6 +20,8 @@
     <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../css/message_board.css">
     <link rel="stylesheet" href="../css/order_rating.css">
+    <!-- 添加时间选择器CSS -->
+    <link rel="stylesheet" href="../css/time-picker.css">
 
     <style>
         /* 全局样式 */
@@ -1396,7 +1398,6 @@
                 transform: translateY(0);
             }
         }
-
         /* 订单详情卡片样式 */
         
         .order-detail-card {
@@ -1603,7 +1604,6 @@
             margin-top: 0.25rem;
             display: none;
         }
- 
         /* 天气卡片样式 */
         
         .weather-container {
@@ -2451,8 +2451,8 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             /* 添加阴影效果 */
         }
-        
         /* 备案与版权信息样式 */
+        
         .site-footer {
             width: 100%;
             text-align: center;
@@ -2560,7 +2560,7 @@
                     <div>
                         <label for="preferredTime">期望上门时间:</label>
                         <div class="time-picker-wrapper">
-                            <input type="datetime-local" id="preferredTime" name="preferredTime" required>
+                            <input type="text" id="preferredTime" name="preferredTime" required readonly data-submit-value="">
                         </div>
                     </div>
                     <div id="timeWarning" style="display: none; color: red; margin-top: 10px;">
@@ -3362,7 +3362,7 @@
                     const userPhoneNumber = document.getElementById('userPhoneNumber').value;
                     const address = document.getElementById('address').value;
                     const issue = document.getElementById('issue').value;
-                    const preferredTime = document.getElementById('preferredTime').value;
+                    const preferredTime = document.getElementById('preferredTime').dataset.submitValue || document.getElementById('preferredTime').value;
                     const call_date = new Date().toISOString();
                     // 备注功能已移除
 
@@ -3385,6 +3385,11 @@
                             if (data.message === 'Success') {
                                 showReportMessage('报单成功！', 'success');
                                 event.target.reset();
+                                // 重置时间选择器显示
+                                const customInput = document.querySelector('.time-picker-input');
+                                if (customInput) {
+                                    customInput.value = '';
+                                }
                             } else {
                                 auth.handleSessionError(data.message);
                             }
@@ -4527,6 +4532,9 @@
         <script type="module">
             import messageBoard from './js/message_board.js'; window.messageBoard = messageBoard; document.addEventListener('DOMContentLoaded', () => { messageBoard.initMessageBoard(); });
         </script>
+
+        <!-- 引入时间选择器模块 -->
+        <script type="module" src="../js/time-picker.js"></script>
 
         <script>
             // 添加订单卡片的点击事件处理
