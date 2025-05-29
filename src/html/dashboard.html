@@ -4534,7 +4534,9 @@
         </script>
 
         <!-- 引入时间选择器模块 -->
-        <script type="module" src="../js/time-picker.js"></script>
+        <script type="module">
+            import { initTimePicker } from '../js/time-picker.js'; document.addEventListener('DOMContentLoaded', initTimePicker);
+        </script>
 
         <script>
             // 添加订单卡片的点击事件处理

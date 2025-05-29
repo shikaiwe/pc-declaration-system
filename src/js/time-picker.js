@@ -22,7 +22,8 @@ class TimePicker {
             currentMonth: new Date(),
             selectedDate: null,
             selectedTime: null,
-            isOpen: false
+            isOpen: false,
+            currentStep: 'date' // 新增：当前步骤，默认为日期选择
         };
 
         // 初始化DOM引用
@@ -117,9 +118,37 @@ class TimePicker {
         // 清空面板内容
         panel.innerHTML = '';
 
+        // 创建步骤导航
+        const stepNavigation = document.createElement('div');
+        stepNavigation.className = 'step-navigation';
+
+        // 日期步骤按钮
+        const dateStepButton = document.createElement('button');
+        dateStepButton.className = `step-button ${this.state.currentStep === 'date' ? 'active' : ''}`;
+        dateStepButton.textContent = '选择日期';
+        dateStepButton.addEventListener('click', () => this.switchStep('date'));
+
+        // 时间步骤按钮
+        const timeStepButton = document.createElement('button');
+        timeStepButton.className = `step-button ${this.state.currentStep === 'time' ? 'active' : ''}`;
+        timeStepButton.textContent = '选择时间';
+        timeStepButton.addEventListener('click', () => {
+            // 只有在已选择日期的情况下才能切换到时间选择
+            if (this.state.selectedDate) {
+                this.switchStep('time');
+            }
+        });
+
+        // 添加步骤按钮到导航
+        stepNavigation.appendChild(dateStepButton);
+        stepNavigation.appendChild(timeStepButton);
+
+        // 添加导航到面板
+        panel.appendChild(stepNavigation);
+
         // 创建日期选择区域
         const dateSelection = document.createElement('div');
-        dateSelection.className = 'date-selection';
+        dateSelection.className = `step-content date-selection ${this.state.currentStep === 'date' ? 'active' : ''}`;
 
         // 创建日期选择器标题
         const dateHeader = document.createElement('div');
@@ -240,6 +269,8 @@ class TimePicker {
                     dayElement.addEventListener('click', () => {
                         if (isInRange && isCurrentMonth) {
                             this.selectDate(new Date(currentDate));
+                            // 选择日期后自动切换到时间选择步骤
+                            this.switchStep('time');
                         }
                     });
                 }
@@ -262,7 +293,7 @@ class TimePicker {
 
         // 创建时间选择区域
         const timeSelection = document.createElement('div');
-        timeSelection.className = 'time-selection';
+        timeSelection.className = `step-content time-selection ${this.state.currentStep === 'time' ? 'active' : ''}`;
 
         // 创建时间选择器标题
         const timeHeader = document.createElement('div');
@@ -318,25 +349,71 @@ class TimePicker {
         const footer = document.createElement('div');
         footer.className = 'time-picker-footer';
 
+        // 返回按钮（在时间选择步骤显示）
+        const backButton = document.createElement('button');
+        backButton.className = `time-picker-button back-button ${this.state.currentStep === 'time' ? 'active' : ''}`;
+        backButton.textContent = '返回';
+        backButton.addEventListener('click', () => this.switchStep('date'));
+
         // 取消按钮
         const cancelButton = document.createElement('button');
         cancelButton.className = 'time-picker-button cancel-button';
         cancelButton.textContent = '取消';
         cancelButton.addEventListener('click', () => this.cancel());
 
-        // 确认按钮
-        const confirmButton = document.createElement('button');
-        confirmButton.className = 'time-picker-button confirm-button';
-        confirmButton.textContent = '确认';
-        confirmButton.addEventListener('click', () => this.confirm());
+        // 下一步/确认按钮
+        let actionButton;
+        if (this.state.currentStep === 'date') {
+            // 在日期步骤显示"下一步"按钮
+            actionButton = document.createElement('button');
+            actionButton.className = 'time-picker-button next-button';
+            actionButton.textContent = '下一步';
+            actionButton.disabled = !this.state.selectedDate;
+            actionButton.addEventListener('click', () => {
+                if (this.state.selectedDate) {
+                    this.switchStep('time');
+                } else {
+                    alert('请先选择日期');
+                }
+            });
+        } else {
+            // 在时间步骤显示"确认"按钮
+            actionButton = document.createElement('button');
+            actionButton.className = 'time-picker-button confirm-button';
+            actionButton.textContent = '确认';
+            actionButton.disabled = !this.state.selectedTime;
+            actionButton.addEventListener('click', () => this.confirm());
+        }
 
-        footer.appendChild(cancelButton);
-        footer.appendChild(confirmButton);
+        footer.appendChild(backButton);
+
+        // 将按钮添加到footer
+        if (this.state.currentStep === 'date') {
+            footer.appendChild(cancelButton);
+            footer.appendChild(actionButton);
+        } else {
+            footer.appendChild(cancelButton);
+            footer.appendChild(actionButton);
+        }
 
         // 添加所有元素到面板
         panel.appendChild(dateSelection);
         panel.appendChild(timeSelection);
         panel.appendChild(footer);
+    }
+
+    /**
+     * 切换步骤
+     * @param {string} step - 目标步骤
+     */
+    switchStep(step) {
+        if (step === 'time' && !this.state.selectedDate) {
+            alert('请先选择日期');
+            return;
+        }
+
+        this.state.currentStep = step;
+        this.renderPanel();
     }
 
     /**
@@ -392,6 +469,9 @@ class TimePicker {
         if (this.state.isOpen) {
             this.state.isOpen = false;
             this.elements.panel.classList.remove('active');
+
+            // 关闭时重置为日期选择步骤
+            this.state.currentStep = 'date';
         }
     }
 
@@ -459,7 +539,12 @@ class TimePicker {
             // 关闭面板
             this.close();
         } else {
-            alert('请选择日期和时间');
+            if (!this.state.selectedDate) {
+                alert('请选择日期');
+                this.switchStep('date');
+            } else if (!this.state.selectedTime) {
+                alert('请选择时间');
+            }
         }
     }
 
