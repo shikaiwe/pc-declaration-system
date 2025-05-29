@@ -359,39 +359,22 @@ class TimePicker {
         cancelButton.textContent = '取消';
         cancelButton.addEventListener('click', () => this.cancel());
 
-        // 下一步/确认按钮
-        let actionButton;
-        if (this.state.currentStep === 'date') {
-            // 在日期步骤显示"下一步"按钮
-            actionButton = document.createElement('button');
-            actionButton.className = 'time-picker-button next-button';
-            actionButton.textContent = '下一步';
-            actionButton.disabled = !this.state.selectedDate;
-            actionButton.addEventListener('click', () => {
-                if (this.state.selectedDate) {
-                    this.switchStep('time');
-                } else {
-                    alert('请先选择日期');
-                }
-            });
-        } else {
-            // 在时间步骤显示"确认"按钮
-            actionButton = document.createElement('button');
-            actionButton.className = 'time-picker-button confirm-button';
-            actionButton.textContent = '确认';
-            actionButton.disabled = !this.state.selectedTime;
-            actionButton.addEventListener('click', () => this.confirm());
-        }
+        // 确认按钮（只在时间选择步骤显示）
+        const confirmButton = document.createElement('button');
+        confirmButton.className = 'time-picker-button confirm-button';
+        confirmButton.textContent = '确认';
+        confirmButton.disabled = !this.state.selectedTime;
+        confirmButton.addEventListener('click', () => this.confirm());
 
-        footer.appendChild(backButton);
-
-        // 将按钮添加到footer
+        // 根据当前步骤添加不同的按钮
         if (this.state.currentStep === 'date') {
+            // 日期步骤只显示取消按钮
             footer.appendChild(cancelButton);
-            footer.appendChild(actionButton);
         } else {
+            // 时间步骤显示返回、取消和确认按钮
+            footer.appendChild(backButton);
             footer.appendChild(cancelButton);
-            footer.appendChild(actionButton);
+            footer.appendChild(confirmButton);
         }
 
         // 添加所有元素到面板
