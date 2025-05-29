@@ -269,8 +269,6 @@ class TimePicker {
                     dayElement.addEventListener('click', () => {
                         if (isInRange && isCurrentMonth) {
                             this.selectDate(new Date(currentDate));
-                            // 选择日期后自动切换到时间选择步骤
-                            this.switchStep('time');
                         }
                     });
                 }
@@ -421,16 +419,18 @@ class TimePicker {
      */
     bindEvents() {
         // 点击输入框时显示面板
-        this.elements.customInput.addEventListener('click', () => {
+        this.elements.customInput.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止事件冒泡
             this.toggle();
         });
 
-        // 点击外部时关闭面板
-        document.addEventListener('click', (e) => {
-            if (!this.elements.container.contains(e.target) && this.state.isOpen) {
-                this.close();
-            }
+        // 阻止点击面板内部元素时的冒泡，防止触发document的点击事件
+        this.elements.panel.addEventListener('click', (e) => {
+            e.stopPropagation();
         });
+
+        // 移除点击外部自动关闭的行为
+        // 只有在用户明确点击取消或确认按钮时才会关闭面板
     }
 
     /**
@@ -481,6 +481,8 @@ class TimePicker {
      */
     selectDate(date) {
         this.state.selectedDate = date;
+        // 选择日期后立即切换到时间选择步骤
+        this.state.currentStep = 'time';
         this.renderPanel();
     }
 

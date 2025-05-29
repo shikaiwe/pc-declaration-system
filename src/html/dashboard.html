@@ -16,6 +16,14 @@
     <script type="module" src="../js/assign_order.js"></script>
     <script type="module" src="../js/message_board.js"></script>
     <script type="module" src="../js/order_rating.js"></script>
+    <!-- 引入留言板模块 -->
+    <script type="module">
+        import messageBoard from './js/message_board.js'; window.messageBoard = messageBoard; document.addEventListener('DOMContentLoaded', () => { messageBoard.initMessageBoard(); });
+    </script>
+    <!-- 引入时间选择器模块 -->
+    <script type="module">
+        import { initTimePicker } from '../js/time-picker.js'; document.addEventListener('DOMContentLoaded', initTimePicker);
+    </script>
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../css/message_board.css">
@@ -4526,16 +4534,6 @@
                     console.error('加载分配订单模块失败:', error);
                 }
             });
-        </script>
-
-        <!-- 引入留言板模块 -->
-        <script type="module">
-            import messageBoard from './js/message_board.js'; window.messageBoard = messageBoard; document.addEventListener('DOMContentLoaded', () => { messageBoard.initMessageBoard(); });
-        </script>
-
-        <!-- 引入时间选择器模块 -->
-        <script type="module">
-            import { initTimePicker } from '../js/time-picker.js'; document.addEventListener('DOMContentLoaded', initTimePicker);
         </script>
 
         <script>
