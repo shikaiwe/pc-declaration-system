@@ -113,6 +113,8 @@
     max-height: 300px;
     overflow-y: auto;
     position: relative;
+    padding-top: 60px;
+    /* 为固定标题预留空间 */
 }
 
 
@@ -122,14 +124,16 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 0;
     text-align: center;
-    position: sticky;
+    position: absolute;
     top: 0;
+    left: 0;
+    right: 0;
     background-color: #fff;
-    z-index: 10;
-    padding: 10px 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    padding: 15px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .month-year {
@@ -361,7 +365,7 @@
     }
     .date-selection-header {
         background-color: #333;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     .month-year {
         color: #fff;
