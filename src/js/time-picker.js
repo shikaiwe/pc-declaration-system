@@ -171,21 +171,7 @@ class TimePicker {
         // 创建表格主体
         const tbody = document.createElement('tbody');
 
-        // 获取当前月份的第一天
-        const firstDay = new Date(this.state.currentMonth.getFullYear(), this.state.currentMonth.getMonth(), 1);
-        // 获取当前月份的最后一天
-        const lastDay = new Date(this.state.currentMonth.getFullYear(), this.state.currentMonth.getMonth() + 1, 0);
-
-        // 计算日历表格的起始日期和结束日期
-        const startDate = new Date(firstDay);
-        startDate.setDate(startDate.getDate() - startDate.getDay());
-
-        const endDate = new Date(lastDay);
-        if (endDate.getDay() < 6) {
-            endDate.setDate(endDate.getDate() + (6 - endDate.getDay()));
-        }
-
-        // 当前日期
+        // 获取当前日期
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -211,66 +197,94 @@ class TimePicker {
         const maxDate = new Date(nextFriday);
         maxDate.setHours(23, 59, 59, 999);
 
-        // 生成日历表格
-        let currentDate = new Date(startDate);
+        // 获取当前月份
+        const currentMonth = this.state.currentMonth;
+        const currentMonthYear = currentMonth.getFullYear();
+        const currentMonthNum = currentMonth.getMonth();
 
-        while (currentDate <= endDate) {
-            const row = document.createElement('tr');
+        // 收集可显示的日期（当前月份中的可选工作日）
+        const availableDates = [];
+        let tempDate = new Date(currentMonthYear, currentMonthNum, 1);
 
-            for (let i = 0; i < 7; i++) {
+        // 循环当前月份的每一天
+        while (tempDate.getMonth() === currentMonthNum) {
+            // 如果是工作日且在可选范围内
+            if (tempDate.getDay() !== 0 && tempDate.getDay() !== 6 && // 不是周末
+                tempDate >= minDate && tempDate <= maxDate) { // 在日期范围内
+                availableDates.push(new Date(tempDate));
+            }
+            tempDate.setDate(tempDate.getDate() + 1);
+        }
+
+        // 如果没有可选日期，显示提示信息
+        if (availableDates.length === 0) {
+            const noDateRow = document.createElement('tr');
+            const noDateCell = document.createElement('td');
+            noDateCell.colSpan = 7;
+            noDateCell.className = 'no-dates-message';
+            noDateCell.textContent = '当前月份没有可选日期';
+            noDateRow.appendChild(noDateCell);
+            tbody.appendChild(noDateRow);
+        } else {
+            // 按日期排序
+            availableDates.sort((a, b) => a - b);
+
+            // 重组为周显示
+            let currentWeekRow = null;
+            let lastDay = -1;
+
+            availableDates.forEach(date => {
+                const dayOfWeek = date.getDay(); // 0是周日，1-5是周一到周五，6是周六
+
+                // 如果是新的一周或第一个日期，创建新行
+                if (lastDay === -1 || dayOfWeek <= lastDay) {
+                    currentWeekRow = document.createElement('tr');
+                    tbody.appendChild(currentWeekRow);
+
+                    // 填充前面的空单元格
+                    for (let i = dayOfWeek === 0 ? 0 : 1; i < dayOfWeek; i++) {
+                        const emptyCell = document.createElement('td');
+                        currentWeekRow.appendChild(emptyCell);
+                    }
+                }
+
+                // 创建日期单元格
                 const cell = document.createElement('td');
                 const dayElement = document.createElement('div');
                 dayElement.className = 'calendar-day';
-                dayElement.textContent = currentDate.getDate();
-
-                // 检查是否是当前月份
-                const isCurrentMonth = currentDate.getMonth() === this.state.currentMonth.getMonth();
+                dayElement.textContent = date.getDate();
 
                 // 检查是否是今天
-                const isToday = currentDate.getTime() === today.getTime();
-
-                // 检查是否是周末
-                const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
-
-                // 检查是否在可选范围内（今天到下周五，且不是周末）
-                const isInRange = currentDate >= minDate && currentDate <= maxDate && !isWeekend;
+                const isToday = date.getTime() === today.getTime();
 
                 // 检查是否是已选择的日期
                 let isSelected = false;
                 if (this.state.selectedDate) {
                     const selectedDate = new Date(this.state.selectedDate);
                     selectedDate.setHours(0, 0, 0, 0);
-                    isSelected = currentDate.getTime() === selectedDate.getTime();
+                    isSelected = date.getTime() === selectedDate.getTime();
                 }
 
                 // 设置样式
-                if (!isCurrentMonth || !isInRange) {
-                    dayElement.classList.add('disabled');
-                } else {
-                    if (isToday) {
-                        dayElement.classList.add('today');
-                    }
-
-                    if (isSelected) {
-                        dayElement.classList.add('selected');
-                    }
-
-                    // 添加点击事件
-                    dayElement.addEventListener('click', () => {
-                        if (isInRange && isCurrentMonth) {
-                            this.selectDate(new Date(currentDate));
-                        }
-                    });
+                if (isToday) {
+                    dayElement.classList.add('today');
                 }
 
+                if (isSelected) {
+                    dayElement.classList.add('selected');
+                }
+
+                // 添加点击事件
+                dayElement.addEventListener('click', () => {
+                    this.selectDate(new Date(date));
+                });
+
                 cell.appendChild(dayElement);
-                row.appendChild(cell);
+                currentWeekRow.appendChild(cell);
 
-                // 移动到下一天
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-
-            tbody.appendChild(row);
+                // 更新最后处理的日期
+                lastDay = dayOfWeek;
+            });
         }
 
         calendarTable.appendChild(tbody);
@@ -343,7 +357,7 @@ class TimePicker {
         backButton.textContent = '返回';
         backButton.addEventListener('click', () => this.switchStep('date'));
 
-        // 取消按钮
+        // 取消按钮（只在日期选择步骤显示）
         const cancelButton = document.createElement('button');
         cancelButton.className = 'time-picker-button cancel-button';
         cancelButton.textContent = '取消';
@@ -361,9 +375,8 @@ class TimePicker {
             // 日期步骤只显示取消按钮
             footer.appendChild(cancelButton);
         } else {
-            // 时间步骤显示返回、取消和确认按钮
+            // 时间步骤只显示返回和确认按钮，移除取消按钮
             footer.appendChild(backButton);
-            footer.appendChild(cancelButton);
             footer.appendChild(confirmButton);
         }
 
@@ -402,8 +415,12 @@ class TimePicker {
             e.stopPropagation();
         });
 
-        // 移除点击外部自动关闭的行为
-        // 只有在用户明确点击取消或确认按钮时才会关闭面板
+        // 添加点击外部关闭面板的行为
+        document.addEventListener('click', (e) => {
+            if (this.state.isOpen && !this.elements.container.contains(e.target)) {
+                this.close();
+            }
+        });
     }
 
     /**

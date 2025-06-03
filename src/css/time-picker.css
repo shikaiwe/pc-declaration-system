@@ -110,7 +110,8 @@
 .date-selection {
     padding: 15px;
     background-color: #fff;
-    /* 与时间选择区域保持一致 */
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 
@@ -122,16 +123,18 @@
     align-items: center;
     margin-bottom: 15px;
     text-align: center;
-    /* 与时间选择区域保持一致 */
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 1;
+    padding-bottom: 10px;
 }
 
 .month-year {
     font-size: 16px;
-    /* 与时间选择区域保持一致 */
     font-weight: 600;
     color: #333;
     margin: 0 auto;
-    /* 居中显示 */
 }
 
 .nav-buttons {
@@ -165,7 +168,6 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
-    /* 增加上边距 */
 }
 
 .calendar-table th {
@@ -175,12 +177,14 @@
     font-size: 14px;
     text-align: center;
     padding-bottom: 12px;
-    /* 增加底部间距 */
+    position: sticky;
+    top: 60px;
+    background-color: #fff;
+    z-index: 1;
 }
 
 .calendar-table td {
     padding: 6px 0;
-    /* 调整内边距 */
     text-align: center;
 }
 
@@ -190,7 +194,19 @@
 .calendar-table th:first-child,
 .calendar-table th:last-child {
     color: #aaa;
-    /* 更淡的颜色表示周末 */
+}
+
+
+/* 没有可选日期的提示消息 */
+
+.no-dates-message {
+    padding: 20px;
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    background-color: #f8f8f8;
+    border-radius: 6px;
+    margin: 10px 0;
 }
 
 .calendar-day {
@@ -201,13 +217,11 @@
     height: 36px;
     margin: 2px;
     border-radius: 6px;
-    /* 改为方形圆角，与时间选择项保持一致 */
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 14px;
     color: #333;
     background-color: #f8f9fa;
-    /* 与时间选择项保持一致 */
 }
 
 .calendar-day:hover {
@@ -230,7 +244,6 @@
     color: #ccc;
     cursor: not-allowed;
     background-color: #f8f9fa;
-    /* 与时间选择项保持一致 */
 }
 
 
@@ -287,10 +300,12 @@
 .time-picker-footer {
     display: flex;
     justify-content: flex-end;
-    /* 改为右对齐，适应没有下一步按钮的布局 */
     padding: 12px 15px;
     background-color: #f8f9fa;
     border-top: 1px solid #e0e0e0;
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
 }
 
 .time-picker-button {
@@ -372,7 +387,9 @@
     }
     .date-selection {
         background-color: #333;
-        /* 修改为与时间选择区域一致 */
+    }
+    .date-selection-header {
+        background-color: #333;
     }
     .month-year {
         color: #fff;
@@ -385,11 +402,15 @@
     }
     .calendar-table th {
         color: #aaa;
+        background-color: #333;
+    }
+    .no-dates-message {
+        background-color: #444;
+        color: #bbb;
     }
     .calendar-day {
         color: #eee;
         background-color: #444;
-        /* 与暗色时间选择项保持一致 */
     }
     .calendar-day:hover {
         background-color: rgba(33, 150, 243, 0.2);
@@ -397,7 +418,6 @@
     .calendar-day.disabled {
         color: #666;
         background-color: #444;
-        /* 与暗色时间选择项保持一致 */
     }
     .time-selection {
         background-color: #333;
