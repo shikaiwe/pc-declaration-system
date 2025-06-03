@@ -112,6 +112,7 @@
     background-color: #fff;
     max-height: 300px;
     overflow-y: auto;
+    position: relative;
 }
 
 
@@ -126,8 +127,9 @@
     position: sticky;
     top: 0;
     background-color: #fff;
-    z-index: 1;
-    padding-bottom: 10px;
+    z-index: 10;
+    padding: 10px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .month-year {
@@ -168,6 +170,7 @@
     grid-template-columns: repeat(1, 1fr);
     gap: 10px;
     margin-top: 15px;
+    padding-top: 5px;
 }
 
 .date-slot {
@@ -358,6 +361,7 @@
     }
     .date-selection-header {
         background-color: #333;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     .month-year {
         color: #fff;
