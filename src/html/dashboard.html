@@ -2500,6 +2500,157 @@
                 margin-top: 4px;
             }
         }
+        /* FullCalendar 样式自定义 */
+        
+        .fc {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .fc .fc-toolbar.fc-header-toolbar {
+            margin-bottom: 1.5em;
+            padding: 0 10px;
+        }
+        
+        .fc .fc-toolbar-title {
+            font-size: 1.5em;
+            color: #333;
+        }
+        
+        .fc .fc-button {
+            background-color: #06627e;
+            border-color: #06627e;
+            color: white;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .fc .fc-button:hover {
+            background-color: #054c61;
+            border-color: #054c61;
+        }
+        
+        .fc .fc-button-primary:not(:disabled).fc-button-active,
+        .fc .fc-button-primary:not(:disabled):active {
+            background-color: #043744;
+            border-color: #043744;
+        }
+        
+        .fc .fc-button:focus {
+            box-shadow: 0 0 0 0.2rem rgba(6, 98, 126, 0.25);
+        }
+        
+        .fc-theme-standard td,
+        .fc-theme-standard th,
+        .fc-theme-standard .fc-scrollgrid {
+            border-color: #e0e0e0;
+        }
+        
+        .fc .fc-day-today {
+            background-color: rgba(6, 98, 126, 0.1) !important;
+        }
+        
+        .fc-daygrid-day-number,
+        .fc-col-header-cell-cushion {
+            color: #333;
+            text-decoration: none !important;
+            padding: 8px !important;
+        }
+        
+        .fc-day-sat,
+        .fc-day-sun {
+            background-color: #f8f9fa;
+        }
+        
+        .fc-event {
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin: 1px 0;
+            border: none;
+            transition: transform 0.2s ease;
+        }
+        
+        .fc-event:hover {
+            transform: translateY(-1px);
+        }
+        
+        .fc-daygrid-event-dot {
+            display: none;
+        }
+        
+        .fc .fc-timegrid-slot {
+            height: 2.5em;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .fc .fc-timegrid-axis-cushion {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .fc .fc-timegrid-slot-label-cushion {
+            font-size: 0.9em;
+        }
+        
+        .fc .fc-timegrid-now-indicator-line {
+            border-color: #06627e;
+        }
+        
+        .fc .fc-timegrid-now-indicator-arrow {
+            border-color: #06627e;
+            background-color: #06627e;
+        }
+        
+        .fc-direction-ltr .fc-daygrid-event.fc-event-end {
+            margin-right: 4px;
+        }
+        
+        .fc-direction-ltr .fc-daygrid-event.fc-event-start {
+            margin-left: 4px;
+        }
+        
+        .fc-h-event {
+            background-color: #06627e;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .fc-h-event .fc-event-main {
+            color: white;
+            padding: 2px 4px;
+        }
+        
+        .fc-v-event {
+            background-color: #06627e;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .fc-v-event .fc-event-main {
+            color: white;
+        }
+        
+        .fc .fc-more-popover {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .fc .fc-more-popover .fc-popover-header {
+            background-color: #06627e;
+            color: white;
+            padding: 8px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        
+        .fc .fc-more-popover .fc-popover-body {
+            padding: 8px;
+        }
     </style>
 </head>
 
