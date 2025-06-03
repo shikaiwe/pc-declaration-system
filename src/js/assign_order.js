@@ -750,7 +750,7 @@ class AssignOrder {
         if (isAssigned) {
             return `
                 <div class="assigned-info">
-                    <span class="assigned-text">已分配给: ${(order.workerName && order.workerName !== 'None') ? order.workerName : '无分配人员'}</span>
+                    <span class="assigned-text">${(order.workerName && order.workerName !== 'None') ? `已分配给: ${order.workerName}` : '无分配人员'}</span>
                 </div>
             `;
         }
@@ -967,7 +967,7 @@ class AssignOrder {
         if (buttonContainer) {
             buttonContainer.outerHTML = `
                 <div class="assigned-info">
-                    <span class="assigned-text">${(workerName && workerName !== 'None') ? workerName : '无分配人员'}</span>
+                    <span class="assigned-text">${(workerName && workerName !== 'None') ? `已分配给: ${workerName}` : '无分配人员'}</span>
                 </div>
             `;
         }
