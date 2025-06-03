@@ -50,6 +50,9 @@ class TimePicker {
         // 创建容器
         this.createContainer();
 
+        // 默认选中今天
+        this.state.selectedDate = new Date();
+
         // 渲染选择器
         this.render();
 
@@ -207,7 +210,7 @@ class TimePicker {
                 const day = date.getDate();
                 const weekDay = this.config.dayNames[date.getDay()];
 
-                dateSlot.textContent = `${year}-${month}-${day}-星期${weekDay}`;
+                dateSlot.textContent = `${year}年${month}月${day}日 星期${weekDay}`;
 
                 // 检查是否是今天
                 const isToday = date.getTime() === today.getTime();
@@ -350,7 +353,7 @@ class TimePicker {
             const day = this.state.selectedDate.getDate();
             const weekDay = this.config.dayNames[this.state.selectedDate.getDay()];
 
-            displayText = `${year}-${month}-${day}-星期${weekDay}`;
+            displayText = `${year}年${month}月${day}日 星期${weekDay}`;
 
             // 如果已选择时间，添加时间部分
             if (this.state.selectedTime) {

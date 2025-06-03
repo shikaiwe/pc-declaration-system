@@ -133,7 +133,6 @@
     background-color: #fff;
     z-index: 1000;
     padding: 15px 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .month-year {
@@ -174,7 +173,6 @@
     grid-template-columns: repeat(1, 1fr);
     gap: 10px;
     margin-top: 15px;
-    padding-top: 5px;
 }
 
 .date-slot {
@@ -201,6 +199,11 @@
     background-color: rgba(33, 150, 243, 0.1);
     font-weight: bold;
     color: #2196F3;
+}
+
+.date-slot.today.selected {
+    background-color: #2196F3;
+    color: white;
 }
 
 .date-slot.disabled {
