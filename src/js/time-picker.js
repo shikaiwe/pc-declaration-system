@@ -129,27 +129,13 @@ class TimePicker {
         // 当前月份和年份显示
         const monthYear = document.createElement('div');
         monthYear.className = 'month-year';
-        monthYear.textContent = `${this.config.monthNames[this.state.currentMonth.getMonth()]} ${this.state.currentMonth.getFullYear()}`;
+        monthYear.textContent = '请选择日期';
 
-        // 上一月和下一月按钮
-        const navButtons = document.createElement('div');
-        navButtons.className = 'nav-buttons';
-
-        const prevButton = document.createElement('button');
-        prevButton.className = 'nav-button prev-month';
-        prevButton.innerHTML = '&lt;';
-        prevButton.addEventListener('click', () => this.prevMonth());
-
-        const nextButton = document.createElement('button');
-        nextButton.className = 'nav-button next-month';
-        nextButton.innerHTML = '&gt;';
-        nextButton.addEventListener('click', () => this.nextMonth());
-
-        navButtons.appendChild(prevButton);
-        navButtons.appendChild(nextButton);
-
+        // 将标题添加到头部
         dateHeader.appendChild(monthYear);
-        dateHeader.appendChild(navButtons);
+
+        // 将日期选择添加到日期选择区域
+        dateSelection.appendChild(dateHeader);
 
         // 创建日期选择网格（改用按钮形式）
         const dateSlots = document.createElement('div');
@@ -253,7 +239,6 @@ class TimePicker {
         }
 
         // 将日期选择添加到日期选择区域
-        dateSelection.appendChild(dateHeader);
         dateSelection.appendChild(dateSlots);
 
         // 创建时间选择区域
