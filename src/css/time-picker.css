@@ -196,7 +196,6 @@
 }
 
 .date-slot.today {
-    background-color: rgba(33, 150, 243, 0.1);
     font-weight: bold;
     color: #2196F3;
 }
@@ -391,7 +390,7 @@
         background-color: rgba(33, 150, 243, 0.2);
     }
     .date-slot.today {
-        background-color: rgba(33, 150, 243, 0.1);
+        font-weight: bold;
         color: #2196F3;
     }
     .date-slot.disabled {
