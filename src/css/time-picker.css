@@ -105,27 +105,33 @@
 }
 
 
-/* 日期选择区域 */
+/* 日期选择区域 - 修改为与时间选择区域一致的样式 */
 
 .date-selection {
     padding: 15px;
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    background-color: #fff;
+    /* 与时间选择区域保持一致 */
 }
 
 
-/* 日期选择器标题 */
+/* 日期选择器标题 - 修改为与时间选择区域一致的样式 */
 
 .date-selection-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
+    text-align: center;
+    /* 与时间选择区域保持一致 */
 }
 
 .month-year {
-    font-size: 18px;
+    font-size: 16px;
+    /* 与时间选择区域保持一致 */
     font-weight: 600;
     color: #333;
+    margin: 0 auto;
+    /* 居中显示 */
 }
 
 .nav-buttons {
@@ -153,11 +159,13 @@
 }
 
 
-/* 日历表格 */
+/* 日历表格 - 修改样式使其更接近时间选择网格 */
 
 .calendar-table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
+    /* 增加上边距 */
 }
 
 .calendar-table th {
@@ -166,10 +174,13 @@
     font-weight: 500;
     font-size: 14px;
     text-align: center;
+    padding-bottom: 12px;
+    /* 增加底部间距 */
 }
 
 .calendar-table td {
-    padding: 8px 0;
+    padding: 6px 0;
+    /* 调整内边距 */
     text-align: center;
 }
 
@@ -189,11 +200,14 @@
     width: 36px;
     height: 36px;
     margin: 2px;
-    border-radius: 50%;
+    border-radius: 6px;
+    /* 改为方形圆角，与时间选择项保持一致 */
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 14px;
     color: #333;
+    background-color: #f8f9fa;
+    /* 与时间选择项保持一致 */
 }
 
 .calendar-day:hover {
@@ -215,7 +229,8 @@
 .calendar-day.disabled {
     color: #ccc;
     cursor: not-allowed;
-    background-color: transparent;
+    background-color: #f8f9fa;
+    /* 与时间选择项保持一致 */
 }
 
 
@@ -356,8 +371,8 @@
         box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
     }
     .date-selection {
-        background: linear-gradient(135deg, #222, #333);
-        border-bottom-color: #444;
+        background-color: #333;
+        /* 修改为与时间选择区域一致 */
     }
     .month-year {
         color: #fff;
@@ -373,12 +388,16 @@
     }
     .calendar-day {
         color: #eee;
+        background-color: #444;
+        /* 与暗色时间选择项保持一致 */
     }
     .calendar-day:hover {
         background-color: rgba(33, 150, 243, 0.2);
     }
     .calendar-day.disabled {
         color: #666;
+        background-color: #444;
+        /* 与暗色时间选择项保持一致 */
     }
     .time-selection {
         background-color: #333;
@@ -410,12 +429,10 @@
     .cancel-button:hover {
         background-color: #555;
     }
-    .next-button,
     .confirm-button {
         background-color: #1976D2;
         color: #fff;
     }
-    .next-button:hover,
     .confirm-button:hover {
         background-color: #1565C0;
     }
