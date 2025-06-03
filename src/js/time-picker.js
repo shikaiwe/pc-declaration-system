@@ -151,25 +151,9 @@ class TimePicker {
         dateHeader.appendChild(monthYear);
         dateHeader.appendChild(navButtons);
 
-        // 创建日历表格
-        const calendarTable = document.createElement('table');
-        calendarTable.className = 'calendar-table';
-
-        // 创建表头
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-
-        for (let i = 0; i < 7; i++) {
-            const th = document.createElement('th');
-            th.textContent = this.config.dayNames[i];
-            headerRow.appendChild(th);
-        }
-
-        thead.appendChild(headerRow);
-        calendarTable.appendChild(thead);
-
-        // 创建表格主体
-        const tbody = document.createElement('tbody');
+        // 创建日期选择网格（改用按钮形式）
+        const dateSlots = document.createElement('div');
+        dateSlots.className = 'date-slots';
 
         // 获取当前日期
         const today = new Date();
@@ -218,41 +202,26 @@ class TimePicker {
 
         // 如果没有可选日期，显示提示信息
         if (availableDates.length === 0) {
-            const noDateRow = document.createElement('tr');
-            const noDateCell = document.createElement('td');
-            noDateCell.colSpan = 7;
-            noDateCell.className = 'no-dates-message';
-            noDateCell.textContent = '当前月份没有可选日期';
-            noDateRow.appendChild(noDateCell);
-            tbody.appendChild(noDateRow);
+            const noDateMessage = document.createElement('div');
+            noDateMessage.className = 'no-dates-message';
+            noDateMessage.textContent = '当前月份没有可选日期';
+            dateSlots.appendChild(noDateMessage);
         } else {
             // 按日期排序
             availableDates.sort((a, b) => a - b);
 
-            // 重组为周显示
-            let currentWeekRow = null;
-            let lastDay = -1;
-
+            // 创建日期按钮
             availableDates.forEach(date => {
-                const dayOfWeek = date.getDay(); // 0是周日，1-5是周一到周五，6是周六
+                const dateSlot = document.createElement('div');
+                dateSlot.className = 'date-slot';
 
-                // 如果是新的一周或第一个日期，创建新行
-                if (lastDay === -1 || dayOfWeek <= lastDay) {
-                    currentWeekRow = document.createElement('tr');
-                    tbody.appendChild(currentWeekRow);
+                // 格式化为"年-月-日-星期"格式
+                const year = date.getFullYear();
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const weekDay = this.config.dayNames[date.getDay()];
 
-                    // 填充前面的空单元格
-                    for (let i = dayOfWeek === 0 ? 0 : 1; i < dayOfWeek; i++) {
-                        const emptyCell = document.createElement('td');
-                        currentWeekRow.appendChild(emptyCell);
-                    }
-                }
-
-                // 创建日期单元格
-                const cell = document.createElement('td');
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                dayElement.textContent = date.getDate();
+                dateSlot.textContent = `${year}-${month}-${day}-星期${weekDay}`;
 
                 // 检查是否是今天
                 const isToday = date.getTime() === today.getTime();
@@ -267,31 +236,25 @@ class TimePicker {
 
                 // 设置样式
                 if (isToday) {
-                    dayElement.classList.add('today');
+                    dateSlot.classList.add('today');
                 }
 
                 if (isSelected) {
-                    dayElement.classList.add('selected');
+                    dateSlot.classList.add('selected');
                 }
 
                 // 添加点击事件
-                dayElement.addEventListener('click', () => {
+                dateSlot.addEventListener('click', () => {
                     this.selectDate(new Date(date));
                 });
 
-                cell.appendChild(dayElement);
-                currentWeekRow.appendChild(cell);
-
-                // 更新最后处理的日期
-                lastDay = dayOfWeek;
+                dateSlots.appendChild(dateSlot);
             });
         }
 
-        calendarTable.appendChild(tbody);
-
-        // 将日历添加到日期选择区域
+        // 将日期选择添加到日期选择区域
         dateSelection.appendChild(dateHeader);
-        dateSelection.appendChild(calendarTable);
+        dateSelection.appendChild(dateSlots);
 
         // 创建时间选择区域
         const timeSelection = document.createElement('div');
@@ -384,6 +347,35 @@ class TimePicker {
         panel.appendChild(dateSelection);
         panel.appendChild(timeSelection);
         panel.appendChild(footer);
+
+        // 更新输入框显示当前选择
+        this.updateInputDisplay();
+    }
+
+    /**
+     * 更新输入框显示
+     */
+    updateInputDisplay() {
+        if (this.state.selectedDate) {
+            let displayText = '';
+
+            // 格式化日期部分
+            const year = this.state.selectedDate.getFullYear();
+            const month = this.state.selectedDate.getMonth() + 1;
+            const day = this.state.selectedDate.getDate();
+            const weekDay = this.config.dayNames[this.state.selectedDate.getDay()];
+
+            displayText = `${year}-${month}-${day}-星期${weekDay}`;
+
+            // 如果已选择时间，添加时间部分
+            if (this.state.selectedTime) {
+                displayText += ` ${this.state.selectedTime}`;
+            }
+
+            this.elements.customInput.value = displayText;
+        } else {
+            this.elements.customInput.value = '';
+        }
     }
 
     /**
@@ -471,6 +463,8 @@ class TimePicker {
      */
     selectDate(date) {
         this.state.selectedDate = date;
+        // 更新输入框显示
+        this.updateInputDisplay();
         // 选择日期后立即切换到时间选择步骤
         this.state.currentStep = 'time';
         this.renderPanel();
@@ -482,6 +476,8 @@ class TimePicker {
      */
     selectTime(time) {
         this.state.selectedTime = time;
+        // 更新输入框显示
+        this.updateInputDisplay();
         this.renderPanel();
     }
 
@@ -514,10 +510,7 @@ class TimePicker {
             // 构建日期时间字符串
             const dateTimeStr = `${year}-${month}-${day} ${this.state.selectedTime}`;
 
-            // 更新输入框显示
-            this.elements.customInput.value = dateTimeStr;
-
-            // 更新原始输入框的值
+            // 更新原始输入框的值（使用标准格式）
             this.elements.input.value = dateTimeStr;
             this.elements.input.dataset.submitValue = dateTimeStr;
 

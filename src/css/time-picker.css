@@ -162,38 +162,45 @@
 }
 
 
-/* 日历表格 - 修改样式使其更接近时间选择网格 */
+/* 日期选择网格 */
 
-.calendar-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+.date-slots {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
+    margin-top: 15px;
 }
 
-.calendar-table th {
-    padding: 8px 0;
-    color: #666;
-    font-weight: 500;
+.date-slot {
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    color: #333;
     font-size: 14px;
-    text-align: center;
-    padding-bottom: 12px;
-    position: sticky;
-    top: 60px;
-    background-color: #fff;
-    z-index: 1;
 }
 
-.calendar-table td {
-    padding: 6px 0;
-    text-align: center;
+.date-slot:hover {
+    background-color: rgba(33, 150, 243, 0.1);
 }
 
+.date-slot.selected {
+    background-color: #2196F3;
+    color: white;
+}
 
-/* 周末特殊样式 */
+.date-slot.today {
+    background-color: rgba(33, 150, 243, 0.1);
+    font-weight: bold;
+    color: #2196F3;
+}
 
-.calendar-table th:first-child,
-.calendar-table th:last-child {
-    color: #aaa;
+.date-slot.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
 }
 
 
@@ -207,43 +214,6 @@
     background-color: #f8f8f8;
     border-radius: 6px;
     margin: 10px 0;
-}
-
-.calendar-day {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    margin: 2px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 14px;
-    color: #333;
-    background-color: #f8f9fa;
-}
-
-.calendar-day:hover {
-    background-color: rgba(33, 150, 243, 0.1);
-}
-
-.calendar-day.today {
-    background-color: rgba(33, 150, 243, 0.1);
-    font-weight: bold;
-    color: #2196F3;
-}
-
-.calendar-day.selected {
-    background-color: #2196F3;
-    color: white;
-    font-weight: bold;
-}
-
-.calendar-day.disabled {
-    color: #ccc;
-    cursor: not-allowed;
-    background-color: #f8f9fa;
 }
 
 
@@ -359,10 +329,9 @@
     .time-picker-panel {
         max-width: 290px;
     }
-    .calendar-day {
-        width: 32px;
-        height: 32px;
+    .date-slot {
         font-size: 13px;
+        padding: 8px;
     }
     .time-slots {
         grid-template-columns: repeat(2, 1fr);
@@ -400,22 +369,22 @@
     .nav-button:hover {
         background-color: rgba(33, 150, 243, 0.2);
     }
-    .calendar-table th {
-        color: #aaa;
-        background-color: #333;
-    }
     .no-dates-message {
         background-color: #444;
         color: #bbb;
     }
-    .calendar-day {
+    .date-slot {
         color: #eee;
         background-color: #444;
     }
-    .calendar-day:hover {
+    .date-slot:hover {
         background-color: rgba(33, 150, 243, 0.2);
     }
-    .calendar-day.disabled {
+    .date-slot.today {
+        background-color: rgba(33, 150, 243, 0.1);
+        color: #2196F3;
+    }
+    .date-slot.disabled {
         color: #666;
         background-color: #444;
     }
