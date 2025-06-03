@@ -81,36 +81,16 @@
 }
 
 
-/* 步骤导航 */
+/* 步骤导航 - 隐藏不需要的样式 */
 
 .step-navigation {
-    display: flex;
-    border-bottom: 1px solid #e0e0e0;
-    background-color: #f8f9fa;
+    display: none;
+    /* 隐藏步骤导航 */
 }
 
 .step-button {
-    flex: 1;
-    padding: 12px;
-    text-align: center;
-    font-size: 15px;
-    color: #666;
-    cursor: pointer;
-    background-color: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s ease;
-}
-
-.step-button.active {
-    color: #2196F3;
-    border-bottom-color: #2196F3;
-    font-weight: 500;
-}
-
-.step-button:not(.active):hover {
-    background-color: rgba(33, 150, 243, 0.05);
-    color: #333;
+    display: none;
+    /* 隐藏步骤按钮 */
 }
 
 
@@ -191,6 +171,15 @@
 .calendar-table td {
     padding: 8px 0;
     text-align: center;
+}
+
+
+/* 周末特殊样式 */
+
+.calendar-table th:first-child,
+.calendar-table th:last-child {
+    color: #aaa;
+    /* 更淡的颜色表示周末 */
 }
 
 .calendar-day {
@@ -282,7 +271,8 @@
 
 .time-picker-footer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
+    /* 改为右对齐，适应没有下一步按钮的布局 */
     padding: 12px 15px;
     background-color: #f8f9fa;
     border-top: 1px solid #e0e0e0;
@@ -314,13 +304,11 @@
     background-color: #e0e0e0;
 }
 
-.next-button,
 .confirm-button {
     background-color: #2196F3;
     color: white;
 }
 
-.next-button:hover,
 .confirm-button:hover {
     background-color: #1976D2;
 }
@@ -366,21 +354,6 @@
     .time-picker-panel {
         background-color: #333;
         box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-    }
-    .step-navigation {
-        background-color: #222;
-        border-bottom-color: #444;
-    }
-    .step-button {
-        color: #aaa;
-    }
-    .step-button.active {
-        color: #4dabf7;
-        border-bottom-color: #4dabf7;
-    }
-    .step-button:not(.active):hover {
-        background-color: rgba(77, 171, 247, 0.1);
-        color: #ddd;
     }
     .date-selection {
         background: linear-gradient(135deg, #222, #333);

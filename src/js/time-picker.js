@@ -118,34 +118,6 @@ class TimePicker {
         // 清空面板内容
         panel.innerHTML = '';
 
-        // 创建步骤导航
-        const stepNavigation = document.createElement('div');
-        stepNavigation.className = 'step-navigation';
-
-        // 日期步骤按钮
-        const dateStepButton = document.createElement('button');
-        dateStepButton.className = `step-button ${this.state.currentStep === 'date' ? 'active' : ''}`;
-        dateStepButton.textContent = '选择日期';
-        dateStepButton.addEventListener('click', () => this.switchStep('date'));
-
-        // 时间步骤按钮
-        const timeStepButton = document.createElement('button');
-        timeStepButton.className = `step-button ${this.state.currentStep === 'time' ? 'active' : ''}`;
-        timeStepButton.textContent = '选择时间';
-        timeStepButton.addEventListener('click', () => {
-            // 只有在已选择日期的情况下才能切换到时间选择
-            if (this.state.selectedDate) {
-                this.switchStep('time');
-            }
-        });
-
-        // 添加步骤按钮到导航
-        stepNavigation.appendChild(dateStepButton);
-        stepNavigation.appendChild(timeStepButton);
-
-        // 添加导航到面板
-        panel.appendChild(stepNavigation);
-
         // 创建日期选择区域
         const dateSelection = document.createElement('div');
         dateSelection.className = `step-content date-selection ${this.state.currentStep === 'date' ? 'active' : ''}`;
@@ -217,12 +189,27 @@ class TimePicker {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
+        // 计算下周五的日期
+        const nextFriday = new Date(today);
+        const dayOfWeek = today.getDay(); // 0=周日, 1=周一, ..., 6=周六
+
+        // 计算到下周五的天数
+        let daysToNextFriday;
+        if (dayOfWeek <= 5) { // 今天是周日到周五
+            daysToNextFriday = 5 - dayOfWeek + 7; // 到下周五的天数
+        } else { // 今天是周六
+            daysToNextFriday = 6; // 到下周五的天数
+        }
+
+        nextFriday.setDate(today.getDate() + daysToNextFriday);
+        nextFriday.setHours(23, 59, 59, 999);
+
         // 最小和最大日期
-        const minDate = new Date(this.config.minDate);
+        const minDate = new Date(today);
         minDate.setHours(0, 0, 0, 0);
 
-        const maxDate = new Date(this.config.maxDate);
-        maxDate.setHours(0, 0, 0, 0);
+        const maxDate = new Date(nextFriday);
+        maxDate.setHours(23, 59, 59, 999);
 
         // 生成日历表格
         let currentDate = new Date(startDate);
@@ -242,8 +229,11 @@ class TimePicker {
                 // 检查是否是今天
                 const isToday = currentDate.getTime() === today.getTime();
 
-                // 检查是否在可选范围内
-                const isInRange = currentDate >= minDate && currentDate <= maxDate;
+                // 检查是否是周末
+                const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
+
+                // 检查是否在可选范围内（今天到下周五，且不是周末）
+                const isInRange = currentDate >= minDate && currentDate <= maxDate && !isWeekend;
 
                 // 检查是否是已选择的日期
                 let isSelected = false;
