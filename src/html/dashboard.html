@@ -18,7 +18,7 @@
     <script type="module" src="../js/order_rating.js"></script>
     <!-- 引入留言板模块 -->
     <script type="module">
-        import messageBoard from './js/message_board.js'; window.messageBoard = messageBoard; document.addEventListener('DOMContentLoaded', () => { messageBoard.initMessageBoard(); });
+        import messageBoard from '../js/message_board.js'; window.messageBoard = messageBoard; document.addEventListener('DOMContentLoaded', () => { messageBoard.initMessageBoard(); });
     </script>
     <!-- 引入时间选择器模块 -->
     <script type="module">
@@ -4202,20 +4202,6 @@
                 });
             }
 
-            // 修改日历初始化中的 events 配置，添加事件 ID
-            var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                // 配置保持不变
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                // ... 其他配置保持不变
-            });
-
-            // 渲染日历
-            calendar.render();
-
             // 添加获取被分配订单的函数
             function fetchAssignedOrders() {
                 const assignedOrdersContainer = document.getElementById('assignedOrdersContainer');
@@ -4232,8 +4218,9 @@
                     if (data.message === 'Success') {
                         displayAssignedOrders(data.report_info);
                         // 同步到日历
-                        if (calendar) {
-                            calendar.refetchEvents();
+                        const calendarEl = document.querySelector('#calendar');
+                        if (calendarEl && calendarEl._fullCalendar) {
+                            calendarEl._fullCalendar.refetchEvents();
                         }
                     } else if (data.message === 'No my report') {
                         showNoAssignedOrders();
