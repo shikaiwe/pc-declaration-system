@@ -195,15 +195,8 @@
     color: white;
 }
 
-.date-slot.today {
-    font-weight: bold;
-    color: #2196F3;
-}
 
-.date-slot.today.selected {
-    background-color: #2196F3;
-    color: white;
-}
+/* 删除特定的今日样式，使用选中样式 */
 
 .date-slot.disabled {
     color: #ccc;
@@ -388,10 +381,6 @@
     }
     .date-slot:hover {
         background-color: rgba(33, 150, 243, 0.2);
-    }
-    .date-slot.today {
-        font-weight: bold;
-        color: #2196F3;
     }
     .date-slot.disabled {
         color: #666;

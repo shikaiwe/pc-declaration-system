@@ -224,10 +224,7 @@ class TimePicker {
                 }
 
                 // 设置样式
-                if (isToday) {
-                    dateSlot.classList.add('today');
-                }
-
+                // 修改：如果是今天且被选中，只添加selected类
                 if (isSelected) {
                     dateSlot.classList.add('selected');
                 }
