@@ -9,7 +9,7 @@ class TimePicker {
             inputSelector: '#preferredTime', // 默认输入框选择器
             minDate: new Date(), // 最早可选日期（默认今天）
             maxDate: new Date(new Date().setMonth(new Date().getMonth() + 3)), // 最晚可选日期（默认3个月后）
-            timeSlots: ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30'], // 时间段选项
+            timeSlots: ['18:00', '18:15', '18:30', '18:45', '19:00', '19:15', '19:30', '19:45', '20:00', '20:15', '20:30', '20:45', '21:00'], // 时间段选项
             dateFormat: 'YYYY-MM-DD', // 日期格式
             timeFormat: 'HH:mm', // 时间格式
             monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
@@ -590,8 +590,8 @@ function initTimePicker() {
         // 初始化时间选择器
         const timePicker = new TimePicker({
             inputSelector: '#preferredTime',
-            // 可配置的时间段，限定在18:00-21:00之间
-            timeSlots: ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30'],
+            // 可配置的时间段，限定在18:00-21:00之间，间隔为15分钟
+            timeSlots: ['18:00', '18:15', '18:30', '18:45', '19:00', '19:15', '19:30', '19:45', '20:00', '20:15', '20:30', '20:45', '21:00'],
             // 设置最小日期为今天，最大日期为3个月后
             minDate: new Date(),
             maxDate: new Date(new Date().setMonth(new Date().getMonth() + 3))
