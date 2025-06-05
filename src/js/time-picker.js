@@ -14,6 +14,7 @@ class TimePicker {
             timeFormat: 'HH:mm', // 时间格式
             monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
             dayNames: ['日', '一', '二', '三', '四', '五', '六'],
+            cutoffHour: 10, // 默认截止时间点，超过这个时间默认选择第二天
             ...options
         };
 
@@ -50,8 +51,16 @@ class TimePicker {
         // 创建容器
         this.createContainer();
 
-        // 默认选中今天
-        this.state.selectedDate = new Date();
+        // 获取默认选择日期（如果当前时间超过cutoffHour点，则默认选择第二天）
+        const now = new Date();
+        const defaultDate = new Date();
+        
+        if (now.getHours() >= this.config.cutoffHour) {
+            defaultDate.setDate(defaultDate.getDate() + 1);
+        }
+        
+        this.state.selectedDate = defaultDate;
+        this.state.currentMonth = new Date(defaultDate);
 
         // 渲染选择器
         this.render();
@@ -594,7 +603,9 @@ function initTimePicker() {
             timeSlots: ['18:00', '18:15', '18:30', '18:45', '19:00', '19:15', '19:30', '19:45', '20:00', '20:15', '20:30', '20:45', '21:00'],
             // 设置最小日期为今天，最大日期为3个月后
             minDate: new Date(),
-            maxDate: new Date(new Date().setMonth(new Date().getMonth() + 3))
+            maxDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
+            // 设置截止时间点为10点
+            cutoffHour: 10
         });
 
         // 监听输入变化，检查时间有效性
