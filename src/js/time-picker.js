@@ -54,11 +54,40 @@ class TimePicker {
         // 获取默认选择日期（如果当前时间超过cutoffHour点，则默认选择第二天）
         const now = new Date();
         const defaultDate = new Date();
-        
+
         if (now.getHours() >= this.config.cutoffHour) {
             defaultDate.setDate(defaultDate.getDate() + 1);
+            // 为第二天设置默认时间为18:00（确保在允许的时间范围内）
+            this.state.selectedTime = '18:00';
+        } else {
+            // 如果当前时间已经晚于或等于18:00，设置默认时间为当前时间后最近的可选时间
+            if (now.getHours() >= 18) {
+                const currentMinutes = now.getMinutes();
+                let defaultTime;
+
+                // 找到当前时间后最近的可选时间
+                for (let i = 0; i < this.config.timeSlots.length; i++) {
+                    const [hours, minutes] = this.config.timeSlots[i].split(':').map(Number);
+                    if ((hours > now.getHours()) ||
+                        (hours === now.getHours() && minutes > currentMinutes)) {
+                        defaultTime = this.config.timeSlots[i];
+                        break;
+                    }
+                }
+
+                // 如果没有找到合适的时间（当前时间已经超过最晚的可选时间），选择下一天
+                if (!defaultTime) {
+                    defaultDate.setDate(defaultDate.getDate() + 1);
+                    this.state.selectedTime = '18:00';
+                } else {
+                    this.state.selectedTime = defaultTime;
+                }
+            } else {
+                // 当天但当前时间早于18:00，设置默认时间为18:00
+                this.state.selectedTime = '18:00';
+            }
         }
-        
+
         this.state.selectedDate = defaultDate;
         this.state.currentMonth = new Date(defaultDate);
 
@@ -272,13 +301,20 @@ class TimePicker {
             // 检查时间是否可选
             let isDisabled = false;
 
+            // 解析时间
+            const [hours, minutes] = time.split(':').map(Number);
+
             // 如果选择的是今天，则只能选择当前时间之后的时间段
             if (this.state.selectedDate && this.isSameDay(this.state.selectedDate, new Date())) {
-                const [hours, minutes] = time.split(':').map(Number);
                 const selectedTime = new Date();
                 selectedTime.setHours(hours, minutes, 0, 0);
 
                 isDisabled = selectedTime < new Date();
+            }
+
+            // 始终确保时间在18:00-21:00范围内
+            if (!((hours >= 18 && hours < 21) || (hours === 21 && minutes === 0))) {
+                isDisabled = true;
             }
 
             // 设置样式
@@ -469,10 +505,18 @@ class TimePicker {
      * @param {string} time - 选择的时间
      */
     selectTime(time) {
-        this.state.selectedTime = time;
-        // 更新输入框显示
-        this.updateInputDisplay();
-        this.renderPanel();
+        // 检查时间是否在允许的范围内（18:00-21:00）
+        const [hours, minutes] = time.split(':').map(Number);
+        if ((hours >= 18 && hours < 21) || (hours === 21 && minutes === 0)) {
+            this.state.selectedTime = time;
+            // 更新输入框显示
+            this.updateInputDisplay();
+            // 检查时间有效性（用于显示警告信息）
+            this.checkTimeValidity(time);
+            this.renderPanel();
+        } else {
+            alert('请选择18:00-21:00之间的时间');
+        }
     }
 
     /**
@@ -600,6 +644,7 @@ function initTimePicker() {
         const timePicker = new TimePicker({
             inputSelector: '#preferredTime',
             // 可配置的时间段，限定在18:00-21:00之间，间隔为15分钟
+            // 这些时间限制适用于所有日期（无论是今天还是将来的日期）
             timeSlots: ['18:00', '18:15', '18:30', '18:45', '19:00', '19:15', '19:30', '19:45', '20:00', '20:15', '20:30', '20:45', '21:00'],
             // 设置最小日期为今天，最大日期为3个月后
             minDate: new Date(),
