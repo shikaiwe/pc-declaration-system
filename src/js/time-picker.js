@@ -51,48 +51,10 @@ class TimePicker {
         // 创建容器
         this.createContainer();
 
-        // 获取默认选择日期（如果当前时间超过cutoffHour点，则默认选择第二天）
-        const now = new Date();
-        const defaultDate = new Date();
-
-        if (now.getHours() >= this.config.cutoffHour) {
-            // 获取下一个工作日（跳过周末）
-            const nextWorkday = this.getNextWorkday(defaultDate);
-            defaultDate.setTime(nextWorkday.getTime());
-            // 为下一个工作日设置默认时间为18:00（确保在允许的时间范围内）
-            this.state.selectedTime = '18:00';
-        } else {
-            // 如果当前时间已经晚于或等于18:00，设置默认时间为当前时间后最近的可选时间
-            if (now.getHours() >= 18) {
-                const currentMinutes = now.getMinutes();
-                let defaultTime;
-
-                // 找到当前时间后最近的可选时间
-                for (let i = 0; i < this.config.timeSlots.length; i++) {
-                    const [hours, minutes] = this.config.timeSlots[i].split(':').map(Number);
-                    if ((hours > now.getHours()) ||
-                        (hours === now.getHours() && minutes > currentMinutes)) {
-                        defaultTime = this.config.timeSlots[i];
-                        break;
-                    }
-                }
-
-                // 如果没有找到合适的时间（当前时间已经超过最晚的可选时间），选择下一个工作日
-                if (!defaultTime) {
-                    const nextWorkday = this.getNextWorkday(defaultDate);
-                    defaultDate.setTime(nextWorkday.getTime());
-                    this.state.selectedTime = '18:00';
-                } else {
-                    this.state.selectedTime = defaultTime;
-                }
-            } else {
-                // 当天但当前时间早于18:00，设置默认时间为18:00
-                this.state.selectedTime = '18:00';
-            }
-        }
-
-        this.state.selectedDate = defaultDate;
-        this.state.currentMonth = new Date(defaultDate);
+        // 初始化状态，不设置默认选择的日期和时间
+        this.state.selectedDate = null;
+        this.state.selectedTime = null;
+        this.state.currentMonth = new Date();
 
         // 渲染选择器
         this.render();
@@ -115,6 +77,7 @@ class TimePicker {
         // 将原始输入框替换为自定义输入框
         const originalInput = this.elements.input;
         originalInput.type = 'hidden'; // 将原始输入框设为隐藏
+        originalInput.value = ''; // 确保原始输入框值为空
 
         // 创建自定义输入框
         const customInput = document.createElement('input');
@@ -122,6 +85,7 @@ class TimePicker {
         customInput.className = 'time-picker-input';
         customInput.readOnly = true;
         customInput.placeholder = '请选择时间';
+        customInput.value = ''; // 确保自定义输入框值为空
 
         // 创建时间图标
         const icon = document.createElement('span');
@@ -407,7 +371,9 @@ class TimePicker {
 
             this.elements.customInput.value = displayText;
         } else {
+            // 如果没有选择日期，则清空输入框
             this.elements.customInput.value = '';
+            this.elements.input.value = '';
         }
     }
 
@@ -606,6 +572,13 @@ class TimePicker {
      * 取消选择
      */
     cancel() {
+        // 清空选择
+        this.state.selectedDate = null;
+        this.state.selectedTime = null;
+        
+        // 更新输入框显示
+        this.updateInputDisplay();
+        
         // 关闭面板
         this.close();
     }
