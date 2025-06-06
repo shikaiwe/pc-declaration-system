@@ -56,8 +56,10 @@ class TimePicker {
         const defaultDate = new Date();
 
         if (now.getHours() >= this.config.cutoffHour) {
-            defaultDate.setDate(defaultDate.getDate() + 1);
-            // 为第二天设置默认时间为18:00（确保在允许的时间范围内）
+            // 获取下一个工作日（跳过周末）
+            const nextWorkday = this.getNextWorkday(defaultDate);
+            defaultDate.setTime(nextWorkday.getTime());
+            // 为下一个工作日设置默认时间为18:00（确保在允许的时间范围内）
             this.state.selectedTime = '18:00';
         } else {
             // 如果当前时间已经晚于或等于18:00，设置默认时间为当前时间后最近的可选时间
@@ -75,9 +77,10 @@ class TimePicker {
                     }
                 }
 
-                // 如果没有找到合适的时间（当前时间已经超过最晚的可选时间），选择下一天
+                // 如果没有找到合适的时间（当前时间已经超过最晚的可选时间），选择下一个工作日
                 if (!defaultTime) {
-                    defaultDate.setDate(defaultDate.getDate() + 1);
+                    const nextWorkday = this.getNextWorkday(defaultDate);
+                    defaultDate.setTime(nextWorkday.getTime());
                     this.state.selectedTime = '18:00';
                 } else {
                     this.state.selectedTime = defaultTime;
@@ -631,6 +634,25 @@ class TimePicker {
             .replace('MM', String(month).padStart(2, '0'))
             .replace('DD', String(day).padStart(2, '0'));
     }
+
+    /**
+     * 获取下一个工作日（跳过周末）
+     * @param {Date} date - 起始日期
+     * @returns {Date} - 下一个工作日
+     */
+    getNextWorkday(date) {
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + 1);
+
+        // 如果是周末（0=周日，6=周六），继续寻找下一个工作日
+        if (nextDay.getDay() === 0) { // 如果是周日
+            nextDay.setDate(nextDay.getDate() + 1); // 跳到周一
+        } else if (nextDay.getDay() === 6) { // 如果是周六
+            nextDay.setDate(nextDay.getDate() + 2); // 跳到下周一
+        }
+
+        return nextDay;
+    }
 }
 
 /**
@@ -649,7 +671,7 @@ function initTimePicker() {
             // 设置最小日期为今天，最大日期为3个月后
             minDate: new Date(),
             maxDate: new Date(new Date().setMonth(new Date().getMonth() + 3)),
-            // 设置截止时间点为10点
+            // 设置截止时间点为10点，超过这个时间会自动选择下一个工作日（跳过周末）
             cutoffHour: 10
         });
 
