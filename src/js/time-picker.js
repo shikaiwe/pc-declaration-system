@@ -392,7 +392,7 @@ class TimePicker {
         if (this.state.selectedDate) {
             let displayText = '';
 
-            // 格式化日期部分
+            // 格式化日期部分（使用中文格式：年月日 星期X）
             const year = this.state.selectedDate.getFullYear();
             const month = this.state.selectedDate.getMonth() + 1;
             const day = this.state.selectedDate.getDate();
@@ -547,13 +547,21 @@ class TimePicker {
             const year = this.state.selectedDate.getFullYear();
             const month = String(this.state.selectedDate.getMonth() + 1).padStart(2, '0');
             const day = String(this.state.selectedDate.getDate()).padStart(2, '0');
+            const weekDay = this.config.dayNames[this.state.selectedDate.getDay()];
 
-            // 构建日期时间字符串
-            const dateTimeStr = `${year}-${month}-${day} ${this.state.selectedTime}`;
+            // 构建日期时间字符串（与显示格式保持一致，使用中文格式）
+            const displayDateTimeStr = `${year}年${month}月${day}日 星期${weekDay} ${this.state.selectedTime}`;
+            
+            // 构建标准格式的日期时间字符串（用于提交）
+            const submitDateTimeStr = `${year}-${month}-${day} ${this.state.selectedTime}`;
 
+            // 更新自定义输入框的显示值
+            this.elements.customInput.value = displayDateTimeStr;
+            
             // 更新原始输入框的值（使用标准格式）
-            this.elements.input.value = dateTimeStr;
-            this.elements.input.dataset.submitValue = dateTimeStr;
+            this.elements.input.value = submitDateTimeStr;
+            this.elements.input.dataset.submitValue = submitDateTimeStr;
+            this.elements.input.dataset.displayValue = displayDateTimeStr;
 
             // 触发变更事件
             const event = new Event('change', { bubbles: true });
@@ -680,8 +688,19 @@ function initTimePicker() {
         if (preferredTimeInput) {
             preferredTimeInput.addEventListener('change', (e) => {
                 const timeValue = e.target.value;
-                // 提取时间部分
-                const timePart = timeValue.split(' ')[1];
+                // 提取时间部分（格式为：YYYY年MM月DD日 星期X HH:MM）
+                const timeParts = timeValue.split(' ');
+                let timePart;
+                
+                // 检查格式并提取时间部分
+                if (timeParts.length >= 3 && timeParts[2].includes(':')) {
+                    // 格式：YYYY年MM月DD日 星期X HH:MM
+                    timePart = timeParts[2];
+                } else if (timeParts.length >= 2 && timeParts[1].includes(':')) {
+                    // 旧格式：YYYY-MM-DD HH:MM
+                    timePart = timeParts[1];
+                }
+                
                 if (timePart) {
                     // 检查时间是否在18:00-21:00之间
                     const [hours, minutes] = timePart.split(':').map(Number);
