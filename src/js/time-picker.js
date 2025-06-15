@@ -325,22 +325,13 @@ class TimePicker {
         cancelButton.type = 'button'; // 明确指定为button类型，防止被解释为submit
         cancelButton.addEventListener('click', () => this.cancel());
 
-        // 确认按钮（只在时间选择步骤显示）
-        const confirmButton = document.createElement('button');
-        confirmButton.className = 'time-picker-button confirm-button';
-        confirmButton.textContent = '确认';
-        confirmButton.type = 'button'; // 明确指定为button类型，防止被解释为submit
-        confirmButton.disabled = !this.state.selectedTime;
-        confirmButton.addEventListener('click', () => this.confirm());
-
         // 根据当前步骤添加不同的按钮
         if (this.state.currentStep === 'date') {
             // 日期步骤只显示取消按钮
             footer.appendChild(cancelButton);
         } else {
-            // 时间步骤只显示返回和确认按钮，移除取消按钮
+            // 时间步骤显示返回按钮
             footer.appendChild(backButton);
-            footer.appendChild(confirmButton);
         }
 
         // 添加所有元素到面板
@@ -485,7 +476,8 @@ class TimePicker {
             this.updateInputDisplay();
             // 检查时间有效性（用于显示警告信息）
             this.checkTimeValidity(time);
-            this.renderPanel();
+            // 选择时间后自动确认并关闭选择器
+            this.confirm();
         } else {
             alert('请选择18:00-21:00之间的时间');
         }
