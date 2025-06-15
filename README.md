@@ -22,6 +22,7 @@ pc-declaration-system/
 │   │   ├── assign_order.js      # 订单分配
 │   │   ├── message_board.js     # 留言板功能
 │   │   ├── order_rating.js      # 订单评价功能
+│   │   ├── time-picker.js       # 时间选择器
 │   │   ├── jquery.js            # jQuery库
 │   │   └── crypto-js.min.js     # 加密库
 │   ├── css/                # 样式资源
@@ -29,12 +30,12 @@ pc-declaration-system/
 │   │   ├── register.css         # 注册样式 
 │   │   ├── forgot-password.css  # 找回密码样式
 │   │   ├── message_board.css    # 留言板样式
+│   │   ├── time-picker.css      # 时间选择器样式
 │   │   └── order_rating.css     # 订单评价样式
 │   ├── images/             # 图像资源
 │   └── vendor/             # 第三方库
 │       ├── bootstrap/           # UI框架
 │       ├── fullcalendar/        # 日程管理组件
-│       ├── flatpickr/           # 日期选择器
 │       └── swiper/              # 移动端滑动组件
 ├── .gitignore              # 版本控制
 ├── README.md               # 项目文档
@@ -66,7 +67,6 @@ pc-declaration-system/
 | ![FullCalendar](https://img.shields.io/badge/FullCalendar-v5.10.1-orange) | 日程管理 |
 | ![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.1.3-purple) | UI框架 |
 | ![Swiper](https://img.shields.io/badge/Swiper-latest-red) | 移动端交互 |
-| ![Flatpickr](https://img.shields.io/badge/Flatpickr-latest-yellow) | 日期选择 |
 
 ## 安全机制
 - AES加密
