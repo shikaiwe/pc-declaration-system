@@ -315,18 +315,21 @@ class TimePicker {
         const backButton = document.createElement('button');
         backButton.className = `time-picker-button back-button ${this.state.currentStep === 'time' ? 'active' : ''}`;
         backButton.textContent = '返回';
+        backButton.type = 'button'; // 明确指定为button类型，防止被解释为submit
         backButton.addEventListener('click', () => this.switchStep('date'));
 
         // 取消按钮（只在日期选择步骤显示）
         const cancelButton = document.createElement('button');
         cancelButton.className = 'time-picker-button cancel-button';
         cancelButton.textContent = '取消';
+        cancelButton.type = 'button'; // 明确指定为button类型，防止被解释为submit
         cancelButton.addEventListener('click', () => this.cancel());
 
         // 确认按钮（只在时间选择步骤显示）
         const confirmButton = document.createElement('button');
         confirmButton.className = 'time-picker-button confirm-button';
         confirmButton.textContent = '确认';
+        confirmButton.type = 'button'; // 明确指定为button类型，防止被解释为submit
         confirmButton.disabled = !this.state.selectedTime;
         confirmButton.addEventListener('click', () => this.confirm());
 
