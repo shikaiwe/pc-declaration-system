@@ -4693,6 +4693,79 @@
             });
         </script>
 
+        <!-- 彩蛋视频功能 -->
+        <script>
+            // 初始化点击计数器
+            let clickCount = 0;
+            const currentTimeElement = document.getElementById('currentTime');
+            
+            // 添加点击事件监听器
+            currentTimeElement.addEventListener('click', function() {
+                clickCount++;
+                
+                // 当连续点击七次时显示视频弹窗
+                if (clickCount === 7) {
+                    showVideoModal();
+                    clickCount = 0; // 重置计数器
+                }
+                
+                // 如果3秒内没有再次点击，则重置计数器
+                clearTimeout(window.clickTimeout);
+                window.clickTimeout = setTimeout(function() {
+                    clickCount = 0;
+                }, 3000);
+            });
+            
+            // 创建并显示视频弹窗
+            function showVideoModal() {
+                // 检查是否已存在视频弹窗
+                let videoModal = document.getElementById('videoModal');
+                if (!videoModal) {
+                    // 创建视频弹窗元素
+                    videoModal = document.createElement('div');
+                    videoModal.id = 'videoModal';
+                    videoModal.className = 'modal';
+                    videoModal.style.zIndex = '1004'; // 确保弹窗在最上层
+                    
+                    // 弹窗内容
+                    videoModal.innerHTML = `
+                        <div class="modal-content" style="max-width: 800px;">
+                            <div style="position: relative; padding-bottom: 56.25%; height: 0;">
+                                <iframe 
+                                    src="https://easylink.cc/vlvtni" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen 
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                                </iframe>
+                            </div>
+                            <button id="closeVideoModal" style="margin-top: 20px; padding: 10px 20px; background-color: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                关闭
+                            </button>
+                        </div>
+                    `;
+                    
+                    // 添加到body
+                    document.body.appendChild(videoModal);
+                    
+                    // 关闭按钮事件
+                    document.getElementById('closeVideoModal').addEventListener('click', function() {
+                        videoModal.style.display = 'none';
+                    });
+                    
+                    // 点击弹窗外部关闭
+                    videoModal.addEventListener('click', function(event) {
+                        if (event.target === videoModal) {
+                            videoModal.style.display = 'none';
+                        }
+                    });
+                }
+                
+                // 显示弹窗
+                videoModal.style.display = 'block';
+            }
+        </script>
+
         <!-- 备案与版权信息footer 开始 -->
         <footer class="site-footer">
             <span>© 2025 广州南方学院PC志愿者服务队</span>
