@@ -4828,6 +4828,13 @@
                         fallbackToIframe();
                     });
                     
+                    // 添加视频播放结束事件监听器，实现自动重播
+                    videoElement.addEventListener('ended', function() {
+                        // 当视频播放结束时，将播放位置重置到开始并继续播放
+                        this.currentTime = 0;
+                        this.play();
+                    });
+                    
                     // 回退到iframe方式的函数
                     function fallbackToIframe() {
                         const videoContainer = document.getElementById('videoContainer');
