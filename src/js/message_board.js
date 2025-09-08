@@ -1,10 +1,8 @@
 // API端点配置
 const API_URLS = {
     GET_USER_INFO: 'https://gznfpc.cn/api/dashboard/get_user_info/',
-    GET_HISTORY: 'https://gznfpc.cn/api/dashboard/user_get_history_report/',
-    GET_WORKER_REPORTS: 'https://gznfpc.cn/api/dashboard/worker_get_report_list/',
-    GET_REPORT_OF_SAME_DAY: 'https://gznfpc.cn/api/dashboard/get_report_of_same_day/',
-    GET_MESSAGE_RECORD: 'https://gznfpc.cn/api/message_board/get_message_record/'
+    GET_MESSAGE_RECORD: 'https://gznfpc.cn/api/message_board/get_message_record/',
+    GET_MESSAGE_LIST: 'https://gznfpc.cn/api/message_board/get_message_list/'
 };
 
 // WebSocket配置
@@ -16,8 +14,6 @@ const WS_CONFIG = {
 let wsConnections = new Map(); // 存储所有WebSocket连接
 let currentReportId = null;
 let currentUser = null;
-let currentUserRole = null; // 存储用户角色
-let currentOrders = []; // 存储当前订单列表
 
 // 消息状态常量
 const MESSAGE_STATUS = {
@@ -224,22 +220,7 @@ const messageStorage = {
         return this.messages.get(reportId).get(key) || null;
     },
 
-    // 更新消息
-    updateMessage(messageId, updatedProps) {
-        const cacheInfo = this.messageCache.get(messageId);
-        if (!cacheInfo) return false;
 
-        const { reportId, key } = cacheInfo;
-        if (!this.messages.has(reportId)) return false;
-
-        const message = this.messages.get(reportId).get(key);
-        if (!message) return false;
-
-        // 更新属性
-        Object.assign(message, updatedProps);
-        this.messages.get(reportId).set(key, message);
-        return true;
-    },
 
     // 清空订单的消息
     clearMessages(reportId) {
@@ -265,7 +246,7 @@ const messageStorage = {
     }
 };
 
-// 获取历史订单
+// 获取订单列表
 async function fetchOrders() {
     try {
         // 首先获取用户身份信息
@@ -279,84 +260,32 @@ async function fetchOrders() {
 
         if (userInfo.message === 'Success') {
             currentUser = userInfo.username;
-            currentUserRole = userInfo.label;
 
-            // 根据用户角色获取订单
-            let orders = [];
-
-            if (currentUserRole === 'admin') {
-                // 管理员可以看到当天的所有订单
-                const response = await $.ajax({
-                    url: API_URLS.GET_REPORT_OF_SAME_DAY,
-                    method: 'GET',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                });
-
-                if (response.message === 'Success') {
-                    orders = response.reports.map(report => ({
-                        reportId: report.reportId,
-                        username: report.userPhoneNumber,
-                        address: report.address,
-                        issue: report.issue,
-                        status: report.status,
-                        date: report.date,
-                        call_date: report.call_date,
-                        workerName: report.workerName
-                    }));
+            // 使用新的API获取订单列表
+            const response = await $.ajax({
+                url: API_URLS.GET_MESSAGE_LIST,
+                method: 'POST',
+                data: JSON.stringify({ userId: userInfo.userId }),
+                contentType: 'application/json',
+                xhrFields: {
+                    withCredentials: true
                 }
-            } else if (currentUserRole === 'worker') {
-                // 工作人员可以看到自己报的单和被分配的单
-                try {
-                    // 获取被分配的订单
-                    const workerResponse = await $.ajax({
-                        url: API_URLS.GET_WORKER_REPORTS,
-                        method: 'GET',
-                        xhrFields: {
-                            withCredentials: true
-                        }
-                    });
+            });
 
-                    if (workerResponse.message === 'Success') {
-                        orders = orders.concat(workerResponse.report_info);
-                    }
+            if (response.message === 'Success') {
+                // 格式化返回的订单数据
+                const orders = response.reports.map(report => ({
+                    reportId: report.reportId,
+                    issue: report.issue,
+                    status: report.status,
+                    date: report.date
+                }));
 
-                    // 获取自己报的订单
-                    const userResponse = await $.ajax({
-                        url: API_URLS.GET_HISTORY,
-                        method: 'GET',
-                        xhrFields: {
-                            withCredentials: true
-                        }
-                    });
-
-                    if (userResponse.message === 'Success') {
-                        orders = orders.concat(userResponse.report_info);
-                    }
-
-                    // 去重（可能有重复的订单）
-                    orders = Array.from(new Map(orders.map(order => [order.reportId, order])).values());
-                } catch (error) {
-                    console.error('获取工作人员订单失败:', error);
-                }
+                return orders;
             } else {
-                // 普通用户只看到自己的订单
-                const response = await $.ajax({
-                    url: API_URLS.GET_HISTORY,
-                    method: 'GET',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                });
-
-                if (response.message === 'Success') {
-                    orders = response.report_info;
-                }
+                console.error('获取订单列表失败:', response.message);
+                return [];
             }
-
-            currentOrders = orders;
-            return orders;
         } else {
             // 处理用户信息获取失败的情况
             console.error('获取用户信息失败:', userInfo.message);
@@ -404,28 +333,13 @@ function updateOrderSelector(orders) {
         return;
     }
 
-    // 根据用户角色显示不同的订单标题
+    // 显示订单标题（所有用户都看到订单号和问题）
     orders.forEach(order => {
         const option = document.createElement('option');
         option.value = order.reportId;
 
-        let orderTitle = '';
-        switch (currentUserRole) {
-            case 'admin':
-                // 管理员看到用户名和问题
-                orderTitle = `订单 ${order.reportId} - ${order.username} - ${order.issue.substring(0, 20)}`;
-                break;
-            case 'worker':
-                // 维修人员看到订单号和问题
-                orderTitle = `订单 ${order.reportId} - ${order.issue.substring(0, 20)}`;
-                break;
-            case 'customer':
-            default:
-                // 普通用户看到订单号和问题
-                orderTitle = `订单 ${order.reportId} - ${order.issue.substring(0, 20)}`;
-                break;
-        }
-
+        // 所有用户都看到相同的订单标题格式
+        const orderTitle = `订单 ${order.reportId} - ${order.issue.substring(0, 20)}`;
         option.textContent = orderTitle + (order.issue.length > 20 ? '...' : '');
         orderSelector.appendChild(option);
     });
@@ -813,9 +727,11 @@ function sendMessage() {
         return;
     }
 
+    let messageId = null;
     try {
         // 创建消息对象（发送中状态）
         const newMessage = messageManager.createMessage(messageContent, currentUser, selectedReportId);
+        messageId = newMessage.id;
 
         // 存储并显示消息
         messageStorage.addMessage(selectedReportId, newMessage);
@@ -852,9 +768,11 @@ function sendMessage() {
         console.error('发送消息失败:', error);
 
         // 查找消息并标记为失败
-        const message = messageStorage.findMessageById(newMessage.id);
-        if (message) {
-            messageManager.updateMessageStatus(newMessage.id, selectedReportId, MESSAGE_STATUS.FAILED);
+        if (messageId) {
+            const message = messageStorage.findMessageById(messageId);
+            if (message) {
+                messageManager.updateMessageStatus(messageId, selectedReportId, MESSAGE_STATUS.FAILED);
+            }
         }
 
         alert('发送消息失败，请重试');
@@ -872,10 +790,7 @@ function cleanupConnections() {
 
 // 初始化留言板
 async function initMessageBoard() {
-    // 如果已经初始化过，则直接返回
-    if (this.isInitialized) {
-        return;
-    }
+
 
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendMessage');
@@ -935,8 +850,7 @@ async function initMessageBoard() {
     window.removeEventListener('beforeunload', closeAllConnections);
     window.addEventListener('beforeunload', closeAllConnections);
 
-    // 标记为已初始化
-    this.isInitialized = true;
+
 }
 
 // 处理订单选择器变化
@@ -990,6 +904,5 @@ export default {
     initWebSocket,
     sendMessage,
     fetchOrders,
-    fetchMessageHistory,
-    isInitialized: false
+    fetchMessageHistory
 };
