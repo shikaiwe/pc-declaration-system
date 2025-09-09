@@ -1550,8 +1550,7 @@
         .tab-button,
         .user-greeting,
         .order-status,
-        .complete-order-btn,
-        .cancel-order-btn {
+        .complete-order-btn {
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
@@ -1561,57 +1560,66 @@
         
         button {
             -webkit-tap-highlight-color: transparent;
-            /* 移除移动设备上的点击高亮 */
+            /* 移动设备上的点击高亮 */
         }
-        /* 修改侧边栏菜单项样式 */
+        /* 侧边栏菜单项样式 */
         
         .sidebar-menu li {
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
-        /* 修改导航栏链接样式 */
+        /* 导航栏链接样式 */
         
         .navbar a {
             -webkit-tap-highlight-color: transparent;
         }
-        /* 修改下拉菜单项样式 */
+        /* 下拉菜单项样式 */
         
         .dropdown-menu a {
             -webkit-tap-highlight-color: transparent;
         }
-        /* 修改标签按钮样式 */
+        /* 标签按钮样式 */
         
         .tab-button {
             -webkit-tap-highlight-color: transparent;
         }
-        /* 修改用户问候语样式 */
+        /* 用户问候语样式 */
         
         .user-greeting {
             -webkit-tap-highlight-color: transparent;
         }
-        /* 修改订单状态标签样式 */
+        /* 订单状态标签样式 */
         
         .order-status {
             -webkit-tap-highlight-color: transparent;
         }
-        /* 修改结单按钮样式 */
+        /* 结单按钮样式 */
         
         .complete-order-btn {
-            -webkit-tap-highlight-color: transparent;
+            background-color: #2196F3 !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 4px !important;
+            padding: 10px 20px !important;
+            cursor: pointer !important;
+            transition: background-color 0.2s ease-out, transform 0.2s ease-out !important;
+            -webkit-tap-highlight-color: transparent !important;
         }
-        /* 修改撤单按钮样式 */
+        
+        .complete-order-btn:hover {
+            background-color: #1976D2 !important;
+        }
+        /* 撤单按钮样式 */
         
         .cancel-order-btn {
-            background-color: #ff4d4f;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 16px;
-            font-size: 0.9em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            -webkit-tap-highlight-color: transparent;
+            background-color: #ff4d4f !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 4px !important;
+            padding: 10px 20px !important;
+            cursor: pointer !important;
+            transition: background-color 0.2s ease-out, transform 0.2s ease-out !important;
+            -webkit-tap-highlight-color: transparent !important;
         }
         
         .cancel-order-btn:hover {
