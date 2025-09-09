@@ -1213,6 +1213,13 @@
         .cancel-order-btn {
             background-color: #ff4d4f;
             color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
         
         .cancel-order-btn:hover {
@@ -3664,16 +3671,7 @@
                         <span class="detail-label">提交时间</span>
                         <span class="detail-value">${utils.date.format(order.call_date)}</span>
                     </div>
-                    ${showButtons ? `
-                        <div class="detail-actions">
-                            <button class="detail-button primary" id="completeOrderBtn">
-                                完成订单
-                            </button>
-                            <button class="detail-button danger" id="cancelOrderBtn">
-                                撤销订单
-                            </button>
-                        </div>
-                    ` : ''}
+
                 </div>
             `;
 
@@ -3687,141 +3685,7 @@
                 overlay.classList.add('show');
             }, 10);
 
-            // 添加按钮事件监听器
-            if (showButtons) {
-                const completeOrderBtn = document.getElementById('completeOrderBtn');
-                const cancelOrderBtn = document.getElementById('cancelOrderBtn');
-                
-                if (completeOrderBtn) {
-                    completeOrderBtn.addEventListener('click', () => {
-                        // 获取订单状态
-                        const orderStatus = order.status || '0';
-                        
-                        // 检查订单状态，只有已分配状态(1)下才需要评价
-                        const needRating = orderStatus === '1' || orderStatus === 1;
-                        
-                        // 定义完成订单后的回调
-                        const completeCallback = () => {
-                            // 更新日历事件状态
-                            if (this.calendar) {
-                                const event = this.calendar.getEventById(order.reportId);
-                                if (event) {
-                                    event.setExtendedProp('status', '2');
-                                    event.setProp('backgroundColor', '#17a2b8');
-                                    event.setProp('borderColor', '#17a2b8');
-                                }
-                            }
-                            // 关闭详情弹窗
-                            this.hideEventDetail();
-                            
-                            // 刷新订单列表
-                            this.fetchHistoryOrders(true);
-                        };
-                        
-                        // 根据订单状态决定是否显示评价窗口
-                        if (needRating) {
-                            try {
-                                // 引入订单评价模块并显示评价窗口
-                                if (typeof window.getOrderRatingInstance !== 'undefined') {
-                                    const orderRating = window.getOrderRatingInstance();
-                                    // 显示评价窗口
-                                    orderRating.showRating(order.reportId, () => {
-                                        utils.ui.showLoading(true);
-                                        $.ajax({
-                                            url: API_URLS.COMPLETE_REPORT,
-                                            method: 'POST',
-                                            data: JSON.stringify({ reportId: order.reportId }),
-                                            contentType: 'application/json',
-                                            xhrFields: {
-                                                withCredentials: true
-                                            }
-                                        }).then(response => {
-                                            utils.ui.showLoading(false);
-                                            if (response.message === 'Success') {
-                                                utils.ui.showMessage('订单已完成');
-                                                completeCallback();
-                                            } else {
-                                                auth.handleSessionError(response.message);
-                                            }
-                                        }).catch(error => {
-                                            utils.ui.showLoading(false);
-                                            console.error('完成订单失败:', error);
-                                            utils.ui.showMessage('完成订单失败，请重试');
-                                        });
-                                    });
-                                } else {
-                                    utils.ui.showMessage('评价模块未加载，请刷新页面后重试');
-                                    console.error('OrderRating模块未定义');
-                                }
-                            } catch (error) {
-                                console.error('加载评价模块失败:', error);
-                                utils.ui.showMessage('加载评价模块失败，请刷新页面后重试');
-                            }
-                        } else {
-                            // 其他状态直接执行结单操作，不需要评价
-                            utils.ui.showLoading(true);
-                            $.ajax({
-                                url: API_URLS.COMPLETE_REPORT,
-                                method: 'POST',
-                                data: JSON.stringify({ reportId: order.reportId }),
-                                contentType: 'application/json',
-                                xhrFields: {
-                                    withCredentials: true
-                                }
-                            }).then(response => {
-                                utils.ui.showLoading(false);
-                                if (response.message === 'Success') {
-                                    utils.ui.showMessage('订单已完成');
-                                    completeCallback();
-                                } else {
-                                    auth.handleSessionError(response.message);
-                                }
-                            }).catch(error => {
-                                utils.ui.showLoading(false);
-                                console.error('完成订单失败:', error);
-                                utils.ui.showMessage('完成订单失败，请重试');
-                            });
-                        }
-                    });
-                }
-                
-                if (cancelOrderBtn) {
-                    cancelOrderBtn.addEventListener('click', () => {
-                        utils.ui.showLoading(true);
-                        $.ajax({
-                            url: API_URLS.CANCEL_REPORT,
-                            method: 'POST',
-                            data: JSON.stringify({ reportId: order.reportId }),
-                            contentType: 'application/json',
-                            xhrFields: {
-                                withCredentials: true
-                            }
-                        }).then(response => {
-                            utils.ui.showLoading(false);
-                            if (response.message === 'Success') {
-                                utils.ui.showMessage('订单已撤销');
-                                // 更新日历事件状态
-                                if (this.calendar) {
-                                    const event = this.calendar.getEventById(order.reportId);
-                                    if (event) {
-                                        event.setExtendedProp('status', '3');
-                                        event.setProp('backgroundColor', '#dc3545');
-                                        event.setProp('borderColor', '#dc3545');
-                                    }
-                                }
-                                // 关闭详情弹窗
-                                this.hideEventDetail();
-                            } else {
-                                auth.handleSessionError(response.message);
-                            }
-                        }).catch(error => {
-                            utils.ui.showLoading(false);
-                            console.error('撤销订单失败:', error);
-                            utils.ui.showMessage('撤销订单失败，请重试');
-                        });
-                    });
-                }
-            }
+
 
             // 添加滑动关闭功能
             let touchStartY = 0;
