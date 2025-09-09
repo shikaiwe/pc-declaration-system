@@ -3339,105 +3339,97 @@
         },
 
         async fetchWeatherAndLocation() {
+            const weatherInfoElement = document.getElementById('weather-info');
             try {
-                // 获取IP信息
-                const ipInfo = await this.getIpFromIpSb();
-
                 // 获取天气信息
                 const response = await $.ajax({
                     url: API_URLS.GET_CITY_AND_WEATHER,
                     method: 'POST',
-                    data: JSON.stringify({ ip: ipInfo.ip }),
+                    data: JSON.stringify({ ip: 'none' }),
                     contentType: 'application/json',
                     xhrFields: { withCredentials: true }
                 });
 
-                if (response.message !== 'Success') {
-                    throw new Error(response.message);
-                }
-
-                if (!response.weather || !response.IP || !response.IP.city) {
-                    throw new Error('天气数据格式不完整');
-                }
-
-                // 处理天气数据
-                let weatherData = response.weather.weather;  // 获取嵌套的weather对象
-                if (typeof weatherData === 'string') {
-                    try {
-                        weatherData = JSON.parse(weatherData);
-                    } catch (e) {
-                        console.error('天气数据解析失败:', e);
+                if (response.message === 'Success') {
+                    if (!response.weather || !response.IP || !response.IP.city) {
+                        throw new Error('天气数据格式不正确');
                     }
+                    // 更新天气显示
+                    this.updateWeatherDisplay(response.IP, response.weather);
+                } else if (response.message === 'Session has expired') {
+                    auth.handleSessionError('会话已过期');
+                } else if (response.message === 'Invalid session') {
+                    auth.handleSessionError('无效的会话');
+                } else if (response.message === 'No sessionid cookie') {
+                    auth.handleSessionError('未找到会话信息');
+                } else {
+                    auth.handleSessionError(response.message);
                 }
-
-                // 解码城市名称（处理Unicode编码）
-                const cityName = decodeURIComponent(JSON.parse('"' + response.IP.city + '"'));
-                this.displayWeatherInfo(weatherData, cityName);
             } catch (error) {
-                this.handleError(error, document.getElementById('weather-info'));
+                console.error('获取天气信息失败:', error);
+                weatherInfoElement.innerHTML = `
+                    <div class="weather-error">
+                        <p>暂无天气信息</p>
+                        <p class="error-details">${error.message}</p>
+                    </div>`;
             }
         },
 
-        displayWeatherInfo(weather, city) {
-            if (!weather || !city) {
-                console.error('天气数据不完整:', { weather, city });
-                document.getElementById('weather-info').innerHTML = '<p>天气数据不完整</p>';
+        updateWeatherDisplay(ipInfo, weatherData) {
+            const weatherInfoElement = document.getElementById('weather-info');
+
+            // 添加数据验证
+            if (!weatherData || !ipInfo || !ipInfo.city) {
+                weatherInfoElement.innerHTML = '<div class="weather-error">天气数据不完整</div>';
                 return;
             }
 
-            // 确保所有数据字段都存在
-            const weatherInfo = {
-                temperature: weather.temperature || 'N/A',
-                weather: weather.weather || 'N/A',
-                humidity: weather.humidity || 'N/A',
-                winddirection: weather.winddirection || 'N/A',
-                windpower: weather.windpower || 'N/A',
-                updatetime: weather.updateTime  // 注意这里的大写T
+            // 确保所有必需的天气数据字段都存在并正确处理
+            const weather = {
+                weather: weatherData.weather ? weatherData.weather.weather || '未知' : '未知',
+                temperature: weatherData.weather ? weatherData.weather.temperature || '未知' : '未知',
+                winddirection: weatherData.weather ? weatherData.weather.winddirection || '未知' : '未知',
+                windpower: weatherData.weather ? weatherData.weather.windpower || '未知' : '未知',
+                humidity: weatherData.weather ? weatherData.weather.humidity || '未知' : '未知',
+                updateTime: weatherData.weather ? weatherData.weather.updateTime || '未知' : '未知'
             };
 
-            const weatherContent = `
+            weatherInfoElement.innerHTML = `
                 <div class="weather-content">
                     <div class="weather-main">
                         <div class="weather-location">
                             <span class="weather-icon">📍</span>
-                            ${city.replace('市', '')}
+                            ${ipInfo.city}
                         </div>
                         <div class="weather-temp">
                             <span class="weather-icon">🌡️</span>
-                            ${weatherInfo.temperature}°C
+                            ${weather.temperature}°C
                         </div>
                     </div>
                     <div class="weather-info-details">
                         <div class="weather-row">
                             <span class="weather-icon">🌤️</span>
-                            <span>天气：${weatherInfo.weather}</span>
+                            <span>天气：${weather.weather}</span>
                         </div>
                         <div class="weather-row">
                             <span class="weather-icon">💧</span>
-                            <span>湿度：${weatherInfo.humidity}%</span>
+                            <span>湿度：${weather.humidity}%</span>
                         </div>
                         <div class="weather-row">
                             <span class="weather-icon">🌪️</span>
-                            <span>风向：${weatherInfo.winddirection}</span>
+                            <span>风向：${weather.winddirection}</span>
                         </div>
                         <div class="weather-row">
                             <span class="weather-icon">💨</span>
-                            <span>风力：${weatherInfo.windpower}</span>
+                            <span>风力：${weather.windpower}</span>
                         </div>
                     </div>
-                    ${weatherInfo.updatetime ? `
-                        <div class="weather-update">
-                            <span class="weather-icon">🕒</span>
-                            <span>更新：${new Date(weatherInfo.updatetime).toLocaleTimeString('zh-CN', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            })}</span>
-                        </div>
-                    ` : ''}
+                    <div class="weather-update">
+                        <span class="weather-icon">🕒</span>
+                        <span>更新时间：${weather.updateTime}</span>
+                    </div>
                 </div>
             `;
-
-            document.getElementById('weather-info').innerHTML = weatherContent;
         }
     };
 
