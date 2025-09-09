@@ -33,6 +33,7 @@ class OrderRating {
         this.initialized = false;
         this.retryLimit = 3;
         this.retryCount = 0;
+        this.eventListenersAdded = false;
     }
 
     /**
@@ -92,6 +93,11 @@ class OrderRating {
      * 添加事件监听
      */
     addEventListeners() {
+        // 如果已经添加过事件监听器，则不再重复添加
+        if (this.eventListenersAdded) {
+            return;
+        }
+        
         const stars = document.querySelectorAll('#ratingStars .star');
         const starsContainer = document.getElementById('ratingStars');
         const description = document.getElementById('ratingDescription');
@@ -150,6 +156,9 @@ class OrderRating {
                 this.hideRating();
             }
         });
+        
+        // 标记事件监听器已添加
+        this.eventListenersAdded = true;
     }
 
     /**
