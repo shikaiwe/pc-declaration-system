@@ -594,7 +594,14 @@ async function initWebSocket(reportId) {
                 if (message.username === currentUser) {
                     // 查找本地是否已有此消息（通过ID或内容时间匹配）
                     if (message.id) {
-                        messageManager.updateMessageStatus(message.id, reportId, MESSAGE_STATUS.DELIVERED);
+                        const existingMessage = messageStorage.findMessageById(message.id);
+                        if (existingMessage) {
+                            // 如果消息已存在，只更新状态
+                            messageManager.updateMessageStatus(message.id, reportId, MESSAGE_STATUS.DELIVERED);
+                        } else {
+                            // 如果消息不存在，添加到存储但不显示（避免重复）
+                            messageStorage.addMessage(reportId, message);
+                        }
                     }
                 } else {
                     // 显示他人发送的新消息
@@ -629,6 +636,11 @@ function appendMessage(message) {
     if (!message || !message.username || !message.message) {
         console.error('消息格式不正确:', message);
         return;
+    }
+
+    // 检查消息是否已经显示过（通过ID）
+    if (message.id && document.getElementById(message.id)) {
+        return; // 如果消息已经显示，直接返回
     }
 
     const messageList = document.getElementById('messageList');
@@ -817,8 +829,8 @@ function sendMessage() {
         // 创建消息对象（发送中状态）
         const newMessage = messageManager.createMessage(messageContent, currentUser, selectedReportId);
 
-        // 存储并显示消息
-        // messageStorage.addMessage(selectedReportId, newMessage); // 逻辑重复，会导致前端显示消息重复，故注释
+        // 存储并显示消息（立即显示给用户）
+        messageStorage.addMessage(selectedReportId, newMessage);
         appendMessage(newMessage);
 
         // 构造要发送的消息对象
