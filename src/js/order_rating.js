@@ -339,3 +339,14 @@ export default OrderRating;
 
 // 同时将其添加到全局对象，方便非模块脚本访问
 window.OrderRating = OrderRating;
+
+// 创建全局单例实例
+window.orderRatingInstance = null;
+
+// 获取或创建单例实例的函数
+window.getOrderRatingInstance = function() {
+    if (!window.orderRatingInstance) {
+        window.orderRatingInstance = new OrderRating();
+    }
+    return window.orderRatingInstance;
+};

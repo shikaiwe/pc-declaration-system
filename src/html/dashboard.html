@@ -4563,8 +4563,8 @@
                     if (needRating) {
                         try {
                             // 引入订单评价模块并显示评价窗口
-                            if (typeof window.OrderRating !== 'undefined') {
-                                const orderRating = new window.OrderRating();
+                            if (typeof window.getOrderRatingInstance !== 'undefined') {
+                                const orderRating = window.getOrderRatingInstance();
                                 // 显示评价窗口
                                 orderRating.showRating(reportId, executeComplete);
                             } else {
