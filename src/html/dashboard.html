@@ -1343,6 +1343,60 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+
+        /* 订单确认弹窗样式 */
+        .order-confirm-modal .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            margin: 15% auto;
+            position: relative;
+            animation: modalFade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .order-confirm-modal .modal-content p {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .order-confirm-modal .modal-content button {
+            padding: 12px 28px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #confirmOrderAction {
+            background-color: #ff4757;
+            color: white;
+        }
+
+        #confirmOrderAction:hover {
+            background-color: #ff6b81;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.2);
+        }
+
+        #cancelOrderAction {
+            background-color: #f1f2f6;
+            color: #333;
+        }
+
+        #cancelOrderAction:hover {
+            background-color: #dfe4ea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
         
         @keyframes modalFade {
             from {
@@ -2861,6 +2915,17 @@
                 </div>
                 <div class="order-detail-footer">
                     <button class="close-detail-btn" id="closeDetailBtn">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 订单操作确认弹窗 -->
+        <div class="modal order-confirm-modal" id="orderConfirmModal">
+            <div class="modal-content">
+                <p id="orderConfirmMessage"></p>
+                <div class="button-group">
+                    <button id="confirmOrderAction">确认</button>
+                    <button id="cancelOrderAction">返回</button>
                 </div>
             </div>
         </div>
@@ -4580,7 +4645,7 @@
                         });
                     };
                     
-                    // 根据订单状态决定是否显示评价窗口
+                    // 根据订单状态决定是否显示评价窗口或确认弹窗
                     if (needRating) {
                         try {
                             // 引入订单评价模块并显示评价窗口
@@ -4597,8 +4662,8 @@
                             utils.ui.showMessage('加载评价模块失败，请刷新页面后重试');
                         }
                     } else {
-                        // 其他状态直接执行结单操作，不需要评价
-                        executeComplete();
+                        // 未分配状态下显示确认弹窗
+                        this.showCompleteConfirm(reportId, executeComplete);
                     }
                 },
 
@@ -4609,32 +4674,8 @@
                         return;
                     }
 
-                    $.ajax({
-                        url: API_URLS.CANCEL_REPORT,
-                        method: 'POST',
-                        data: JSON.stringify({ reportId }),
-                        contentType: 'application/json',
-                        xhrFields: {
-                            withCredentials: true
-                        }
-                    })
-                    .done(function(data) {
-                        if (data.message === 'Success') {
-                            utils.ui.showMessage('订单已撤销');
-                            updateCalendarEvent(reportId, '3');
-                            fetchHistoryOrders();
-                            const calendarEl = document.querySelector('#calendar');
-                            if (calendarEl && calendarEl._fullCalendar) {
-                                calendarEl._fullCalendar.refetchEvents();
-                            }
-                        } else {
-                            auth.handleSessionError(data.message);
-                        }
-                    })
-                    .fail(function(error) {
-                        console.error('撤销订单失败:', error);
-                        utils.ui.showMessage('撤销订单失败，请重试');
-                    });
+                    // 显示撤单确认弹窗
+                    this.showCancelConfirm(reportId);
                 },
 
                 // 提交订单
@@ -4673,6 +4714,94 @@
                     if (assignOrderContent && window.assignOrderInstance) {
                         window.assignOrderInstance.refreshOrders();
                     }
+                },
+
+                // 显示结单确认弹窗
+                showCompleteConfirm: function(reportId, executeComplete) {
+                    const modal = document.getElementById('orderConfirmModal');
+                    const message = document.getElementById('orderConfirmMessage');
+                    const confirmBtn = document.getElementById('confirmOrderAction');
+                    const cancelBtn = document.getElementById('cancelOrderAction');
+
+                    if (modal && message && confirmBtn && cancelBtn) {
+                        message.textContent = '此订单尚未被分配，是否确认结单？';
+                        
+                        // 清除之前的事件监听器
+                        confirmBtn.onclick = null;
+                        cancelBtn.onclick = null;
+
+                        // 设置确认按钮事件
+                        confirmBtn.onclick = () => {
+                            modal.style.display = 'none';
+                            executeComplete();
+                        };
+
+                        // 设置取消按钮事件
+                        cancelBtn.onclick = () => {
+                            modal.style.display = 'none';
+                        };
+
+                        modal.style.display = 'block';
+                    }
+                },
+
+                // 显示撤单确认弹窗
+                showCancelConfirm: function(reportId) {
+                    const modal = document.getElementById('orderConfirmModal');
+                    const message = document.getElementById('orderConfirmMessage');
+                    const confirmBtn = document.getElementById('confirmOrderAction');
+                    const cancelBtn = document.getElementById('cancelOrderAction');
+
+                    if (modal && message && confirmBtn && cancelBtn) {
+                        message.textContent = '是否确认撤单？此操作不可撤销';
+                        
+                        // 清除之前的事件监听器
+                        confirmBtn.onclick = null;
+                        cancelBtn.onclick = null;
+
+                        // 设置确认按钮事件
+                        confirmBtn.onclick = () => {
+                            modal.style.display = 'none';
+                            this.executeCancelOrder(reportId);
+                        };
+
+                        // 设置取消按钮事件
+                        cancelBtn.onclick = () => {
+                            modal.style.display = 'none';
+                        };
+
+                        modal.style.display = 'block';
+                    }
+                },
+
+                // 执行撤单操作
+                executeCancelOrder: function(reportId) {
+                    $.ajax({
+                        url: API_URLS.CANCEL_REPORT,
+                        method: 'POST',
+                        data: JSON.stringify({ reportId }),
+                        contentType: 'application/json',
+                        xhrFields: {
+                            withCredentials: true
+                        }
+                    })
+                    .done(function(data) {
+                        if (data.message === 'Success') {
+                            utils.ui.showMessage('订单已撤销');
+                            updateCalendarEvent(reportId, '3');
+                            fetchHistoryOrders();
+                            const calendarEl = document.querySelector('#calendar');
+                            if (calendarEl && calendarEl._fullCalendar) {
+                                calendarEl._fullCalendar.refetchEvents();
+                            }
+                        } else {
+                            auth.handleSessionError(data.message);
+                        }
+                    })
+                    .fail(function(error) {
+                        console.error('撤销订单失败:', error);
+                        utils.ui.showMessage('撤销订单失败，请重试');
+                    });
                 }
             };
         </script>
