@@ -192,8 +192,17 @@ const messageStorage = {
             message.id = messageManager.generateMessageId();
         }
 
+        // 检查消息是否已存在（通过ID）
+        if (this.messageCache.has(message.id)) {
+            const cacheInfo = this.messageCache.get(message.id);
+            if (cacheInfo.reportId === reportId) {
+                // 消息已存在，直接返回现有消息
+                return this.messages.get(reportId).get(cacheInfo.key);
+            }
+        }
+
         // 使用唯一ID作为键
-        const messageKey = message.id || `${message.message}-${message.time}`;
+        const messageKey = message.id;
         this.messages.get(reportId).set(messageKey, message);
 
         // 更新缓存
@@ -481,6 +490,7 @@ async function fetchMessageHistory(reportId) {
 
             if (Array.isArray(response.message_record)) {
                 messages = response.message_record.map(item => ({
+                    id: `hist_${item.date}_${item.username}_${item.message}`.replace(/[^a-zA-Z0-9_-]/g, '_'),
                     username: item.username,
                     message: item.message,
                     time: item.date,
@@ -497,9 +507,12 @@ async function fetchMessageHistory(reportId) {
                 return 0;
             });
 
-            // 将历史消息添加到存储中
+            // 将历史消息添加到存储中（避免重复）
             messages.forEach(message => {
-                messageStorage.addMessage(reportId, message);
+                // 检查消息是否已存在
+                if (!messageStorage.findMessageById(message.id)) {
+                    messageStorage.addMessage(reportId, message);
+                }
             });
 
             return messages;
@@ -587,12 +600,9 @@ async function initWebSocket(reportId) {
                 // 设置消息的报告ID，用于后续查找
                 message.reportId = reportId;
 
-                // 添加到存储
-                messageStorage.addMessage(reportId, message);
-
-                // 检查是否是自己发送的消息，如果是则更新状态而不重复显示
+                // 检查是否是自己发送的消息
                 if (message.username === currentUser) {
-                    // 查找本地是否已有此消息（通过ID或内容时间匹配）
+                    // 查找本地是否已有此消息（通过ID）
                     if (message.id) {
                         const existingMessage = messageStorage.findMessageById(message.id);
                         if (existingMessage) {
@@ -604,7 +614,8 @@ async function initWebSocket(reportId) {
                         }
                     }
                 } else {
-                    // 显示他人发送的新消息
+                    // 他人发送的消息，添加到存储并显示
+                    messageStorage.addMessage(reportId, message);
                     appendMessage(message);
                 }
             } catch (error) {
