@@ -818,7 +818,7 @@ function sendMessage() {
         const newMessage = messageManager.createMessage(messageContent, currentUser, selectedReportId);
 
         // 存储并显示消息
-        messageStorage.addMessage(selectedReportId, newMessage);
+        // messageStorage.addMessage(selectedReportId, newMessage); // 逻辑重复，会导致前端显示消息重复，故注释
         appendMessage(newMessage);
 
         // 构造要发送的消息对象
