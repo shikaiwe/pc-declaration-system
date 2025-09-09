@@ -11,6 +11,9 @@ cursor.json
 .cursor-server/
 .cursorrules
 
+# Trae IDE
+.trae/
+
 # 操作系统文件
 .DS_Store
 Thumbs.db
@@ -49,4 +52,4 @@ out/
 # 其他
 *.bak
 *.cache
-.sass-cache/ 
+.sass-cache/
