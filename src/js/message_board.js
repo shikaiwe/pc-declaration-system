@@ -560,7 +560,7 @@ async function initWebSocket(reportId) {
         currentReportId = reportId;
         
         // 使用管理器建立连接
-        const connection = await wsManager.connect(reportId);
+        const connection = await wsManager.getConnection(reportId);
         
         if (connection) {
             console.log(`订单 ${reportId} 的WebSocket连接已建立`);
@@ -852,7 +852,7 @@ async function sendMessage() {
 
         // 尝试重新连接
         alert('连接已断开，正在重新连接...');
-        await wsManager.reconnect(selectedReportId);
+        await initWebSocket(selectedReportId);
         return;
     }
 
@@ -907,7 +907,7 @@ async function sendMessage() {
 // 清理无效的WebSocket连接
 function cleanupConnections() {
     if (wsManager) {
-        wsManager.cleanup();
+        wsManager.cleanupAllConnections();
     }
 }
 

@@ -440,6 +440,42 @@ class WebSocketManager {
     }
     
     /**
+     * 检查连接是否已建立
+     * @param {string} reportId 订单ID
+     * @returns {boolean} 连接是否已建立
+     */
+    isConnected(reportId) {
+        if (!this.connections.has(reportId)) {
+            return false;
+        }
+        
+        const ws = this.connections.get(reportId);
+        return ws.readyState === WebSocket.OPEN;
+    }
+    
+    /**
+     * 发送消息
+     * @param {string} reportId 订单ID
+     * @param {string} message 消息内容
+     * @returns {boolean} 发送是否成功
+     */
+    sendMessage(reportId, message) {
+        if (!this.isConnected(reportId)) {
+            console.error(`连接 ${reportId} 未建立，无法发送消息`);
+            return false;
+        }
+        
+        try {
+            const ws = this.connections.get(reportId);
+            ws.send(message);
+            return true;
+        } catch (error) {
+            console.error(`发送消息到 ${reportId} 失败:`, error);
+            return false;
+        }
+    }
+    
+    /**
      * 关闭所有连接
      */
     closeAll() {
