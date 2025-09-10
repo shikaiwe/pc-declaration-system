@@ -183,6 +183,9 @@ const messageStorage = {
     // 消息缓存 - 用于快速查找
     messageCache: new Map(),
 
+    // 本地存储键名
+    STORAGE_KEY: 'message_board_messages',
+
     // 添加消息到存储
     addMessage(reportId, message) {
         if (!this.messages.has(reportId)) {
@@ -212,6 +215,9 @@ const messageStorage = {
             reportId: reportId,
             key: messageKey
         });
+
+        // 保存到本地存储
+        this.saveToLocalStorage();
 
         return message;
     },
@@ -249,6 +255,10 @@ const messageStorage = {
         // 更新属性
         Object.assign(message, updatedProps);
         this.messages.get(reportId).set(key, message);
+        
+        // 保存到本地存储
+        this.saveToLocalStorage();
+        
         return true;
     },
 
@@ -273,6 +283,58 @@ const messageStorage = {
     // 检查订单是否有消息
     hasMessages(reportId) {
         return this.messages.has(reportId) && this.messages.get(reportId).size > 0;
+    },
+
+    // 保存消息到本地存储
+    saveToLocalStorage() {
+        try {
+            // 将Map转换为可序列化的对象
+            const serializableMessages = {};
+            for (const [reportId, messagesMap] of this.messages.entries()) {
+                serializableMessages[reportId] = Array.from(messagesMap.entries());
+            }
+            
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(serializableMessages));
+        } catch (error) {
+            console.error('保存消息到本地存储失败:', error);
+        }
+    },
+
+    // 从本地存储加载消息
+    loadFromLocalStorage() {
+        try {
+            const storedData = localStorage.getItem(this.STORAGE_KEY);
+            if (storedData) {
+                const parsedData = JSON.parse(storedData);
+                
+                for (const [reportId, messagesArray] of Object.entries(parsedData)) {
+                    const messagesMap = new Map(messagesArray);
+                    this.messages.set(reportId, messagesMap);
+                    
+                    // 重建缓存
+                    for (const [key, message] of messagesMap.entries()) {
+                        if (message.id) {
+                            this.messageCache.set(message.id, {
+                                reportId: reportId,
+                                key: key
+                            });
+                        }
+                    }
+                }
+                console.log('从本地存储加载消息成功');
+            }
+        } catch (error) {
+            console.error('从本地存储加载消息失败:', error);
+        }
+    },
+
+    // 清理本地存储（可选）
+    clearLocalStorage() {
+        try {
+            localStorage.removeItem(this.STORAGE_KEY);
+        } catch (error) {
+            console.error('清理本地存储失败:', error);
+        }
     }
 };
 
@@ -917,6 +979,9 @@ async function initMessageBoard() {
     if (this.isInitialized) {
         return;
     }
+
+    // 从本地存储加载消息
+    messageStorage.loadFromLocalStorage();
 
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendMessage');
