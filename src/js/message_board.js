@@ -7,7 +7,8 @@ const API_URLS = {
     GET_HISTORY: 'https://gznfpc.cn/api/dashboard/user_get_history_report/',
     GET_WORKER_REPORTS: 'https://gznfpc.cn/api/dashboard/worker_get_report_list/',
     GET_REPORT_OF_SAME_DAY: 'https://gznfpc.cn/api/dashboard/get_report_of_same_day/',
-    GET_MESSAGE_RECORD: 'https://gznfpc.cn/api/message_board/get_message_record/'
+    GET_MESSAGE_RECORD: 'https://gznfpc.cn/api/message_board/get_message_record/',
+    SYNC_MESSAGES: 'https://gznfpc.cn/api/message_board/sync_messages/'
 };
 
 // WebSocket配置
@@ -28,6 +29,14 @@ const MESSAGE_STATUS = {
     SENT: 'sent', // 已发送到服务器
     DELIVERED: 'delivered', // 已送达（服务器确认）
     FAILED: 'failed' // 发送失败
+};
+
+// 消息同步状态
+const SYNC_STATUS = {
+    PENDING: 'pending', // 待同步到服务器
+    SYNCING: 'syncing', // 同步中
+    SYNCED: 'synced', // 已同步到服务器
+    SYNC_FAILED: 'sync_failed' // 同步失败
 };
 
 // 消息管理器
@@ -230,6 +239,11 @@ const messageStorage = {
         return Array.from(this.messages.get(reportId).values());
     },
 
+    // 按报告ID获取消息
+    getMessagesByReportId(reportId) {
+        return this.getMessages(reportId);
+    },
+
     // 通过ID查找消息
     findMessageById(messageId) {
         const cacheInfo = this.messageCache.get(messageId);
@@ -335,6 +349,64 @@ const messageStorage = {
         } catch (error) {
             console.error('清理本地存储失败:', error);
         }
+    },
+
+    // 获取需要同步的消息（PENDING状态）
+    getPendingSyncMessages(reportId) {
+        const messages = this.getMessages(reportId);
+        return messages.filter(msg => msg.syncStatus === SYNC_STATUS.PENDING || msg.syncStatus === SYNC_STATUS.SYNC_FAILED);
+    },
+
+    // 获取所有需要同步的消息
+    getAllPendingSyncMessages() {
+        const allPending = [];
+        for (const [reportId, messagesMap] of this.messages.entries()) {
+            for (const message of messagesMap.values()) {
+                if (message.syncStatus === SYNC_STATUS.PENDING || message.syncStatus === SYNC_STATUS.SYNC_FAILED) {
+                    allPending.push({
+                        reportId,
+                        message
+                    });
+                }
+            }
+        }
+        return allPending;
+    },
+
+    // 更新消息同步状态
+    updateMessageSyncStatus(messageId, syncStatus, syncError = null) {
+        const cacheInfo = this.messageCache.get(messageId);
+        if (!cacheInfo) return false;
+
+        const { reportId, key } = cacheInfo;
+        if (!this.messages.has(reportId)) return false;
+
+        const message = this.messages.get(reportId).get(key);
+        if (!message) return false;
+
+        // 更新同步状态
+        message.syncStatus = syncStatus;
+        if (syncError) {
+            message.syncError = syncError;
+        }
+        
+        this.messages.get(reportId).set(key, message);
+        
+        // 保存到本地存储
+        this.saveToLocalStorage();
+        
+        return true;
+    },
+
+    // 批量更新消息同步状态
+    batchUpdateSyncStatus(messages, syncStatus, syncError = null) {
+        let successCount = 0;
+        for (const { messageId } of messages) {
+            if (this.updateMessageSyncStatus(messageId, syncStatus, syncError)) {
+                successCount++;
+            }
+        }
+        return successCount;
     }
 };
 
@@ -579,7 +651,24 @@ async function fetchMessageHistory(reportId) {
                 }
             });
 
-            return messages;
+            // 获取本地存储的未确认消息并合并到返回结果中
+            const localMessages = messageStorage.getMessagesByReportId(reportId);
+            const unconfirmedLocalMessages = localMessages.filter(msg => 
+                msg.status === MESSAGE_STATUS.SENDING || msg.status === MESSAGE_STATUS.FAILED
+            );
+
+            // 合并服务器消息和本地未确认消息
+            const allMessages = [...messages, ...unconfirmedLocalMessages];
+
+            // 按时间排序
+            allMessages.sort((a, b) => {
+                if (a.time && b.time) {
+                    return new Date(a.time) - new Date(b.time);
+                }
+                return 0;
+            });
+
+            return allMessages;
         } else {
             return [];
         }
@@ -921,6 +1010,9 @@ async function sendMessage() {
     try {
         // 创建消息对象（发送中状态）
         const newMessage = messageManager.createMessage(messageContent, currentUser, selectedReportId);
+        
+        // 设置同步状态为待同步
+        newMessage.syncStatus = SYNC_STATUS.PENDING;
 
         // 存储并显示消息（立即显示给用户）
         messageStorage.addMessage(selectedReportId, newMessage);
@@ -1043,6 +1135,9 @@ async function initMessageBoard() {
 
     // 标记为已初始化
     this.isInitialized = true;
+    
+    // 初始化消息同步管理器
+    messageSyncManager.init();
 }
 
 // 处理订单选择器变化
@@ -1086,6 +1181,170 @@ function closeAllConnections() {
     }
     currentReportId = null;
 }
+
+// 消息同步管理器
+const messageSyncManager = {
+    // 同步间隔（毫秒）
+    SYNC_INTERVAL: 30000, // 30秒
+    
+    // 同步定时器
+    syncTimer: null,
+    
+    // 初始化同步管理器
+    init() {
+        console.log('消息同步管理器初始化');
+        this.startSyncTimer();
+        
+        // 页面可见性变化时重新开始同步
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                this.startSyncTimer();
+            }
+        });
+        
+        // 网络状态变化时触发同步
+        window.addEventListener('online', () => {
+            console.log('网络恢复，触发同步');
+            this.syncAllPendingMessages();
+        });
+    },
+    
+    // 启动同步定时器
+    startSyncTimer() {
+        if (this.syncTimer) {
+            clearInterval(this.syncTimer);
+        }
+        
+        this.syncTimer = setInterval(() => {
+            this.syncAllPendingMessages();
+        }, this.SYNC_INTERVAL);
+        
+        // 立即执行一次同步
+        setTimeout(() => {
+            this.syncAllPendingMessages();
+        }, 1000);
+    },
+    
+    // 停止同步定时器
+    stopSyncTimer() {
+        if (this.syncTimer) {
+            clearInterval(this.syncTimer);
+            this.syncTimer = null;
+        }
+    },
+    
+    // 同步所有待同步消息
+    async syncAllPendingMessages() {
+        const pendingMessages = messageStorage.getAllPendingSyncMessages();
+        if (pendingMessages.length === 0) {
+            return;
+        }
+        
+        console.log(`开始同步 ${pendingMessages.length} 条待同步消息`);
+        
+        // 按报告ID分组
+        const messagesByReportId = {};
+        pendingMessages.forEach(({ reportId, message }) => {
+            if (!messagesByReportId[reportId]) {
+                messagesByReportId[reportId] = [];
+            }
+            messagesByReportId[reportId].push(message);
+        });
+        
+        // 为每个报告ID同步消息
+        for (const [reportId, messages] of Object.entries(messagesByReportId)) {
+            await this.syncMessages(reportId, messages);
+        }
+    },
+    
+    // 同步指定报告ID的消息
+    async syncMessages(reportId, messages) {
+        if (!messages || messages.length === 0) {
+            return;
+        }
+        
+        // 批量更新状态为同步中
+        const messageIds = messages.map(msg => msg.id);
+        messageStorage.batchUpdateSyncStatus(
+            messageIds.map(id => ({ messageId: id })),
+            SYNC_STATUS.SYNCING
+        );
+        
+        try {
+            // 准备同步数据
+            const syncData = messages.map(msg => ({
+                messageId: msg.id,
+                content: msg.message,
+                sender: msg.username,
+                timestamp: msg.time,
+                reportId: reportId
+            }));
+            
+            // 调用同步API
+            const result = await this.callSyncApi(syncData);
+            
+            if (result.success) {
+                // 同步成功，更新状态
+                messageStorage.batchUpdateSyncStatus(
+                    messageIds.map(id => ({ messageId: id })),
+                    SYNC_STATUS.SYNCED
+                );
+                console.log(`报告 ${reportId} 的 ${messages.length} 条消息同步成功`);
+            } else {
+                // 同步失败
+                throw new Error(result.error || '同步失败');
+            }
+            
+        } catch (error) {
+            console.error(`报告 ${reportId} 的消息同步失败:`, error);
+            
+            // 更新为同步失败状态
+            messageStorage.batchUpdateSyncStatus(
+                messageIds.map(id => ({ messageId: id })),
+                SYNC_STATUS.SYNC_FAILED,
+                error.message
+            );
+        }
+    },
+    
+    // 调用同步API
+    async callSyncApi(messages) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: API_URLS.SYNC_MESSAGES,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ messages }),
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(response) {
+                    if (response.message === 'Success') {
+                        resolve({ success: true });
+                    } else {
+                        resolve({ success: false, error: response.message });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    resolve({ 
+                        success: false, 
+                        error: `网络错误: ${error}` 
+                    });
+                }
+            });
+        });
+    },
+    
+    // 手动触发同步
+    triggerSync() {
+        this.syncAllPendingMessages();
+    },
+    
+    // 销毁同步管理器
+    destroy() {
+        this.stopSyncTimer();
+    }
+};
 
 // 导出模块
 export default {
