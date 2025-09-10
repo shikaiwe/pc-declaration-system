@@ -1,3 +1,6 @@
+// 导入WebSocket管理器
+import WebSocketManager from './websocket-manager.js';
+
 // API端点配置
 const API_URLS = {
     GET_USER_INFO: 'https://gznfpc.cn/api/dashboard/get_user_info/',
@@ -12,8 +15,8 @@ const WS_CONFIG = {
     BASE_URL: 'wss://gznfpc.cn/ws/message/'
 };
 
-// WebSocket连接
-let wsConnections = new Map(); // 存储所有WebSocket连接
+// WebSocket连接管理
+let wsManager = null; // WebSocket管理器实例
 let currentReportId = null;
 let currentUser = null;
 let currentUserRole = null; // 存储用户角色
@@ -145,8 +148,7 @@ const messageManager = {
                 this.updateMessageUI(messageId, MESSAGE_STATUS.SENDING);
 
                 // 重新发送消息
-                const ws = wsConnections.get(reportId);
-                if (ws && ws.readyState === WebSocket.OPEN) {
+                if (wsManager && wsManager.isConnected(reportId)) {
                     const messageObj = {
                         type: 'chat_message',
                         message: msg.message,
@@ -155,7 +157,7 @@ const messageManager = {
                     };
 
                     try {
-                        ws.send(JSON.stringify(messageObj));
+                        wsManager.sendMessage(reportId, JSON.stringify(messageObj));
                         return true;
                     } catch (error) {
                         console.error('重试发送消息失败:', error);
@@ -545,100 +547,102 @@ async function initWebSocket(reportId) {
         return;
     }
 
-    // 如果已经存在此订单的连接，检查状态
-    if (wsConnections.has(reportId)) {
-        const existingWs = wsConnections.get(reportId);
-        if (existingWs.readyState === WebSocket.OPEN) {
-            return existingWs;
-        } else if (existingWs.readyState === WebSocket.CONNECTING) {
-            return existingWs;
-        } else {
-            // 如果连接已关闭或正在关闭，则删除旧连接
-            wsConnections.delete(reportId);
-        }
+    // 初始化WebSocket管理器
+    if (!wsManager) {
+        wsManager = new WebSocketManager(WS_CONFIG.BASE_URL, {
+            onMessage: handleWebSocketMessage,
+            onStatusChange: handleConnectionStatus,
+            onError: handleWebSocketError
+        });
     }
 
     try {
         currentReportId = reportId;
-        const ws = new WebSocket(`${WS_CONFIG.BASE_URL}?report_id=${reportId}`);
-
-        // 设置连接超时
-        const connectionTimeout = setTimeout(() => {
-            if (ws.readyState === WebSocket.CONNECTING) {
-                console.error('WebSocket连接超时');
-                ws.close();
-                const messageList = document.getElementById('messageList');
-                messageList.innerHTML += '<div class="system-message error">连接超时，请重试</div>';
-            }
-        }, 10000); // 10秒超时
-
-        ws.onopen = async function() {
-            clearTimeout(connectionTimeout);
-            wsConnections.set(reportId, ws);
-        };
-
-        ws.onmessage = function(event) {
-            try {
-                const data = JSON.parse(event.data);
-                var message = data.message;
-
-                // 确保时间字段使用原始时间或当前时间
-                const currentTime = new Date().toISOString();
-                if (!message.time) {
-                    message.time = currentTime;
-                }
-                message.originalTime = message.time; // 保存原始时间用于排序和比较
-                message.displayTime = message.time; // 保存用于显示的时间
-
-                // 处理服务器确认消息
-                if (data.type === 'ack' && data.messageId) {
-                    // 更新消息状态为已送达
-                    messageManager.updateMessageStatus(data.messageId, reportId, MESSAGE_STATUS.DELIVERED);
-                    return;
-                }
-
-                // 设置消息的报告ID，用于后续查找
-                message.reportId = reportId;
-
-                // 检查是否是自己发送的消息
-                if (message.username === currentUser) {
-                    // 查找本地是否已有此消息（通过ID）
-                    if (message.id) {
-                        const existingMessage = messageStorage.findMessageById(message.id);
-                        if (existingMessage) {
-                            // 如果消息已存在，只更新状态
-                            messageManager.updateMessageStatus(message.id, reportId, MESSAGE_STATUS.DELIVERED);
-                        } else {
-                            // 如果消息不存在，添加到存储但不显示（避免重复）
-                            messageStorage.addMessage(reportId, message);
-                        }
-                    }
-                } else {
-                    // 他人发送的消息，添加到存储并显示
-                    messageStorage.addMessage(reportId, message);
-                    appendMessage(message);
-                }
-            } catch (error) {
-                console.error('处理消息失败:', error);
-            }
-        };
-
-        ws.onclose = function() {
-            clearTimeout(connectionTimeout);
-            wsConnections.delete(reportId);
-        };
-
-        ws.onerror = function(error) {
-            clearTimeout(connectionTimeout);
-            console.error(`订单 ${reportId} 的WebSocket错误:`, error);
-            wsConnections.delete(reportId);
-        };
-
-        return ws;
+        
+        // 使用管理器建立连接
+        const connection = await wsManager.connect(reportId);
+        
+        if (connection) {
+            console.log(`订单 ${reportId} 的WebSocket连接已建立`);
+        }
+        
+        return connection;
     } catch (error) {
         console.error('创建WebSocket连接失败:', error);
         const messageList = document.getElementById('messageList');
         messageList.innerHTML += '<div class="system-message error">创建连接失败</div>';
+        return null;
+    }
+}
+
+// WebSocket消息处理
+function handleWebSocketMessage(reportId, event) {
+    try {
+        const data = JSON.parse(event.data);
+        var message = data.message;
+
+        // 确保时间字段使用原始时间或当前时间
+        const currentTime = new Date().toISOString();
+        if (!message.time) {
+            message.time = currentTime;
+        }
+        message.originalTime = message.time; // 保存原始时间用于排序和比较
+        message.displayTime = message.time; // 保存用于显示的时间
+
+        // 处理服务器确认消息
+        if (data.type === 'ack' && data.messageId) {
+            // 更新消息状态为已送达
+            messageManager.updateMessageStatus(data.messageId, reportId, MESSAGE_STATUS.DELIVERED);
+            return;
+        }
+
+        // 设置消息的报告ID，用于后续查找
+        message.reportId = reportId;
+
+        // 检查是否是自己发送的消息
+        if (message.username === currentUser) {
+            // 查找本地是否已有此消息（通过ID）
+            if (message.id) {
+                const existingMessage = messageStorage.findMessageById(message.id);
+                if (existingMessage) {
+                    // 如果消息已存在，只更新状态
+                    messageManager.updateMessageStatus(message.id, reportId, MESSAGE_STATUS.DELIVERED);
+                } else {
+                    // 如果消息不存在，添加到存储但不显示（避免重复）
+                    messageStorage.addMessage(reportId, message);
+                }
+            }
+        } else {
+            // 他人发送的消息，添加到存储并显示
+            messageStorage.addMessage(reportId, message);
+            appendMessage(message);
+        }
+    } catch (error) {
+        console.error('处理消息失败:', error);
+    }
+}
+
+// 连接状态变化处理
+function handleConnectionStatus(reportId, status, connection) {
+    console.log(`订单 ${reportId} 连接状态: ${status}`);
+    
+    if (status === 'closed' || status === 'error') {
+        // 连接关闭或出错时，显示系统消息
+        const messageList = document.getElementById('messageList');
+        if (messageList && status === 'error') {
+            messageList.innerHTML += '<div class="system-message error">连接异常，请检查网络</div>';
+        }
+    }
+}
+
+// WebSocket错误处理
+function handleWebSocketError(reportId, error) {
+    console.error(`订单 ${reportId} 的WebSocket错误:`, error);
+    
+    // 显示错误消息
+    const messageList = document.getElementById('messageList');
+    if (messageList) {
+        messageList.innerHTML += '<div class="system-message error">连接错误，请重试</div>';
     }
 }
 
@@ -794,7 +798,7 @@ function appendMessage(message) {
 }
 
 // 发送消息
-function sendMessage() {
+async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const orderSelector = document.getElementById('orderSelector');
     const messageContent = messageInput.value.trim();
@@ -815,11 +819,28 @@ function sendMessage() {
     // 提前清空输入框，防止重复发送
     messageInput.value = '';
 
+    // 检查WebSocket管理器是否已初始化
+    if (!wsManager) {
+        // 创建消息对象（失败状态）
+        const failedMessage = messageManager.createMessage(messageContent, currentUser, selectedReportId);
+        failedMessage.status = MESSAGE_STATUS.FAILED;
+        failedMessage.isSending = false;
+
+        // 存储并显示失败的消息
+        messageStorage.addMessage(selectedReportId, failedMessage);
+        appendMessage(failedMessage);
+
+        // 尝试初始化连接
+        alert('连接未初始化，正在初始化...');
+        await initWebSocket(selectedReportId);
+        return;
+    }
+
     // 获取当前选中订单的WebSocket连接
-    const ws = wsConnections.get(selectedReportId);
+    const connection = wsManager.getConnection(selectedReportId);
 
     // 检查WebSocket连接状态
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
+    if (!connection || !wsManager.isConnected(selectedReportId)) {
         // 创建消息对象（失败状态）
         const failedMessage = messageManager.createMessage(messageContent, currentUser, selectedReportId);
         failedMessage.status = MESSAGE_STATUS.FAILED;
@@ -831,8 +852,7 @@ function sendMessage() {
 
         // 尝试重新连接
         alert('连接已断开，正在重新连接...');
-        const newWs = initWebSocket(selectedReportId);
-
+        await wsManager.reconnect(selectedReportId);
         return;
     }
 
@@ -863,7 +883,7 @@ function sendMessage() {
         }, 10000); // 10秒超时
 
         // 发送消息
-        ws.send(JSON.stringify(messageObj));
+        wsManager.sendMessage(selectedReportId, JSON.stringify(messageObj));
 
         // 发送成功后更新状态为"已发送"
         setTimeout(() => {
@@ -886,10 +906,8 @@ function sendMessage() {
 
 // 清理无效的WebSocket连接
 function cleanupConnections() {
-    for (const [reportId, ws] of wsConnections.entries()) {
-        if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
-            wsConnections.delete(reportId);
-        }
+    if (wsManager) {
+        wsManager.cleanup();
     }
 }
 
@@ -998,11 +1016,8 @@ async function handleOrderChange() {
 
 // 关闭所有WebSocket连接
 function closeAllConnections() {
-    for (const [reportId, ws] of wsConnections.entries()) {
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.close();
-        }
-        wsConnections.delete(reportId);
+    if (wsManager) {
+        wsManager.closeAll();
     }
     currentReportId = null;
 }
