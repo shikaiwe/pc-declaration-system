@@ -52,10 +52,18 @@ class WeatherManager {
     }
 
     // 获取天气信息
-    async fetchWeatherAndLocation(containerId = 'weatherInfo') {
-        const weatherInfoElement = document.getElementById(containerId);
+    async fetchWeatherAndLocation(containerId = null) {
+        // 自动检测容器ID
+        let weatherContainerId = containerId;
+        if (!weatherContainerId) {
+            // 尝试查找常见的天气容器ID
+            weatherContainerId = document.getElementById('weatherInfo') ? 'weatherInfo' : 
+                               document.getElementById('weather-info') ? 'weather-info' : null;
+        }
+        
+        const weatherInfoElement = weatherContainerId ? document.getElementById(weatherContainerId) : null;
         if (!weatherInfoElement) {
-            console.error('天气容器元素未找到:', containerId);
+            console.error('天气容器元素未找到，请检查页面中的天气容器元素');
             return;
         }
 
@@ -74,7 +82,7 @@ class WeatherManager {
                     throw new Error('天气数据格式不正确');
                 }
                 // 更新天气显示
-                this.updateWeatherDisplay(response.IP, response.weather, containerId);
+                this.updateWeatherDisplay(response.IP, response.weather, weatherContainerId);
             } else if (this.isSessionError(response.message)) {
                 if (typeof auth !== 'undefined' && auth.handleSessionError) {
                     auth.handleSessionError(response.message);
@@ -84,17 +92,27 @@ class WeatherManager {
             }
         } catch (error) {
             console.error('获取天气信息失败:', error);
-            weatherInfoElement.innerHTML = `
-                <div class="weather-error">
-                    <p>暂无天气信息</p>
-                    <p class="error-details">${error.message}</p>
-                </div>`;
+            if (weatherInfoElement) {
+                weatherInfoElement.innerHTML = `
+                    <div class="weather-error">
+                        <p>暂无天气信息</p>
+                        <p class="error-details">${error.message}</p>
+                    </div>`;
+            }
         }
     }
 
     // 更新天气显示
-    updateWeatherDisplay(ipInfo, weatherData, containerId = 'weatherInfo') {
-        const weatherInfoElement = document.getElementById(containerId);
+    updateWeatherDisplay(ipInfo, weatherData, containerId = null) {
+        // 自动检测容器ID
+        let weatherContainerId = containerId;
+        if (!weatherContainerId) {
+            // 尝试查找常见的天气容器ID
+            weatherContainerId = document.getElementById('weatherInfo') ? 'weatherInfo' : 
+                               document.getElementById('weather-info') ? 'weather-info' : null;
+        }
+        
+        const weatherInfoElement = weatherContainerId ? document.getElementById(weatherContainerId) : null;
         if (!weatherInfoElement) return;
 
         // 添加数据验证
