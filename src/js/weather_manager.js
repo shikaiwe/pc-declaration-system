@@ -167,4 +167,5 @@ class WeatherManager {
 // 创建全局天气管理器实例
 const weatherManager = new WeatherManager();
 
-export default weatherManager;
+// 暴露为全局变量，供HTML直接使用
+window.weatherManager = weatherManager;
