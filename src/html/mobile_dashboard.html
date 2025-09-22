@@ -4695,7 +4695,7 @@
                 max-width: 95vw; /* 移动端更宽的弹窗 */
                 max-height: 85vh; /* 移动端更高的弹窗 */
                 margin: 5vh auto; /* 垂直居中 */
-                background-color: #fff;
+                background-color: #000; /* 黑色背景 */
                 padding: 15px;
                 border-radius: 12px;
                 box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
@@ -4761,25 +4761,36 @@
         `;
         document.head.appendChild(style);
         
-        // 初始化点击计数器
-        let clickCount = 0;
-        const userGreetingElement = document.querySelector('.user-greeting');
-        
-        // 添加点击事件监听器
-        userGreetingElement.addEventListener('click', function() {
-            clickCount++;
+        // 等待DOM完全加载后再执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化点击计数器
+            let clickCount = 0;
+            const userGreetingElement = document.querySelector('.user-greeting');
             
-            // 当连续点击七次时显示视频弹窗
-            if (clickCount === 7) {
-                showVideoModal();
-                clickCount = 0; // 重置计数器
+            // 检查元素是否存在
+            if (!userGreetingElement) {
+                console.error('未找到.user-greeting元素');
+                return;
             }
             
-            // 如果3秒内没有再次点击，则重置计数器
-            clearTimeout(window.clickTimeout);
-            window.clickTimeout = setTimeout(function() {
-                clickCount = 0;
-            }, 3000);
+            // 添加点击事件监听器
+            userGreetingElement.addEventListener('click', function() {
+                clickCount++;
+                console.log('点击次数:', clickCount);
+                
+                // 当连续点击七次时显示视频弹窗
+                if (clickCount === 7) {
+                    showVideoModal();
+                    clickCount = 0; // 重置计数器
+                }
+                
+                // 如果3秒内没有再次点击，则重置计数器
+                clearTimeout(window.clickTimeout);
+                window.clickTimeout = setTimeout(function() {
+                    clickCount = 0;
+                    console.log('计数器已重置');
+                }, 3000);
+            });
         });
         
         // 创建并显示视频弹窗
@@ -4856,7 +4867,14 @@
             document.body.style.overflow = 'hidden';
         }
         
-        // 关闭视频弹窗函数
+        // 添加ESC键关闭功能
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeVideoModal();
+            }
+        });
+        
+        // 关闭视频弹窗函数（全局作用域）
         function closeVideoModal() {
             const videoModal = document.getElementById('videoModal');
             if (videoModal) {
@@ -4872,13 +4890,6 @@
                 document.body.style.overflow = '';
             }
         }
-        
-        // 添加ESC键关闭功能
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeVideoModal();
-            }
-        });
     </script>
 </body>
 
