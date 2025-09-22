@@ -4735,20 +4735,27 @@
             /* 移动端关闭按钮样式 */
             #videoModal .close-button {
                 position: absolute;
-                right: 10px;
-                top: 10px;
+                right: 15px;
+                top: 15px;
                 color: #fff;
-                background-color: rgba(0, 0, 0, 0.5);
+                background-color: rgba(0, 0, 0, 0.8);
                 border-radius: 50%;
-                width: 30px;
-                height: 30px;
+                width: 40px;
+                height: 40px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 20px;
+                font-size: 24px;
                 font-weight: bold;
                 cursor: pointer;
                 z-index: 1005;
+                border: 2px solid #fff;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+            }
+            /* 关闭按钮悬停效果 */
+            #videoModal .close-button:hover {
+                background-color: rgba(255, 0, 0, 0.8);
+                transform: scale(1.1);
             }
             /* 移动端横屏适配 */
             @media (orientation: landscape) {
@@ -4783,6 +4790,12 @@
             if (!userGreetingElement) {
                 console.error('未找到.user-greeting元素');
                 return;
+            }
+            
+            // 夸克浏览器兼容性检查
+            const isQuarkBrowser = /Quark/i.test(navigator.userAgent) || /QQBrowser/i.test(navigator.userAgent);
+            if (isQuarkBrowser) {
+                console.log('检测到夸克浏览器，启用兼容模式');
             }
             
             // 添加点击事件监听器
@@ -4875,6 +4888,18 @@
             // 显示弹窗
             videoModal.style.display = 'block';
             
+            // 夸克浏览器特殊处理
+            const isQuarkBrowser = /Quark/i.test(navigator.userAgent) || /QQBrowser/i.test(navigator.userAgent);
+            if (isQuarkBrowser) {
+                // 夸克浏览器可能需要强制重绘
+                setTimeout(function() {
+                    videoModal.style.display = 'none';
+                    setTimeout(function() {
+                        videoModal.style.display = 'block';
+                    }, 50);
+                }, 100);
+            }
+            
             // 添加移动端触摸事件处理，防止视频播放时页面滚动
             document.body.style.overflow = 'hidden';
             
@@ -4909,6 +4934,15 @@
                 document.body.style.pointerEvents = '';
             }
         }
+        
+        // 调试函数 - 手动触发视频弹窗（用于测试）
+        function debugShowVideoModal() {
+            console.log('手动触发视频弹窗');
+            showVideoModal();
+        }
+        
+        // 将调试函数暴露到全局，方便在浏览器控制台测试
+        window.debugShowVideoModal = debugShowVideoModal;
     </script>
 </body>
 
