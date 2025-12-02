@@ -2307,6 +2307,11 @@
         <p>查看被分配的订单...</p>
     </div>
 
+    <div class="card hover" id="data-statistics" style="display: none;">
+        <h2>数据统计</h2>
+        <p>查看接单统计数据...</p>
+    </div>
+
     <div class="navbar">
         <a href="#info" id="info-link">信息管理</a>
         <a href="#logout" id="logout">退出登录</a>
@@ -2375,6 +2380,44 @@
             <div class="logout-modal-buttons">
                 <button id="confirmOrderAction">确认</button>
                 <button id="cancelOrderAction">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据统计模态框 -->
+    <div id="dataStatisticsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>数据统计</h2>
+            <div id="dataStatisticsContent">
+                <div class="time-range-selector">
+                    <button class="time-range-btn active" data-range="week">周度</button>
+                    <button class="time-range-btn" data-range="month">月度</button>
+                </div>
+                <div class="stats-cards-mobile">
+                    <div class="stat-card-mobile" id="mobileTotalOrders">
+                        <div class="stat-title">总接单量</div>
+                        <div class="stat-value">0</div>
+                    </div>
+                    <div class="stat-card-mobile" id="mobileAvgProcessingTime">
+                        <div class="stat-title">平均处理时长</div>
+                        <div class="stat-value">0分钟</div>
+                    </div>
+                    <div class="stat-card-mobile" id="mobileCompletedOrders">
+                        <div class="stat-title">已完成订单</div>
+                        <div class="stat-value">0</div>
+                    </div>
+                </div>
+                <div class="charts-container-mobile">
+                    <div class="chart-section-mobile">
+                        <h3>订单趋势图</h3>
+                        <div id="mobileOrderTrendChart" class="chart"></div>
+                    </div>
+                    <div class="chart-section-mobile">
+                        <h3>订单状态分布</h3>
+                        <div id="mobileOrderStatusChart" class="chart"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

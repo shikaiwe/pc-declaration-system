@@ -2739,7 +2739,8 @@
             <li id="assignOrder" style="display: none;"><span><i>📋</i>分配订单</span></li>
             <li id="assignedOrder" style="display: none;"><span><i>🔧</i>被分配订单</span></li>
             <li id="scheduleManagement"><span><i>📅</i>日程管理</span></li>
-            <li id="dataStatistics"><span><i>💬</i>留言板</span></li>
+            <li id="messageBoard"><span><i>💬</i>留言板</span></li>
+            <li id="dataStatistics" style="display: none;"><span><i>📊</i>数据统计</span></li>
             <li id="accountManagement"><span><i>👤</i>账号管理</span></li>
         </ul>
         <div class="weather-info" id="weatherInfo">
@@ -2826,7 +2827,7 @@
             </div>
         </div>
 
-        <div class="content" id="dataStatisticsContent" style="display: none;">
+        <div class="content" id="messageBoardContent" style="display: none;">
             <h2>留言板</h2>
             <div class="message-board">
                 <div class="order-selector">
@@ -2840,6 +2841,52 @@
                 <div class="message-input">
                     <textarea id="messageInput" placeholder="请输入留言内容..."></textarea>
                     <button id="sendMessage" class="send-button">发送</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content" id="dataStatisticsContent" style="display: none;">
+            <h2>数据统计</h2>
+            <div class="data-stats-container">
+                <div class="stats-header">
+                    <div class="time-range-selector">
+                        <button class="time-range-btn active" data-range="week">周度</button>
+                        <button class="time-range-btn" data-range="month">月度</button>
+                    </div>
+                </div>
+                <div class="stats-cards">
+                    <div class="stat-card" id="totalOrdersCard">
+                        <div class="stat-title">总接单量</div>
+                        <div class="stat-value">0</div>
+                    </div>
+                    <div class="stat-card" id="avgProcessingTimeCard">
+                        <div class="stat-title">平均处理时长</div>
+                        <div class="stat-value">0分钟</div>
+                    </div>
+                    <div class="stat-card" id="completedOrdersCard">
+                        <div class="stat-title">已完成订单</div>
+                        <div class="stat-value">0</div>
+                    </div>
+                </div>
+                <div class="charts-container">
+                    <div class="chart-section">
+                        <h3>订单趋势图</h3>
+                        <div class="chart-wrapper">
+                            <div id="orderTrendChart" class="chart"></div>
+                        </div>
+                    </div>
+                    <div class="chart-section">
+                        <h3>订单状态分布</h3>
+                        <div class="chart-wrapper">
+                            <div id="orderStatusChart" class="chart"></div>
+                        </div>
+                    </div>
+                    <div class="chart-section">
+                        <h3>处理时长分析</h3>
+                        <div class="chart-wrapper">
+                            <div id="processingTimeChart" class="chart"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
