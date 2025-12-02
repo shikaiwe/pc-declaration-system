@@ -32,6 +32,18 @@
     <link rel="stylesheet" href="../css/order_rating.css">
     <!-- 添加时间选择器CSS -->
     <link rel="stylesheet" href="../css/time-picker.css">
+    <!-- 添加数据统计相关资源 -->
+    <link rel="stylesheet" href="../css/data_statistics.css">
+    <!-- 引入ECharts图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- 引入数据统计模块 -->
+    <script type="module">
+        import DataStatistics from '../js/data_statistics.js';
+        window.dataStatistics = new DataStatistics();
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化数据统计模块
+        });
+    </script>
 
     <style>
         /* 全局样式 */
