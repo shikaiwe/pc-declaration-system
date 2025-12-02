@@ -3790,22 +3790,26 @@
         const orderManagement = document.getElementById('order-management');
         const assignOrder = document.getElementById('assign-order');
         const assignedOrder = document.getElementById('assigned-order');
+        const dataStatistics = document.getElementById('data-statistics');
 
         switch (label) {
             case 'customer':
                 if (orderManagement) orderManagement.style.display = 'block';
                 if (assignOrder) assignOrder.style.display = 'none';
                 if (assignedOrder) assignedOrder.style.display = 'none';
+                if (dataStatistics) dataStatistics.style.display = 'none';
                 break;
             case 'worker':
                 if (orderManagement) orderManagement.style.display = 'block';
                 if (assignOrder) assignOrder.style.display = 'none';
                 if (assignedOrder) assignedOrder.style.display = 'block';
+                if (dataStatistics) dataStatistics.style.display = 'block';
                 break;
             case 'admin':
                 if (orderManagement) orderManagement.style.display = 'block';
                 if (assignOrder) assignOrder.style.display = 'block';
                 if (assignedOrder) assignedOrder.style.display = 'block';
+                if (dataStatistics) dataStatistics.style.display = 'block';
                 break;
             default:
                 console.error('未知的用户身份:', label);

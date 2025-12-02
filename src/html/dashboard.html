@@ -3279,20 +3279,24 @@
                             if (data.message === 'Success') {
                                 const assignOrderLink = document.getElementById('assignOrder');
                                 const assignedOrderLink = document.getElementById('assignedOrder');
+                                const dataStatisticsLink = document.getElementById('dataStatistics');
 
-                                if (assignOrderLink && assignedOrderLink) {
+                                if (assignOrderLink && assignedOrderLink && dataStatisticsLink) {
                                     switch (data.label) {
                                         case 'admin':
                                             assignOrderLink.style.display = 'block';
                                             assignedOrderLink.style.display = 'block';
+                                            dataStatisticsLink.style.display = 'block';
                                             break;
                                         case 'worker':
                                             assignOrderLink.style.display = 'none';
                                             assignedOrderLink.style.display = 'block';
+                                            dataStatisticsLink.style.display = 'block';
                                             break;
                                         default:
                                             assignOrderLink.style.display = 'none';
                                             assignedOrderLink.style.display = 'none';
+                                            dataStatisticsLink.style.display = 'none';
                                     }
                                 }
 

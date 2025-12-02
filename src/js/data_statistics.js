@@ -10,7 +10,7 @@ const API_URLS = {
 // 数据统计配置
 const STATS_CONFIG = {
     // 缓存过期时间（毫秒）
-    CACHE_EXPIRY: 30 * 60 * 1000, // 30分钟
+    CACHE_EXPIRY: 15 * 60 * 1000, // 15分钟
     // 默认时间范围
     DEFAULT_TIME_RANGE: 'week',
     // 图表主题
