@@ -411,14 +411,54 @@ class DataStatistics {
     // 渲染工作人员统计数据
     renderWorkerStatistics(data) {
         // 更新数据卡片
-        document.getElementById('totalOrdersCard')?.querySelector('.stat-value').textContent = data.totalOrders;
-        document.getElementById('completedOrdersCard')?.querySelector('.stat-value').textContent = data.completedOrders;
-        document.getElementById('avgProcessingTimeCard')?.querySelector('.stat-value').textContent = `${data.avgProcessingTime}分钟`;
+        const totalOrdersCard = document.getElementById('totalOrdersCard');
+        if (totalOrdersCard) {
+            const statValue = totalOrdersCard.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = data.totalOrders;
+            }
+        }
+        
+        const completedOrdersCard = document.getElementById('completedOrdersCard');
+        if (completedOrdersCard) {
+            const statValue = completedOrdersCard.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = data.completedOrders;
+            }
+        }
+        
+        const avgProcessingTimeCard = document.getElementById('avgProcessingTimeCard');
+        if (avgProcessingTimeCard) {
+            const statValue = avgProcessingTimeCard.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = `${data.avgProcessingTime}分钟`;
+            }
+        }
         
         // 更新移动端数据卡片
-        document.getElementById('mobileTotalOrders')?.querySelector('.stat-value').textContent = data.totalOrders;
-        document.getElementById('mobileCompletedOrders')?.querySelector('.stat-value').textContent = data.completedOrders;
-        document.getElementById('mobileAvgProcessingTime')?.querySelector('.stat-value').textContent = `${data.avgProcessingTime}分钟`;
+        const mobileTotalOrders = document.getElementById('mobileTotalOrders');
+        if (mobileTotalOrders) {
+            const statValue = mobileTotalOrders.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = data.totalOrders;
+            }
+        }
+        
+        const mobileCompletedOrders = document.getElementById('mobileCompletedOrders');
+        if (mobileCompletedOrders) {
+            const statValue = mobileCompletedOrders.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = data.completedOrders;
+            }
+        }
+        
+        const mobileAvgProcessingTime = document.getElementById('mobileAvgProcessingTime');
+        if (mobileAvgProcessingTime) {
+            const statValue = mobileAvgProcessingTime.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = `${data.avgProcessingTime}分钟`;
+            }
+        }
         
         // 渲染图表
         this.renderOrderTrendChart(data.orderTrend);
@@ -429,14 +469,54 @@ class DataStatistics {
     // 渲染管理员统计数据
     renderAdminStatistics(data) {
         // 更新数据卡片
-        document.getElementById('totalOrdersCard')?.querySelector('.stat-value').textContent = data.totalOrders;
-        document.getElementById('completedOrdersCard')?.querySelector('.stat-value').textContent = data.completedOrders;
-        document.getElementById('avgProcessingTimeCard')?.querySelector('.stat-value').textContent = `${data.allocatedOrders}单`;
+        const totalOrdersCard = document.getElementById('totalOrdersCard');
+        if (totalOrdersCard) {
+            const statValue = totalOrdersCard.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = data.totalOrders;
+            }
+        }
+        
+        const completedOrdersCard = document.getElementById('completedOrdersCard');
+        if (completedOrdersCard) {
+            const statValue = completedOrdersCard.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = data.completedOrders;
+            }
+        }
+        
+        const avgProcessingTimeCard = document.getElementById('avgProcessingTimeCard');
+        if (avgProcessingTimeCard) {
+            const statValue = avgProcessingTimeCard.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = `${data.allocatedOrders}单`;
+            }
+        }
         
         // 更新移动端数据卡片
-        document.getElementById('mobileTotalOrders')?.querySelector('.stat-value').textContent = data.totalOrders;
-        document.getElementById('mobileCompletedOrders')?.querySelector('.stat-value').textContent = data.completedOrders;
-        document.getElementById('mobileAvgProcessingTime')?.querySelector('.stat-value').textContent = `${data.allocatedOrders}单`;
+        const mobileTotalOrders = document.getElementById('mobileTotalOrders');
+        if (mobileTotalOrders) {
+            const statValue = mobileTotalOrders.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = data.totalOrders;
+            }
+        }
+        
+        const mobileCompletedOrders = document.getElementById('mobileCompletedOrders');
+        if (mobileCompletedOrders) {
+            const statValue = mobileCompletedOrders.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = data.completedOrders;
+            }
+        }
+        
+        const mobileAvgProcessingTime = document.getElementById('mobileAvgProcessingTime');
+        if (mobileAvgProcessingTime) {
+            const statValue = mobileAvgProcessingTime.querySelector('.stat-value');
+            if (statValue) {
+                statValue.textContent = `${data.allocatedOrders}单`;
+            }
+        }
         
         // 渲染图表
         this.renderOrderTrendChart(data.orderTrend);
