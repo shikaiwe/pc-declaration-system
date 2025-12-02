@@ -2408,10 +2408,6 @@
                         <div class="stat-title">总接单量</div>
                         <div class="stat-value">0</div>
                     </div>
-                    <div class="stat-card-mobile" id="mobileAvgProcessingTime">
-                        <div class="stat-title">平均处理时长</div>
-                        <div class="stat-value">0分钟</div>
-                    </div>
                     <div class="stat-card-mobile" id="mobileCompletedOrders">
                         <div class="stat-title">已完成订单</div>
                         <div class="stat-value">0</div>
@@ -4668,6 +4664,17 @@
         utils.ui.showModal('assignedOrderModal');
         this.classList.add('active');
         orderManager.fetchAssignedOrders();
+    });
+
+    // 数据统计卡片点击事件
+    document.getElementById('data-statistics')?.addEventListener('click', function() {
+        utils.ui.showModal('dataStatisticsModal');
+        this.classList.add('active');
+        // 初始化数据统计模块
+        if (window.dataStatistics) {
+            // 重新加载数据以确保图表正确显示
+            window.dataStatistics.loadStatisticsData();
+        }
     });
 
     // 消息确认按钮

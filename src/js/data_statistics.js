@@ -227,27 +227,67 @@ class DataStatistics {
     filterOrdersByTimeRange(orders, timeRange) {
         const now = new Date();
         let startDate;
+        let endDate;
         
         switch (timeRange) {
             case 'week':
-                // 过去7天
-                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                // 计算当前周的周一和周五日期
+                const today = new Date(now);
+                const dayOfWeek = today.getDay(); // 0 = 周日, 1 = 周一, ..., 6 = 周六
+                
+                // 计算周一日期（如果今天是周一，就是今天；如果今天是周六或周日，就是上周一）
+                let monday = new Date(today);
+                if (dayOfWeek === 0) { // 周日
+                    monday.setDate(monday.getDate() - 6);
+                } else if (dayOfWeek > 1) { // 周二到周六
+                    monday.setDate(monday.getDate() - (dayOfWeek - 1));
+                }
+                // 设置时间为00:00:00
+                monday.setHours(0, 0, 0, 0);
+                
+                // 计算周五日期
+                let friday = new Date(monday);
+                friday.setDate(friday.getDate() + 4);
+                // 设置时间为23:59:59
+                friday.setHours(23, 59, 59, 999);
+                
+                startDate = monday;
+                endDate = friday;
                 break;
             case 'month':
                 // 过去30天
                 startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                endDate = now;
                 break;
             case 'year':
                 // 过去一年
                 startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+                endDate = now;
                 break;
             default:
-                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                // 默认周度
+                const defaultToday = new Date(now);
+                const defaultDayOfWeek = defaultToday.getDay();
+                
+                let defaultMonday = new Date(defaultToday);
+                if (defaultDayOfWeek === 0) {
+                    defaultMonday.setDate(defaultMonday.getDate() - 6);
+                } else if (defaultDayOfWeek > 1) {
+                    defaultMonday.setDate(defaultMonday.getDate() - (defaultDayOfWeek - 1));
+                }
+                defaultMonday.setHours(0, 0, 0, 0);
+                
+                let defaultFriday = new Date(defaultMonday);
+                defaultFriday.setDate(defaultFriday.getDate() + 4);
+                defaultFriday.setHours(23, 59, 59, 999);
+                
+                startDate = defaultMonday;
+                endDate = defaultFriday;
         }
         
         return orders.filter(order => {
             const orderDate = new Date(order.call_date || order.date);
-            return orderDate >= startDate;
+            return orderDate >= startDate && orderDate <= endDate;
         });
     }
     
@@ -258,22 +298,6 @@ class DataStatistics {
         
         // 已完成订单
         const completedOrders = orders.filter(order => order.status === '2').length;
-        
-        // 计算平均处理时长
-        let totalProcessingTime = 0;
-        let completedOrdersWithTime = 0;
-        
-        orders.forEach(order => {
-            if (order.status === '2' && order.call_date && order.completed_at) {
-                const callDate = new Date(order.call_date);
-                const completedDate = new Date(order.completed_at);
-                const processingTime = (completedDate - callDate) / (1000 * 60); // 转换为分钟
-                totalProcessingTime += processingTime;
-                completedOrdersWithTime++;
-            }
-        });
-        
-        const avgProcessingTime = completedOrdersWithTime > 0 ? Math.round(totalProcessingTime / completedOrdersWithTime) : 0;
         
         // 订单状态分布
         const statusDistribution = {
@@ -302,7 +326,6 @@ class DataStatistics {
         return {
             totalOrders,
             completedOrders,
-            avgProcessingTime,
             statusDistribution,
             orderTrend
         };
@@ -427,14 +450,6 @@ class DataStatistics {
             }
         }
         
-        const avgProcessingTimeCard = document.getElementById('avgProcessingTimeCard');
-        if (avgProcessingTimeCard) {
-            const statValue = avgProcessingTimeCard.querySelector('.stat-value');
-            if (statValue) {
-                statValue.textContent = `${data.avgProcessingTime}分钟`;
-            }
-        }
-        
         // 更新移动端数据卡片
         const mobileTotalOrders = document.getElementById('mobileTotalOrders');
         if (mobileTotalOrders) {
@@ -452,18 +467,9 @@ class DataStatistics {
             }
         }
         
-        const mobileAvgProcessingTime = document.getElementById('mobileAvgProcessingTime');
-        if (mobileAvgProcessingTime) {
-            const statValue = mobileAvgProcessingTime.querySelector('.stat-value');
-            if (statValue) {
-                statValue.textContent = `${data.avgProcessingTime}分钟`;
-            }
-        }
-        
         // 渲染图表
         this.renderOrderTrendChart(data.orderTrend);
         this.renderOrderStatusChart(data.statusDistribution);
-        this.renderProcessingTimeChart(data.avgProcessingTime);
     }
     
     // 渲染管理员统计数据
@@ -485,14 +491,6 @@ class DataStatistics {
             }
         }
         
-        const avgProcessingTimeCard = document.getElementById('avgProcessingTimeCard');
-        if (avgProcessingTimeCard) {
-            const statValue = avgProcessingTimeCard.querySelector('.stat-value');
-            if (statValue) {
-                statValue.textContent = `${data.allocatedOrders}单`;
-            }
-        }
-        
         // 更新移动端数据卡片
         const mobileTotalOrders = document.getElementById('mobileTotalOrders');
         if (mobileTotalOrders) {
@@ -507,14 +505,6 @@ class DataStatistics {
             const statValue = mobileCompletedOrders.querySelector('.stat-value');
             if (statValue) {
                 statValue.textContent = data.completedOrders;
-            }
-        }
-        
-        const mobileAvgProcessingTime = document.getElementById('mobileAvgProcessingTime');
-        if (mobileAvgProcessingTime) {
-            const statValue = mobileAvgProcessingTime.querySelector('.stat-value');
-            if (statValue) {
-                statValue.textContent = `${data.allocatedOrders}单`;
             }
         }
         
@@ -587,6 +577,11 @@ class DataStatistics {
             };
             
             this.charts.pcOrderTrend.setOption(option);
+            
+            // 确保图表在初始化后能够正确显示，解决第一次进入时图表显示不正常的问题
+            setTimeout(() => {
+                this.charts.pcOrderTrend.resize();
+            }, 100);
         }
         
         // 渲染移动端图表
@@ -678,6 +673,11 @@ class DataStatistics {
             };
             
             this.charts.pcOrderStatus.setOption(option);
+            
+            // 确保图表在初始化后能够正确显示
+            setTimeout(() => {
+                this.charts.pcOrderStatus.resize();
+            }, 100);
         }
         
         // 渲染移动端图表
@@ -710,60 +710,7 @@ class DataStatistics {
         }
     }
     
-    // 渲染处理时长图表
-    renderProcessingTimeChart(avgProcessingTime) {
-        // 渲染PC端图表
-        const pcChartElement = document.getElementById('processingTimeChart');
-        if (pcChartElement) {
-            if (this.charts.pcProcessingTime) {
-                this.charts.pcProcessingTime.dispose();
-            }
-            
-            this.charts.pcProcessingTime = echarts.init(pcChartElement);
-            
-            const option = {
-                title: {
-                    text: '平均处理时长',
-                    left: 'center'
-                },
-                tooltip: {
-                    trigger: 'item',
-                    formatter: '{b}: {c}分钟'
-                },
-                series: [{
-                    name: '平均处理时长',
-                    type: 'gauge',
-                    data: [{ value: avgProcessingTime, name: '分钟' }],
-                    min: 0,
-                    max: 120,
-                    splitNumber: 6,
-                    axisLine: {
-                        lineStyle: {
-                            width: 15,
-                            color: [[0.5, '#52c41a'], [0.8, '#faad14'], [1, '#f5222d']]
-                        }
-                    },
-                    pointer: {
-                        itemStyle: {
-                            color: '#2196F3'
-                        }
-                    },
-                    axisTick: {
-                        distance: -30
-                    },
-                    splitLine: {
-                        distance: -38,
-                        length: 15
-                    },
-                    axisLabel: {
-                        distance: -40
-                    }
-                }]
-            };
-            
-            this.charts.pcProcessingTime.setOption(option);
-        }
-    }
+
     
     // 渲染工作人员统计图表
     renderWorkerStatsChart(workerStats) {
@@ -810,6 +757,11 @@ class DataStatistics {
             };
             
             this.charts.pcWorkerStats.setOption(option);
+            
+            // 确保图表在初始化后能够正确显示
+            setTimeout(() => {
+                this.charts.pcWorkerStats.resize();
+            }, 100);
         }
     }
     
