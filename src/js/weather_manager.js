@@ -29,29 +29,33 @@ class WeatherManager {
     }
 
     /**
-     * 使用 ip.sb API 获取 IP 地址和地理位置信息
+     * 使用 ipip.net API 获取 IP 地址和地理位置信息
      * @returns {Promise<{ip: string, ipdata: Object}>} IP 信息对象
      */
     async getIpInfo() {
         try {
-            const response = await fetch('https://api.ip.sb/geoip');
+            const response = await fetch('https://myip.ipip.net/json');
             if (!response.ok) {
                 throw new Error('网络请求失败');
             }
-            const data = await response.json();
+            const result = await response.json();
             
-            return {
-                ip: data.ip,
-                ipdata: {
-                    country: data.country,
-                    region: data.region,
-                    city: data.city,
-                    latitude: data.latitude,
-                    longitude: data.longitude,
-                    organization: data.organization,
-                    asn: data.asn
-                }
-            };
+            if (result.ret === 'ok' && result.data) {
+                const location = result.data.location || [];
+                return {
+                    ip: result.data.ip,
+                    ipdata: {
+                        country: location[0] || '',
+                        province: location[1] || '',
+                        city: location[2] || '',
+                        district: location[3] || '',
+                        isp: location[4] || '',
+                        location: `${location[1] || ''}${location[2] || ''} ${location[4] || ''}`.trim()
+                    }
+                };
+            } else {
+                throw new Error('获取IP信息失败');
+            }
         } catch (error) {
             console.error('获取IP信息出错:', error);
             throw error;
