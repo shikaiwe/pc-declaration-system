@@ -28,23 +28,30 @@ class WeatherManager {
         }
     }
 
-    // 从 ip.sb 获取 IP 信息
+    /**
+     * 使用 ip.sb API 获取 IP 地址和地理位置信息
+     * @returns {Promise<{ip: string, ipdata: Object}>} IP 信息对象
+     */
     async getIpInfo() {
         try {
-            const response = await fetch('https://api.vore.top/api/IPdata?ip=');
+            const response = await fetch('https://api.ip.sb/geoip');
             if (!response.ok) {
                 throw new Error('网络请求失败');
             }
             const data = await response.json();
             
-            if (data.code === 200) {
-                return {
-                    ip: data.ipinfo.text,
-                    ipdata: data.ipdata
-                };
-            } else {
-                throw new Error('获取IP信息失败: ' + data.msg);
-            }
+            return {
+                ip: data.ip,
+                ipdata: {
+                    country: data.country,
+                    region: data.region,
+                    city: data.city,
+                    latitude: data.latitude,
+                    longitude: data.longitude,
+                    organization: data.organization,
+                    asn: data.asn
+                }
+            };
         } catch (error) {
             console.error('获取IP信息出错:', error);
             throw error;
