@@ -430,8 +430,10 @@ function updateOrderList(orders) {
             });
             
             // 手动触发 Iconify 图标加载
-            if (window.Iconify) {
-                window.Iconify.scanDOM();
+            if (window.Iconify && typeof window.Iconify.scanDOM === 'function') {
+                setTimeout(() => {
+                    window.Iconify.scanDOM();
+                }, 0);
             }
         }
     }
