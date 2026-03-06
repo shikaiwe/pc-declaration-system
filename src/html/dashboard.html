@@ -2554,19 +2554,30 @@
         </div>
 
         <div class="content" id="messageBoardContent" style="display: none;">
-            <h2>留言板</h2>
             <div class="message-board">
-                <div class="order-selector">
-                    <select id="orderSelector" class="order-select">
-                        <option value="">请选择订单</option>
-                    </select>
+                <!-- 左侧订单列表 -->
+                <div class="message-sidebar">
+                    <div class="sidebar-header">
+                        <h3 class="sidebar-title">我的订单</h3>
+                    </div>
+                    <div class="order-list" id="orderList">
+                        <!-- 订单列表将通过 JavaScript 动态加载 -->
+                    </div>
                 </div>
-                <div class="message-list" id="messageList">
-                    <!-- 消息列表将在这里动态显示 -->
-                </div>
-                <div class="message-input">
-                    <textarea id="messageInput" placeholder="请输入留言内容..."></textarea>
-                    <button id="sendMessage" class="send-button">发送</button>
+                
+                <!-- 右侧聊天区域 -->
+                <div class="chat-area">
+                    <div class="chat-header">
+                        <h2 class="chat-title">留言板</h2>
+                        <div class="chat-date" id="chatDate"></div>
+                    </div>
+                    <div class="chat-messages" id="messageList">
+                        <!-- 消息列表将在这里动态显示 -->
+                    </div>
+                    <div class="message-input">
+                        <textarea id="messageInput" placeholder="输入消息..."></textarea>
+                        <button id="sendMessage" class="send-button">发送</button>
+                    </div>
                 </div>
             </div>
         </div>
