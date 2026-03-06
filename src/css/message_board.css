@@ -140,6 +140,12 @@
     flex-shrink: 0;
 }
 
+.order-icon .iconify {
+    display: block;
+    width: 20px;
+    height: 20px;
+}
+
 .order-icon.processing {
     background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
