@@ -428,6 +428,11 @@ function updateOrderList(orders) {
                 const orderItem = createMobileOrderItem(order);
                 orderListMobile.appendChild(orderItem);
             });
+            
+            // 手动触发 Iconify 图标加载
+            if (window.Iconify) {
+                window.Iconify.scanDOM();
+            }
         }
     }
 }
