@@ -179,7 +179,8 @@ class EpubReader {
 
             if (book.cover) {
                 card.innerHTML = `
-                    <div class="book-cover" style="background-image: url('${book.cover}'); background-size: cover; background-position: center;">
+                    <div class="book-cover">
+                        <img src="${book.cover}" alt="${this.escapeHtml(book.name)}" class="book-cover-img">
                     </div>
                     <div class="book-info">
                         <div class="book-name">${this.escapeHtml(book.name)}</div>

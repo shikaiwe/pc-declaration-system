@@ -12,32 +12,42 @@
 pc-declaration-system/
 ├── src/                    # 源代码
 │   ├── html/               # 页面模板
-│   │   ├── dashboard.html       # 管理控制台
-│   │   ├── mobile_dashboard.html # 移动端控制台
-│   │   ├── login.html           # 登录页面
-│   │   ├── register.html        # 用户注册
-│   │   ├── worker_register.html # 志愿者注册
-│   │   └── forgot-password.html # 密码找回
+│   │   ├── dashboard.html           # 管理控制台
+│   │   ├── mobile_dashboard.html    # 移动端控制台
+│   │   ├── login.html               # 登录页面
+│   │   ├── register.html            # 用户注册
+│   │   ├── worker_register.html     # 志愿者注册
+│   │   ├── forgot-password.html     # 密码找回
+│   │   └── epub-reader.html         # 电子书阅读器
 │   ├── js/                 # 业务逻辑
-│   │   ├── assign_order.js      # 订单分配
-│   │   ├── crypto-js.min.js     # 加密库
-│   │   ├── jquery.js            # jQuery库
-│   │   ├── message_board.js     # 留言板功能
-│   │   ├── order_rating.js      # 订单评价功能
-│   │   ├── time-picker.js       # 时间选择器
-│   │   └── weather_manager.js   # 天气管理模块
+│   │   ├── assign_order.js          # 订单分配
+│   │   ├── crypto-js.min.js         # 加密库
+│   │   ├── jquery.js                # jQuery库
+│   │   ├── message_board.js         # 留言板功能
+│   │   ├── order_rating.js          # 订单评价功能
+│   │   ├── time-picker.js           # 时间选择器
+│   │   ├── weather_manager.js       # 天气管理模块
+│   │   ├── data_statistics.js       # 数据统计模块（开发中）
+│   │   └── epub-reader.js           # 电子书阅读器
 │   ├── css/                # 样式资源
-│   │   ├── forgot-password.css  # 找回密码样式
-│   │   ├── login.css            # 登录样式
-│   │   ├── message_board.css    # 留言板样式
-│   │   ├── order_rating.css     # 订单评价样式
-│   │   ├── register.css         # 注册样式 
-│   │   └── time-picker.css      # 时间选择器样式
+│   │   ├── forgot-password.css      # 找回密码样式
+│   │   ├── login.css                # 登录样式
+│   │   ├── message_board.css        # 留言板样式
+│   │   ├── message_board_mobile.css # 留言板移动端样式
+│   │   ├── order_rating.css         # 订单评价样式
+│   │   ├── register.css             # 注册样式
+│   │   ├── time-picker.css          # 时间选择器样式
+│   │   ├── data_statistics.css      # 数据统计样式（开发中）
+│   │   └── epub-reader.css          # 电子书阅读器样式
 │   ├── images/             # 图像资源
+│   │   ├── Mascot.jpg               # 吉祥物图片
+│   │   ├── book.png                 # 书籍图标
+│   │   └── favicon.ico              # 网站图标
 │   └── vendor/             # 第三方库
-│       ├── bootstrap/           # UI框架
-│       ├── fullcalendar/        # 日程管理组件
-│       └── swiper/              # 移动端滑动组件
+│       ├── bootstrap/               # UI框架
+│       ├── fullcalendar/            # 日程管理组件
+│       ├── swiper/                  # 移动端滑动组件
+│       └── echarts/                 # 数据可视化图表库
 ├── .gitignore              # 版本控制
 ├── README.md               # 项目文档
 └── LICENSE                 # 开源协议
@@ -49,33 +59,44 @@ pc-declaration-system/
 |------|----------|
 | 🔐 用户认证 | 多因素身份认证、会话管理、密码安全、设备识别 |
 | 📝 用户管理 | 邮箱验证、密码校验、防重复注册、表单验证 |
-| 💻 管理控制台 | 用户管理、天气集成、订单管理、日程管理、安全中心 |
-| 📱 移动端适配 | 响应式布局、触控优化、性能优化、交互优化 |
-| 📦 订单系统 | 权限控制、志愿者管理、状态管理、实时同步、留言板、订单评价 |
-| 🌤️ 天气集成 | 实时天气信息获取与展示、位置信息识别、自动更新 |
+| 💻 管理控制台 | 用户管理、天气集成、订单管理、日程管理、安全中心、数据统计 |
+| 📱 移动端适配 | 响应式布局、触控优化、性能优化、交互优化、抽屉式导航 |
+| 📦 订单系统 | 权限控制、志愿者管理、状态管理、订单分配、订单评价 |
+| 💬 留言板 | WebSocket实时通信、消息状态追踪、历史记录加载、重试机制 |
+| 📊 数据统计 | 🚧 开发中 - 订单趋势分析、状态分布图表、工作人员绩效、时间范围筛选、数据缓存 |
+| 🌤️ 天气集成 | 实时天气信息获取与展示、IP定位识别、自动更新 |
+| 📖 电子书阅读器 | EPUB格式支持、书架管理、阅读进度追踪、主题切换、目录导航 |
 
 ## 用户权限
+
 | 角色 | 权限范围 |
 |------|----------|
-| 普通用户 | 订单提交、历史查询、个人信息管理、订单评价 |
-| 志愿者 | 订单处理、状态更新、日程管理 |
-| 管理员 | 系统管理、订单分配、用户管理 |
+| 普通用户 | 订单提交、历史查询、个人信息管理、订单评价、留言沟通、电子书阅读 |
+| 志愿者 | 订单处理、状态更新、日程管理、留言沟通、个人数据统计（开发中） |
+| 管理员 | 系统管理、订单分配、用户管理、全局数据统计（开发中）、工作人员管理 |
 
 ## 技术依赖
+
 | 依赖 | 用途 |
 |------|------|
-| ![jQuery](https://img.shields.io/badge/jQuery-v3.6.0-blue) | DOM操作和AJAX |
-| ![CryptoJS](https://img.shields.io/badge/CryptoJS-v4.1.1-green) | 数据加密 |
-| ![FullCalendar](https://img.shields.io/badge/FullCalendar-v5.10.1-orange) | 日程管理 |
-| ![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.1.3-purple) | UI框架 |
-| ![Swiper](https://img.shields.io/badge/Swiper-latest-red) | 移动端交互 |
+| ![jQuery](https://img.shields.io/badge/jQuery-v3.6.0-blue) | DOM操作和AJAX请求 |
+| ![CryptoJS](https://img.shields.io/badge/CryptoJS-v4.1.1-green) | AES数据加密 |
+| ![FullCalendar](https://img.shields.io/badge/FullCalendar-v5.10.1-orange) | 日程管理与日历组件 |
+| ![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.1.3-purple) | 响应式UI框架 |
+| ![Swiper](https://img.shields.io/badge/Swiper-latest-red) | 移动端滑动交互 |
+| ![ECharts](https://img.shields.io/badge/ECharts-v5.x-blue) | 数据可视化图表 |
+| ![ePub.js](https://img.shields.io/badge/ePub.js-latest-green) | EPUB电子书解析与渲染 |
+| ![WebSocket](https://img.shields.io/badge/WebSocket-Native-orange) | 实时双向通信 |
+| ![Iconify](https://img.shields.io/badge/Iconify-latest-purple) | 统一图标解决方案 |
 
 ## 安全机制
-- AES加密
-- 登录保护
-- 会话验证
-- 密码安全
-- XSS/CSRF防护
+
+- **数据加密**：AES算法加密敏感数据传输
+- **登录保护**：会话超时自动登出、异常登录检测
+- **会话验证**：Cookie-based Session、跨域凭证携带
+- **密码安全**：前端加密传输、后端哈希存储
+- **XSS/CSRF防护**：输入过滤、请求验证
+- **WebSocket安全**：WSS加密连接、消息状态追踪
 
 ## 贡献与反馈
 - 前端问题反馈：[Issues](https://github.com/shikaiwe/pc-declaration-system/issues)
@@ -85,7 +106,7 @@ pc-declaration-system/
 
 ## 想说的话
 
-从刚入学到如今即将毕业，广州南方学院PC志愿者服务队完整地陪伴我走过了这四年，在这里我遇到了很多很好的人，感受到了非常非常多的温暖和爱，让我没有遗憾地度过了这段在彻底成长为大人之前，这段漫长而孤寂的时期。
+QiannanYou：从刚入学到如今即将毕业，广州南方学院PC志愿者服务队完整地陪伴我走过了这四年，在这里我遇到了很多很好的人，感受到了非常非常多的温暖和爱，让我没有遗憾地度过了这段在彻底成长为大人之前，这段漫长而孤寂的时期。
 
 时代在不断改变，新旧之间的交替不断上演，我始终怀抱着一个信念：***想要珍视的东西，即使形态改变了，也会一直传承，一直存在。*** 所以我希望在这最后的时间里，能够把这一部分以我的方式传承下去。
 
