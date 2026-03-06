@@ -762,10 +762,13 @@ function appendMessage(message) {
     // 创建头像
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
-    // 生成固定的头像背景色（基于用户名）
-    const colors = ['#f56a00', '#7265e6', '#ffbf00', '#00a2ae', '#f56a00', '#7265e6', '#ffbf00'];
+    // 生成固定的头像背景色（基于用户名）- 使用现代化配色方案
+    const colors = [
+        '#0891B2', '#0E7490', '#06B6D4', '#22D3EE',
+        '#0EA5E9', '#0369A1', '#0284C7', '#0AA2C8'
+    ];
     const colorIndex = Math.abs(message.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % colors.length;
-    avatar.style.backgroundColor = colors[colorIndex];
+    avatar.style.background = `linear-gradient(135deg, ${colors[colorIndex]} 0%, ${colors[(colorIndex + 1) % colors.length]} 100%)`;
     avatar.textContent = message.username.charAt(0).toUpperCase();
 
     // 创建消息气泡
