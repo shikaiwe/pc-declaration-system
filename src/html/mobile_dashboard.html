@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>PC志愿者服务队</title>
+    <!-- Google Fonts - Fira Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Iconify图标库 -->
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <script src="../js/jquery.js" defer></script>
@@ -42,32 +46,43 @@
         }
         
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
             margin: 0;
             padding: 0;
             min-height: 100%;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
             background-attachment: fixed;
-            /* 确保背景固定，不会随滚动条滚动 */
-            padding-bottom: 60px;
-            /* 为底部导航栏留出空间 */
             position: relative;
             box-sizing: border-box;
+            padding-bottom: 60px;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
         }
         
         .header {
-            background-color: #2196F3;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
             color: white;
             text-align: center;
-            padding: 10px 0;
+            padding: 12px 0;
             position: sticky;
             top: 0;
             z-index: 100;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-left: 15px;
-            padding-right: 15px;
+            padding-left: 20px;
+            padding-right: 20px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
         }
         
         .header h1 {
@@ -112,55 +127,83 @@
         }
         
         .card {
-            background-color: white;
-            margin: 15px 20px;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            background-color: rgba(255, 255, 255, 0.95);
+            margin: 18px 20px;
+            padding: 24px 22px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             min-height: 140px;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #0369A1 0%, #0EA5E9 100%);
+            opacity: 0;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card:hover::before {
+            opacity: 1;
         }
         
         .card h2 {
             margin: 0 0 15px 0;
-            font-size: 24px;
-            color: #333;
+            font-size: 20px;
+            color: #0F172A;
             font-weight: 600;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .card p {
             margin: 0;
-            font-size: 18px;
-            color: #666;
+            font-size: 15px;
+            color: #475569;
             flex-grow: 1;
+            line-height: 1.5;
         }
         
         .card.hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.08);
+            cursor: pointer;
         }
         
         .card.no-hover:hover {
             transform: none;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
         }
         
         .card.active {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15), 0 2px 6px rgba(15, 23, 42, 0.1);
         }
         
         .navbar {
             position: fixed;
             bottom: 0;
             width: 100%;
-            background-color: #2196F3;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
             display: flex;
             justify-content: space-around;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 -2px 12px rgba(15, 23, 42, 0.15);
             z-index: 1000;
+            padding: 4px 0;
         }
         
         .navbar a {
@@ -169,7 +212,27 @@
             text-align: center;
             padding: 14px 0;
             text-decoration: none;
-            transition: background-color 0.4s ease-in-out;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-size: 14px;
+            position: relative;
+        }
+        
+        .navbar a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: #0369A1;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .navbar a:hover::after {
+            width: 60%;
         }
         
         .navbar a#info-link {
@@ -310,17 +373,25 @@
         .tab-link {
             padding: 12px 24px;
             margin: 0 10px;
-            background-color: #007BFF;
+            background: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.4s ease-in-out;
-            font-size: 1.1em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1em;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(3, 105, 161, 0.2);
+        }
+        
+        .tab-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(3, 105, 161, 0.3);
         }
         
         .tab-link.active {
-            background-color: #0056b3;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
         }
         /* 表单样式 */
         
@@ -354,18 +425,26 @@
         
         .tab-content button {
             padding: 12px 24px;
-            background-color: #007BFF;
+            background: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.4s ease-in-out;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             margin-top: 15px;
             font-size: 1em;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(3, 105, 161, 0.2);
         }
         
         .tab-content button:hover {
-            background-color: #0056b3;
+            background: linear-gradient(135deg, #075985 0%, #0284C7 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(3, 105, 161, 0.3);
+        }
+        
+        .tab-content button:active {
+            transform: translateY(0);
         }
         
         .password-requirements {
@@ -444,14 +523,27 @@
         /* 天气卡片样式 */
         
         .weather-container {
-            background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%);
-            border-radius: 15px;
-            padding: 15px;
+            background: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
+            border-radius: 16px;
+            padding: 18px;
             color: white;
-            margin: 15px 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 0;
+            box-shadow: 0 4px 16px rgba(3, 105, 161, 0.25);
             min-height: 140px;
             display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .weather-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            pointer-events: none;
         }
         
         .weather-content {
@@ -1225,16 +1317,24 @@
         .complete-order-btn {
             padding: 12px 24px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.4s ease-in-out;
-            background-color: #2196F3;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
             color: white;
             font-size: 1em;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(3, 105, 161, 0.2);
         }
         
         .complete-order-btn:hover {
-            background-color: #1976D2;
+            background: linear-gradient(135deg, #075985 0%, #0284C7 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(3, 105, 161, 0.3);
+        }
+        
+        .complete-order-btn:active {
+            transform: translateY(0);
         }
         
         .cancel-order-btn {
@@ -2293,6 +2393,98 @@
             }
         }
     </style>
+    
+    <!-- 深色模式支持 -->
+    <style>
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            }
+            
+            body::before {
+                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            }
+            
+            .card {
+                background-color: rgba(30, 41, 59, 0.95);
+                border: 1px solid rgba(71, 85, 105, 0.3);
+            }
+            
+            .card h2 {
+                color: #F1F5F9;
+            }
+            
+            .card p {
+                color: #CBD5E1;
+            }
+            
+            .card::before {
+                background: linear-gradient(180deg, #38BDF8 0%, #0EA5E9 100%);
+            }
+            
+            .modal-content,
+            .logout-modal-content,
+            .message-content {
+                background-color: #1E293B;
+                color: #F1F5F9;
+            }
+            
+            .modal-content h2,
+            .logout-modal-content p {
+                color: #F1F5F9;
+            }
+            
+            .close-button {
+                color: #CBD5E1;
+            }
+            
+            .close-button:hover {
+                color: #F1F5F9;
+            }
+            
+            .tab-content label {
+                color: #CBD5E1;
+            }
+            
+            .tab-content input,
+            .tab-content textarea {
+                background-color: #334155;
+                border-color: #475569;
+                color: #F1F5F9;
+            }
+            
+            .tab-content input:focus,
+            .tab-content textarea:focus {
+                border-color: #38BDF8;
+                box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+            }
+            
+            .order-card {
+                background-color: rgba(30, 41, 59, 0.95);
+                border: 1px solid rgba(71, 85, 105, 0.3);
+            }
+            
+            .order-info p {
+                color: #CBD5E1;
+            }
+            
+            .order-info p strong {
+                color: #94A3B8;
+            }
+            
+            .site-footer {
+                color: #94A3B8;
+            }
+            
+            .site-footer a {
+                color: #94A3B8;
+            }
+            
+            .site-footer a:hover {
+                color: #38BDF8;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -2305,41 +2497,62 @@
         </div>
     </div>
 
-    <div class="card">
-        <h2>今日天气</h2>
+    <div class="card no-hover">
+        <h2>
+            <span class="iconify" data-icon="mdi:weather-sunny" style="color: #0369A1;"></span>
+            今日天气
+        </h2>
         <div id="weather-info" class="weather-container">
             <!-- 天气信息将显示在这里 -->
         </div>
     </div>
 
     <div class="card hover" id="order-management">
-        <h2>订单管理</h2>
-        <p>更多信息...</p>
+        <h2>
+            <span class="iconify" data-icon="mdi:clipboard-list" style="color: #0369A1;"></span>
+            订单管理
+        </h2>
+        <p>报单、查历史、结单撤单</p>
     </div>
 
     <div class="card hover" id="message-board-card">
-        <h2>留言板</h2>
-        <p>查看订单留言...</p>
+        <h2>
+            <span class="iconify" data-icon="mdi:message-text" style="color: #0369A1;"></span>
+            留言板
+        </h2>
+        <p>和用户聊聊天</p>
     </div>
 
-    <div class="card" id="schedule-management">
-        <h2>日程管理</h2>
-        <p>打开日历</p>
+    <div class="card no-hover" id="schedule-management">
+        <h2>
+            <span class="iconify" data-icon="mdi:calendar-month" style="color: #0369A1;"></span>
+            日程管理
+        </h2>
+        <p>看看这周要干啥</p>
     </div>
 
     <div class="card hover" id="assign-order" style="display: none;">
-        <h2>分配订单</h2>
-        <p>分配待处理订单...</p>
+        <h2>
+            <span class="iconify" data-icon="mdi:account-arrow-right" style="color: #0369A1;"></span>
+            分配订单
+        </h2>
+        <p>把订单派给小伙伴</p>
     </div>
 
     <div class="card hover" id="assigned-order" style="display: none;">
-        <h2>被分配订单</h2>
-        <p>查看被分配的订单...</p>
+        <h2>
+            <span class="iconify" data-icon="mdi:account-clock" style="color: #0369A1;"></span>
+            被分配订单
+        </h2>
+        <p>看看派给你的活儿</p>
     </div>
 
     <div class="card hover" id="data-statistics" style="display: none;">
-        <h2>数据统计</h2>
-        <p>查看接单统计数据...</p>
+        <h2>
+            <span class="iconify" data-icon="mdi:chart-line" style="color: #0369A1;"></span>
+            数据统计
+        </h2>
+        <p>这周接了多少单？</p>
     </div>
 
     <div class="navbar">
