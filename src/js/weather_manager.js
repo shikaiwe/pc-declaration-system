@@ -146,34 +146,34 @@ class WeatherManager {
             <div class="weather-content">
                 <div class="weather-main">
                     <div class="weather-location">
-                        <span class="weather-icon"><span class="iconify" data-icon="mdi:map-marker"></span></span>
+                        <span class="iconify weather-icon" data-icon="mdi:map-marker"></span>
                         ${ipInfo.city}
                     </div>
                     <div class="weather-temp">
-                        <span class="weather-icon"><span class="iconify" data-icon="mdi:thermometer"></span></span>
-                        ${weather.temperature}°C
+                        <span class="iconify weather-icon" data-icon="mdi:thermometer"></span>
+                        <span class="temp-value">${weather.temperature}°C</span>
                     </div>
                 </div>
                 <div class="weather-info-details">
                     <div class="weather-row">
-                        <span class="weather-icon"><span class="iconify" data-icon="mdi:weather-partly-cloudy"></span></span>
+                        <span class="iconify weather-icon" data-icon="mdi:weather-partly-cloudy"></span>
                         <span>天气：${weather.weather}</span>
                     </div>
                     <div class="weather-row">
-                        <span class="weather-icon"><span class="iconify" data-icon="mdi:water-outline"></span></span>
+                        <span class="iconify weather-icon" data-icon="mdi:water-outline"></span>
                         <span>湿度：${weather.humidity}%</span>
                     </div>
                     <div class="weather-row">
-                        <span class="weather-icon"><span class="iconify" data-icon="mdi:weather-tornado"></span></span>
+                        <span class="iconify weather-icon" data-icon="mdi:weather-tornado"></span>
                         <span>风向：${weather.winddirection}</span>
                     </div>
                     <div class="weather-row">
-                        <span class="weather-icon"><span class="iconify" data-icon="mdi:weather-windy"></span></span>
+                        <span class="iconify weather-icon" data-icon="mdi:weather-windy"></span>
                         <span>风力：${weather.windpower}</span>
                     </div>
                 </div>
                 <div class="weather-update">
-                    <span class="weather-icon"><span class="iconify" data-icon="mdi:clock-outline"></span></span>
+                    <span class="iconify weather-icon" data-icon="mdi:clock-outline"></span>
                     <span>更新时间：${weather.updateTime}</span>
                 </div>
             </div>
