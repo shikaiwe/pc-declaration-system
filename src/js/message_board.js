@@ -532,6 +532,13 @@ function createMobileOrderItem(order) {
         loadMessagesForOrder(orderId);
     });
     
+    // 创建后立即尝试渲染图标
+    setTimeout(() => {
+        if (window.Iconify && typeof window.Iconify.scanDOM === 'function') {
+            window.Iconify.scanDOM(orderItem);
+        }
+    }, 0);
+    
     return orderItem;
 }
 
@@ -857,9 +864,9 @@ function appendMessage(message) {
 
         // 格式化为适合显示的时间格式
         const formattedTime = formatMessageTime(messageTime);
-        timeDiv.textContent = formattedTime;
+        timeDiv.innerHTML = `<span>${formattedTime}</span>`;
 
-        // 保存完整的时间戳到data-time属性
+        // 保存完整的时间戳到 data-time 属性
         timeDiv.setAttribute('data-time', message.originalTime || message.time || now.toISOString());
         messageList.appendChild(timeDiv);
     }

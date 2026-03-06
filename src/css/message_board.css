@@ -402,22 +402,35 @@
 }
 
 /* ========================================
-   消息时间戳
+   消息时间戳 - 居中显示带分割线
    ======================================== */
 .message-time {
     font-size: 12px;
-    color: var(--msg-text-light);
+    color: var(--msg-text-muted);
     font-weight: 500;
-    padding: 0 4px;
-    margin-top: 8px;
+    text-align: center;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    position: relative;
 }
 
-.message-item.sent .message-time {
-    align-self: flex-end;
+.message-time::before,
+.message-time::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--msg-border-light), transparent);
 }
 
-.message-item.received .message-time {
-    align-self: flex-start;
+.message-time span {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 4px 16px;
+    border-radius: var(--msg-radius-full);
+    white-space: nowrap;
 }
 
 /* ========================================
