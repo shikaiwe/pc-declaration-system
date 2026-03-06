@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PC志愿者服务队</title>
+    <!-- Iconify图标库 -->
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <!-- FullCalendar 本地化 -->
     <link href="../vendor/fullcalendar/main.min.css" rel="stylesheet" />
     <script src="../vendor/fullcalendar/main.min.js"></script>
@@ -1237,9 +1239,14 @@
         }
         
         #logoutLink::before {
-            content: '🚪';
-            font-size: 16px;
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
             margin-right: 8px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M16 17v-3H9v-4h7V7l5 5l-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9Z'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
@@ -2746,14 +2753,14 @@
 <body>
     <div class="sidebar">
         <ul class="sidebar-menu">
-            <li id="homeLink"><span><i>🏠</i>首页</span></li>
-            <li id="orderManagement"><span><i>📝</i>订单管理</span></li>
-            <li id="assignOrder" style="display: none;"><span><i>📋</i>分配订单</span></li>
-            <li id="assignedOrder" style="display: none;"><span><i>🔧</i>被分配订单</span></li>
-            <li id="scheduleManagement"><span><i>📅</i>日程管理</span></li>
-            <li id="messageBoard"><span><i>💬</i>留言板</span></li>
-            <li id="dataStatistics" style="display: none;"><span><i>📊</i>数据统计</span></li>
-            <li id="accountManagement"><span><i>👤</i>账号管理</span></li>
+            <li id="homeLink"><span><i><span class="iconify" data-icon="mdi:home-outline"></span></i>首页</span></li>
+            <li id="orderManagement"><span><i><span class="iconify" data-icon="mdi:clipboard-text-outline"></span></i>订单管理</span></li>
+            <li id="assignOrder" style="display: none;"><span><i><span class="iconify" data-icon="mdi:clipboard-list-outline"></span></i>分配订单</span></li>
+            <li id="assignedOrder" style="display: none;"><span><i><span class="iconify" data-icon="mdi:wrench-outline"></span></i>被分配订单</span></li>
+            <li id="scheduleManagement"><span><i><span class="iconify" data-icon="mdi:calendar-outline"></span></i>日程管理</span></li>
+            <li id="messageBoard"><span><i><span class="iconify" data-icon="mdi:message-outline"></span></i>留言板</span></li>
+            <li id="dataStatistics" style="display: none;"><span><i><span class="iconify" data-icon="mdi:chart-bar"></span></i>数据统计</span></li>
+            <li id="accountManagement"><span><i><span class="iconify" data-icon="mdi:account-outline"></span></i>账号管理</span></li>
         </ul>
         <div class="weather-info" id="weatherInfo">
             <p>天气信息加载中...</p>
@@ -3365,7 +3372,7 @@
                         console.error('分配订单页面加载失败:', error);
                         assignOrderContent.innerHTML = `
                             <div class="error-message">
-                                <i class="error-icon">❌</i>
+                                <i class="error-icon"><span class="iconify" data-icon="mdi:alert-circle-outline"></span></i>
                                 <p>加载失败，请重试</p>
                                 <button class="retry-button" onclick="loadAssignOrderContent()">重试</button>
                             </div>
@@ -4180,7 +4187,7 @@
                 const orderHistoryContent = document.getElementById('orderHistory');
                 orderHistoryContent.innerHTML = `
                 <div class="no-orders">
-                    <i>📝</i>
+                    <i><span class="iconify" data-icon="mdi:clipboard-text-outline"></span></i>
                     <p>暂无历史订单</p>
                 </div>
             `;
@@ -4190,7 +4197,7 @@
                 const orderHistoryContent = document.getElementById('orderHistory');
                 orderHistoryContent.innerHTML = `
                 <div class="error-message">
-                    <i>❌</i>
+                    <i><span class="iconify" data-icon="mdi:alert-circle-outline"></span></i>
                     <p>获取历史订单失败，请稍后重试</p>
                 </div>
             `;
@@ -4460,7 +4467,7 @@
                 const assignedOrdersContainer = document.getElementById('assignedOrdersContainer');
                 assignedOrdersContainer.innerHTML = `
                     <div class="no-orders">
-                        <i>🔧</i>
+                        <i><span class="iconify" data-icon="mdi:wrench-outline"></span></i>
                         <p>暂无被分配订单</p>
                     </div>
                 `;
@@ -4470,7 +4477,7 @@
                 const assignedOrdersContainer = document.getElementById('assignedOrdersContainer');
                 assignedOrdersContainer.innerHTML = `
                     <div class="error-message">
-                        <i>❌</i>
+                        <i><span class="iconify" data-icon="mdi:alert-circle-outline"></span></i>
                         <p>获取被分配订单失败，请稍后重试</p>
                     </div>
                 `;

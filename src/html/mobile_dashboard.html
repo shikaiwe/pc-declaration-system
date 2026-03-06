@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>PC志愿者服务队</title>
+    <!-- Iconify图标库 -->
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <script src="../js/jquery.js" defer></script>
     <link href='../vendor/fullcalendar/main.min.css' rel='stylesheet' />
     <script src='../vendor/fullcalendar/main.min.js' defer></script>
@@ -2865,7 +2867,7 @@
                         newOrderContent.innerHTML = `
                     ${formHTML}
                     <div class="no-orders">
-                        <i class="no-orders-icon">📝</i>
+                        <i class="no-orders-icon"><span class="iconify" data-icon="mdi:clipboard-text-outline"></span></i>
                         <p>暂无待分配订单</p>
                     </div>
                 `;
@@ -3114,7 +3116,7 @@
             container.innerHTML = `
                 ${formHTML}
                 <div class="no-orders">
-                    <i class="no-orders-icon">📝</i>
+                    <i class="no-orders-icon"><span class="iconify" data-icon="mdi:clipboard-text-outline"></span></i>
                     <p>${message}</p>
                 </div>
             `;
@@ -3131,7 +3133,7 @@
             container.innerHTML = `
                 ${formHTML}
                 <div class="error-message">
-                    <i class="error-icon">❌</i>
+                    <i class="error-icon"><span class="iconify" data-icon="mdi:alert-circle-outline"></span></i>
                     <p>${message}，请稍后重试</p>
                     <button class="retry-button" onclick="orderManager.${containerId === 'orderHistory' ? 'fetchHistoryOrders' : 'fetchPendingOrders'}()">重试</button>
                 </div>
@@ -3271,7 +3273,7 @@
         if (assignedOrdersContent) {
             assignedOrdersContent.innerHTML = `
                 <div class="no-orders">
-                    <i class="no-orders-icon">🔧</i>
+                    <i class="no-orders-icon"><span class="iconify" data-icon="mdi:wrench-outline"></span></i>
                     <p>暂无被分配订单</p>
                 </div>
             `;
@@ -3283,7 +3285,7 @@
         if (assignedOrdersContent) {
             assignedOrdersContent.innerHTML = `
                 <div class="error-message">
-                    <i class="error-icon">❌</i>
+                    <i class="error-icon"><span class="iconify" data-icon="mdi:alert-circle-outline"></span></i>
                     <p>获取被分配订单失败，请稍后重试</p>
                     <button class="retry-button" onclick="orderManager.fetchAssignedOrders()">重试</button>
                 </div>
@@ -4359,7 +4361,7 @@
             console.error('分配订单页面初始化失败:', error);
             assignOrderContent.innerHTML = `
                 <div class="error-message" style="text-align: center; padding: 20px;">
-                    <i class="error-icon" style="font-size: 48px; display: block; margin-bottom: 10px;">❌</i>
+                    <i class="error-icon" style="font-size: 48px; display: block; margin-bottom: 10px;"><span class="iconify" data-icon="mdi:alert-circle-outline"></span></i>
                     <p style="color: #ff4d4f; margin-bottom: 15px;">加载失败，请重试</p>
                     <button class="retry-button" 
                             style="padding: 8px 20px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;"
