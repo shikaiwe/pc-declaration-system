@@ -1,29 +1,98 @@
-/* 消息板样式 */
+/* 引入Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap');
 
+/* CSS变量定义 */
+:root {
+    --message-primary: #0891B2;
+    --message-secondary: #22D3EE;
+    --message-cta: #22C55E;
+    --message-bg: #ECFEFF;
+    --message-text: #164E63;
+    --message-sent-bg: #DCFCE7;
+    --message-received-bg: #FFFFFF;
+    --message-border: #E5E7EB;
+    --message-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --message-radius: 16px;
+    --message-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-/* 消息容器 */
+/* 深色模式变量 */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --message-primary: #22D3EE;
+        --message-secondary: #67E8F9;
+        --message-cta: #4ADE80;
+        --message-bg: #0F172A;
+        --message-text: #E2E8F0;
+        --message-sent-bg: #064E3B;
+        --message-received-bg: #1E293B;
+        --message-border: #334155;
+        --message-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+}
 
+/* 全局字体设置 */
+.message-board,
+.message-board * {
+    font-family: 'Outfit', 'Work Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* ========================================
+   消息列表容器
+   ======================================== */
 #messageList {
     height: 500px;
     overflow-y: auto;
-    padding: 15px;
-    background-color: #f5f5f5;
-    border-radius: 8px;
-    margin-bottom: 15px;
+    padding: 20px;
+    background: linear-gradient(180deg, var(--message-bg) 0%, #F0F9FF 100%);
+    border-radius: var(--message-radius);
+    margin-bottom: 20px;
+    box-shadow: var(--message-shadow);
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
+/* 自定义滚动条 */
+#messageList::-webkit-scrollbar {
+    width: 6px;
+}
 
-/* 消息项 */
+#messageList::-webkit-scrollbar-track {
+    background: transparent;
+}
 
+#messageList::-webkit-scrollbar-thumb {
+    background: var(--message-primary);
+    border-radius: 3px;
+    opacity: 0.5;
+}
+
+#messageList::-webkit-scrollbar-thumb:hover {
+    background: var(--message-secondary);
+}
+
+/* ========================================
+   消息项样式
+   ======================================== */
 .message-item {
     display: flex;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     position: relative;
+    animation: messageSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 /* 发送的消息 */
-
 .message-item.sent {
     flex-direction: row;
     justify-content: flex-end;
@@ -36,215 +105,285 @@
 
 .message-item.sent .avatar {
     margin-left: 0;
-    margin-right: 10px;
+    margin-right: 12px;
 }
 
-
 /* 接收的消息 */
-
 .message-item.received {
     flex-direction: row;
 }
 
-
-/* 头像 */
-
+/* ========================================
+   头像样式
+   ======================================== */
 .avatar {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-weight: bold;
-    margin: 0 10px;
+    font-weight: 600;
+    margin: 0 12px;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, var(--message-primary) 0%, var(--message-secondary) 100%);
+    font-size: 16px;
+    transition: var(--message-transition);
 }
 
+.avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
 
-/* 消息气泡 */
-
+/* ========================================
+   消息气泡
+   ======================================== */
 .message-bubble {
     max-width: 70%;
-    padding: 10px 15px;
-    border-radius: 18px;
+    padding: 12px 18px;
+    border-radius: 20px;
     position: relative;
     word-break: break-word;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    transition: var(--message-transition);
+    line-height: 1.5;
 }
 
+.message-bubble:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* 发送的消息气泡 */
 .sent .message-bubble {
-    background-color: #dcf8c6;
-    border-top-right-radius: 4px;
+    background: linear-gradient(135deg, var(--message-sent-bg) 0%, #BBF7D0 100%);
+    border-top-right-radius: 6px;
+    color: #166534;
 }
 
+/* 接收的消息气泡 */
 .received .message-bubble {
-    background-color: white;
-    border-top-left-radius: 4px;
+    background: var(--message-received-bg);
+    border-top-left-radius: 6px;
+    color: var(--message-text);
+    border: 1px solid var(--message-border);
 }
 
-
-/* 用户名 */
-
+/* ========================================
+   用户名和时间戳
+   ======================================== */
 .message-username {
-    font-size: 12px;
-    color: #888;
-    margin-bottom: 4px;
-    font-weight: bold;
+    font-size: 13px;
+    color: var(--message-primary);
+    margin-bottom: 6px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
 }
-
-
-/* 时间戳 */
 
 .message-time {
     text-align: center;
-    color: #999;
+    color: #94A3B8;
     font-size: 12px;
-    margin: 10px 0;
+    margin: 16px 0;
+    font-weight: 500;
+    padding: 6px 16px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 100px;
+    display: inline-block;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-
-/* 消息状态 */
-
+/* ========================================
+   消息状态
+   ======================================== */
 .message-status {
     font-size: 11px;
-    margin-top: 4px;
+    margin-top: 6px;
     text-align: right;
+    font-weight: 500;
 }
 
-
-/* 消息状态样式 */
-
 .message-item.sending .message-status {
-    color: #999;
+    color: #94A3B8;
 }
 
 .message-item.sent .message-status {
-    color: #74b9ff;
+    color: var(--message-primary);
 }
 
 .message-item.delivered .message-status {
-    color: #00b894;
+    color: var(--message-cta);
 }
 
 .message-item.failed .message-status {
-    color: #ff7675;
+    color: #EF4444;
 }
 
-
-/* 重试按钮 */
-
+/* ========================================
+   重试按钮
+   ======================================== */
 .retry-button {
-    margin-left: 5px;
-    padding: 2px 8px;
-    background-color: #ff7675;
+    margin-left: 8px;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 11px;
+    font-weight: 600;
+    transition: var(--message-transition);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
 }
 
 .retry-button:hover {
-    background-color: #d63031;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
 }
 
+.retry-button:active {
+    transform: translateY(0);
+}
 
-/* 系统消息 */
-
+/* ========================================
+   系统消息
+   ======================================== */
 .system-message {
     text-align: center;
-    color: #666;
-    margin: 10px 0;
+    color: #64748B;
+    margin: 16px 0;
     font-size: 12px;
+    font-weight: 500;
+    padding: 8px 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 100px;
+    display: inline-block;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(229, 231, 235, 0.5);
 }
 
 .system-message.error {
-    color: #ff7675;
+    color: #EF4444;
+    background: rgba(254, 226, 226, 0.9);
+    border-color: rgba(239, 68, 68, 0.2);
 }
 
-
-/* 消息输入区域 */
-
+/* ========================================
+   消息输入区域
+   ======================================== */
 .message-input-container {
     display: flex;
-    margin-top: 15px;
+    gap: 12px;
+    margin-top: 20px;
+    padding: 16px;
+    background: white;
+    border-radius: var(--message-radius);
+    box-shadow: var(--message-shadow);
+    border: 1px solid var(--message-border);
 }
 
 #messageInput {
     flex: 1;
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 20px;
+    padding: 12px 18px;
+    border: 2px solid var(--message-border);
+    border-radius: 24px;
     outline: none;
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 400;
+    transition: var(--message-transition);
+    background: #FAFAFA;
+    color: var(--message-text);
 }
 
 #messageInput:focus {
-    border-color: #74b9ff;
+    border-color: var(--message-primary);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+#messageInput::placeholder {
+    color: #94A3B8;
 }
 
 #sendMessage {
-    margin-left: 10px;
-    padding: 10px 20px;
-    background-color: #74b9ff;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, var(--message-primary) 0%, var(--message-secondary) 100%);
     color: white;
     border: none;
-    border-radius: 20px;
+    border-radius: 24px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 15px;
+    transition: var(--message-transition);
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.3);
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #sendMessage:hover {
-    background-color: #0984e3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.4);
 }
 
+#sendMessage:active {
+    transform: translateY(0);
+}
 
-/* 订单选择器 */
-
+/* ========================================
+   订单选择器
+   ======================================== */
 #orderSelector {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border: 2px solid var(--message-border);
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    background: white;
+    color: var(--message-text);
+    transition: var(--message-transition);
+    cursor: pointer;
 }
 
-
-/* 响应式调整 */
-
-@media (max-width: 768px) {
-    #messageList {
-        height: 400px;
-    }
-    .message-bubble {
-        max-width: 85%;
-    }
+#orderSelector:focus {
+    border-color: var(--message-primary);
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+    outline: none;
 }
 
+#orderSelector:hover {
+    border-color: var(--message-secondary);
+}
 
-/* 状态图标和重试按钮容器 */
-
+/* ========================================
+   状态图标和动画
+   ======================================== */
 .message-status-icon {
     display: flex;
     align-items: center;
     margin: 0 6px;
     min-width: 20px;
-    min-height: 40px;
+    min-height: 44px;
     justify-content: center;
 }
 
-
 /* 发送中动画 */
-
 .icon-sending {
     width: 18px;
     height: 18px;
-    border: 2px solid #b2bec3;
-    border-top: 2px solid #74b9ff;
+    border: 2px solid #CBD5E1;
+    border-top: 2px solid var(--message-primary);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
     margin: 0 2px;
 }
 
@@ -257,9 +396,7 @@
     }
 }
 
-
 /* 已发送/已送达/失败图标 */
-
 .icon-sent,
 .icon-delivered,
 .icon-failed {
@@ -270,74 +407,206 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: var(--message-transition);
 }
 
 .icon-sent {
-    color: #74b9ff;
+    color: var(--message-primary);
 }
 
 .icon-delivered {
-    color: #00b894;
+    color: var(--message-cta);
 }
 
 .icon-failed {
-    color: #ff7675;
+    color: #EF4444;
 }
 
-
 /* 重试按钮图标 */
-
 .retry-button-icon {
     background: none;
     border: none;
-    color: #ff7675;
+    color: #EF4444;
     font-size: 18px;
     cursor: pointer;
-    margin-left: 2px;
+    margin-left: 4px;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s;
+    transition: var(--message-transition);
+    min-height: 44px;
+    min-width: 44px;
 }
 
 .retry-button-icon:hover {
-    color: #d63031;
+    color: #DC2626;
+    transform: scale(1.1);
 }
 
-
-/* 调整消息项布局：让状态图标和气泡并排 */
-
-.message-item.sent {
-    flex-direction: row;
-    justify-content: flex-end;
+/* ========================================
+   响应式设计
+   ======================================== */
+@media (max-width: 768px) {
+    #messageList {
+        height: 400px;
+        padding: 16px;
+    }
+    
+    .message-bubble {
+        max-width: 80%;
+        padding: 10px 16px;
+    }
+    
+    .avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+    }
+    
+    .message-input-container {
+        padding: 12px;
+    }
+    
+    #messageInput {
+        font-size: 16px; /* 防止iOS自动缩放 */
+    }
+    
+    #sendMessage {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
 }
 
-.message-item.sent .message-status-icon {
-    margin-left: 8px;
-    margin-right: 0;
+@media (max-width: 480px) {
+    #messageList {
+        height: 350px;
+        padding: 12px;
+        border-radius: 12px;
+    }
+    
+    .message-bubble {
+        max-width: 85%;
+        font-size: 14px;
+    }
+    
+    .avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 13px;
+        margin: 0 8px;
+    }
+    
+    .message-input-container {
+        gap: 8px;
+        padding: 10px;
+    }
+    
+    #messageInput {
+        padding: 10px 14px;
+        font-size: 16px;
+    }
+    
+    #sendMessage {
+        padding: 10px 18px;
+        font-size: 14px;
+    }
 }
 
-.message-item.sent .avatar {
-    margin-left: 0;
-    margin-right: 10px;
+/* ========================================
+   深色模式适配
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    #messageList {
+        background: linear-gradient(180deg, var(--message-bg) 0%, #1A202C 100%);
+    }
+    
+    .sent .message-bubble {
+        color: #D1FAE5;
+    }
+    
+    .received .message-bubble {
+        background: var(--message-received-bg);
+        border-color: var(--message-border);
+        color: var(--message-text);
+    }
+    
+    .message-input-container {
+        background: #1E293B;
+        border-color: var(--message-border);
+    }
+    
+    #messageInput {
+        background: #0F172A;
+        border-color: var(--message-border);
+        color: var(--message-text);
+    }
+    
+    #messageInput:focus {
+        background: #1E293B;
+        border-color: var(--message-primary);
+    }
+    
+    #orderSelector {
+        background: #1E293B;
+        border-color: var(--message-border);
+        color: var(--message-text);
+    }
+    
+    .message-time,
+    .system-message {
+        background: rgba(30, 41, 59, 0.9);
+        color: #94A3B8;
+    }
 }
 
-.message-item.received .message-status-icon {
-    margin-right: 8px;
-    margin-left: 0;
+/* ========================================
+   性能优化
+   ======================================== */
+.message-item,
+.message-bubble,
+.avatar,
+#sendMessage,
+#messageInput,
+.retry-button {
+    will-change: transform;
 }
 
-
-/* 移除输入框内的上下箭头（spin button） */
-
-#messageInput[type=number]::-webkit-inner-spin-button,
-#messageInput[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+/* 减少动画（用户偏好） */
+@media (prefers-reduced-motion: reduce) {
+    .message-item,
+    .message-bubble,
+    .avatar,
+    #sendMessage,
+    .retry-button {
+        animation: none;
+        transition: none;
+    }
+    
+    .icon-sending {
+        animation: none;
+    }
 }
 
-#messageInput[type=number] {
-    appearance: textfield;
-    -moz-appearance: textfield;
+/* ========================================
+   可访问性优化
+   ======================================== */
+#sendMessage:focus,
+#messageInput:focus,
+#orderSelector:focus,
+.retry-button:focus,
+.retry-button-icon:focus {
+    outline: 2px solid var(--message-primary);
+    outline-offset: 2px;
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+    .message-bubble {
+        border: 2px solid currentColor;
+    }
+    
+    #sendMessage {
+        border: 2px solid white;
+    }
 }
