@@ -90,7 +90,7 @@ class TimePicker {
         // 创建时间图标
         const icon = document.createElement('span');
         icon.className = 'time-picker-icon';
-        icon.innerHTML = '🕒';
+        icon.innerHTML = '<span class="iconify" data-icon="mdi:clock-outline"></span>';
 
         // 创建面板容器
         const panel = document.createElement('div');

@@ -67,11 +67,11 @@ class OrderRating {
                     <h3>订单评价</h3>
                 </div>
                 <div class="rating-stars" id="ratingStars">
-                    <div class="star" data-value="1">★</div>
-                    <div class="star" data-value="2">★</div>
-                    <div class="star" data-value="3">★</div>
-                    <div class="star" data-value="4">★</div>
-                    <div class="star" data-value="5">★</div>
+                    <div class="star" data-value="1"><span class="iconify" data-icon="mdi:star-outline"></span></div>
+                    <div class="star" data-value="2"><span class="iconify" data-icon="mdi:star-outline"></span></div>
+                    <div class="star" data-value="3"><span class="iconify" data-icon="mdi:star-outline"></span></div>
+                    <div class="star" data-value="4"><span class="iconify" data-icon="mdi:star-outline"></span></div>
+                    <div class="star" data-value="5"><span class="iconify" data-icon="mdi:star-outline"></span></div>
                 </div>
                 <div class="rating-description" id="ratingDescription"></div>
                 <div class="rating-comment">
@@ -112,6 +112,8 @@ class OrderRating {
                 const value = parseInt(star.getAttribute('data-value'));
                 starsContainer.className = 'rating-stars hover-' + value;
                 description.textContent = CONFIG.ratingDescriptions[value];
+                // 更新图标状态
+                this.updateStarIcons(value, false);
             });
         });
 
@@ -119,6 +121,8 @@ class OrderRating {
         starsContainer.addEventListener('mouseleave', (e) => {
             starsContainer.className = 'rating-stars' + (this.rating ? ` selected-${this.rating}` : '');
             description.textContent = this.rating ? CONFIG.ratingDescriptions[this.rating] : '';
+            // 恢复已选择的图标状态
+            this.updateStarIcons(this.rating, true);
         });
 
         // 点击选择评分
@@ -172,6 +176,24 @@ class OrderRating {
 
         starsContainer.className = 'rating-stars selected-' + value;
         description.textContent = CONFIG.ratingDescriptions[value];
+        // 更新图标状态
+        this.updateStarIcons(value, true);
+    }
+
+    /**
+     * 更新星星图标状态
+     * @param {number} activeCount 激活的星星数量
+     * @param {boolean} isSelected 是否为选中状态
+     */
+    updateStarIcons(activeCount, isSelected) {
+        const stars = document.querySelectorAll('#ratingStars .star .iconify');
+        stars.forEach((icon, index) => {
+            if (index < activeCount) {
+                icon.setAttribute('data-icon', 'mdi:star');
+            } else {
+                icon.setAttribute('data-icon', 'mdi:star-outline');
+            }
+        });
     }
 
     /**
@@ -220,6 +242,9 @@ class OrderRating {
         description.textContent = '';
         commentInput.value = '';
         submitButton.disabled = true;
+
+        // 重置星星图标为未选中状态
+        this.updateStarIcons(0, false);
 
         this.retryCount = 0;
     }

@@ -96,6 +96,15 @@
     margin: 0 5px;
     transition: all 0.2s ease;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.star .iconify {
+    font-size: 36px;
+    width: 1em;
+    height: 1em;
 }
 
 .star:hover,

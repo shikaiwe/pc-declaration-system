@@ -772,7 +772,7 @@ class AssignOrder {
 
         orderList.innerHTML = `
             <div class="no-orders">
-                <i class="no-orders-icon">📋</i>
+                <i class="no-orders-icon"><span class="iconify" data-icon="mdi:clipboard-list-outline"></span></i>
                 <p>暂无待分配订单</p>
             </div>
         `;
@@ -787,7 +787,7 @@ class AssignOrder {
 
         orderList.innerHTML = `
             <div class="error-message">
-                <i class="error-icon">❌</i>
+                <i class="error-icon"><span class="iconify" data-icon="mdi:alert-circle-outline"></span></i>
                 <p>${ERROR_MESSAGES.LOAD_FAILED}</p>
                 <button class="retry-button">重试</button>
             </div>
