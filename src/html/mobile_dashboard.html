@@ -610,19 +610,25 @@
         
         .weather-icon {
             font-size: 16px;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 18px;
-            height: 18px;
+            min-width: 18px;
+            min-height: 18px;
             color: #ffffff;
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
         }
         
+        .weather-icon .iconify {
+            width: 1em;
+            height: 1em;
+            display: inline-block;
+        }
+        
         .weather-temp .weather-icon {
             font-size: 32px;
-            width: 32px;
-            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
             color: #FFD54F;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
         }
@@ -670,8 +676,8 @@
             }
             .weather-temp .weather-icon {
                 font-size: 28px;
-                width: 28px;
-                height: 28px;
+                min-width: 28px;
+                min-height: 28px;
             }
             .card {
                 margin: 12px 15px;
