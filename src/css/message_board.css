@@ -50,14 +50,33 @@
     height: 100%;
     width: 100%;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 1000;
     border-radius: 0;
     overflow: hidden;
     border: none;
+}
+
+/* 留言板内容容器 - 全屏 */
+#messageBoardContent {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    z-index: 1000;
+}
+
+#messageBoardContent h2 {
+    display: none;
 }
 
 /* ========================================
