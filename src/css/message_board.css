@@ -133,15 +133,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #2eb5c9 0%, #1a9fb3 100%);
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     border-radius: 8px;
     color: white;
     font-size: 18px;
     flex-shrink: 0;
-}
-
-.order-icon.shipped {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
 .order-icon.processing {
@@ -165,11 +161,6 @@
     font-weight: 500;
     display: inline-block;
     margin-left: auto;
-}
-
-.order-status.shipped {
-    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-    color: #065f46;
 }
 
 .order-status.processing {

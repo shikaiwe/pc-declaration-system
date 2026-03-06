@@ -438,25 +438,24 @@ function createDesktopOrderItem(order) {
     orderItem.className = 'order-item';
     orderItem.dataset.orderId = order.reportId;
     
-    let statusClass = 'shipped';
+    let statusClass = 'completed';
     let statusText = '已完成';
+    let iconHtml = '';
+    
     if (order.status === 'processing') {
         statusClass = 'processing';
         statusText = '处理中';
-    } else if (order.status === 'completed') {
-        statusClass = 'completed';
-        statusText = '已完成';
+        // 进行中图标 - 加载/旋转图标
+        iconHtml = '<span class="iconify" data-icon="mdi:progress-clock" data-width="20" data-height="20"></span>';
+    } else {
+        // 已完成图标 - 打钩
+        iconHtml = '<span class="iconify" data-icon="mdi:check-circle" data-width="20" data-height="20"></span>';
     }
 
     orderItem.innerHTML = `
         <div class="order-header">
             <div class="order-icon ${statusClass}">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="1" y="3" width="15" height="13"></rect>
-                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                </svg>
+                ${iconHtml}
             </div>
             <span class="order-id">订单 #${order.reportId}</span>
             <span class="order-status ${statusClass}">${statusText}</span>
@@ -480,25 +479,24 @@ function createMobileOrderItem(order) {
     orderItem.className = 'order-item-mobile';
     orderItem.dataset.orderId = order.reportId;
     
-    let statusClass = 'shipped';
+    let statusClass = 'completed';
     let statusText = '已完成';
+    let iconHtml = '';
+    
     if (order.status === 'processing') {
         statusClass = 'processing';
         statusText = '处理中';
-    } else if (order.status === 'completed') {
-        statusClass = 'completed';
-        statusText = '已完成';
+        // 进行中图标 - 加载/旋转图标
+        iconHtml = '<span class="iconify" data-icon="mdi:progress-clock" data-width="20" data-height="20"></span>';
+    } else {
+        // 已完成图标 - 打钩
+        iconHtml = '<span class="iconify" data-icon="mdi:check-circle" data-width="20" data-height="20"></span>';
     }
 
     orderItem.innerHTML = `
         <div class="order-item-header">
             <div class="order-item-icon ${statusClass}">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="1" y="3" width="15" height="13"></rect>
-                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                </svg>
+                ${iconHtml}
             </div>
             <div class="order-item-info">
                 <div class="order-item-id">订单 #${order.reportId}</div>
