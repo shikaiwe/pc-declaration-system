@@ -308,13 +308,10 @@
     flex-shrink: 0;
 }
 
-.order-item-icon .fa-solid {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.order-item-icon .order-svg-icon {
+    width: 22px;
+    height: 22px;
+    stroke: white;
 }
 
 .order-item-icon.processing {

@@ -447,22 +447,28 @@ function createDesktopOrderItem(order) {
     
     let statusClass = 'completed';
     let statusText = '已完成';
-    let iconClass = '';
+    let iconSvg = '';
     
     if (order.status === 'processing') {
         statusClass = 'processing';
         statusText = '处理中';
         // 进行中图标 - 时钟
-        iconClass = 'fa-clock';
+        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="order-svg-icon">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>`;
     } else {
         // 已完成图标 - 打钩
-        iconClass = 'fa-circle-check';
+        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="order-svg-icon">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>`;
     }
 
     orderItem.innerHTML = `
         <div class="order-header">
             <div class="order-icon ${statusClass}">
-                <i class="fa-solid ${iconClass}"></i>
+                ${iconSvg}
             </div>
             <span class="order-id">订单 #${order.reportId}</span>
             <span class="order-status ${statusClass}">${statusText}</span>
@@ -488,22 +494,28 @@ function createMobileOrderItem(order) {
     
     let statusClass = 'completed';
     let statusText = '已完成';
-    let iconClass = '';
+    let iconSvg = '';
     
     if (order.status === 'processing') {
         statusClass = 'processing';
         statusText = '处理中';
         // 进行中图标 - 时钟
-        iconClass = 'fa-clock';
+        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="order-svg-icon">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>`;
     } else {
         // 已完成图标 - 打钩
-        iconClass = 'fa-circle-check';
+        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="order-svg-icon">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>`;
     }
 
     orderItem.innerHTML = `
         <div class="order-item-header">
             <div class="order-item-icon ${statusClass}">
-                <i class="fa-solid ${iconClass}"></i>
+                ${iconSvg}
             </div>
             <div class="order-item-info">
                 <div class="order-item-id">订单 #${order.reportId}</div>
