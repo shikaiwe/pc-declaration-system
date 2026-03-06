@@ -2262,6 +2262,45 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             /* 添加阴影效果 */
         }
+        /* 电子书阅读器入口样式 */
+        
+        .book-reader-entry {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: 72px;
+            height: 72px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            overflow: hidden;
+            background: transparent;
+        }
+        
+        .book-reader-entry:hover {
+            transform: translateY(-4px) scale(1.08);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .book-reader-entry img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        @media (max-width: 600px) {
+            .book-reader-entry {
+                width: 60px;
+                height: 60px;
+                right: 16px;
+                bottom: 16px;
+                border-radius: 12px;
+            }
+        }
         /* 备案与版权信息样式 */
         
         .site-footer {
@@ -4655,6 +4694,11 @@
                 videoModal.style.display = 'block';
             }
         </script>
+
+        <!-- 电子书阅读器入口 -->
+        <a href="epub-reader.html" class="book-reader-entry" title="电子书阅读器">
+            <img src="../images/book.png" alt="电子书">
+        </a>
 
         <!-- 备案与版权信息footer 开始 -->
         <footer class="site-footer">

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPUB电子书阅读器 - PC志愿者服务队出品</title>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.93/epub.min.js"></script>
+    <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../css/epub-reader.css">
+</head>
+
+<body>
+    <div class="reader-container">
+        <header class="reader-header">
+            <div class="header-left">
+                <button class="back-btn" id="backBtn" title="返回书架">
+                    <span class="iconify" data-icon="mdi:arrow-left"></span>
+                </button>
+                <h1 class="book-title" id="bookTitle">我的书架</h1>
+            </div>
+            <div class="header-right">
+                <div class="progress-info" id="progressInfo" style="display: none;">
+                    <span class="progress-text" id="progressText">0%</span>
+                </div>
+                <button class="header-btn" id="tocBtn" title="目录" style="display: none;">
+                    <span class="iconify" data-icon="mdi:format-list-bulleted"></span>
+                </button>
+                <button class="header-btn" id="settingsBtn" title="设置" style="display: none;">
+                    <span class="iconify" data-icon="mdi:cog"></span>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content" id="mainContent">
+            <div class="bookshelf" id="bookshelf">
+                <div class="bookshelf-header">
+                    <h2>选择一本书开始阅读</h2>
+                    <p class="bookshelf-tip">点击书籍封面打开阅读</p>
+                </div>
+                <div class="book-grid" id="bookGrid">
+                    <div class="loading-books">
+                        <span class="iconify loading-icon" data-icon="mdi:loading"></span>
+                        <p>正在加载书架...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reader-viewer" id="readerViewer" style="display: none;">
+                <div class="viewer-wrapper">
+                    <button class="nav-btn prev-btn" id="prevBtn" title="上一页">
+                        <span class="iconify" data-icon="mdi:chevron-left"></span>
+                    </button>
+                    <div class="epub-viewer" id="epubViewer"></div>
+                    <button class="nav-btn next-btn" id="nextBtn" title="下一页">
+                        <span class="iconify" data-icon="mdi:chevron-right"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <aside class="toc-sidebar" id="tocSidebar">
+            <div class="toc-header">
+                <h3>目录</h3>
+                <button class="close-btn" id="closeTocBtn">
+                    <span class="iconify" data-icon="mdi:close"></span>
+                </button>
+            </div>
+            <div class="toc-content" id="tocContent">
+                <div class="loading-toc">
+                    <span class="iconify loading-icon" data-icon="mdi:loading"></span>
+                    <p>加载目录中...</p>
+                </div>
+            </div>
+        </aside>
+
+        <aside class="settings-sidebar" id="settingsSidebar">
+            <div class="settings-header">
+                <h3>阅读设置</h3>
+                <button class="close-btn" id="closeSettingsBtn">
+                    <span class="iconify" data-icon="mdi:close"></span>
+                </button>
+            </div>
+            <div class="settings-content">
+                <div class="setting-group">
+                    <label>字体大小</label>
+                    <div class="font-size-control">
+                        <button class="font-btn" id="decreaseFont" title="减小字体">
+                            <span class="iconify" data-icon="mdi:format-font-size-decrease"></span>
+                        </button>
+                        <span class="font-size-display" id="fontSizeDisplay">100%</span>
+                        <button class="font-btn" id="increaseFont" title="增大字体">
+                            <span class="iconify" data-icon="mdi:format-font-size-increase"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label>主题模式</label>
+                    <div class="theme-options">
+                        <button class="theme-btn active" data-theme="light" title="日间模式">
+                            <span class="iconify" data-icon="mdi:white-balance-sunny"></span>
+                        </button>
+                        <button class="theme-btn" data-theme="sepia" title="护眼模式">
+                            <span class="iconify" data-icon="mdi:eye"></span>
+                        </button>
+                        <button class="theme-btn" data-theme="dark" title="夜间模式">
+                            <span class="iconify" data-icon="mdi:moon-waning-crescent"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label>阅读进度</label>
+                    <div class="progress-display">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <span class="progress-label" id="progressLabel">0%</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="overlay" id="overlay"></div>
+    </div>
+
+    <script src="../js/epub-reader.js" type="module"></script>
+</body>
+
+</html>
