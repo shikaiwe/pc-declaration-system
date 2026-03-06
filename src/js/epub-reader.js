@@ -576,7 +576,7 @@ class EpubReader {
             this.book = null;
         }
 
-        document.getElementById('bookTitle').textContent = '我的书架';
+        document.getElementById('bookTitle').textContent = '书架';
         document.getElementById('bookshelf').style.display = 'block';
         document.getElementById('readerViewer').style.display = 'none';
         document.getElementById('progressInfo').style.display = 'none';

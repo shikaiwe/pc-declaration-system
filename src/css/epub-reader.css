@@ -71,8 +71,8 @@ body {
 /* Header */
 .reader-header {
     padding: 14px 24px;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
@@ -82,7 +82,38 @@ body {
 .header-left {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+.header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.home-btn {
+    background: var(--bg-alt);
+    border: none;
+    color: var(--text-soft);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s var(--ease);
+    text-decoration: none;
+}
+
+.home-btn:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.home-btn .iconify {
+    font-size: 20px;
 }
 
 .back-btn {
@@ -123,6 +154,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    justify-content: flex-end;
 }
 
 .progress-info {
@@ -723,6 +755,12 @@ body {
 @media (max-width: 768px) {
     .reader-header {
         padding: 12px 16px;
+    }
+
+    .home-btn,
+    .back-btn {
+        width: 34px;
+        height: 34px;
     }
 
     .book-title {
