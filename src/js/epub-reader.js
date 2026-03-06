@@ -250,14 +250,15 @@ class EpubReader {
             this.initRendition();
             this.loadToc();
             
-            this.showLoading('正在生成位置信息...');
-            await this.book.locations.generate(1024);
+            // 先显示书籍内容，不阻塞阅读
+            this.hideLoading();
+            this.optimizeImages();
             
             const savedLocation = this.readingProgress[bookData.key + '_location'];
             await this.rendition.display(savedLocation || undefined);
             
-            this.hideLoading();
-            this.optimizeImages();
+            // 后台静默生成位置信息，不显示加载提示
+            this.generateLocationsInBackground();
             
         } catch (e) {
             console.error('打开书籍失败:', e);
@@ -681,7 +682,7 @@ class EpubReader {
     }
 
     /**
-     * HTML转义
+     * HTML 转义
      * @param {string} text - 原始文本
      * @returns {string} 转义后的文本
      */
@@ -689,6 +690,21 @@ class EpubReader {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    /**
+     * 后台静默生成位置信息
+     */
+    async generateLocationsInBackground() {
+        if (!this.book) return;
+
+        try {
+            // 使用较小的分段数以加快生成速度
+            await this.book.locations.generate(2048);
+            console.log('位置信息生成完成');
+        } catch (e) {
+            console.warn('生成位置信息失败:', e);
+        }
     }
 }
 
