@@ -42,18 +42,22 @@
 }
 
 /* ========================================
-   留言板主容器
+   留言板主容器 - 全屏覆盖
    ======================================== */
 .message-board {
     display: flex;
     flex-direction: column;
-    height: 600px;
+    height: 100%;
+    width: 100%;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    position: relative;
-    border-radius: var(--msg-radius);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
     overflow: hidden;
-    box-shadow: var(--msg-shadow-lg);
-    border: 1px solid var(--msg-border);
+    border: none;
 }
 
 /* ========================================
@@ -631,10 +635,6 @@
    响应式设计 - 平板设备
    ======================================== */
 @media (max-width: 1024px) {
-    .message-board {
-        height: 550px;
-    }
-    
     #messageList,
     .message-list {
         padding: 20px;
@@ -649,11 +649,6 @@
    响应式设计 - 小屏幕
    ======================================== */
 @media (max-width: 768px) {
-    .message-board {
-        height: 500px;
-        border-radius: var(--msg-radius-sm);
-    }
-    
     #messageList,
     .message-list {
         padding: 16px;

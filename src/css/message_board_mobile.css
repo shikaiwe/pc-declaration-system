@@ -44,20 +44,22 @@
 }
 
 /* ========================================
-   留言板主容器 - 移动端全屏设计
+   留言板主容器 - 全屏覆盖
    ======================================== */
 .message-board {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 180px);
-    max-height: 600px;
-    min-height: 400px;
+    height: 100%;
+    width: 100%;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    position: relative;
-    border-radius: var(--msg-radius-sm);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
     overflow: hidden;
-    box-shadow: var(--msg-shadow-lg);
-    border: 1px solid var(--msg-border);
+    border: none;
 }
 
 /* ========================================
@@ -648,11 +650,6 @@
    小屏幕设备优化 (< 375px)
    ======================================== */
 @media (max-width: 375px) {
-    .message-board {
-        height: calc(100vh - 160px);
-        border-radius: var(--msg-radius-sm);
-    }
-    
     #messageList,
     .message-list {
         padding: 12px;
@@ -717,10 +714,6 @@
    超小屏幕设备优化 (< 320px)
    ======================================== */
 @media (max-width: 320px) {
-    .message-board {
-        height: calc(100vh - 140px);
-    }
-    
     .message-item {
         max-width: 95%;
     }
@@ -749,11 +742,6 @@
    横屏模式优化
    ======================================== */
 @media (max-height: 500px) and (orientation: landscape) {
-    .message-board {
-        height: calc(100vh - 100px);
-        min-height: 300px;
-    }
-    
     #messageList,
     .message-list {
         padding: 10px;
