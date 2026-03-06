@@ -16,9 +16,9 @@ class EpubReader {
         };
         this.readingProgress = {};
         // EPUB静态文件目录URL - 修改为你的实际路径
-        this.EPUB_DIR = '/static/epub/';
+        this.EPUB_DIR = '/book/';
         // 书籍配置文件URL
-        this.BOOKS_CONFIG_URL = '/static/epub/books.json';
+        this.BOOKS_CONFIG_URL = '/book/books.json';
         
         this.init();
     }

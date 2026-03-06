@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPUB电子书阅读器 - PC志愿者服务队出品</title>
+    <title>阅读空间 - PC志愿者服务队</title>
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.93/epub.min.js"></script>
+    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://unpkg.com/epubjs@0.3.93/dist/epub.min.js"></script>
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../css/epub-reader.css">
@@ -16,20 +17,20 @@
     <div class="reader-container">
         <header class="reader-header">
             <div class="header-left">
-                <button class="back-btn" id="backBtn" title="返回书架">
+                <button class="back-btn" id="backBtn" title="返回书架" style="display: none;">
                     <span class="iconify" data-icon="mdi:arrow-left"></span>
                 </button>
                 <h1 class="book-title" id="bookTitle">我的书架</h1>
             </div>
             <div class="header-right">
                 <div class="progress-info" id="progressInfo" style="display: none;">
-                    <span class="progress-text" id="progressText">0%</span>
+                    <span id="progressText">0%</span>
                 </div>
                 <button class="header-btn" id="tocBtn" title="目录" style="display: none;">
                     <span class="iconify" data-icon="mdi:format-list-bulleted"></span>
                 </button>
                 <button class="header-btn" id="settingsBtn" title="设置" style="display: none;">
-                    <span class="iconify" data-icon="mdi:cog"></span>
+                    <span class="iconify" data-icon="mdi:tune-variant"></span>
                 </button>
             </div>
         </header>
@@ -50,13 +51,7 @@
 
             <div class="reader-viewer" id="readerViewer" style="display: none;">
                 <div class="viewer-wrapper">
-                    <button class="nav-btn prev-btn" id="prevBtn" title="上一页">
-                        <span class="iconify" data-icon="mdi:chevron-left"></span>
-                    </button>
                     <div class="epub-viewer" id="epubViewer"></div>
-                    <button class="nav-btn next-btn" id="nextBtn" title="下一页">
-                        <span class="iconify" data-icon="mdi:chevron-right"></span>
-                    </button>
                 </div>
             </div>
         </div>
@@ -69,54 +64,57 @@
                 </button>
             </div>
             <div class="toc-content" id="tocContent">
-                <div class="loading-toc">
-                    <span class="iconify loading-icon" data-icon="mdi:loading"></span>
-                    <p>加载目录中...</p>
-                </div>
+                <div class="toc-empty">打开书籍后显示目录</div>
             </div>
         </aside>
 
         <aside class="settings-sidebar" id="settingsSidebar">
             <div class="settings-header">
-                <h3>阅读设置</h3>
+                <h3>设置</h3>
                 <button class="close-btn" id="closeSettingsBtn">
                     <span class="iconify" data-icon="mdi:close"></span>
                 </button>
             </div>
             <div class="settings-content">
                 <div class="setting-group">
-                    <label>字体大小</label>
+                    <p class="setting-label">字体大小</p>
                     <div class="font-size-control">
-                        <button class="font-btn" id="decreaseFont" title="减小字体">
-                            <span class="iconify" data-icon="mdi:format-font-size-decrease"></span>
+                        <button class="font-btn" id="decreaseFont" title="减小">
+                            <span class="iconify" data-icon="mdi:minus"></span>
                         </button>
                         <span class="font-size-display" id="fontSizeDisplay">100%</span>
-                        <button class="font-btn" id="increaseFont" title="增大字体">
-                            <span class="iconify" data-icon="mdi:format-font-size-increase"></span>
+                        <button class="font-btn" id="increaseFont" title="增大">
+                            <span class="iconify" data-icon="mdi:plus"></span>
                         </button>
                     </div>
                 </div>
                 <div class="setting-group">
-                    <label>主题模式</label>
-                    <div class="theme-options">
-                        <button class="theme-btn active" data-theme="light" title="日间模式">
-                            <span class="iconify" data-icon="mdi:white-balance-sunny"></span>
+                    <p class="setting-label">主题</p>
+                    <div class="theme-grid">
+                        <button class="theme-btn active" data-theme="light">
+                            <div class="theme-preview"></div>
+                            <span>日间</span>
                         </button>
-                        <button class="theme-btn" data-theme="sepia" title="护眼模式">
-                            <span class="iconify" data-icon="mdi:eye"></span>
+                        <button class="theme-btn" data-theme="sepia">
+                            <div class="theme-preview"></div>
+                            <span>护眼</span>
                         </button>
-                        <button class="theme-btn" data-theme="dark" title="夜间模式">
-                            <span class="iconify" data-icon="mdi:moon-waning-crescent"></span>
+                        <button class="theme-btn" data-theme="dark">
+                            <div class="theme-preview"></div>
+                            <span>夜间</span>
                         </button>
                     </div>
                 </div>
                 <div class="setting-group">
-                    <label>阅读进度</label>
-                    <div class="progress-display">
+                    <p class="setting-label">阅读进度</p>
+                    <div class="progress-section">
                         <div class="progress-bar">
                             <div class="progress-fill" id="progressFill"></div>
                         </div>
-                        <span class="progress-label" id="progressLabel">0%</span>
+                        <div class="progress-info-row">
+                            <span>已阅读</span>
+                            <span id="progressLabel">0%</span>
+                        </div>
                     </div>
                 </div>
             </div>
