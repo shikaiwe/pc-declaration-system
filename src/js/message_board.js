@@ -452,11 +452,38 @@ function updateOrderList(orders) {
             this.classList.add('active');
             const orderId = this.dataset.orderId;
             currentSelectedOrderId = orderId; // 设置当前选中的订单 ID
-            loadMessagesForOrder(orderId);
+            loadMessagesForOrder(orderId); // 加载订单消息
         });
         
         orderList.appendChild(orderItem);
     });
+}
+
+// 加载订单消息
+async function loadMessagesForOrder(reportId) {
+    // 先清空消息列表
+    clearMessageList();
+
+    // 如果该订单没有历史消息，则获取
+    if (!messageStorage.hasMessages(reportId)) {
+        try {
+            const messages = await fetchMessageHistory(reportId);
+            // 显示消息
+            displayOrderMessages(reportId);
+        } catch (error) {
+            console.error('加载历史消息失败:', error);
+            const messageList = document.getElementById('messageList');
+            messageList.innerHTML = '<div class="system-message error">加载历史消息失败</div>';
+        }
+    } else {
+        // 如果已有消息，直接显示
+        displayOrderMessages(reportId);
+    }
+
+    // 建立 WebSocket 连接
+    initWebSocket(reportId);
+    // 定期清理无效连接
+    cleanupConnections();
 }
 
 // 清空消息列表

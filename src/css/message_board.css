@@ -49,11 +49,28 @@
     flex-direction: row;
     height: calc(100vh - 120px);
     width: 100%;
+    max-width: none;
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     position: relative;
     border-radius: 0;
     overflow: hidden;
     border: none;
+}
+
+/* 留言板内容容器 - 全屏 */
+#messageBoardContent {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    max-width: none !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    text-align: left !important;
+}
+
+#messageBoardContent h2 {
+    display: none;
 }
 
 /* 左侧订单列表 */
