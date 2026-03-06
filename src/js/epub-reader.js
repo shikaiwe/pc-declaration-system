@@ -11,7 +11,7 @@ class EpubReader {
         this.currentBookKey = null;
         this.books = [];
         this.settings = {
-            fontSize: 100,
+            fontSize: 150,
             theme: 'light'
         };
         this.readingProgress = {};
@@ -249,6 +249,9 @@ class EpubReader {
             this.initRendition();
             this.loadToc();
             
+            this.showLoading('正在生成位置信息...');
+            await this.book.locations.generate(1024);
+            
             const savedLocation = this.readingProgress[bookData.key + '_location'];
             await this.rendition.display(savedLocation || undefined);
             
@@ -485,9 +488,24 @@ class EpubReader {
      * @param {Object} location - 位置信息
      */
     onRelocated(location) {
-        if (!location) return;
+        if (!location || !this.book) return;
 
-        const progress = Math.round(location.start.percentage * 100);
+        let progress = 0;
+        
+        if (location.start.percentage !== undefined && location.start.percentage !== null) {
+            progress = Math.round(location.start.percentage * 100);
+        } else if (this.book.locations && location.start.cfi) {
+            try {
+                const percentage = this.book.locations.percentageFromCfi(location.start.cfi);
+                if (percentage !== undefined && percentage !== null && !isNaN(percentage)) {
+                    progress = Math.round(percentage * 100);
+                }
+            } catch (e) {
+                console.warn('计算进度失败:', e);
+            }
+        }
+        
+        progress = Math.max(0, Math.min(100, progress));
         
         document.getElementById('progressText').textContent = `${progress}%`;
         document.getElementById('progressFill').style.width = `${progress}%`;
