@@ -399,64 +399,151 @@ async function fetchOrders() {
     }
 }
 
-// 更新订单列表（左侧边栏）
+// 更新订单列表（桌面端和移动端）
 function updateOrderList(orders) {
+    // 桌面端订单列表
     const orderList = document.getElementById('orderList');
-    if (!orderList) {
-        console.error('订单列表容器不存在');
-        return;
+    if (orderList) {
+        orderList.innerHTML = ''; // 清空列表
+
+        if (orders.length === 0) {
+            orderList.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">暂无订单</div>';
+        } else {
+            orders.forEach(order => {
+                const orderItem = createDesktopOrderItem(order);
+                orderList.appendChild(orderItem);
+            });
+        }
     }
     
-    orderList.innerHTML = ''; // 清空列表
+    // 移动端订单抽屉列表
+    const orderListMobile = document.getElementById('orderListMobile');
+    if (orderListMobile) {
+        orderListMobile.innerHTML = ''; // 清空列表
 
-    if (orders.length === 0) {
-        orderList.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">暂无订单</div>';
-        return;
+        if (orders.length === 0) {
+            orderListMobile.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">暂无订单</div>';
+        } else {
+            orders.forEach(order => {
+                const orderItem = createMobileOrderItem(order);
+                orderListMobile.appendChild(orderItem);
+            });
+        }
+    }
+}
+
+// 创建桌面端订单项
+function createDesktopOrderItem(order) {
+    const orderItem = document.createElement('div');
+    orderItem.className = 'order-item';
+    orderItem.dataset.orderId = order.reportId;
+    
+    let statusClass = 'shipped';
+    let statusText = '已完成';
+    if (order.status === 'processing') {
+        statusClass = 'processing';
+        statusText = '处理中';
+    } else if (order.status === 'completed') {
+        statusClass = 'completed';
+        statusText = '已完成';
     }
 
-    // 根据用户角色显示订单列表
-    orders.forEach(order => {
-        const orderItem = document.createElement('div');
-        orderItem.className = 'order-item';
-        orderItem.dataset.orderId = order.reportId;
-        
-        // 确定订单状态图标样式
-        let statusClass = 'shipped';
-        let statusText = '已完成';
-        if (order.status === 'processing') {
-            statusClass = 'processing';
-            statusText = '处理中';
-        } else if (order.status === 'completed') {
-            statusClass = 'completed';
-            statusText = '已完成';
-        }
-
-        orderItem.innerHTML = `
-            <div class="order-header">
-                <div class="order-icon ${statusClass}">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="1" y="3" width="15" height="13"></rect>
-                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-                        <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                        <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                    </svg>
-                </div>
-                <span class="order-id">订单 #${order.reportId}</span>
-                <span class="order-status ${statusClass}">${statusText}</span>
+    orderItem.innerHTML = `
+        <div class="order-header">
+            <div class="order-icon ${statusClass}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
             </div>
-        `;
-        
-        // 点击事件
-        orderItem.addEventListener('click', function() {
-            document.querySelectorAll('.order-item').forEach(item => item.classList.remove('active'));
-            this.classList.add('active');
-            const orderId = this.dataset.orderId;
-            currentSelectedOrderId = orderId; // 设置当前选中的订单 ID
-            loadMessagesForOrder(orderId); // 加载订单消息
-        });
-        
-        orderList.appendChild(orderItem);
+            <span class="order-id">订单 #${order.reportId}</span>
+            <span class="order-status ${statusClass}">${statusText}</span>
+        </div>
+    `;
+    
+    orderItem.addEventListener('click', function() {
+        document.querySelectorAll('.order-item').forEach(item => item.classList.remove('active'));
+        this.classList.add('active');
+        const orderId = this.dataset.orderId;
+        currentSelectedOrderId = orderId;
+        loadMessagesForOrder(orderId);
     });
+    
+    return orderItem;
+}
+
+// 创建移动端订单项
+function createMobileOrderItem(order) {
+    const orderItem = document.createElement('div');
+    orderItem.className = 'order-item-mobile';
+    orderItem.dataset.orderId = order.reportId;
+    
+    let statusClass = 'shipped';
+    let statusText = '已完成';
+    if (order.status === 'processing') {
+        statusClass = 'processing';
+        statusText = '处理中';
+    } else if (order.status === 'completed') {
+        statusClass = 'completed';
+        statusText = '已完成';
+    }
+
+    orderItem.innerHTML = `
+        <div class="order-item-header">
+            <div class="order-item-icon ${statusClass}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+            </div>
+            <div class="order-item-info">
+                <div class="order-item-id">订单 #${order.reportId}</div>
+                <div class="order-item-desc">${order.issue ? order.issue.substring(0, 30) : '暂无描述'}${order.issue && order.issue.length > 30 ? '...' : ''}</div>
+            </div>
+            <span class="order-item-status ${statusClass}">${statusText}</span>
+        </div>
+    `;
+    
+    orderItem.addEventListener('click', function() {
+        document.querySelectorAll('.order-item-mobile').forEach(item => item.classList.remove('active'));
+        this.classList.add('active');
+        const orderId = this.dataset.orderId;
+        currentSelectedOrderId = orderId;
+        
+        // 更新顶部显示的订单名称
+        const currentOrderName = document.getElementById('currentOrderName');
+        if (currentOrderName) {
+            currentOrderName.textContent = `订单 #${orderId}`;
+        }
+        
+        // 关闭抽屉
+        closeOrderDrawer();
+        
+        // 加载消息
+        loadMessagesForOrder(orderId);
+    });
+    
+    return orderItem;
+}
+
+// 打开订单抽屉
+function openOrderDrawer() {
+    const drawer = document.getElementById('orderDrawer');
+    if (drawer) {
+        drawer.classList.add('active');
+    }
+}
+
+// 关闭订单抽屉
+function closeOrderDrawer() {
+    const drawer = document.getElementById('orderDrawer');
+    if (drawer) {
+        drawer.classList.remove('active');
+    }
 }
 
 // 加载订单消息
@@ -1009,6 +1096,30 @@ async function initMessageBoard() {
         }
     }
     messageInput.addEventListener('keypress', handleKeyPress);
+
+    // 移动端订单选择器点击事件
+    const currentOrder = document.getElementById('currentOrder');
+    if (currentOrder) {
+        currentOrder.addEventListener('click', function() {
+            openOrderDrawer();
+        });
+    }
+
+    // 移动端抽屉关闭按钮
+    const drawerClose = document.querySelector('.drawer-close');
+    if (drawerClose) {
+        drawerClose.addEventListener('click', function() {
+            closeOrderDrawer();
+        });
+    }
+
+    // 移动端抽屉遮罩层点击关闭
+    const drawerOverlay = document.querySelector('.drawer-overlay');
+    if (drawerOverlay) {
+        drawerOverlay.addEventListener('click', function() {
+            closeOrderDrawer();
+        });
+    }
 
     // 页面关闭时清理所有连接
     window.removeEventListener('beforeunload', closeAllConnections);

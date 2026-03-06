@@ -2619,30 +2619,49 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <div class="message-board">
-                <!-- 左侧订单列表 -->
-                <div class="message-sidebar">
-                    <div class="sidebar-header">
-                        <h3 class="sidebar-title">我的订单</h3>
-                    </div>
-                    <div class="order-list" id="orderList">
-                        <!-- 订单列表将通过 JavaScript 动态加载 -->
+                <!-- 移动端留言板头部 -->
+                <div class="chat-header-mobile">
+                    <div class="current-order" id="currentOrder">
+                        <div>
+                            <span class="order-label">当前订单</span>
+                            <span class="order-name" id="currentOrderName">点击选择订单</span>
+                        </div>
+                        <svg class="dropdown-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
                     </div>
                 </div>
                 
-                <!-- 右侧聊天区域 -->
-                <div class="chat-area">
-                    <div class="chat-header">
-                        <h2 class="chat-title">留言板</h2>
-                        <div class="chat-date" id="chatDate"></div>
-                    </div>
-                    <div class="chat-messages" id="messageList">
-                        <!-- 消息列表将在这里动态显示 -->
-                    </div>
-                    <div class="message-input">
-                        <textarea id="messageInput" placeholder="输入消息..."></textarea>
-                        <button id="sendMessage" class="send-button">发送</button>
-                    </div>
+                <!-- 消息列表 -->
+                <div class="message-list-mobile" id="messageList">
+                    <!-- 消息列表将在这里动态显示 -->
                 </div>
+                
+                <!-- 底部输入区域 -->
+                <div class="message-input-mobile">
+                    <textarea id="messageInput" placeholder="输入消息..."></textarea>
+                    <button id="sendMessage" class="send-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 订单选择抽屉 -->
+    <div id="orderDrawer" class="order-drawer">
+        <div class="drawer-overlay"></div>
+        <div class="drawer-content">
+            <div class="drawer-handle"></div>
+            <div class="drawer-header">
+                <h3 class="drawer-title">选择订单</h3>
+                <button class="drawer-close">&times;</button>
+            </div>
+            <div class="order-list-mobile" id="orderListMobile">
+                <!-- 订单列表将通过 JavaScript 动态加载 -->
             </div>
         </div>
     </div>
