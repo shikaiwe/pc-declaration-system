@@ -447,22 +447,22 @@ function createDesktopOrderItem(order) {
     
     let statusClass = 'completed';
     let statusText = '已完成';
-    let iconHtml = '';
+    let iconClass = '';
     
     if (order.status === 'processing') {
         statusClass = 'processing';
         statusText = '处理中';
-        // 进行中图标 - 加载/旋转图标
-        iconHtml = '<span class="iconify" data-icon="mdi:progress-clock" data-width="20" data-height="20"></span>';
+        // 进行中图标 - 时钟
+        iconClass = 'fa-clock';
     } else {
         // 已完成图标 - 打钩
-        iconHtml = '<span class="iconify" data-icon="mdi:check-circle" data-width="20" data-height="20"></span>';
+        iconClass = 'fa-circle-check';
     }
 
     orderItem.innerHTML = `
         <div class="order-header">
             <div class="order-icon ${statusClass}">
-                ${iconHtml}
+                <i class="fa-solid ${iconClass}"></i>
             </div>
             <span class="order-id">订单 #${order.reportId}</span>
             <span class="order-status ${statusClass}">${statusText}</span>
@@ -488,22 +488,22 @@ function createMobileOrderItem(order) {
     
     let statusClass = 'completed';
     let statusText = '已完成';
-    let iconHtml = '';
+    let iconClass = '';
     
     if (order.status === 'processing') {
         statusClass = 'processing';
         statusText = '处理中';
-        // 进行中图标 - 加载/旋转图标
-        iconHtml = '<span class="iconify" data-icon="mdi:progress-clock" data-width="20" data-height="20"></span>';
+        // 进行中图标 - 时钟
+        iconClass = 'fa-clock';
     } else {
         // 已完成图标 - 打钩
-        iconHtml = '<span class="iconify" data-icon="mdi:check-circle" data-width="20" data-height="20"></span>';
+        iconClass = 'fa-circle-check';
     }
 
     orderItem.innerHTML = `
         <div class="order-item-header">
             <div class="order-item-icon ${statusClass}">
-                ${iconHtml}
+                <i class="fa-solid ${iconClass}"></i>
             </div>
             <div class="order-item-info">
                 <div class="order-item-id">订单 #${order.reportId}</div>
@@ -531,13 +531,6 @@ function createMobileOrderItem(order) {
         // 加载消息
         loadMessagesForOrder(orderId);
     });
-    
-    // 创建后立即尝试渲染图标
-    setTimeout(() => {
-        if (window.Iconify && typeof window.Iconify.scanDOM === 'function') {
-            window.Iconify.scanDOM(orderItem);
-        }
-    }, 0);
     
     return orderItem;
 }
@@ -1083,19 +1076,6 @@ async function initMessageBoard() {
     // 获取订单列表并更新左侧订单列表
     const orders = await fetchOrders();
     updateOrderList(orders);
-    
-    // 显示当前日期
-    const chatDate = document.getElementById('chatDate');
-    if (chatDate) {
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('zh-CN', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            weekday: 'long'
-        });
-        chatDate.textContent = dateStr;
-    }
 
     // 发送按钮点击事件
     sendButton.addEventListener('click', sendMessage);

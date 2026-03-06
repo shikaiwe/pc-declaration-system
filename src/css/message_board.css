@@ -140,10 +140,13 @@
     flex-shrink: 0;
 }
 
-.order-icon .iconify {
-    display: block;
-    width: 20px;
-    height: 20px;
+.order-icon .fa-solid {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .order-icon.processing {
@@ -199,13 +202,6 @@
     font-weight: 700;
     color: #1a1a1a;
     letter-spacing: 1px;
-}
-
-.chat-date {
-    font-size: 13px;
-    color: #64748b;
-    font-weight: 500;
-    margin-top: 6px;
 }
 
 /* 隐藏旧的下拉选择器 */
