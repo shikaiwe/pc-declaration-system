@@ -12,9 +12,10 @@ const WS_CONFIG = {
     BASE_URL: 'wss://gznfpc.cn/ws/message/'
 };
 
-// WebSocket连接
-let wsConnections = new Map(); // 存储所有WebSocket连接
+// WebSocket 连接
+let wsConnections = new Map(); // 存储所有 WebSocket 连接
 let currentReportId = null;
+let currentSelectedOrderId = ''; // 当前选中的订单 ID
 let currentUser = null;
 let currentUserRole = null; // 存储用户角色
 let currentOrders = []; // 存储当前订单列表
@@ -398,45 +399,63 @@ async function fetchOrders() {
     }
 }
 
-// 更新订单选择器
-function updateOrderSelector(orders) {
-    const orderSelector = document.getElementById('orderSelector');
-    orderSelector.innerHTML = ''; // 清空选择器
-
-    // 添加默认选项
-    const defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.textContent = '请选择订单';
-    orderSelector.appendChild(defaultOption);
+// 更新订单列表（左侧边栏）
+function updateOrderList(orders) {
+    const orderList = document.getElementById('orderList');
+    if (!orderList) {
+        console.error('订单列表容器不存在');
+        return;
+    }
+    
+    orderList.innerHTML = ''; // 清空列表
 
     if (orders.length === 0) {
+        orderList.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">暂无订单</div>';
         return;
     }
 
-    // 根据用户角色显示不同的订单标题
+    // 根据用户角色显示订单列表
     orders.forEach(order => {
-        const option = document.createElement('option');
-        option.value = order.reportId;
-
-        let orderTitle = '';
-        switch (currentUserRole) {
-            case 'admin':
-                // 管理员看到用户名和问题
-                orderTitle = `订单 ${order.reportId} - ${order.username} - ${order.issue.substring(0, 20)}`;
-                break;
-            case 'worker':
-                // 维修人员看到订单号和问题
-                orderTitle = `订单 ${order.reportId} - ${order.issue.substring(0, 20)}`;
-                break;
-            case 'customer':
-            default:
-                // 普通用户看到订单号和问题
-                orderTitle = `订单 ${order.reportId} - ${order.issue.substring(0, 20)}`;
-                break;
+        const orderItem = document.createElement('div');
+        orderItem.className = 'order-item';
+        orderItem.dataset.orderId = order.reportId;
+        
+        // 确定订单状态图标样式
+        let statusClass = 'shipped';
+        let statusText = '已完成';
+        if (order.status === 'processing') {
+            statusClass = 'processing';
+            statusText = '处理中';
+        } else if (order.status === 'completed') {
+            statusClass = 'completed';
+            statusText = '已完成';
         }
 
-        option.textContent = orderTitle + (order.issue.length > 20 ? '...' : '');
-        orderSelector.appendChild(option);
+        orderItem.innerHTML = `
+            <div class="order-header">
+                <div class="order-icon ${statusClass}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="3" width="15" height="13"></rect>
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                    </svg>
+                </div>
+                <span class="order-id">订单 #${order.reportId}</span>
+                <span class="order-status ${statusClass}">${statusText}</span>
+            </div>
+        `;
+        
+        // 点击事件
+        orderItem.addEventListener('click', function() {
+            document.querySelectorAll('.order-item').forEach(item => item.classList.remove('active'));
+            this.classList.add('active');
+            const orderId = this.dataset.orderId;
+            currentSelectedOrderId = orderId; // 设置当前选中的订单 ID
+            loadMessagesForOrder(orderId);
+        });
+        
+        orderList.appendChild(orderItem);
     });
 }
 
@@ -799,9 +818,8 @@ function appendMessage(message) {
 // 发送消息
 function sendMessage() {
     const messageInput = document.getElementById('messageInput');
-    const orderSelector = document.getElementById('orderSelector');
     const messageContent = messageInput.value.trim();
-    const selectedReportId = orderSelector.value;
+    const selectedReportId = currentSelectedOrderId;
 
     // 检查是否选择了订单
     if (!selectedReportId) {
@@ -905,7 +923,6 @@ async function initMessageBoard() {
 
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendMessage');
-    const orderSelector = document.getElementById('orderSelector');
 
     // 清除可能存在的旧事件监听器
     sendButton.removeEventListener('click', sendMessage);
@@ -937,13 +954,22 @@ async function initMessageBoard() {
         return;
     }
 
-    // 获取订单列表并更新选择器
+    // 获取订单列表并更新左侧订单列表
     const orders = await fetchOrders();
-    updateOrderSelector(orders);
-
-    // 订单选择器变化事件
-    orderSelector.removeEventListener('change', handleOrderChange);
-    orderSelector.addEventListener('change', handleOrderChange);
+    updateOrderList(orders);
+    
+    // 显示当前日期
+    const chatDate = document.getElementById('chatDate');
+    if (chatDate) {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('zh-CN', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            weekday: 'long'
+        });
+        chatDate.textContent = dateStr;
+    }
 
     // 发送按钮点击事件
     sendButton.addEventListener('click', sendMessage);
