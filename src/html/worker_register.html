@@ -694,6 +694,9 @@
             btn.classList.add('disabled');
             hint.style.display = 'block';
             
+            // 先显示模态框
+            modal.style.display = 'flex';
+            
             // 直接从嵌入的内容中获取
             const content = POLICY_CONTENT[type];
             if (content) {
@@ -702,14 +705,14 @@
                 body.innerHTML = '<div class="policy-error">内容加载失败</div>';
             }
             
-            // 重置滚动位置
-            body.scrollTop = 0;
+            // 使用 requestAnimationFrame 确保 DOM 更新后再重置滚动位置
+            requestAnimationFrame(() => {
+                body.scrollTop = 0;
+            });
             
             // 添加滚动监听
             body.removeEventListener('scroll', handlePolicyScroll);
             body.addEventListener('scroll', handlePolicyScroll);
-            
-            modal.style.display = 'flex';
         }
 
         /**
