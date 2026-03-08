@@ -40,8 +40,8 @@ pc-declaration-system/
 │   │   ├── data_statistics.css      # 数据统计样式（开发中）
 │   │   └── epub-reader.css          # 电子书阅读器样式
 │   ├── images/             # 图像资源
+│   │   ├── book/                    # 书籍图标
 │   │   ├── Mascot.jpg               # 吉祥物图片
-│   │   ├── book.png                 # 书籍图标
 │   │   └── favicon.ico              # 网站图标
 │   └── vendor/             # 第三方库
 │       ├── bootstrap/               # UI框架
