@@ -2527,6 +2527,7 @@
             text-align: center;
             display: flex;
             align-items: center;
+            margin: 0;
         }
 
         .schedule-section {
@@ -3860,18 +3861,27 @@
                             });
 
                             const data = await response.json();
-                            if (data.message === 'Success' && data.user) {
-                                const dutyTime = data.user.duty_time;
-                                // 选中对应的单选按钮
-                                const radio = document.querySelector(`input[name="duty_time"][value="${dutyTime}"]`);
-                                if (radio) {
-                                    radio.checked = true;
+                            if (data.message === 'Success') {
+                                // 尝试从 data.user.duty_time 或 data.duty_time 获取值班时间
+                                const dutyTime = data.user ? data.user.duty_time : data.duty_time;
+                                
+                                if (dutyTime !== undefined && dutyTime !== null) {
+                                    // 选中对应的单选按钮
+                                    const radio = document.querySelector(`input[name="duty_time"][value="${dutyTime}"]`);
+                                    if (radio) {
+                                        radio.checked = true;
+                                    }
+                                    // 显示当前值班安排
+                                    this.displayCurrentSchedule(dutyTime);
+                                } else {
+                                    // 如果没有值班时间信息，显示暂无安排
+                                    this.displayCurrentSchedule(null);
                                 }
-                                // 显示当前值班安排
-                                this.displayCurrentSchedule(dutyTime);
                             }
                         } catch (error) {
                             console.error('加载当前值班时间失败:', error);
+                            // 加载失败时显示暂无安排
+                            this.displayCurrentSchedule(null);
                         }
                     },
 
