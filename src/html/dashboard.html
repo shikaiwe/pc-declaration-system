@@ -3582,6 +3582,11 @@
                         if (tabId === 'orderHistory') {
                             fetchHistoryOrders();
                         }
+                        
+                        // 如果是值班设置标签，加载当前值班时间
+                        if (tabId === 'schedule') {
+                            scheduleSettings.loadCurrentDutyTime();
+                        }
                     });
                 });
 

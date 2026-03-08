@@ -2999,6 +2999,7 @@
 
             // 值班设置相关
             CHANGE_DUTY_TIME: `${CONFIG.baseUrl}/dashboard/change_duty_time/`,
+            GET_DUTY_TIME: `${CONFIG.baseUrl}/dashboard/get_duty_time/`,
         };
 
         // 工具函数模块
@@ -4301,6 +4302,11 @@
         }
         document.getElementById(tabName).style.display = "block";
         event.currentTarget.className += " active";
+        
+        // 如果是值班设置标签，加载当前值班时间
+        if (tabName === 'schedule') {
+            scheduleSettings.loadCurrentDutyTime();
+        }
     }
 
     // 订单标签切换函数
@@ -5162,6 +5168,47 @@
                     messageEl.textContent = '保存失败，请检查网络';
                     messageEl.className = 'form-message error';
                 }
+            }
+        },
+
+        /**
+         * 加载当前值班时间
+         */
+        async loadCurrentDutyTime() {
+            try {
+                const response = await fetch(API_URLS.GET_DUTY_TIME, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                if (data.message === 'Success') {
+                    // 从 dutyTime 字段获取值班时间（字符串格式）
+                    const dutyTime = parseInt(data.dutyTime);
+                    
+                    if (!isNaN(dutyTime) && dutyTime >= 1 && dutyTime <= 5) {
+                        // 选中对应的单选按钮
+                        const radio = document.querySelector(`input[name="duty_time"][value="${dutyTime}"]`);
+                        if (radio) {
+                            radio.checked = true;
+                        }
+                        // 显示当前值班安排
+                        this.displayCurrentSchedule(dutyTime);
+                    } else {
+                        // 如果没有值班时间信息，显示暂无安排
+                        this.displayCurrentSchedule(null);
+                    }
+                } else if (data.message === 'Permission error') {
+                    // 无权限访问，显示暂无安排
+                    this.displayCurrentSchedule(null);
+                } else {
+                    // 其他错误，显示暂无安排
+                    this.displayCurrentSchedule(null);
+                }
+            } catch (error) {
+                console.error('加载当前值班时间失败:', error);
+                // 加载失败时显示暂无安排
+                this.displayCurrentSchedule(null);
             }
         },
 
