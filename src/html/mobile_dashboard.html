@@ -4290,6 +4290,168 @@
         });
     }
 
+    /**
+     * 值班设置模块
+     */
+    const scheduleSettings = {
+        /**
+         * 初始化值班设置模块
+         */
+        init() {
+            this.bindEvents();
+        },
+
+        /**
+         * 绑定事件处理
+         */
+        bindEvents() {
+            const scheduleForm = document.getElementById('scheduleForm');
+            const resetBtn = document.getElementById('resetScheduleBtn');
+
+            if (scheduleForm) {
+                scheduleForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveDutyTime();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    this.resetForm();
+                });
+            }
+        },
+
+        /**
+         * 保存值班设置
+         */
+        async saveDutyTime() {
+            const selectedDay = document.querySelector('input[name="duty_time"]:checked');
+            const messageEl = document.getElementById('scheduleMessage');
+            
+            if (!selectedDay) {
+                if (messageEl) {
+                    messageEl.textContent = '请选择一个值班日期';
+                    messageEl.className = 'form-message error';
+                }
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URLS.CHANGE_DUTY_TIME, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        duty_time: parseInt(selectedDay.value)
+                    }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                if (data.message === 'Success') {
+                    if (messageEl) {
+                        messageEl.textContent = '值班设置保存成功';
+                        messageEl.className = 'form-message success';
+                    }
+                    this.displayCurrentSchedule(parseInt(selectedDay.value));
+                } else if (data.message === 'Permission error') {
+                    if (messageEl) {
+                        messageEl.textContent = '您没有权限修改值班时间';
+                        messageEl.className = 'form-message error';
+                    }
+                } else {
+                    if (messageEl) {
+                        messageEl.textContent = '保存失败，请重试';
+                        messageEl.className = 'form-message error';
+                    }
+                }
+            } catch (error) {
+                console.error('保存值班设置失败:', error);
+                if (messageEl) {
+                    messageEl.textContent = '保存失败，请检查网络';
+                    messageEl.className = 'form-message error';
+                }
+            }
+        },
+
+        /**
+         * 加载当前值班时间
+         */
+        async loadCurrentDutyTime() {
+            try {
+                const response = await fetch(API_URLS.GET_DUTY_TIME, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                if (data.message === 'Success') {
+                    // 从 dutyTime 字段获取值班时间（字符串格式）
+                    const dutyTime = parseInt(data.dutyTime);
+                    
+                    if (!isNaN(dutyTime) && dutyTime >= 1 && dutyTime <= 5) {
+                        // 选中对应的单选按钮
+                        const radio = document.querySelector(`input[name="duty_time"][value="${dutyTime}"]`);
+                        if (radio) {
+                            radio.checked = true;
+                        }
+                        // 显示当前值班安排
+                        this.displayCurrentSchedule(dutyTime);
+                    } else {
+                        // 如果没有值班时间信息，显示暂无安排
+                        this.displayCurrentSchedule(null);
+                    }
+                } else if (data.message === 'Permission error') {
+                    // 无权限访问，显示暂无安排
+                    this.displayCurrentSchedule(null);
+                } else {
+                    // 其他错误，显示暂无安排
+                    this.displayCurrentSchedule(null);
+                }
+            } catch (error) {
+                console.error('加载当前值班时间失败:', error);
+                // 加载失败时显示暂无安排
+                this.displayCurrentSchedule(null);
+            }
+        },
+
+        /**
+         * 显示当前值班安排
+         * @param {number} dutyTime - 值班日期（1-5）
+         */
+        displayCurrentSchedule(dutyTime) {
+            const contentEl = document.getElementById('currentScheduleContent');
+            if (!contentEl) return;
+
+            if (dutyTime && dutyTime >= 1 && dutyTime <= 5) {
+                const weekdayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+                contentEl.innerHTML = `
+                    <div class="schedule-badge-container">
+                        <span class="schedule-badge">${weekdayNames[dutyTime]}</span>
+                    </div>
+                    <p class="schedule-note">值班日期：每${weekdayNames[dutyTime]}</p>
+                `;
+            } else {
+                contentEl.innerHTML = '<p class="no-schedule">暂无值班安排</p>';
+            }
+        },
+
+        /**
+         * 重置表单
+         */
+        resetForm() {
+            const radios = document.querySelectorAll('#scheduleForm input[type="radio"]');
+            radios.forEach(rb => rb.checked = false);
+            const messageEl = document.getElementById('scheduleMessage');
+            if (messageEl) {
+                messageEl.textContent = '';
+                messageEl.className = 'form-message';
+            }
+        }
+    };
+
     // 标签切换函数
     function openTab(event, tabName) {
         const tabcontent = document.getElementsByClassName("tab-content");
@@ -5084,168 +5246,6 @@
             }
         });
     });
-
-    /**
-     * 值班设置模块
-     */
-    const scheduleSettings = {
-        /**
-         * 初始化值班设置模块
-         */
-        init() {
-            this.bindEvents();
-        },
-
-        /**
-         * 绑定事件处理
-         */
-        bindEvents() {
-            const scheduleForm = document.getElementById('scheduleForm');
-            const resetBtn = document.getElementById('resetScheduleBtn');
-
-            if (scheduleForm) {
-                scheduleForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.saveDutyTime();
-                });
-            }
-
-            if (resetBtn) {
-                resetBtn.addEventListener('click', () => {
-                    this.resetForm();
-                });
-            }
-        },
-
-        /**
-         * 保存值班设置
-         */
-        async saveDutyTime() {
-            const selectedDay = document.querySelector('input[name="duty_time"]:checked');
-            const messageEl = document.getElementById('scheduleMessage');
-            
-            if (!selectedDay) {
-                if (messageEl) {
-                    messageEl.textContent = '请选择一个值班日期';
-                    messageEl.className = 'form-message error';
-                }
-                return;
-            }
-
-            try {
-                const response = await fetch(API_URLS.CHANGE_DUTY_TIME, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        duty_time: parseInt(selectedDay.value)
-                    }),
-                    credentials: 'include'
-                });
-
-                const data = await response.json();
-                if (data.message === 'Success') {
-                    if (messageEl) {
-                        messageEl.textContent = '值班设置保存成功';
-                        messageEl.className = 'form-message success';
-                    }
-                    this.displayCurrentSchedule(parseInt(selectedDay.value));
-                } else if (data.message === 'Permission error') {
-                    if (messageEl) {
-                        messageEl.textContent = '您没有权限修改值班时间';
-                        messageEl.className = 'form-message error';
-                    }
-                } else {
-                    if (messageEl) {
-                        messageEl.textContent = '保存失败，请重试';
-                        messageEl.className = 'form-message error';
-                    }
-                }
-            } catch (error) {
-                console.error('保存值班设置失败:', error);
-                if (messageEl) {
-                    messageEl.textContent = '保存失败，请检查网络';
-                    messageEl.className = 'form-message error';
-                }
-            }
-        },
-
-        /**
-         * 加载当前值班时间
-         */
-        async loadCurrentDutyTime() {
-            try {
-                const response = await fetch(API_URLS.GET_DUTY_TIME, {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-
-                const data = await response.json();
-                if (data.message === 'Success') {
-                    // 从 dutyTime 字段获取值班时间（字符串格式）
-                    const dutyTime = parseInt(data.dutyTime);
-                    
-                    if (!isNaN(dutyTime) && dutyTime >= 1 && dutyTime <= 5) {
-                        // 选中对应的单选按钮
-                        const radio = document.querySelector(`input[name="duty_time"][value="${dutyTime}"]`);
-                        if (radio) {
-                            radio.checked = true;
-                        }
-                        // 显示当前值班安排
-                        this.displayCurrentSchedule(dutyTime);
-                    } else {
-                        // 如果没有值班时间信息，显示暂无安排
-                        this.displayCurrentSchedule(null);
-                    }
-                } else if (data.message === 'Permission error') {
-                    // 无权限访问，显示暂无安排
-                    this.displayCurrentSchedule(null);
-                } else {
-                    // 其他错误，显示暂无安排
-                    this.displayCurrentSchedule(null);
-                }
-            } catch (error) {
-                console.error('加载当前值班时间失败:', error);
-                // 加载失败时显示暂无安排
-                this.displayCurrentSchedule(null);
-            }
-        },
-
-        /**
-         * 显示当前值班安排
-         * @param {number} dutyTime - 值班日期（1-5）
-         */
-        displayCurrentSchedule(dutyTime) {
-            const contentEl = document.getElementById('currentScheduleContent');
-            if (!contentEl) return;
-
-            if (dutyTime && dutyTime >= 1 && dutyTime <= 5) {
-                const weekdayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-                contentEl.innerHTML = `
-                    <div class="schedule-badge-container">
-                        <span class="schedule-badge">${weekdayNames[dutyTime]}</span>
-                    </div>
-                    <p class="schedule-note">值班日期：每${weekdayNames[dutyTime]}</p>
-                `;
-            } else {
-                contentEl.innerHTML = '<p class="no-schedule">暂无值班安排</p>';
-            }
-        },
-
-        /**
-         * 重置表单
-         */
-        resetForm() {
-            const radios = document.querySelectorAll('#scheduleForm input[type="radio"]');
-            radios.forEach(rb => rb.checked = false);
-            const messageEl = document.getElementById('scheduleMessage');
-            if (messageEl) {
-                messageEl.textContent = '';
-                messageEl.className = 'form-message';
-            }
-        }
-    };
 
     // 初始化值班设置（延迟执行，等待用户角色加载）
     setTimeout(() => {
