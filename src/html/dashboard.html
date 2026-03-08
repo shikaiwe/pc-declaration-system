@@ -2505,7 +2505,7 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            padding: 16px;
+            padding: 16px 24px;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 12px;
             margin-bottom: 24px;
@@ -2516,6 +2516,8 @@
             color: #06627e;
             font-size: 24px;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
         }
 
         .schedule-info-card .info-text {
@@ -2523,6 +2525,8 @@
             font-size: 14px;
             line-height: 1.6;
             text-align: center;
+            display: flex;
+            align-items: center;
         }
 
         .schedule-section {
@@ -3847,6 +3851,31 @@
                     },
 
                     /**
+                     * 加载当前值班时间
+                     */
+                    async loadCurrentDutyTime() {
+                        try {
+                            const response = await fetch(API_URLS.GET_USER_INFO, {
+                                credentials: 'include'
+                            });
+
+                            const data = await response.json();
+                            if (data.message === 'Success' && data.user) {
+                                const dutyTime = data.user.duty_time;
+                                // 选中对应的单选按钮
+                                const radio = document.querySelector(`input[name="duty_time"][value="${dutyTime}"]`);
+                                if (radio) {
+                                    radio.checked = true;
+                                }
+                                // 显示当前值班安排
+                                this.displayCurrentSchedule(dutyTime);
+                            }
+                        } catch (error) {
+                            console.error('加载当前值班时间失败:', error);
+                        }
+                    },
+
+                    /**
                      * 显示当前值班安排
                      * @param {number} dutyTime - 值班日期（1-5）
                      */
@@ -3977,6 +4006,10 @@
                         document.getElementById('accountManagement').classList.add('active');
                         // 关闭下拉菜单
                         dropdownMenu.classList.remove('active');
+                        // 加载当前值班时间安排
+                        if (window.currentUserRole === 'worker' || window.currentUserRole === 'admin') {
+                            scheduleSettings.loadCurrentDutyTime();
+                        }
                     });
                 }
 
