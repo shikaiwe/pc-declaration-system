@@ -4917,6 +4917,18 @@
             });
         </script>
 
+        <script>
+            // 随机设置电子书阅读器图片
+            document.addEventListener('DOMContentLoaded', function() {
+                const bookImg = document.getElementById('bookImg');
+                if (bookImg) {
+                    const totalImages = 8; // 假设有8张图片，命名为1.png到8.png，根据实际情况修改这个数字
+                    const randomNum = Math.floor(Math.random() * totalImages) + 1;
+                    bookImg.src = `../images/book/${randomNum}.png`;
+                }
+            });
+        </script>
+
         <!-- 彩蛋视频功能 -->
         <script>
             // 添加CSS样式
@@ -5087,7 +5099,7 @@
 
         <!-- 电子书阅读器入口 -->
         <a href="epub-reader.html" class="book-reader-entry" title="电子书阅读器">
-            <img src="../images/book.png" alt="电子书">
+            <img id="bookImg" alt="电子书">
         </a>
 
         <!-- 备案与版权信息footer 开始 -->
