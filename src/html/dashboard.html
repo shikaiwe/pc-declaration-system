@@ -3866,36 +3866,28 @@
                                 credentials: 'include'
                             });
 
-                            // 处理 HTTP 错误状态
-                            if (response.status === 400) {
-                                console.error('缺少 sessionid cookie');
-                                this.displayCurrentSchedule(null);
-                                return;
-                            } else if (response.status === 401) {
-                                console.error('Session 已过期或无效');
-                                auth.handleSessionError('Session has expired');
-                                return;
-                            } else if (response.status === 403) {
-                                console.error('无权限访问');
-                                this.displayCurrentSchedule(null);
-                                return;
-                            }
-
                             const data = await response.json();
-                            
-                            if (data.message === 'Success' && data.dutyTime !== undefined) {
-                                // dutyTime 是字符串类型，需要转换为数字
+                            if (data.message === 'Success') {
+                                // 从 dutyTime 字段获取值班时间（字符串格式）
                                 const dutyTime = parseInt(data.dutyTime);
                                 
-                                // 选中对应的单选按钮
-                                const radio = document.querySelector(`input[name="duty_time"][value="${dutyTime}"]`);
-                                if (radio) {
-                                    radio.checked = true;
+                                if (!isNaN(dutyTime) && dutyTime >= 1 && dutyTime <= 5) {
+                                    // 选中对应的单选按钮
+                                    const radio = document.querySelector(`input[name="duty_time"][value="${dutyTime}"]`);
+                                    if (radio) {
+                                        radio.checked = true;
+                                    }
+                                    // 显示当前值班安排
+                                    this.displayCurrentSchedule(dutyTime);
+                                } else {
+                                    // 如果没有值班时间信息，显示暂无安排
+                                    this.displayCurrentSchedule(null);
                                 }
-                                // 显示当前值班安排
-                                this.displayCurrentSchedule(dutyTime);
+                            } else if (data.message === 'Permission error') {
+                                // 无权限访问，显示暂无安排
+                                this.displayCurrentSchedule(null);
                             } else {
-                                // 如果没有值班时间信息，显示暂无安排
+                                // 其他错误，显示暂无安排
                                 this.displayCurrentSchedule(null);
                             }
                         } catch (error) {
@@ -4987,18 +4979,6 @@
             });
         </script>
 
-        <script>
-            // 随机设置电子书阅读器图片
-            document.addEventListener('DOMContentLoaded', function() {
-                const bookImg = document.getElementById('bookImg');
-                if (bookImg) {
-                    const totalImages = 8; // 假设有8张图片，命名为1.png到8.png，根据实际情况修改这个数字
-                    const randomNum = Math.floor(Math.random() * totalImages) + 1;
-                    bookImg.src = `../images/book/${randomNum}.png`;
-                }
-            });
-        </script>
-
         <!-- 彩蛋视频功能 -->
         <script>
             // 添加CSS样式
@@ -5169,7 +5149,7 @@
 
         <!-- 电子书阅读器入口 -->
         <a href="epub-reader.html" class="book-reader-entry" title="电子书阅读器">
-            <img id="bookImg" alt="电子书">
+            <img src="../images/book.png" alt="电子书">
         </a>
 
         <!-- 备案与版权信息footer 开始 -->
