@@ -2610,6 +2610,264 @@
             opacity: 1;
         }
     </style>
+
+    <!-- 订单选择抽屉样式 -->
+    <style>
+        /* 订单抽屉容器 - 默认隐藏 */
+        .order-drawer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        /* 订单抽屉激活状态 */
+        .order-drawer.active {
+            display: block;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 抽屉遮罩层 */
+        .order-drawer .drawer-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        /* 抽屉内容区域 */
+        .order-drawer .drawer-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2001;
+        }
+
+        .order-drawer.active .drawer-content {
+            transform: translateY(0);
+        }
+
+        /* 抽屉手柄 */
+        .order-drawer .drawer-handle {
+            width: 40px;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            margin: 12px auto 8px;
+        }
+
+        /* 抽屉头部 */
+        .order-drawer .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px 16px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-drawer .drawer-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .order-drawer .drawer-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #666;
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1;
+            transition: color 0.3s ease;
+        }
+
+        .order-drawer .drawer-close:hover {
+            color: #333;
+        }
+
+        /* 订单列表 */
+        .order-drawer .order-list-mobile {
+            padding: 16px 20px;
+        }
+
+        /* 深色模式适配 */
+        @media (prefers-color-scheme: dark) {
+            .order-drawer .drawer-content {
+                background: #1a1a1a;
+            }
+
+            .order-drawer .drawer-title {
+                color: #fff;
+            }
+
+            .order-drawer .drawer-close {
+                color: #999;
+            }
+
+            .order-drawer .drawer-close:hover {
+                color: #fff;
+            }
+
+            .order-drawer .drawer-header {
+                border-bottom-color: rgba(255, 255, 255, 0.1);
+            }
+
+            .order-drawer .drawer-handle {
+                background: #666;
+            }
+        }
+
+        /* 移动端订单项样式 */
+        .order-item-mobile {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .order-item-mobile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .order-item-mobile.active {
+            border-color: #2196F3;
+            background: rgba(33, 150, 243, 0.05);
+        }
+
+        .order-item-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .order-item-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .order-item-icon.completed {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+
+        .order-item-icon.processing {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        }
+
+        .order-item-icon .order-svg-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .order-item-icon.completed .order-svg-icon {
+            color: #1976d2;
+        }
+
+        .order-item-icon.processing .order-svg-icon {
+            color: #ef6c00;
+        }
+
+        .order-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .order-item-id {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .order-item-desc {
+            font-size: 14px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .order-item-status {
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .order-item-status.completed {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .order-item-status.processing {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        /* 深色模式适配 - 移动端订单项 */
+        @media (prefers-color-scheme: dark) {
+            .order-item-mobile {
+                background: #2a2a2a;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            }
+
+            .order-item-id {
+                color: #fff;
+            }
+
+            .order-item-desc {
+                color: #aaa;
+            }
+
+            .order-item-icon.completed {
+                background: linear-gradient(135deg, rgba(27, 94, 32, 0.2) 0%, rgba(46, 125, 50, 0.2) 100%);
+            }
+
+            .order-item-icon.processing {
+                background: linear-gradient(135deg, rgba(239, 108, 0, 0.2) 0%, rgba(255, 143, 0, 0.2) 100%);
+            }
+
+            .order-item-status.completed {
+                background: rgba(25, 118, 210, 0.2);
+                color: #64b5f6;
+            }
+
+            .order-item-status.processing {
+                background: rgba(239, 108, 0, 0.2);
+                color: #ffb74d;
+            }
+        }
+    </style>
 </head>
 
 <body>

@@ -238,7 +238,7 @@
         <div class="policy-modal-content">
             <div class="policy-modal-header">
                 <h3 id="policyModalTitle">政策标题</h3>
-                <button class="policy-modal-close" onclick="closePolicyModal()">&times;</button>
+                <span class="policy-modal-close" onclick="closePolicyModal()">&times;</span>
             </div>
             <div class="policy-modal-body" id="policyModalBody">
                 政策内容加载中...
@@ -695,6 +695,7 @@
             hint.style.display = 'block';
             
             // 先显示模态框
+            modal.classList.add('active');
             modal.style.display = 'flex';
             
             // 直接从嵌入的内容中获取
@@ -743,6 +744,7 @@
             // 移除滚动监听
             body.removeEventListener('scroll', handlePolicyScroll);
             
+            modal.classList.remove('active');
             modal.style.display = 'none';
         }
 

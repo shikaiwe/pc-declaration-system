@@ -323,6 +323,10 @@ button:disabled {
     box-sizing: border-box;
 }
 
+.policy-modal.active {
+    display: flex;
+}
+
 .policy-modal-content {
     background-color: white;
     border-radius: 12px;
@@ -333,6 +337,8 @@ button:disabled {
     flex-direction: column;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     animation: modalFadeIn 0.3s ease;
+    position: relative;
+    z-index: 2001;
 }
 
 @keyframes modalFadeIn {
@@ -375,6 +381,7 @@ button:disabled {
     justify-content: center;
     border-radius: 50%;
     transition: all 0.3s ease;
+    line-height: 1;
 }
 
 .policy-modal-close:hover {
@@ -431,6 +438,8 @@ button:disabled {
     cursor: pointer;
     transition: all 0.3s ease;
     width: auto;
+    -webkit-appearance: none;
+    outline: none;
 }
 
 .policy-modal-btn:hover:not(.disabled) {
@@ -484,4 +493,18 @@ button:disabled {
         padding: 10px 30px;
         font-size: 14px;
     }
-} 
+}
+
+/* 微信浏览器特殊样式 */
+.policy-modal.active {
+    display: flex !important;
+}
+
+.policy-modal-btn {
+    background-image: linear-gradient(45deg, #4CAF50, #45a049) !important;
+}
+
+.policy-modal-btn.disabled,
+.policy-modal-btn:disabled {
+    background-image: linear-gradient(45deg, #cccccc, #bbbbbb) !important;
+}  
