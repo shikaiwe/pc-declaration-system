@@ -3074,6 +3074,7 @@
                 ASSIGN_ORDER: `${CONFIG.baseUrl}/dashboard/assign_order/`,
                 // 值班设置相关接口
                 CHANGE_DUTY_TIME: `${CONFIG.baseUrl}/dashboard/change_duty_time/`,
+                GET_DUTY_TIME: `${CONFIG.baseUrl}/dashboard/get_duty_time/`,
             };
 
             // 工具函数集合
@@ -3860,27 +3861,42 @@
                      */
                     async loadCurrentDutyTime() {
                         try {
-                            const response = await fetch(API_URLS.GET_USER_INFO, {
+                            const response = await fetch(API_URLS.GET_DUTY_TIME, {
+                                method: 'GET',
                                 credentials: 'include'
                             });
 
+                            // 处理 HTTP 错误状态
+                            if (response.status === 400) {
+                                console.error('缺少 sessionid cookie');
+                                this.displayCurrentSchedule(null);
+                                return;
+                            } else if (response.status === 401) {
+                                console.error('Session 已过期或无效');
+                                auth.handleSessionError('Session has expired');
+                                return;
+                            } else if (response.status === 403) {
+                                console.error('无权限访问');
+                                this.displayCurrentSchedule(null);
+                                return;
+                            }
+
                             const data = await response.json();
-                            if (data.message === 'Success') {
-                                // 尝试从 data.user.duty_time 或 data.duty_time 获取值班时间
-                                const dutyTime = data.user ? data.user.duty_time : data.duty_time;
+                            
+                            if (data.message === 'Success' && data.dutyTime !== undefined) {
+                                // dutyTime 是字符串类型，需要转换为数字
+                                const dutyTime = parseInt(data.dutyTime);
                                 
-                                if (dutyTime !== undefined && dutyTime !== null) {
-                                    // 选中对应的单选按钮
-                                    const radio = document.querySelector(`input[name="duty_time"][value="${dutyTime}"]`);
-                                    if (radio) {
-                                        radio.checked = true;
-                                    }
-                                    // 显示当前值班安排
-                                    this.displayCurrentSchedule(dutyTime);
-                                } else {
-                                    // 如果没有值班时间信息，显示暂无安排
-                                    this.displayCurrentSchedule(null);
+                                // 选中对应的单选按钮
+                                const radio = document.querySelector(`input[name="duty_time"][value="${dutyTime}"]`);
+                                if (radio) {
+                                    radio.checked = true;
                                 }
+                                // 显示当前值班安排
+                                this.displayCurrentSchedule(dutyTime);
+                            } else {
+                                // 如果没有值班时间信息，显示暂无安排
+                                this.displayCurrentSchedule(null);
                             }
                         } catch (error) {
                             console.error('加载当前值班时间失败:', error);
