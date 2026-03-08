@@ -42,6 +42,17 @@
                 <label for="confirm-password">确认密码:</label>
                 <input type="password" id="confirm-password" name="confirm-password" required>
             </div>
+            <div class="agreement-group">
+                <label class="agreement-label">
+                    <input type="checkbox" id="agreementCheckbox" required>
+                    <span class="agreement-text">
+                        我已阅读并同意
+                        <a href="javascript:void(0)" class="policy-link" onclick="openPolicyModal('user-agreement')">《用户协议》</a>
+                        和
+                        <a href="javascript:void(0)" class="policy-link" onclick="openPolicyModal('privacy-policy')">《隐私政策》</a>
+                    </span>
+                </label>
+            </div>
             <button type="submit">注册</button>
             <div class="loading">注册中...</div>
             <div class="error-message" id="errorMessage"></div>
@@ -108,7 +119,13 @@
         // 发送验证码按钮点击事件
         document.getElementById('sendCodeBtn').addEventListener('click', async function() {
             const email = document.getElementById('email').value;
+            const agreementCheckbox = document.getElementById('agreementCheckbox');
             const button = this;
+
+            if (!agreementCheckbox.checked) {
+                utils.showError('请先阅读并同意用户协议和隐私政策');
+                return;
+            }
 
             if (!email) {
                 utils.showError('邮箱不能为空');
@@ -153,8 +170,13 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
             const verificationCode = document.getElementById('verificationCode').value;
+            const agreementCheckbox = document.getElementById('agreementCheckbox');
 
             try {
+                if (!agreementCheckbox.checked) {
+                    throw new Error('请先阅读并同意用户协议和隐私政策');
+                }
+
                 if (!email || !verificationCode) {
                     throw new Error('邮箱和验证码不能为空');
                 }
@@ -209,6 +231,92 @@
         <span>© 2025 广州南方学院PC志愿者服务队</span>
         <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备2025413403号</a>
     </div>
+
+    <!-- 政策模态框 -->
+    <div id="policyModal" class="policy-modal">
+        <div class="policy-modal-content">
+            <div class="policy-modal-header">
+                <h3 id="policyModalTitle">政策标题</h3>
+                <button class="policy-modal-close" onclick="closePolicyModal()">&times;</button>
+            </div>
+            <div class="policy-modal-body" id="policyModalBody">
+                政策内容加载中...
+            </div>
+            <div class="policy-modal-footer">
+                <button class="policy-modal-btn" onclick="closePolicyModal()">我已阅读</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 政策内容缓存
+        let policyCache = {
+            'user-agreement': null,
+            'privacy-policy': null
+        };
+
+        /**
+         * 打开政策模态框
+         * @param {string} type - 政策类型: 'user-agreement' 或 'privacy-policy'
+         */
+        async function openPolicyModal(type) {
+            const modal = document.getElementById('policyModal');
+            const title = document.getElementById('policyModalTitle');
+            const body = document.getElementById('policyModalBody');
+
+            // 设置标题
+            title.textContent = type === 'user-agreement' ? '用户协议' : '隐私政策';
+            body.innerHTML = '<div class="policy-loading">加载中...</div>';
+            modal.style.display = 'flex';
+
+            // 加载政策内容
+            try {
+                let content = policyCache[type];
+                if (!content) {
+                    const fileName = type === 'user-agreement' ? '用户协议.txt' : '隐私政策.txt';
+                    const response = await fetch('../doc/' + fileName);
+                    content = await response.text();
+                    policyCache[type] = content;
+                }
+                // 将纯文本转换为HTML格式显示
+                body.innerHTML = '<pre class="policy-text">' + escapeHtml(content) + '</pre>';
+            } catch (error) {
+                body.innerHTML = '<div class="policy-error">加载失败，请刷新页面重试</div>';
+            }
+        }
+
+        /**
+         * 关闭政策模态框
+         */
+        function closePolicyModal() {
+            document.getElementById('policyModal').style.display = 'none';
+        }
+
+        /**
+         * HTML转义函数
+         * @param {string} text - 需要转义的文本
+         * @returns {string} 转义后的文本
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 点击模态框外部关闭
+        document.getElementById('policyModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePolicyModal();
+            }
+        });
+
+        // ESC键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePolicyModal();
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -267,3 +267,204 @@ button:disabled {
         margin: 5px auto;
     }
 } 
+
+/* 同意协议样式 */
+.agreement-group {
+    margin-bottom: 20px;
+}
+
+.agreement-label {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+}
+
+.agreement-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.agreement-text {
+    flex: 1;
+}
+
+.policy-link {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.policy-link:hover {
+    color: #45a049;
+    text-decoration: underline;
+}
+
+/* 政策模态框样式 */
+.policy-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.policy-modal-content {
+    background-color: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.policy-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #eee;
+}
+
+.policy-modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+    font-weight: 600;
+}
+
+.policy-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.policy-modal-close:hover {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.policy-modal-body {
+    padding: 25px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.policy-text {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.policy-loading,
+.policy-error {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-size: 16px;
+}
+
+.policy-error {
+    color: #ff5252;
+}
+
+.policy-modal-footer {
+    padding: 20px 25px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: center;
+}
+
+.policy-modal-btn {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: auto;
+}
+
+.policy-modal-btn:hover {
+    background: linear-gradient(45deg, #45a049, #3d8b40);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+}
+
+/* 移动端适配 */
+@media (max-width: 600px) {
+    .policy-modal-content {
+        max-height: 85vh;
+    }
+
+    .policy-modal-header {
+        padding: 15px 20px;
+    }
+
+    .policy-modal-header h3 {
+        font-size: 18px;
+    }
+
+    .policy-modal-body {
+        padding: 20px;
+    }
+
+    .policy-text {
+        font-size: 13px;
+    }
+
+    .policy-modal-footer {
+        padding: 15px 20px;
+    }
+
+    .policy-modal-btn {
+        padding: 10px 30px;
+        font-size: 14px;
+    }
+} 
