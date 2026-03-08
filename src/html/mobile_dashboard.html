@@ -483,6 +483,251 @@
             margin-top: 5px;
             margin-bottom: 10px;
         }
+
+        /* 值班设置样式 */
+        .schedule-settings-container {
+            padding: 16px;
+        }
+
+        .schedule-info-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 14px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 3px solid #06627e;
+        }
+
+        .schedule-info-card .info-icon {
+            color: #06627e;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .schedule-info-card .info-text {
+            color: #495057;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .schedule-section {
+            margin-bottom: 20px;
+        }
+
+        .schedule-section h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 6px;
+        }
+
+        .section-hint {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 12px;
+        }
+
+        .time-slot-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .time-slot-item {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .time-slot-item input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .time-slot-label {
+            display: block;
+            padding: 8px 4px;
+            text-align: center;
+            background: #fff;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #495057;
+            transition: all 0.2s ease;
+        }
+
+        .time-slot-item:hover .time-slot-label {
+            border-color: #06627e;
+            background: #f0f7f9;
+        }
+
+        .time-slot-item input:checked + .time-slot-label {
+            background: #06627e;
+            border-color: #06627e;
+            color: #fff;
+        }
+
+        .weekday-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .weekday-item {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .weekday-item input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .weekday-label {
+            display: block;
+            padding: 10px 20px;
+            text-align: center;
+            background: #fff;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #495057;
+            transition: all 0.2s ease;
+        }
+
+        .weekday-item:hover .weekday-label {
+            border-color: #06627e;
+            background: #f0f7f9;
+        }
+
+        .weekday-item input:checked + .weekday-label {
+            background: #06627e;
+            border-color: #06627e;
+            color: #fff;
+        }
+
+        .current-schedule {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+
+        .current-schedule h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 10px;
+        }
+
+        .schedule-content {
+            color: #495057;
+        }
+
+        .schedule-badge-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .schedule-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #06627e;
+            color: #fff;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .schedule-note {
+            font-size: 12px;
+            color: #6c757d;
+            margin: 0;
+        }
+
+        .no-schedule {
+            color: #adb5bd;
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        .loading-text {
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        .error-text {
+            color: #dc3545;
+            font-size: 13px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .primary-btn {
+            flex: 1;
+            padding: 12px 20px;
+            background: #06627e;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .primary-btn:hover {
+            background: #054d63;
+        }
+
+        .secondary-btn {
+            flex: 1;
+            padding: 12px 20px;
+            background: #fff;
+            color: #495057;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .secondary-btn:hover {
+            background: #f8f9fa;
+            border-color: #adb5bd;
+        }
+
+        .form-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .form-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .form-message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
         /* 退出确认模态框样式 */
         
         .logout-modal {
@@ -2445,6 +2690,7 @@
             <div class="tab-menu">
                 <button class="tab-link active" onclick="openTab(event, 'info')">信息修改</button>
                 <button class="tab-link" onclick="openTab(event, 'password')">修改密码</button>
+                <button class="tab-link" id="scheduleTabBtn" onclick="openTab(event, 'schedule')" style="display: none;">值班设置</button>
             </div>
             <div class="tab-content" id="info" style="display: block;">
                 <form id="infoForm">
@@ -2478,6 +2724,57 @@
                     <div id="passwordMessage" class="form-message"></div>
                     <button type="submit">修改密码</button>
                 </form>
+            </div>
+            <div class="tab-content" id="schedule" style="display: none;">
+                <div class="schedule-settings-container">
+                    <div class="schedule-info-card">
+                        <div class="info-icon">
+                            <span class="iconify" data-icon="mdi:information-outline"></span>
+                        </div>
+                        <div class="info-text">
+                            <p id="scheduleInfoText">请选择您的值班日期（周一至周五）</p>
+                        </div>
+                    </div>
+                    <form id="scheduleForm">
+                        <div class="schedule-section" id="dutyTimeSection">
+                            <h3>选择值班日期</h3>
+                            <p class="section-hint">请选择一个值班日期</p>
+                            <div class="weekday-selector" id="weekdaySelector">
+                                <label class="weekday-item">
+                                    <input type="radio" name="duty_time" value="1">
+                                    <span class="weekday-label">周一</span>
+                                </label>
+                                <label class="weekday-item">
+                                    <input type="radio" name="duty_time" value="2">
+                                    <span class="weekday-label">周二</span>
+                                </label>
+                                <label class="weekday-item">
+                                    <input type="radio" name="duty_time" value="3">
+                                    <span class="weekday-label">周三</span>
+                                </label>
+                                <label class="weekday-item">
+                                    <input type="radio" name="duty_time" value="4">
+                                    <span class="weekday-label">周四</span>
+                                </label>
+                                <label class="weekday-item">
+                                    <input type="radio" name="duty_time" value="5">
+                                    <span class="weekday-label">周五</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="current-schedule" id="currentScheduleDisplay">
+                            <h4>当前值班安排</h4>
+                            <div id="currentScheduleContent" class="schedule-content">
+                                <p class="no-schedule">暂无值班安排</p>
+                            </div>
+                        </div>
+                        <div id="scheduleMessage" class="form-message"></div>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">保存设置</button>
+                            <button type="button" class="secondary-btn" id="resetScheduleBtn">重置</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -2699,6 +2996,9 @@
 
             // 天气相关
             GET_CITY_AND_WEATHER: `${CONFIG.baseUrl}/unit/user_get_city_and_weather/`,
+
+            // 值班设置相关
+            CHANGE_DUTY_TIME: `${CONFIG.baseUrl}/dashboard/change_duty_time/`,
         };
 
         // 工具函数模块
@@ -3927,6 +4227,7 @@
         const assignOrder = document.getElementById('assign-order');
         const assignedOrder = document.getElementById('assigned-order');
         const dataStatistics = document.getElementById('data-statistics');
+        const scheduleTabBtn = document.getElementById('scheduleTabBtn');
 
         switch (label) {
             case 'customer':
@@ -3934,22 +4235,27 @@
                 if (assignOrder) assignOrder.style.display = 'none';
                 if (assignedOrder) assignedOrder.style.display = 'none';
                 if (dataStatistics) dataStatistics.style.display = 'none';
+                if (scheduleTabBtn) scheduleTabBtn.style.display = 'none';
                 break;
             case 'worker':
                 if (orderManagement) orderManagement.style.display = 'block';
                 if (assignOrder) assignOrder.style.display = 'none';
                 if (assignedOrder) assignedOrder.style.display = 'block';
                 if (dataStatistics) dataStatistics.style.display = 'none';
+                if (scheduleTabBtn) scheduleTabBtn.style.display = 'block';
                 break;
             case 'admin':
                 if (orderManagement) orderManagement.style.display = 'block';
                 if (assignOrder) assignOrder.style.display = 'block';
                 if (assignedOrder) assignedOrder.style.display = 'block';
                 if (dataStatistics) dataStatistics.style.display = 'none';
+                if (scheduleTabBtn) scheduleTabBtn.style.display = 'block';
                 break;
             default:
                 console.error('未知的用户身份:', label);
         }
+        // 存储用户角色供值班设置使用
+        window.currentUserRole = label;
     }
 
     // 统一获取用户信息
@@ -4772,6 +5078,134 @@
             }
         });
     });
+
+    /**
+     * 值班设置模块
+     */
+    const scheduleSettings = {
+        /**
+         * 初始化值班设置模块
+         */
+        init() {
+            this.bindEvents();
+        },
+
+        /**
+         * 绑定事件处理
+         */
+        bindEvents() {
+            const scheduleForm = document.getElementById('scheduleForm');
+            const resetBtn = document.getElementById('resetScheduleBtn');
+
+            if (scheduleForm) {
+                scheduleForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveDutyTime();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    this.resetForm();
+                });
+            }
+        },
+
+        /**
+         * 保存值班设置
+         */
+        async saveDutyTime() {
+            const selectedDay = document.querySelector('input[name="duty_time"]:checked');
+            const messageEl = document.getElementById('scheduleMessage');
+            
+            if (!selectedDay) {
+                if (messageEl) {
+                    messageEl.textContent = '请选择一个值班日期';
+                    messageEl.className = 'form-message error';
+                }
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URLS.CHANGE_DUTY_TIME, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        duty_time: parseInt(selectedDay.value)
+                    }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                if (data.message === 'Success') {
+                    if (messageEl) {
+                        messageEl.textContent = '值班设置保存成功';
+                        messageEl.className = 'form-message success';
+                    }
+                    this.displayCurrentSchedule(parseInt(selectedDay.value));
+                } else if (data.message === 'Permission error') {
+                    if (messageEl) {
+                        messageEl.textContent = '您没有权限修改值班时间';
+                        messageEl.className = 'form-message error';
+                    }
+                } else {
+                    if (messageEl) {
+                        messageEl.textContent = '保存失败，请重试';
+                        messageEl.className = 'form-message error';
+                    }
+                }
+            } catch (error) {
+                console.error('保存值班设置失败:', error);
+                if (messageEl) {
+                    messageEl.textContent = '保存失败，请检查网络';
+                    messageEl.className = 'form-message error';
+                }
+            }
+        },
+
+        /**
+         * 显示当前值班安排
+         * @param {number} dutyTime - 值班日期（1-5）
+         */
+        displayCurrentSchedule(dutyTime) {
+            const contentEl = document.getElementById('currentScheduleContent');
+            if (!contentEl) return;
+
+            if (dutyTime && dutyTime >= 1 && dutyTime <= 5) {
+                const weekdayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+                contentEl.innerHTML = `
+                    <div class="schedule-badge-container">
+                        <span class="schedule-badge">${weekdayNames[dutyTime]}</span>
+                    </div>
+                    <p class="schedule-note">值班日期：每${weekdayNames[dutyTime]}</p>
+                `;
+            } else {
+                contentEl.innerHTML = '<p class="no-schedule">暂无值班安排</p>';
+            }
+        },
+
+        /**
+         * 重置表单
+         */
+        resetForm() {
+            const radios = document.querySelectorAll('#scheduleForm input[type="radio"]');
+            radios.forEach(rb => rb.checked = false);
+            const messageEl = document.getElementById('scheduleMessage');
+            if (messageEl) {
+                messageEl.textContent = '';
+                messageEl.className = 'form-message';
+            }
+        }
+    };
+
+    // 初始化值班设置（延迟执行，等待用户角色加载）
+    setTimeout(() => {
+        if (window.currentUserRole === 'worker' || window.currentUserRole === 'admin') {
+            scheduleSettings.init();
+        }
+    }, 500);
 
     // 问题描述文本框自动调整高度
     document.getElementById('issue')?.addEventListener('input', function() {
