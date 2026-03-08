@@ -5147,9 +5147,48 @@
             }
         </script>
 
+        <!-- 电子书阅读器随机图标功能 -->
+        <script>
+            /**
+             * 随机加载书籍图标图片
+             * 从 book/1.png 到 book/9.png 中随机选择一张
+             */
+            document.addEventListener('DOMContentLoaded', function() {
+                const bookIcon = document.getElementById('bookIcon');
+                const bookIconFallback = document.getElementById('bookIconFallback');
+                
+                if (bookIcon) {
+                    // 随机生成 1-9 的数字
+                    const randomNum = Math.floor(Math.random() * 9) + 1;
+                    const imagePath = `../images/book/${randomNum}.png`;
+                    
+                    // 设置图片路径
+                    bookIcon.src = imagePath;
+                    
+                    // 图片加载成功时显示图片，隐藏图标
+                    bookIcon.onload = function() {
+                        bookIcon.style.display = 'block';
+                        if (bookIconFallback) {
+                            bookIconFallback.style.display = 'none';
+                        }
+                    };
+                    
+                    // 图片加载失败时显示 Iconify 图标
+                    bookIcon.onerror = function() {
+                        console.warn(`书籍图片加载失败：${imagePath}，使用备用图标`);
+                        bookIcon.style.display = 'none';
+                        if (bookIconFallback) {
+                            bookIconFallback.style.display = 'inline-block';
+                        }
+                    };
+                }
+            });
+        </script>
+
         <!-- 电子书阅读器入口 -->
         <a href="epub-reader.html" class="book-reader-entry" title="电子书阅读器">
-            <img src="../images/book.png" alt="电子书">
+            <img id="bookIcon" src="" alt="电子书" style="display: none;">
+            <span class="iconify" data-icon="mdi:book-open-page-variant" id="bookIconFallback" style="font-size: 24px; color: #06627e;"></span>
         </a>
 
         <!-- 备案与版权信息footer 开始 -->
