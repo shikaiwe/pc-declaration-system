@@ -415,7 +415,9 @@ button:disabled {
     padding: 20px 25px;
     border-top: 1px solid #eee;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 .policy-modal-btn {
@@ -431,10 +433,25 @@ button:disabled {
     width: auto;
 }
 
-.policy-modal-btn:hover {
+.policy-modal-btn:hover:not(.disabled) {
     background: linear-gradient(45deg, #45a049, #3d8b40);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+}
+
+.policy-modal-btn.disabled,
+.policy-modal-btn:disabled {
+    background: linear-gradient(45deg, #cccccc, #bbbbbb);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.policy-scroll-hint {
+    margin: 0;
+    font-size: 13px;
+    color: #999;
+    text-align: center;
 }
 
 /* 移动端适配 */

@@ -243,7 +243,8 @@
                 政策内容加载中...
             </div>
             <div class="policy-modal-footer">
-                <button class="policy-modal-btn" onclick="closePolicyModal()">我已阅读</button>
+                <button class="policy-modal-btn" id="policyModalBtn" disabled onclick="closePolicyModal()">我已阅读</button>
+                <p class="policy-scroll-hint" id="policyScrollHint">请阅读完整内容后继续</p>
             </div>
         </div>
     </div>
@@ -261,7 +262,7 @@
 
 欢迎您使用广州南方学院 PC 志愿者服务队报单系统！
 
-在您使用本系统提供的各项服务之前，请您务必仔细阅读并充分理解本协议的全部内容。特别是免除或者限制责任的条款、法律适用和争议解决条款，这些条款将以加粗或下划线形式提示您注意。
+在您使用本系统提供的各项服务之前，请您务必仔细阅读并充分理解本协议的全部内容。特别是免除或者限制责任的条款、法律适用和争议解决条款。
 
 如果您未满 18 周岁，请在监护人的陪同下阅读本协议。
 
@@ -297,7 +298,7 @@
 （1）您应当按照注册页面的提示，提供真实、准确、完整的注册信息，包括但不限于：
 - 用户名
 - 电子邮箱地址
-- 手机号码（工作人员注册时）
+- 手机号码
 - 密码
 
 （2）您应确保注册信息在注册完成后仍保持真实、准确、完整、有效。如注册信息有变，您应及时更新。
@@ -518,7 +519,7 @@
 当您注册成为我们的用户时，我们会收集：
 - 用户名：用于标识您的身份
 - 电子邮箱地址：用于账号验证、密码找回和服务通知
-- 手机号码（工作人员注册时）：用于身份验证和紧急联系
+- 手机号码：用于身份验证和紧急联系
 - 密码（经加密处理）：用于账号安全保护
 - 验证码：用于验证邮箱或手机号的真实性
 
@@ -681,9 +682,16 @@
             const modal = document.getElementById('policyModal');
             const title = document.getElementById('policyModalTitle');
             const body = document.getElementById('policyModalBody');
+            const btn = document.getElementById('policyModalBtn');
+            const hint = document.getElementById('policyScrollHint');
 
             // 设置标题
             title.textContent = type === 'user-agreement' ? '用户协议' : '隐私政策';
+            
+            // 重置按钮状态
+            btn.disabled = true;
+            btn.classList.add('disabled');
+            hint.style.display = 'block';
             
             // 直接从嵌入的内容中获取
             const content = POLICY_CONTENT[type];
@@ -693,14 +701,45 @@
                 body.innerHTML = '<div class="policy-error">内容加载失败</div>';
             }
             
+            // 重置滚动位置
+            body.scrollTop = 0;
+            
+            // 添加滚动监听
+            body.removeEventListener('scroll', handlePolicyScroll);
+            body.addEventListener('scroll', handlePolicyScroll);
+            
             modal.style.display = 'flex';
+        }
+
+        /**
+         * 处理政策内容滚动
+         */
+        function handlePolicyScroll() {
+            const body = document.getElementById('policyModalBody');
+            const btn = document.getElementById('policyModalBtn');
+            const hint = document.getElementById('policyScrollHint');
+            
+            // 检测是否滚动到底部（允许5px误差）
+            const isAtBottom = body.scrollHeight - body.scrollTop - body.clientHeight <= 5;
+            
+            if (isAtBottom) {
+                btn.disabled = false;
+                btn.classList.remove('disabled');
+                hint.style.display = 'none';
+            }
         }
 
         /**
          * 关闭政策模态框
          */
         function closePolicyModal() {
-            document.getElementById('policyModal').style.display = 'none';
+            const modal = document.getElementById('policyModal');
+            const body = document.getElementById('policyModalBody');
+            
+            // 移除滚动监听
+            body.removeEventListener('scroll', handlePolicyScroll);
+            
+            modal.style.display = 'none';
         }
 
         /**
