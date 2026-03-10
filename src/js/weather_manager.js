@@ -150,8 +150,8 @@ class WeatherManager {
                         ${ipInfo.city}
                     </div>
                     <div class="weather-temp">
-                        <span class="temp-value">${weather.temperature}°C</span>
                         <span class="iconify weather-icon temp-icon" data-icon="mdi:thermometer"></span>
+                        <span class="temp-value">${weather.temperature}°C</span>
                     </div>
                 </div>
                 <div class="weather-info-details">

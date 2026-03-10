@@ -1728,14 +1728,17 @@
             flex-direction: column;
             gap: 12px;
             width: 100%;
+            align-items: center;
         }
         
         .weather-main {
             display: flex;
             flex-direction: column;
             gap: 8px;
-            padding-bottom: 10px;
+            padding-bottom: 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            align-items: center;
         }
         
         .weather-location {
@@ -1743,7 +1746,7 @@
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             justify-content: center;
         }
         
@@ -1752,7 +1755,7 @@
             font-weight: bold;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             justify-content: center;
             padding: 10px 0;
         }
@@ -1760,16 +1763,19 @@
         .weather-info-details {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             flex-grow: 1;
+            width: 100%;
+            align-items: center;
         }
         
         .weather-row {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-size: 16px;
             justify-content: center;
+            width: 100%;
         }
         
         .weather-icon {
@@ -1777,8 +1783,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             color: #ffffff;
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
         }
@@ -1792,16 +1798,25 @@
         }
         
         .weather-location .weather-icon {
+            font-size: 20px;
+            width: 22px;
+            height: 22px;
             color: #FF8A65;
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
         }
         
         .weather-row .weather-icon {
+            font-size: 20px;
+            width: 22px;
+            height: 22px;
             color: rgba(255, 255, 255, 0.95);
             filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
         }
         
         .weather-update .weather-icon {
+            font-size: 16px;
+            width: 20px;
+            height: 20px;
             color: rgba(255, 255, 255, 0.9);
             filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
         }
@@ -1809,13 +1824,14 @@
         .weather-update {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             font-size: 14px;
             color: rgba(255, 255, 255, 0.8);
-            margin-top: 8px;
-            padding-top: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             justify-content: center;
+            width: 100%;
         }
         
         @media (max-width: 360px) {
@@ -1826,17 +1842,35 @@
             }
             .weather-temp {
                 font-size: 36px;
+                gap: 8px;
             }
             .weather-row {
                 font-size: 14px;
+                gap: 8px;
             }
             .weather-location {
                 font-size: 15px;
+                gap: 6px;
             }
             .weather-temp .weather-icon {
                 font-size: 28px;
                 width: 28px;
                 height: 28px;
+            }
+            .weather-location .weather-icon {
+                font-size: 18px;
+                width: 20px;
+                height: 20px;
+            }
+            .weather-row .weather-icon {
+                font-size: 18px;
+                width: 20px;
+                height: 20px;
+            }
+            .weather-update .weather-icon {
+                font-size: 14px;
+                width: 18px;
+                height: 18px;
             }
         }
         /* 添加上次登录天气信息样式 */
