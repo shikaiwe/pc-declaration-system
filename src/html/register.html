@@ -7,6 +7,7 @@
     <title>注册页面</title>
     <script src="../js/crypto-js.min.js"></script>
     <script src="../js/jquery.js"></script>
+    <script src="../js/csrf.js"></script>
     <link rel="stylesheet" href="../css/register.css">
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
@@ -65,8 +66,9 @@
 
     <script>
         const ip = 'gznfpc.cn';
-        const url = `https://${ip}/api/users/register/`;
-        const verifyCodeUrl = `https://${ip}/api/users/register_send_code/`;
+        const baseUrl = `https://${ip}`;
+        const url = `${baseUrl}/api/users/register/`;
+        const verifyCodeUrl = `${baseUrl}/api/users/register_send_code/`;
 
         const utils = {
             showError: (message) => {
@@ -116,6 +118,13 @@
             }
         };
 
+        /**
+         * 页面加载时获取 CSRF Token
+         */
+        window.onload = async function() {
+            await CSRF.fetchCSRFTokenjQuery(baseUrl);
+        };
+
         // 发送验证码按钮点击事件
         document.getElementById('sendCodeBtn').addEventListener('click', async function() {
             const email = document.getElementById('email').value;
@@ -135,6 +144,7 @@
             try {
                 button.disabled = true;
 
+                const csrfToken = CSRF.getToken();
                 $.ajax({
                     url: verifyCodeUrl,
                     type: "POST",
@@ -142,6 +152,12 @@
                         email: email
                     }),
                     contentType: "application/json",
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    xhrFields: {
+                        withCredentials: true
+                    },
                     success: function(data) {
                         if (data['message'] === '验证码已发送') {
                             utils.showError("验证码已发送到您的邮箱");
@@ -191,6 +207,7 @@
 
                 utils.setLoading(true);
 
+                const csrfToken = CSRF.getToken();
                 $.ajax({
                     url: url,
                     type: "POST",
@@ -201,6 +218,12 @@
                         code: verificationCode
                     }),
                     contentType: "application/json",
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    xhrFields: {
+                        withCredentials: true
+                    },
                     success: function(data) {
                         if (data['message'] === 'Success') {
                             utils.showSuccess("注册成功！2秒后自动跳转到登录页面...");

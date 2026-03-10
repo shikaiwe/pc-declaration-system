@@ -7,6 +7,7 @@
     <title>登录页面</title>
     <script src="../js/crypto-js.min.js"></script>
     <script src="../js/jquery.js"></script>
+    <script src="../js/csrf.js"></script>
     <link rel="stylesheet" href="../css/login.css">
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="../images/favicon.ico" type="image/x-icon">
@@ -45,8 +46,9 @@
         // URL和CDN配置
         // const ip = 'localhost:80';
         const ip = 'gznfpc.cn'
-        const loginUrl = `https://${ip}/api/users/login/`;
-        const validateSessionUrl = `https://${ip}/api/users/validate-session/`;
+        const baseUrl = `https://${ip}`;
+        const loginUrl = `${baseUrl}/api/users/login/`;
+        const validateSessionUrl = `${baseUrl}/api/users/validate-session/`;
 
         // 安全配置
         const CONFIG = {
@@ -112,13 +114,25 @@
                     utils.setLoading(false);
                 }
             },
-            // 调用登录API
+            /**
+             * 调用登录API
+             * @param {string} username - 用户名
+             * @param {string} password - 密码
+             * @returns {Promise} 登录结果Promise
+             */
             async loginAPI(username, password) {
                 return new Promise((resolve, reject) => {
+                    const csrfToken = CSRF.getToken();
                     $.ajax({
                         url: loginUrl,
                         type: 'POST',
                         contentType: 'application/json',
+                        headers: {
+                            'X-CSRFToken': csrfToken
+                        },
+                        xhrFields: {
+                            withCredentials: true
+                        },
                         data: JSON.stringify({
                             name: username,
                             password: password
@@ -215,6 +229,9 @@
 
         // 页面加载时检查登录状态
         window.onload = async function() {
+            // 先获取 CSRF Token
+            await CSRF.fetchCSRFTokenjQuery(baseUrl);
+
             // 检查是否启用了自动登录
             const rememberMe = localStorage.getItem('rememberMe') === 'true';
 
@@ -223,6 +240,9 @@
                 url: validateSessionUrl,
                 type: 'GET',
                 contentType: 'application/json',
+                xhrFields: {
+                    withCredentials: true
+                },
                 success: function(data) {
                     if (data.message === 'Success' && rememberMe) {
                         // 如果会话有效且启用了自动登录，直接跳转到仪表板
