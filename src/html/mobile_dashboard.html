@@ -16,6 +16,8 @@
     <!-- Iconify 图标库 -->
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <script src="../js/jquery.js" defer></script>
+    <!-- CSRF 防护模块 -->
+    <script src="../js/csrf.js" defer></script>
     <link href='../vendor/fullcalendar/main.min.css' rel='stylesheet' />
     <script src='../vendor/fullcalendar/main.min.js' defer></script>
     <link rel="stylesheet" href="../vendor/swiper/swiper-bundle.min.css">
@@ -3273,6 +3275,7 @@
         // 配置
         const CONFIG = {
             baseUrl: `https://gznfpc.cn/api`,
+            apiBaseUrl: `https://gznfpc.cn`,
             weatherApiKey: null
         };
 
@@ -3687,9 +3690,13 @@
                 form.dataset.submitting = 'true';
             }
 
+            const csrfToken = CSRF.getToken();
             $.ajax({
                 url: API_URLS.REPORT,
                 method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
                 data: JSON.stringify(formData),
                 contentType: 'application/json',
                 xhrFields: {
@@ -4080,17 +4087,21 @@
     },
 
     // 执行结单操作
-    executeCompleteOrder(reportId) {
-        utils.ui.showLoading(true);
-        return $.ajax({
-            url: API_URLS.COMPLETE_REPORT,
-            method: 'POST',
-            data: JSON.stringify({ reportId }),
-            contentType: 'application/json',
-            xhrFields: {
-                withCredentials: true
-            }
-        }).then((data) => {
+        executeCompleteOrder(reportId) {
+            utils.ui.showLoading(true);
+            const csrfToken = CSRF.getToken();
+            return $.ajax({
+                url: API_URLS.COMPLETE_REPORT,
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                data: JSON.stringify({ reportId }),
+                contentType: 'application/json',
+                xhrFields: {
+                    withCredentials: true
+                }
+            }).then((data) => {
             utils.ui.showLoading(false);
             if (data.message === 'Success') {
                 utils.ui.showMessage('订单已完成');
@@ -4107,17 +4118,21 @@
     },
 
     // 执行撤单操作
-    executeCancelOrder(reportId) {
-        utils.ui.showLoading(true);
-        return $.ajax({
-            url: API_URLS.CANCEL_REPORT,
-            method: 'POST',
-            data: JSON.stringify({ reportId }),
-            contentType: 'application/json',
-            xhrFields: {
-                withCredentials: true
-            }
-        }).then((data) => {
+        executeCancelOrder(reportId) {
+            utils.ui.showLoading(true);
+            const csrfToken = CSRF.getToken();
+            return $.ajax({
+                url: API_URLS.CANCEL_REPORT,
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                data: JSON.stringify({ reportId }),
+                contentType: 'application/json',
+                xhrFields: {
+                    withCredentials: true
+                }
+            }).then((data) => {
             utils.ui.showLoading(false);
             if (data.message === 'Success') {
                 utils.ui.showMessage('订单已撤销');
@@ -4636,11 +4651,13 @@
                 return;
             }
 
+            const csrfToken = CSRF.getToken();
             try {
                 const response = await fetch(API_URLS.CHANGE_DUTY_TIME, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
                     },
                     body: JSON.stringify({
                         duty_time: parseInt(selectedDay.value)
@@ -5443,9 +5460,13 @@
         if (newName) requestData.newName = newName;
 
         utils.ui.showLoading(true);
+        const csrfToken = CSRF.getToken();
         $.ajax({
             url: API_URLS.SAVE_PHONE,
             method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
             data: JSON.stringify(requestData),
             contentType: 'application/json',
             xhrFields: {
@@ -5516,9 +5537,13 @@
             return;
         }
 
+        const csrfToken = CSRF.getToken();
         $.ajax({
             url: API_URLS.CHANGE_PASSWORD,
             method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
             data: JSON.stringify({
                 old_password: oldPassword,
                 new_password: newPassword

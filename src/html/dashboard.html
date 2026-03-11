@@ -12,6 +12,8 @@
     <script src="../vendor/fullcalendar/main.min.js"></script>
     <!-- jQuery 本地化 -->
     <script src="../js/jquery.js"></script>
+    <!-- CSRF 防护模块 -->
+    <script src="../js/csrf.js"></script>
     <!-- Bootstrap 本地化 -->
     <link href="../vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <script src="../vendor/bootstrap/bootstrap.bundle.min.js"></script>
@@ -3087,7 +3089,8 @@
         <script>
             // 配置常量
             const CONFIG = {
-                baseUrl: 'https://gznfpc.cn/api'
+                baseUrl: 'https://gznfpc.cn/api',
+                apiBaseUrl: 'https://gznfpc.cn'
             };
 
             // API 端点配置
@@ -3273,7 +3276,10 @@
 
 
             // 初始化应用
-            document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('DOMContentLoaded', async () => {
+                // 获取 CSRF Token
+                await CSRF.fetchCSRFTokenjQuery(CONFIG.apiBaseUrl);
+
                 // 显示用户名的函数
                 function displayUsername() {
                     const usernameDisplay = document.getElementById('username-display');
@@ -3635,9 +3641,13 @@
                     const call_date = new Date().toISOString();
                     // 备注功能已移除
 
+                    const csrfToken = CSRF.getToken();
                     $.ajax({
                             url: API_URLS.CALL_REPORT,
                             method: 'POST',
+                            headers: {
+                                'X-CSRFToken': csrfToken
+                            },
                             data: JSON.stringify({
                                 userPhoneNumber,
                                 address,
@@ -3726,11 +3736,13 @@
                         if (phoneNumber) formData.phoneNumber = phoneNumber;
                         if (newName) formData.newName = newName;
 
+                        const csrfToken = CSRF.getToken();
                         try {
                             const response = await fetch(API_URLS.SAVE_PHONE, {
                                 method: 'POST',
                                 headers: {
-                                    'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken
                                 },
                                 body: JSON.stringify(formData),
                                 credentials: 'include'
@@ -3868,11 +3880,13 @@
                             return;
                         }
 
+                        const csrfToken = CSRF.getToken();
                         try {
                             const response = await fetch(API_URLS.CHANGE_DUTY_TIME, {
                                 method: 'POST',
                                 headers: {
-                                    'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken
                                 },
                                 body: JSON.stringify({
                                     duty_time: parseInt(selectedDay.value)
@@ -4393,9 +4407,13 @@
                     return;
                 }
 
+                const csrfToken = CSRF.getToken();
                 $.ajax({
                     url: API_URLS.CANCEL_REPORT,
                     method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
                     data: JSON.stringify({ reportId }),
                     contentType: 'application/json',
                     xhrFields: {
@@ -4593,9 +4611,13 @@
 
             // 修改订单状态变化的处理函数（在订单撤销时）
             function cancelOrder(orderId) {
+                const csrfToken = CSRF.getToken();
                 $.ajax({
                     url: API_URLS.CANCEL_REPORT,
                     method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
                     data: JSON.stringify({ reportId: orderId }),
                     contentType: 'application/json',
                     xhrFields: {
@@ -4792,9 +4814,13 @@
                     
                     // 定义执行结单操作的函数
                     const executeComplete = () => {
+                        const csrfToken = CSRF.getToken();
                         $.ajax({
                             url: API_URLS.COMPLETE_REPORT,
                             method: 'POST',
+                            headers: {
+                                'X-CSRFToken': csrfToken
+                            },
                             data: JSON.stringify({ reportId }),
                             contentType: 'application/json',
                             xhrFields: {
@@ -4855,9 +4881,13 @@
 
                 // 提交订单
                 submitOrder: function(formData) {
+                    const csrfToken = CSRF.getToken();
                     $.ajax({
                         url: API_URLS.CALL_REPORT,
                         method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken
+                        },
                         data: JSON.stringify(formData),
                         contentType: 'application/json',
                         xhrFields: {
@@ -4951,9 +4981,13 @@
 
                 // 执行撤单操作
                 executeCancelOrder: function(reportId) {
+                    const csrfToken = CSRF.getToken();
                     $.ajax({
                         url: API_URLS.CANCEL_REPORT,
                         method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken
+                        },
                         data: JSON.stringify({ reportId }),
                         contentType: 'application/json',
                         xhrFields: {
