@@ -80,9 +80,13 @@ class WeatherManager {
 
         try {
             // 获取天气信息
+            const csrfToken = CSRF.getToken();
             const response = await $.ajax({
                 url: API_URLS.GET_CITY_AND_WEATHER,
                 method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
                 data: JSON.stringify({ ip: 'none' }),
                 contentType: 'application/json',
                 xhrFields: { withCredentials: true }

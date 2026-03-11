@@ -625,9 +625,13 @@ function displayOrderMessages(reportId) {
 // 获取历史消息记录
 async function fetchMessageHistory(reportId) {
     try {
+        const csrfToken = CSRF.getToken();
         const response = await $.ajax({
             url: API_URLS.GET_MESSAGE_RECORD,
             method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
             data: JSON.stringify({ reportId: reportId }),
             contentType: 'application/json',
             xhrFields: {

@@ -270,10 +270,12 @@ class OrderRating {
         };
 
         // 发送评价请求
+        const csrfToken = CSRF.getToken();
         fetch(API_URLS.SUBMIT_RATING, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify(ratingData),
                 credentials: 'include'

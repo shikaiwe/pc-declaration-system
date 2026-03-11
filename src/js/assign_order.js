@@ -903,23 +903,27 @@ class AssignOrder {
     }
 
     /**
-     * 发送分配订单请求
-     * @private
-     */
-    async _assignOrderRequest(reportId, workerName) {
-        return await $.ajax({
-            url: API_URLS.ASSIGN_ORDER,
-            method: 'POST',
-            data: JSON.stringify({
-                reportId: reportId,
-                workerName: workerName
-            }),
-            contentType: 'application/json',
-            xhrFields: {
-                withCredentials: true
-            }
-        });
-    }
+ * 发送分配订单请求
+ * @private
+ */
+async _assignOrderRequest(reportId, workerName) {
+    const csrfToken = CSRF.getToken();
+    return await $.ajax({
+        url: API_URLS.ASSIGN_ORDER,
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken
+        },
+        data: JSON.stringify({
+            reportId: reportId,
+            workerName: workerName
+        }),
+        contentType: 'application/json',
+        xhrFields: {
+            withCredentials: true
+        }
+    });
+}
 
     /**
      * 处理分配订单响应
