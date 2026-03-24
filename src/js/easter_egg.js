@@ -1,7 +1,7 @@
 /**
  * 彩蛋视频播放模块
  * 使用Artplayer.js实现彩蛋视频播放功能
- * 触发方式：连续点击用户名5次（间隔不超过500ms）
+ * 触发方式：连续点击5次（间隔不超过500ms）
  */
 
 class EasterEgg {
@@ -14,6 +14,7 @@ class EasterEgg {
         this.isInitialized = false;
         this.videoUrl = '/Video/彩蛋视频.mp4';
         this.posterUrl = '../images/Mascot.jpg';
+        this.boundHandleEscKey = this.handleEscKey.bind(this);
     }
 
     /**
@@ -56,6 +57,7 @@ class EasterEgg {
      * @param {Event} e - 点击事件对象
      */
     handleClick(e) {
+        e.preventDefault();
         e.stopPropagation();
         
         this.clickCount++;
@@ -97,7 +99,7 @@ class EasterEgg {
         modal.innerHTML = `
             <div class="easter-egg-overlay"></div>
             <div class="easter-egg-container">
-                <button class="easter-egg-close" id="closeEasterEgg">
+                <button class="easter-egg-close" id="closeEasterEgg" type="button">
                     <span class="iconify" data-icon="mdi:close"></span>
                 </button>
                 <div class="easter-egg-video-wrapper">
@@ -113,8 +115,8 @@ class EasterEgg {
             modal.classList.add('active');
         });
 
-        this.initPlayer();
         this.bindModalEvents();
+        this.initPlayer();
     }
 
     /**
@@ -122,10 +124,16 @@ class EasterEgg {
      */
     initPlayer() {
         if (typeof Artplayer === 'undefined') {
-            console.error('[EasterEgg] Artplayer未加载');
-            this.loadArtplayerScript().then(() => {
-                this.createPlayer();
-            });
+            console.log('[EasterEgg] 正在加载Artplayer...');
+            this.loadArtplayerScript()
+                .then(() => {
+                    console.log('[EasterEgg] Artplayer加载成功');
+                    this.createPlayer();
+                })
+                .catch((error) => {
+                    console.error('[EasterEgg] Artplayer加载失败:', error);
+                    this.handleVideoError();
+                });
         } else {
             this.createPlayer();
         }
@@ -139,8 +147,14 @@ class EasterEgg {
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = '../vendor/Artplayer/artplayer.js';
-            script.onload = resolve;
-            script.onerror = reject;
+            script.onload = () => {
+                console.log('[EasterEgg] Artplayer脚本加载完成');
+                resolve();
+            };
+            script.onerror = (error) => {
+                console.error('[EasterEgg] Artplayer脚本加载失败:', error);
+                reject(error);
+            };
             document.head.appendChild(script);
         });
     }
@@ -150,71 +164,80 @@ class EasterEgg {
      */
     createPlayer() {
         const container = document.getElementById('easterEggPlayer');
-        if (!container) return;
+        if (!container) {
+            console.error('[EasterEgg] 播放器容器不存在');
+            return;
+        }
 
         const isMobile = window.innerWidth <= 768;
 
-        this.artInstance = new Artplayer({
-            container: container,
-            url: this.videoUrl,
-            poster: this.posterUrl,
-            autoplay: true,
-            muted: false,
-            pip: true,
-            autoSize: false,
-            autoMini: true,
-            screenshot: false,
-            setting: true,
-            loop: false,
-            flip: false,
-            playbackRate: true,
-            aspectRatio: false,
-            fullscreen: true,
-            fullscreenWeb: true,
-            subtitleOffset: false,
-            miniProgressBar: true,
-            mutex: true,
-            backdrop: true,
-            playsInline: true,
-            autoPlayback: false,
-            airplay: true,
-            theme: '#0369A1',
-            lang: navigator.language.toLowerCase(),
-            moreVideoAttr: {
-                crossOrigin: 'anonymous'
-            },
-            style: {
-                width: isMobile ? '100%' : '800px',
-                height: isMobile ? 'auto' : '450px'
-            },
-            controls: [
-                {
-                    name: 'fast-rewind',
-                    position: 'right',
-                    html: '<span class="iconify" data-icon="mdi:rewind-10"></span>',
-                    tooltip: '后退10秒',
-                    click: function() {
-                        this.seek = Math.max(0, this.currentTime - 10);
-                    }
+        try {
+            this.artInstance = new Artplayer({
+                container: container,
+                url: this.videoUrl,
+                poster: this.posterUrl,
+                autoplay: true,
+                muted: false,
+                pip: true,
+                autoSize: false,
+                autoMini: true,
+                screenshot: false,
+                setting: true,
+                loop: false,
+                flip: false,
+                playbackRate: true,
+                aspectRatio: false,
+                fullscreen: true,
+                fullscreenWeb: true,
+                subtitleOffset: false,
+                miniProgressBar: true,
+                mutex: true,
+                backdrop: true,
+                playsInline: true,
+                autoPlayback: false,
+                airplay: true,
+                theme: '#0369A1',
+                lang: navigator.language.toLowerCase(),
+                moreVideoAttr: {
+                    crossOrigin: 'anonymous'
                 },
-                {
-                    name: 'fast-forward',
-                    position: 'right',
-                    html: '<span class="iconify" data-icon="mdi:fast-forward-10"></span>',
-                    tooltip: '前进10秒',
-                    click: function() {
-                        this.seek = Math.min(this.duration, this.currentTime + 10);
+                style: {
+                    width: isMobile ? '100%' : '800px',
+                    height: isMobile ? 'auto' : '450px'
+                },
+                controls: [
+                    {
+                        name: 'fast-rewind',
+                        position: 'right',
+                        html: '<span class="iconify" data-icon="mdi:rewind-10"></span>',
+                        tooltip: '后退10秒',
+                        click: function() {
+                            this.seek = Math.max(0, this.currentTime - 10);
+                        }
+                    },
+                    {
+                        name: 'fast-forward',
+                        position: 'right',
+                        html: '<span class="iconify" data-icon="mdi:fast-forward-10"></span>',
+                        tooltip: '前进10秒',
+                        click: function() {
+                            this.seek = Math.min(this.duration, this.currentTime + 10);
+                        }
+                    }
+                ],
+                customType: {
+                    mp4: function(video, url) {
+                        video.src = url;
                     }
                 }
-            ],
-            customType: {
-                mp4: function(video, url) {
-                    video.src = url;
-                }
-            }
-        });
+            });
 
-        this.bindPlayerEvents();
+            this.bindPlayerEvents();
+            console.log('[EasterEgg] 播放器创建成功');
+        } catch (error) {
+            console.error('[EasterEgg] 播放器创建失败:', error);
+            this.handleVideoError();
+        }
     }
 
     /**
@@ -273,14 +296,22 @@ class EasterEgg {
         const overlay = modal.querySelector('.easter-egg-overlay');
 
         if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.closeModal());
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeModal();
+            });
         }
 
         if (overlay) {
-            overlay.addEventListener('click', () => this.closeModal());
+            overlay.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeModal();
+            });
         }
 
-        document.addEventListener('keydown', this.handleEscKey.bind(this));
+        document.addEventListener('keydown', this.boundHandleEscKey);
     }
 
     /**
@@ -306,12 +337,14 @@ class EasterEgg {
                     this.artInstance.destroy();
                     this.artInstance = null;
                 }
-                modal.remove();
+                if (modal && modal.parentNode) {
+                    modal.remove();
+                }
                 document.body.style.overflow = '';
             }, 300);
         }
 
-        document.removeEventListener('keydown', this.handleEscKey.bind(this));
+        document.removeEventListener('keydown', this.boundHandleEscKey);
     }
 
     /**
