@@ -33,12 +33,26 @@
     <link rel="stylesheet" href="../css/order_rating.css">
     <!-- 添加数据统计相关资源 -->
     <link rel="stylesheet" href="../css/data_statistics.css">
+    <!-- 彩蛋视频播放样式 -->
+    <link rel="stylesheet" href="../css/easter_egg.css">
     <!-- 引入ECharts图表库 -->
     <script src="../vendor/echarts/echarts.min.js"></script>
     <!-- 引入数据统计模块 -->
     <script type="module">
         import DataStatistics from '../js/data_statistics.js';
         window.dataStatistics = new DataStatistics();
+    </script>
+    <!-- 引入彩蛋视频播放模块 -->
+    <script type="module">
+        import('../js/easter_egg.js')
+            .then(module => {
+                document.addEventListener('DOMContentLoaded', () => {
+                    module.default.init();
+                });
+            })
+            .catch(error => {
+                console.error('[EasterEgg] 彩蛋模块加载失败:', error);
+            });
     </script>
 
     <style>
@@ -5810,287 +5824,7 @@
         <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备2025413403号</a>
     </footer>
 
-    <!-- 彩蛋视频功能 -->
-    <script>
-        // 添加CSS样式
-        const style = document.createElement('style');
-        style.textContent = `
-            .user-greeting {
-                user-select: none; /* 禁用文本选择 */
-                -webkit-user-select: none; /* Safari浏览器兼容 */
-                -moz-user-select: none; /* Firefox浏览器兼容 */
-                -ms-user-select: none; /* IE/Edge浏览器兼容 */
-                cursor: pointer; /* 显示指针光标，提示可点击 */
-            }
-            /* 移动端弹窗容器样式 */
-            #videoModal {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.95);
-                z-index: 9999; /* 提高z-index确保在最顶层 */
-                overflow: auto;
-                padding: 0;
-                box-sizing: border-box;
-            }
-            /* 遮罩层样式 - 阻止窗口外区域点击 */
-            #videoModal::before {
-                content: '';
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: transparent;
-                z-index: -1;
-                cursor: not-allowed;
-            }
-            /* 移动端弹窗内容样式 */
-            #videoModal .modal-content {
-                max-width: 95vw; /* 移动端更宽的弹窗 */
-                max-height: 85vh; /* 移动端更高的弹窗 */
-                margin: 5vh auto; /* 垂直居中 */
-                background-color: #000; /* 黑色背景 */
-                padding: 15px;
-                border-radius: 12px;
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
-                display: flex;
-                flex-direction: column;
-                min-height: 0;
-            }
-            /* 移动端视频容器样式 */
-            #videoContainer {
-                flex: 1;
-                position: relative;
-                width: 100%;
-                min-height: 250px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            /* 移动端视频元素样式 */
-            #videoElement {
-                width: 100%;
-                height: auto;
-                max-height: 70vh;
-                border-radius: 8px;
-            }
-            /* 移动端关闭按钮样式 */
-            #videoModal .close-button {
-                position: absolute;
-                right: 15px;
-                top: 15px;
-                color: #fff;
-                background-color: rgba(0, 0, 0, 0.8);
-                border-radius: 50%;
-                width: 40px;
-                height: 40px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 24px;
-                font-weight: bold;
-                cursor: pointer;
-                z-index: 1005;
-                border: 2px solid #fff;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-            }
-            /* 关闭按钮悬停效果 */
-            #videoModal .close-button:hover {
-                background-color: rgba(255, 0, 0, 0.8);
-                transform: scale(1.1);
-            }
-            /* 移动端横屏适配 */
-            @media (orientation: landscape) {
-                #videoModal .modal-content {
-                    max-width: 80vw;
-                    max-height: 90vh;
-                }
-                #videoElement {
-                    max-height: 85vh;
-                }
-            }
-            /* 小屏幕设备适配 */
-            @media (max-width: 360px) {
-                #videoModal .modal-content {
-                    padding: 10px;
-                    margin: 2vh auto;
-                }
-                #videoContainer {
-                    min-height: 200px;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // 等待DOM完全加载后再执行
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化点击计数器
-            let clickCount = 0;
-            const userGreetingElement = document.querySelector('.user-greeting');
-            
-            // 检查元素是否存在
-            if (!userGreetingElement) {
-                console.error('未找到.user-greeting元素');
-                return;
-            }
-            
-            // 夸克浏览器兼容性检查
-            const isQuarkBrowser = /Quark/i.test(navigator.userAgent) || /QQBrowser/i.test(navigator.userAgent);
-            if (isQuarkBrowser) {
-                console.log('检测到夸克浏览器，启用兼容模式');
-            }
-            
-            // 添加点击事件监听器
-            userGreetingElement.addEventListener('click', function() {
-                clickCount++;
-                console.log('点击次数:', clickCount);
-                
-                // 当连续点击七次时显示视频弹窗
-                if (clickCount === 7) {
-                    showVideoModal();
-                    clickCount = 0; // 重置计数器
-                }
-                
-                // 如果3秒内没有再次点击，则重置计数器
-                clearTimeout(window.clickTimeout);
-                window.clickTimeout = setTimeout(function() {
-                    clickCount = 0;
-                    console.log('计数器已重置');
-                }, 3000);
-            });
-        });
-        
-        // 创建并显示视频弹窗
-        function showVideoModal() {
-            // 检查是否已存在视频弹窗
-            let videoModal = document.getElementById('videoModal');
-            if (!videoModal) {
-                // 创建视频弹窗元素
-                videoModal = document.createElement('div');
-                videoModal.id = 'videoModal';
-                videoModal.className = 'modal';
-                
-                // 弹窗内容 - 使用HTML5 video标签直接播放
-                videoModal.innerHTML = `
-                    <div class="modal-content">
-                        <span class="close-button" onclick="closeVideoModal()">&times;</span>
-                        <div id="videoContainer">
-                            <video id="videoElement" controls autoplay playsinline>
-                                <source src="/Video/彩蛋视频.mp4" type="video/mp4">
-                                您的浏览器不支持HTML5视频播放。
-                            </video>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(videoModal);
-                
-                // 监听视频错误
-                const videoElement = document.getElementById('videoElement');
-                videoElement.addEventListener('error', function() {
-                    // 如果HTML5 video播放失败，回退到iframe方式
-                    fallbackToIframe();
-                });
-                
-                // 添加视频播放结束事件监听器，实现自动重播
-                videoElement.addEventListener('ended', function() {
-                    // 当视频播放结束时，将播放位置重置到开始并继续播放
-                    this.currentTime = 0;
-                    this.play();
-                });
-                
-                // 回退到iframe方式的函数
-                function fallbackToIframe() {
-                    const videoContainer = document.getElementById('videoContainer');
-                    videoContainer.innerHTML = `
-                        <iframe 
-                            src="/Video/彩蛋视频.mp4" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen 
-                            style="width: 100%; height: 100%;">
-                        </iframe>
-                    `;
-                }
-                
-                // 添加关闭按钮事件监听
-                videoModal.addEventListener('click', function(event) {
-                    if (event.target === videoModal) {
-                        closeVideoModal();
-                    }
-                });
-            } else {
-                // 如果弹窗已存在，重新播放视频
-                const video = document.getElementById('videoElement');
-                if (video) {
-                    video.currentTime = 0;
-                    video.play();
-                }
-            }
-            
-            // 显示弹窗
-            videoModal.style.display = 'block';
-            
-            // 夸克浏览器特殊处理
-            const isQuarkBrowser = /Quark/i.test(navigator.userAgent) || /QQBrowser/i.test(navigator.userAgent);
-            if (isQuarkBrowser) {
-                // 夸克浏览器可能需要强制重绘
-                setTimeout(function() {
-                    videoModal.style.display = 'none';
-                    setTimeout(function() {
-                        videoModal.style.display = 'block';
-                    }, 50);
-                }, 100);
-            }
-            
-            // 添加移动端触摸事件处理，防止视频播放时页面滚动
-            document.body.style.overflow = 'hidden';
-            
-            // 禁用页面其他区域的点击事件
-            document.body.style.pointerEvents = 'none';
-            videoModal.style.pointerEvents = 'auto';
-        }
-        
-        // 添加ESC键关闭功能
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeVideoModal();
-            }
-        });
-        
-        // 关闭视频弹窗函数（全局作用域）
-        function closeVideoModal() {
-            const videoModal = document.getElementById('videoModal');
-            if (videoModal) {
-                videoModal.style.display = 'none';
-                
-                // 暂停视频播放
-                const video = document.getElementById('videoElement');
-                if (video) {
-                    video.pause();
-                }
-                
-                // 恢复页面滚动
-                document.body.style.overflow = '';
-                
-                // 恢复页面其他区域的点击事件
-                document.body.style.pointerEvents = '';
-            }
-        }
-        
-        // 调试函数 - 手动触发视频弹窗（用于测试）
-        function debugShowVideoModal() {
-            console.log('手动触发视频弹窗');
-            showVideoModal();
-        }
-        
-        // 将调试函数暴露到全局，方便在浏览器控制台测试
-        window.debugShowVideoModal = debugShowVideoModal;
-        
-        // 移动端反馈入口交互
+    <!-- 移动端反馈入口交互 -->
         (function() {
             const feedbackCard = document.getElementById('feedback-card');
             const feedbackOverlay = document.getElementById('feedbackOverlay');
