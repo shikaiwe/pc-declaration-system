@@ -97,12 +97,9 @@ class EasterEgg {
         modal.innerHTML = `
             <div class="easter-egg-overlay"></div>
             <div class="easter-egg-container">
-                <div class="easter-egg-header">
-                    <span class="easter-egg-title">🎉 恭喜发现彩蛋！</span>
-                    <button class="easter-egg-close" id="closeEasterEgg">
-                        <span class="iconify" data-icon="mdi:close"></span>
-                    </button>
-                </div>
+                <button class="easter-egg-close" id="closeEasterEgg">
+                    <span class="iconify" data-icon="mdi:close"></span>
+                </button>
                 <div class="easter-egg-video-wrapper">
                     <div id="easterEggPlayer"></div>
                 </div>
