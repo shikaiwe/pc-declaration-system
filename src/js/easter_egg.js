@@ -27,17 +27,14 @@ class EasterEgg {
         if (this.isInitialized) return;
         
         let triggerElement = null;
-        let triggerType = '';
         
         const currentTimeEl = document.getElementById('currentTime');
         const userGreetingEl = document.querySelector('.user-greeting');
         
         if (currentTimeEl) {
             triggerElement = currentTimeEl;
-            triggerType = 'PC端-时间显示';
         } else if (userGreetingEl) {
             triggerElement = userGreetingEl;
-            triggerType = '移动端-用户问候';
         }
         
         if (triggerElement) {
@@ -46,7 +43,6 @@ class EasterEgg {
             triggerElement.addEventListener('click', this.handleClick.bind(this));
             this.triggerElement = triggerElement;
             this.isInitialized = true;
-            console.log(`[EasterEgg] 彩蛋功能已初始化 (${triggerType})`);
         } else {
             console.warn('[EasterEgg] 未找到触发元素');
         }
@@ -81,7 +77,6 @@ class EasterEgg {
      * 触发彩蛋视频播放
      */
     triggerEasterEgg() {
-        console.log('[EasterEgg] 彩蛋触发！');
         this.showVideoModal();
     }
 
@@ -124,10 +119,8 @@ class EasterEgg {
      */
     initPlayer() {
         if (typeof Artplayer === 'undefined') {
-            console.log('[EasterEgg] 正在加载Artplayer...');
             this.loadArtplayerScript()
                 .then(() => {
-                    console.log('[EasterEgg] Artplayer加载成功');
                     this.createPlayer();
                 })
                 .catch((error) => {
@@ -148,7 +141,6 @@ class EasterEgg {
             const script = document.createElement('script');
             script.src = '../vendor/Artplayer/artplayer.js';
             script.onload = () => {
-                console.log('[EasterEgg] Artplayer脚本加载完成');
                 resolve();
             };
             script.onerror = (error) => {
@@ -233,7 +225,6 @@ class EasterEgg {
             });
 
             this.bindPlayerEvents();
-            console.log('[EasterEgg] 播放器创建成功');
         } catch (error) {
             console.error('[EasterEgg] 播放器创建失败:', error);
             this.handleVideoError();
@@ -246,20 +237,7 @@ class EasterEgg {
     bindPlayerEvents() {
         if (!this.artInstance) return;
 
-        this.artInstance.on('ready', () => {
-            console.log('[EasterEgg] 播放器准备就绪');
-        });
-
-        this.artInstance.on('play', () => {
-            console.log('[EasterEgg] 视频开始播放');
-        });
-
-        this.artInstance.on('pause', () => {
-            console.log('[EasterEgg] 视频暂停');
-        });
-
         this.artInstance.on('ended', () => {
-            console.log('[EasterEgg] 视频播放结束');
             setTimeout(() => {
                 this.closeModal();
             }, 2000);
