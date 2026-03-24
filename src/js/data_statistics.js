@@ -89,7 +89,8 @@ class DataStatistics {
             
             if (response.message === 'Success') {
                 this.currentUserRole = response.label;
-                this.initStatistics();
+                // TODO: 数据统计功能计划开发中，暂时注释
+                // this.initStatistics();
             } else {
                 this.handleError(new Error('获取用户信息失败'), '无法获取用户角色');
             }
