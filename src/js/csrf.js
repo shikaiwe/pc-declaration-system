@@ -67,7 +67,6 @@
             if (response.ok) {
                 const token = getToken();
                 if (token) {
-                    console.log('CSRF Token 已获取:', token.substring(0, 8) + '...');
                     return true;
                 }
             }
@@ -99,7 +98,6 @@
                 success: function(data) {
                     const token = getToken();
                     if (token) {
-                        console.log('CSRF Token 已获取:', token.substring(0, 8) + '...');
                         resolve(true);
                     } else {
                         console.warn('CSRF Token Cookie 未设置');
@@ -189,7 +187,6 @@
                 }
             });
         }
-        console.log('CSRF 保护模块已初始化');
     }
 
     /**
