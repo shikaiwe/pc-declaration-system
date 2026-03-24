@@ -46,9 +46,13 @@
     <script type="module">
         import('../js/easter_egg.js')
             .then(module => {
-                document.addEventListener('DOMContentLoaded', () => {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        module.default.init();
+                    });
+                } else {
                     module.default.init();
-                });
+                }
             })
             .catch(error => {
                 console.error('[EasterEgg] 彩蛋模块加载失败:', error);
