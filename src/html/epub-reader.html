@@ -31,6 +31,12 @@
                 <div class="progress-info" id="progressInfo" style="display: none;">
                     <span id="progressText">0%</span>
                 </div>
+                <button class="header-btn" id="searchBtn" title="搜索" style="display: none;">
+                    <span class="iconify" data-icon="mdi:magnify"></span>
+                </button>
+                <button class="header-btn" id="annotationBtn" title="笔记" style="display: none;">
+                    <span class="iconify" data-icon="mdi:note-text"></span>
+                </button>
                 <button class="header-btn" id="tocBtn" title="目录" style="display: none;">
                     <span class="iconify" data-icon="mdi:format-list-bulleted"></span>
                 </button>
@@ -126,6 +132,71 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </aside>
+
+        <aside class="search-sidebar" id="searchSidebar">
+            <div class="sidebar-header">
+                <h3>搜索</h3>
+                <button class="close-btn" id="closeSearchBtn">
+                    <span class="iconify" data-icon="mdi:close"></span>
+                </button>
+            </div>
+            <div class="search-input-wrapper">
+                <input type="text" class="search-input" id="searchInput" placeholder="输入关键词搜索...">
+                <button class="search-submit-btn" id="searchSubmitBtn">
+                    <span class="iconify" data-icon="mdi:magnify"></span>
+                </button>
+            </div>
+            <div class="search-options">
+                <label class="search-option">
+                    <input type="checkbox" id="searchCaseSensitive">
+                    <span>区分大小写</span>
+                </label>
+            </div>
+            <div class="search-status" id="searchStatus" style="display: none;">
+                <span class="iconify loading-icon" data-icon="mdi:loading"></span>
+                <span id="searchStatusText">正在建立索引...</span>
+            </div>
+            <div class="search-results" id="searchResults">
+                <div class="search-empty">输入关键词开始搜索</div>
+            </div>
+        </aside>
+
+        <aside class="annotation-sidebar" id="annotationSidebar">
+            <div class="sidebar-header">
+                <h3>笔记与标注</h3>
+                <button class="close-btn" id="closeAnnotationBtn">
+                    <span class="iconify" data-icon="mdi:close"></span>
+                </button>
+            </div>
+            <div class="annotation-tabs">
+                <button class="annotation-tab active" data-tab="highlights">高亮</button>
+                <button class="annotation-tab" data-tab="notes">笔记</button>
+                <button class="annotation-tab" data-tab="bookmarks">书签</button>
+            </div>
+            <div class="annotation-content">
+                <div class="annotation-panel" id="highlightsPanel">
+                    <div class="annotation-list" id="highlightsList">
+                        <div class="annotation-empty">暂无高亮</div>
+                    </div>
+                </div>
+                <div class="annotation-panel" id="notesPanel" style="display: none;">
+                    <div class="annotation-list" id="notesList">
+                        <div class="annotation-empty">暂无笔记</div>
+                    </div>
+                </div>
+                <div class="annotation-panel" id="bookmarksPanel" style="display: none;">
+                    <div class="annotation-list" id="bookmarksList">
+                        <div class="annotation-empty">暂无书签</div>
+                    </div>
+                </div>
+            </div>
+            <div class="annotation-actions">
+                <button class="annotation-action-btn" id="addBookmarkBtn">
+                    <span class="iconify" data-icon="mdi:bookmark-plus"></span>
+                    <span>添加书签</span>
+                </button>
             </div>
         </aside>
 

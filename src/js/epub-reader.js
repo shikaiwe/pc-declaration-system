@@ -9,6 +9,10 @@ let dbManager = null;
 let DatabaseError = null;
 let DBErrorType = null;
 
+// 搜索和笔记模块引用（延迟加载）
+let SearchManager = null;
+let AnnotationManager = null;
+
 class EpubReader {
     constructor() {
         this.book = null;
@@ -34,6 +38,10 @@ class EpubReader {
         this._initPromise = null;
         // 数据库可用状态
         this._dbAvailable = false;
+        // 搜索管理器
+        this.searchManager = null;
+        // 注解管理器
+        this.annotationManager = null;
     }
 
     /**
@@ -198,40 +206,35 @@ class EpubReader {
         if (!savedProgress) return;
         
         const localProgress = JSON.parse(savedProgress);
-        let migratedCount = 0;
-        let mergedCount = 0;
-        let skippedCount = 0;
         
         for (const [bookKey, percentage] of Object.entries(localProgress)) {
             const existing = await dbManager.get('progress', bookKey);
             
+            // 确保 percentage 是 0-100 格式
+            let normalizedPercentage = percentage;
+            if (typeof percentage === 'number' && percentage >= 0 && percentage <= 1) {
+                normalizedPercentage = Math.round(percentage * 100);
+            }
+            
             if (!existing) {
-                // 直接迁移
                 await dbManager.put('progress', {
                     bookKey,
-                    percentage,
+                    percentage: normalizedPercentage,
                     timestamp: Date.now(),
                     source: 'migration'
                 });
-                migratedCount++;
             } else {
-                // 冲突解决：比较时间戳，保留较新的数据
                 const localTimestamp = this.extractTimestampFromProgress(localProgress, bookKey);
                 const existingTimestamp = existing.timestamp || 0;
                 
                 if (localTimestamp > existingTimestamp) {
-                    // localStorage 数据更新，覆盖
                     await dbManager.put('progress', {
                         ...existing,
-                        percentage,
+                        percentage: normalizedPercentage,
                         timestamp: localTimestamp,
                         source: 'migration-merged',
                         previousPercentage: existing.percentage
                     });
-                    mergedCount++;
-                } else {
-                    // IndexedDB 数据更新或相同，保留
-                    skippedCount++;
                 }
             }
         }
@@ -372,18 +375,30 @@ class EpubReader {
         const backBtn = document.getElementById('backBtn');
         const tocBtn = document.getElementById('tocBtn');
         const settingsBtn = document.getElementById('settingsBtn');
+        const searchBtn = document.getElementById('searchBtn');
+        const annotationBtn = document.getElementById('annotationBtn');
         const closeTocBtn = document.getElementById('closeTocBtn');
         const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const closeSearchBtn = document.getElementById('closeSearchBtn');
+        const closeAnnotationBtn = document.getElementById('closeAnnotationBtn');
         const overlay = document.getElementById('overlay');
         const decreaseFont = document.getElementById('decreaseFont');
         const increaseFont = document.getElementById('increaseFont');
         const themeBtns = document.querySelectorAll('.theme-btn');
+        const annotationTabs = document.querySelectorAll('.annotation-tab');
+        const addBookmarkBtn = document.getElementById('addBookmarkBtn');
+        const searchInput = document.getElementById('searchInput');
+        const searchSubmitBtn = document.getElementById('searchSubmitBtn');
 
         backBtn.addEventListener('click', () => this.showBookshelf());
         tocBtn.addEventListener('click', () => this.toggleToc());
         settingsBtn.addEventListener('click', () => this.toggleSettings());
+        searchBtn.addEventListener('click', () => this.toggleSearch());
+        annotationBtn.addEventListener('click', () => this.toggleAnnotations());
         closeTocBtn.addEventListener('click', () => this.closeToc());
         closeSettingsBtn.addEventListener('click', () => this.closeSettings());
+        closeSearchBtn.addEventListener('click', () => this.closeSearch());
+        closeAnnotationBtn.addEventListener('click', () => this.closeAnnotations());
         overlay.addEventListener('click', () => this.closeSidebars());
         decreaseFont.addEventListener('click', () => this.changeFontSize(-10));
         increaseFont.addEventListener('click', () => this.changeFontSize(10));
@@ -395,6 +410,22 @@ class EpubReader {
                 themeBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             });
+        });
+
+        annotationTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                this.switchAnnotationTab(tabName);
+                annotationTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+
+        addBookmarkBtn.addEventListener('click', () => this.addBookmark());
+        
+        searchSubmitBtn.addEventListener('click', () => this.performSearch());
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.performSearch();
         });
 
         document.addEventListener('keyup', (e) => this.handleKeyup(e));
@@ -529,9 +560,13 @@ class EpubReader {
             document.getElementById('backBtn').style.display = 'flex';
             document.getElementById('tocBtn').style.display = 'flex';
             document.getElementById('settingsBtn').style.display = 'flex';
+            document.getElementById('searchBtn').style.display = 'flex';
+            document.getElementById('annotationBtn').style.display = 'flex';
 
             this.initRendition();
             this.loadToc();
+            this.initSearchManager();
+            this.initAnnotationManager();
             
             // 先显示书籍内容，不阻塞阅读
             this.hideLoading();
@@ -953,9 +988,8 @@ class EpubReader {
     toggleToc() {
         const sidebar = document.getElementById('tocSidebar');
         const overlay = document.getElementById('overlay');
-        const settingsSidebar = document.getElementById('settingsSidebar');
         
-        settingsSidebar.classList.remove('active');
+        this.closeOtherSidebars('tocSidebar');
         sidebar.classList.toggle('active');
         overlay.classList.toggle('active', sidebar.classList.contains('active'));
     }
@@ -966,11 +1000,54 @@ class EpubReader {
     toggleSettings() {
         const sidebar = document.getElementById('settingsSidebar');
         const overlay = document.getElementById('overlay');
-        const tocSidebar = document.getElementById('tocSidebar');
         
-        tocSidebar.classList.remove('active');
+        this.closeOtherSidebars('settingsSidebar');
         sidebar.classList.toggle('active');
         overlay.classList.toggle('active', sidebar.classList.contains('active'));
+    }
+
+    /**
+     * 切换搜索侧边栏
+     */
+    toggleSearch() {
+        const sidebar = document.getElementById('searchSidebar');
+        const overlay = document.getElementById('overlay');
+        
+        this.closeOtherSidebars('searchSidebar');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active', sidebar.classList.contains('open'));
+        
+        if (sidebar.classList.contains('open')) {
+            document.getElementById('searchInput').focus();
+        }
+    }
+
+    /**
+     * 切换笔记侧边栏
+     */
+    toggleAnnotations() {
+        const sidebar = document.getElementById('annotationSidebar');
+        const overlay = document.getElementById('overlay');
+        
+        this.closeOtherSidebars('annotationSidebar');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active', sidebar.classList.contains('open'));
+    }
+
+    /**
+     * 关闭其他侧边栏
+     * @param {string} except - 排除的侧边栏ID
+     */
+    closeOtherSidebars(except) {
+        const sidebars = ['tocSidebar', 'settingsSidebar', 'searchSidebar', 'annotationSidebar'];
+        sidebars.forEach(id => {
+            if (id !== except) {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('active', 'open');
+                }
+            }
+        });
     }
 
     /**
@@ -990,11 +1067,29 @@ class EpubReader {
     }
 
     /**
+     * 关闭搜索侧边栏
+     */
+    closeSearch() {
+        document.getElementById('searchSidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('active');
+    }
+
+    /**
+     * 关闭笔记侧边栏
+     */
+    closeAnnotations() {
+        document.getElementById('annotationSidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('active');
+    }
+
+    /**
      * 关闭所有侧边栏
      */
     closeSidebars() {
         document.getElementById('tocSidebar').classList.remove('active');
         document.getElementById('settingsSidebar').classList.remove('active');
+        document.getElementById('searchSidebar').classList.remove('open');
+        document.getElementById('annotationSidebar').classList.remove('open');
         document.getElementById('overlay').classList.remove('active');
     }
 
@@ -1276,6 +1371,288 @@ class EpubReader {
     }
 
     /**
+     * 初始化搜索管理器
+     */
+    async initSearchManager() {
+        if (!this.book) return;
+        
+        try {
+            if (!SearchManager) {
+                const module = await import('./search-manager.js');
+                SearchManager = module.default;
+            }
+            
+            this.searchManager = new SearchManager(this.book);
+            
+            this.searchManager.onProgress = (progress) => {
+                const statusText = document.getElementById('searchStatusText');
+                if (statusText) {
+                    statusText.textContent = `正在建立索引... ${progress.percentage.toFixed(0)}%`;
+                }
+            };
+            
+        } catch (e) {
+            console.error('初始化搜索管理器失败:', e);
+        }
+    }
+
+    /**
+     * 初始化注解管理器
+     */
+    async initAnnotationManager() {
+        if (!this.rendition || !this.currentBookKey) return;
+        
+        try {
+            if (!AnnotationManager) {
+                const module = await import('./annotation-manager.js');
+                AnnotationManager = module.default;
+            }
+            
+            this.annotationManager = new AnnotationManager(this.rendition);
+            await this.annotationManager.init(this.currentBookKey);
+            
+            this.annotationManager.onAnnotationAdded = (annotation) => {
+                this.refreshAnnotationList();
+            };
+            
+            this.annotationManager.onAnnotationRemoved = (annotation) => {
+                this.refreshAnnotationList();
+            };
+            
+            this.annotationManager.onAnnotationClicked = (annotation) => {
+                this.rendition.display(annotation.cfiRange);
+            };
+            
+            this.refreshAnnotationList();
+            
+        } catch (e) {
+            console.error('初始化注解管理器失败:', e);
+        }
+    }
+
+    /**
+     * 执行搜索
+     */
+    async performSearch() {
+        if (!this.searchManager) {
+            await this.initSearchManager();
+        }
+        
+        const input = document.getElementById('searchInput');
+        const query = input.value.trim();
+        
+        if (!query) return;
+        
+        const caseSensitive = document.getElementById('searchCaseSensitive').checked;
+        const resultsContainer = document.getElementById('searchResults');
+        const statusEl = document.getElementById('searchStatus');
+        
+        statusEl.style.display = 'flex';
+        resultsContainer.innerHTML = '<div class="search-empty">搜索中...</div>';
+        
+        try {
+            if (!this.searchManager.index) {
+                document.getElementById('searchStatusText').textContent = '正在建立索引...';
+                await this.searchManager.buildIndex();
+            }
+            
+            const results = await this.searchManager.search(query, { caseSensitive });
+            
+            statusEl.style.display = 'none';
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="search-empty">未找到匹配结果</div>';
+                return;
+            }
+            
+            resultsContainer.innerHTML = results.map((result) => {
+                const chapter = result.section?.title || '未知章节';
+                const href = result.section?.href || '';
+                const context = result.match?.context || {};
+                const highlightedText = this.highlightSearchTerm(context.text || '', query);
+                
+                return `
+                    <div class="search-result-item" data-href="${href}">
+                        <div class="search-result-chapter">${chapter}</div>
+                        <div class="search-result-text">${highlightedText}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const href = item.dataset.href;
+                    if (href) {
+                        this.rendition.display(href);
+                    }
+                    this.closeSearch();
+                });
+            });
+            
+        } catch (e) {
+            console.error('搜索失败:', e);
+            statusEl.style.display = 'none';
+            resultsContainer.innerHTML = '<div class="search-empty">搜索出错</div>';
+        }
+    }
+
+    /**
+     * 高亮搜索关键词
+     * @param {string} text - 原始文本
+     * @param {string} query - 搜索关键词
+     * @returns {string}
+     */
+    highlightSearchTerm(text, query) {
+        if (!text || !query) return text;
+        const regex = new RegExp(`(${this.escapeRegex(query)})`, 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+    }
+
+    /**
+     * 转义正则特殊字符
+     * @param {string} str - 原始字符串
+     * @returns {string}
+     */
+    escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    /**
+     * 切换笔记标签页
+     * @param {string} tabName - 标签名称
+     */
+    switchAnnotationTab(tabName) {
+        const panels = {
+            highlights: 'highlightsPanel',
+            notes: 'notesPanel',
+            bookmarks: 'bookmarksPanel'
+        };
+        
+        Object.values(panels).forEach(panelId => {
+            document.getElementById(panelId).style.display = 'none';
+        });
+        
+        if (panels[tabName]) {
+            document.getElementById(panels[tabName]).style.display = 'block';
+        }
+        
+        this.refreshAnnotationList();
+    }
+
+    /**
+     * 刷新注解列表
+     */
+    async refreshAnnotationList() {
+        if (!this.annotationManager) return;
+        
+        const annotations = await this.annotationManager.getAnnotations();
+        
+        const highlights = annotations.filter(a => a.type === 'highlight');
+        const notes = annotations.filter(a => a.type === 'note');
+        const bookmarks = annotations.filter(a => a.type === 'bookmark');
+        
+        this.renderAnnotationItems('highlightsList', highlights, 'highlight');
+        this.renderAnnotationItems('notesList', notes, 'note');
+        this.renderAnnotationItems('bookmarksList', bookmarks, 'bookmark');
+    }
+
+    /**
+     * 渲染注解项
+     * @param {string} listId - 列表元素ID
+     * @param {Array} items - 注解项数组
+     * @param {string} type - 注解类型
+     */
+    renderAnnotationItems(listId, items, type) {
+        const list = document.getElementById(listId);
+        
+        if (items.length === 0) {
+            const emptyText = {
+                highlight: '暂无高亮',
+                note: '暂无笔记',
+                bookmark: '暂无书签'
+            };
+            list.innerHTML = `<div class="annotation-empty">${emptyText[type]}</div>`;
+            return;
+        }
+        
+        list.innerHTML = items.map(item => `
+            <div class="annotation-item" data-id="${item.id}" data-cfi="${item.cfiRange}">
+                <div class="annotation-item-header">
+                    <span class="annotation-item-chapter">${item.chapter || '当前位置'}</span>
+                    <span class="annotation-item-date">${this.formatDate(item.timestamp)}</span>
+                </div>
+                <div class="annotation-item-text">${item.text || '点击跳转'}</div>
+                ${item.note ? `<div class="annotation-item-note">${item.note}</div>` : ''}
+                <div class="annotation-item-actions">
+                    <button class="annotation-item-btn goto">跳转</button>
+                    <button class="annotation-item-btn delete">删除</button>
+                </div>
+            </div>
+        `).join('');
+        
+        list.querySelectorAll('.annotation-item').forEach(el => {
+            const id = el.dataset.id;
+            const cfi = el.dataset.cfi;
+            
+            el.querySelector('.goto').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.rendition.display(cfi);
+                this.closeAnnotations();
+            });
+            
+            el.querySelector('.delete').addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await this.annotationManager.removeAnnotation(id);
+                this.refreshAnnotationList();
+            });
+            
+            el.addEventListener('click', () => {
+                this.rendition.display(cfi);
+            });
+        });
+    }
+
+    /**
+     * 添加书签
+     */
+    async addBookmark() {
+        if (!this.annotationManager || !this.rendition) return;
+        
+        const location = this.rendition.currentLocation();
+        if (!location || !location.start) return;
+        
+        const cfiRange = location.start.cfi;
+        const chapter = this.getCurrentChapterName();
+        
+        await this.annotationManager.addBookmark(cfiRange, chapter);
+        this.refreshAnnotationList();
+    }
+
+    /**
+     * 获取当前章节名称
+     * @returns {string}
+     */
+    getCurrentChapterName() {
+        if (!this.rendition) return '';
+        const location = this.rendition.currentLocation();
+        if (location && location.start && location.start.href) {
+            const tocItem = this.tocData?.find(item => item.href === location.start.href);
+            return tocItem?.label || location.start.href;
+        }
+        return '当前位置';
+    }
+
+    /**
+     * 格式化日期
+     * @param {number} timestamp - 时间戳
+     * @returns {string}
+     */
+    formatDate(timestamp) {
+        const date = new Date(timestamp);
+        return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+    }
+
+    /**
      * 手动切换竖排/横排模式
      */
     toggleWritingMode() {
@@ -1283,7 +1660,6 @@ class EpubReader {
 
         this.isVerticalMode = !this.isVerticalMode;
         
-        // 重新初始化渲染器
         if (this.rendition) {
             this.rendition.destroy();
         }

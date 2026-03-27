@@ -522,6 +522,32 @@ class AnnotationManager {
     }
 
     /**
+     * 获取所有注解（别名）
+     * @returns {Promise<Array>}
+     */
+    async getAnnotations() {
+        return this.getAllAnnotations();
+    }
+
+    /**
+     * 添加书签
+     * @param {string} cfiRange - CFI 范围
+     * @param {string} chapter - 章节名称
+     */
+    async addBookmark(cfiRange, chapter) {
+        const annotation = {
+            id: this.generateId(),
+            bookKey: this.bookKey,
+            type: AnnotationType.BOOKMARK,
+            cfiRange: cfiRange,
+            chapter: chapter,
+            timestamp: Date.now()
+        };
+        
+        await this.addAnnotation(annotation);
+    }
+
+    /**
      * 按类型获取注解
      * @param {string} type - 注解类型
      * @returns {Array}
