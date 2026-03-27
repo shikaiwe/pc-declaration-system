@@ -4,6 +4,11 @@
  * 直接从服务器静态目录读取EPUB文件
  */
 
+// 数据库模块引用（延迟加载）
+let dbManager = null;
+let DatabaseError = null;
+let DBErrorType = null;
+
 class EpubReader {
     constructor() {
         this.book = null;
@@ -24,69 +29,339 @@ class EpubReader {
         this.isVerticalMode = false;
         // 书籍元数据缓存
         this.bookMetadata = null;
-        
-        this.init();
+        // 初始化状态
+        this._initialized = false;
+        this._initPromise = null;
+        // 数据库可用状态
+        this._dbAvailable = false;
     }
 
     /**
-     * 初始化阅读器
+     * 加载数据库模块
+     * @private
      */
-    init() {
-        this.loadSettings();
-        this.loadReadingProgress();
+    async _loadDatabaseModule() {
+        if (dbManager) return true;
+        
+        try {
+            const module = await import('./database.js');
+            dbManager = module.default;
+            DatabaseError = module.DatabaseError;
+            DBErrorType = module.DBErrorType;
+            this._dbAvailable = true;
+            return true;
+        } catch (e) {
+            console.error('数据库模块加载失败，使用 localStorage 降级方案:', e);
+            this._dbAvailable = false;
+            return false;
+        }
+    }
+
+    /**
+     * 初始化阅读器（异步）
+     * 必须在使用阅读器之前调用此方法
+     * 使用 Promise 链确保原子性，避免竞态条件
+     * @returns {Promise<void>}
+     */
+    async init() {
+        // 如果已经初始化，直接返回
+        if (this._initialized) {
+            return;
+        }
+        
+        // 如果正在初始化，返回现有的 Promise
+        if (!this._initPromise) {
+            this._initPromise = this._doInit()
+                .then(() => {
+                    this._initialized = true;
+                })
+                .catch((error) => {
+                    // 初始化失败，重置状态以便重试
+                    this._initialized = false;
+                    console.error('阅读器初始化失败:', error);
+                    throw error;
+                })
+                .finally(() => {
+                    // 无论成功或失败，都重置 Promise 引用
+                    this._initPromise = null;
+                });
+        }
+        
+        return this._initPromise;
+    }
+
+    /**
+     * 执行实际的初始化逻辑
+     * @private
+     */
+    async _doInit() {
+        // 加载数据库模块
+        await this._loadDatabaseModule();
+        
+        // 初始化数据库
+        await this.initDatabase();
+        
+        // 加载设置和进度
+        await this.loadSettings();
+        await this.loadReadingProgress();
+        
+        // 绑定事件和加载书籍
         this.bindEvents();
-        this.loadBooks();
+        await this.loadBooks();
         this.applyTheme(this.settings.theme);
+    }
+
+    /**
+     * 确保阅读器已初始化
+     * @private
+     */
+    async _ensureInitialized() {
+        if (!this._initialized) {
+            await this.init();
+        }
+    }
+
+    /**
+     * 初始化数据库
+     */
+    async initDatabase() {
+        // 检查数据库模块是否可用
+        if (!this._dbAvailable || !dbManager) {
+            console.warn('数据库模块不可用，使用 localStorage');
+            return;
+        }
+        
+        try {
+            await dbManager.init();
+            // 迁移旧数据
+            await this.migrateFromLocalStorage();
+        } catch (e) {
+            console.error('数据库初始化失败，使用 localStorage:', e);
+            this._dbAvailable = false;
+        }
+    }
+
+    /**
+     * 从 localStorage 迁移数据到 IndexedDB
+     * 使用时间戳优先策略解决冲突
+     */
+    async migrateFromLocalStorage() {
+        try {
+            // 迁移设置
+            await this.migrateSettings();
+            
+            // 迁移进度
+            await this.migrateProgress();
+            
+        } catch (e) {
+            console.error('数据迁移失败:', e);
+        }
+    }
+
+    /**
+     * 迁移设置数据
+     * @private
+     */
+    async migrateSettings() {
+        const savedSettings = localStorage.getItem('epub-reader-settings');
+        if (!savedSettings) return;
+        
+        const localSettings = JSON.parse(savedSettings);
+        const existingSettings = await dbManager.get('settings', 'user-settings');
+        
+        if (!existingSettings) {
+            // 直接迁移
+            await dbManager.put('settings', {
+                id: 'user-settings',
+                ...localSettings,
+                migratedAt: Date.now()
+            });
+        } else {
+            // 冲突解决：合并设置，localStorage 优先
+            const mergedSettings = {
+                ...existingSettings,
+                ...localSettings,
+                migratedAt: Date.now(),
+                conflictResolved: true
+            };
+            await dbManager.put('settings', mergedSettings);
+        }
+    }
+
+    /**
+     * 迁移进度数据
+     * 使用时间戳优先策略解决冲突
+     * @private
+     */
+    async migrateProgress() {
+        const savedProgress = localStorage.getItem('epub-reader-progress');
+        if (!savedProgress) return;
+        
+        const localProgress = JSON.parse(savedProgress);
+        let migratedCount = 0;
+        let mergedCount = 0;
+        let skippedCount = 0;
+        
+        for (const [bookKey, percentage] of Object.entries(localProgress)) {
+            const existing = await dbManager.get('progress', bookKey);
+            
+            if (!existing) {
+                // 直接迁移
+                await dbManager.put('progress', {
+                    bookKey,
+                    percentage,
+                    timestamp: Date.now(),
+                    source: 'migration'
+                });
+                migratedCount++;
+            } else {
+                // 冲突解决：比较时间戳，保留较新的数据
+                const localTimestamp = this.extractTimestampFromProgress(localProgress, bookKey);
+                const existingTimestamp = existing.timestamp || 0;
+                
+                if (localTimestamp > existingTimestamp) {
+                    // localStorage 数据更新，覆盖
+                    await dbManager.put('progress', {
+                        ...existing,
+                        percentage,
+                        timestamp: localTimestamp,
+                        source: 'migration-merged',
+                        previousPercentage: existing.percentage
+                    });
+                    mergedCount++;
+                } else {
+                    // IndexedDB 数据更新或相同，保留
+                    skippedCount++;
+                }
+            }
+        }
+        
+    }
+
+    /**
+     * 从进度数据中提取时间戳
+     * @private
+     * @param {Object} progress - 进度数据对象
+     * @param {string} bookKey - 书籍键
+     * @returns {number} 时间戳
+     */
+    extractTimestampFromProgress(progress, bookKey) {
+        // 检查是否有时间戳字段
+        const timestampKey = bookKey + '_timestamp';
+        if (progress[timestampKey]) {
+            return progress[timestampKey];
+        }
+        // 如果没有时间戳，使用当前时间
+        return Date.now();
     }
 
     /**
      * 加载用户设置
      */
-    loadSettings() {
+    async loadSettings() {
         try {
-            const saved = localStorage.getItem('epub-reader-settings');
+            // 优先从 IndexedDB 加载
+            const saved = await dbManager.get('settings', 'user-settings');
             if (saved) {
-                this.settings = JSON.parse(saved);
+                this.settings = { ...this.settings, ...saved };
+            } else {
+                // 降级到 localStorage
+                const localSaved = localStorage.getItem('epub-reader-settings');
+                if (localSaved) {
+                    this.settings = JSON.parse(localSaved);
+                }
             }
         } catch (e) {
-            console.warn('加载设置失败:', e);
+            console.error('加载设置失败:', e);
+            // 降级到 localStorage
+            try {
+                const saved = localStorage.getItem('epub-reader-settings');
+                if (saved) {
+                    this.settings = JSON.parse(saved);
+                }
+            } catch (e2) {
+                console.error('localStorage 加载也失败:', e2);
+            }
         }
         this.updateFontSizeDisplay();
     }
 
     /**
-     * 保存用户设置
+     * 加载阅读进度
      */
-    saveSettings() {
+    async loadReadingProgress() {
         try {
-            localStorage.setItem('epub-reader-settings', JSON.stringify(this.settings));
+            // 优先从 IndexedDB 加载所有进度
+            const allProgress = await dbManager.getAll('progress');
+            for (const progress of allProgress) {
+                this.readingProgress[progress.bookKey + '_percentage'] = progress.percentage;
+                if (progress.cfi) {
+                    this.readingProgress[progress.bookKey + '_location'] = progress.cfi;
+                }
+            }
         } catch (e) {
-            console.warn('保存设置失败:', e);
+            console.error('从 IndexedDB 加载进度失败:', e);
+            // 降级到 localStorage
+            try {
+                const saved = localStorage.getItem('epub-reader-progress');
+                if (saved) {
+                    this.readingProgress = JSON.parse(saved);
+                }
+            } catch (e2) {
+                console.error('localStorage 加载进度也失败:', e2);
+            }
         }
     }
 
     /**
-     * 加载阅读进度
+     * 保存用户设置
      */
-    loadReadingProgress() {
+    async saveSettings() {
         try {
-            const saved = localStorage.getItem('epub-reader-progress');
-            if (saved) {
-                this.readingProgress = JSON.parse(saved);
-            }
+            // 保存到 IndexedDB
+            await dbManager.put('settings', {
+                id: 'user-settings',
+                ...this.settings,
+                updatedAt: Date.now()
+            });
         } catch (e) {
-            console.warn('加载阅读进度失败:', e);
+            console.error('保存设置到 IndexedDB 失败:', e);
+        }
+        
+        // 同时保存到 localStorage 作为备份
+        try {
+            localStorage.setItem('epub-reader-settings', JSON.stringify(this.settings));
+        } catch (e) {
+            console.error('保存设置到 localStorage 失败:', e);
         }
     }
 
     /**
      * 保存阅读进度
      */
-    saveReadingProgress() {
+    async saveReadingProgress() {
+        // 保存当前书籍进度到 IndexedDB
+        if (this.currentBookKey && this.rendition) {
+            try {
+                const location = this.rendition.currentLocation();
+                if (location && location.start && location.start.cfi) {
+                    await dbManager.put('progress', {
+                        bookKey: this.currentBookKey,
+                        cfi: location.start.cfi,
+                        percentage: this.readingProgress[this.currentBookKey + '_percentage'] || 0,
+                        timestamp: Date.now()
+                    });
+                }
+            } catch (e) {
+                console.error('保存进度到 IndexedDB 失败:', e);
+            }
+        }
+        
+        // 同时保存到 localStorage 作为备份
         try {
             localStorage.setItem('epub-reader-progress', JSON.stringify(this.readingProgress));
         } catch (e) {
-            console.warn('保存阅读进度失败:', e);
+            console.error('保存进度到 localStorage 失败:', e);
         }
     }
 
@@ -143,11 +418,11 @@ class EpubReader {
                 const data = await response.json();
                 this.books = data.books || [];
             } else {
-                console.warn('加载书籍配置失败，使用默认配置');
+                console.error('加载书籍配置失败，使用默认配置');
                 this.books = this.getDefaultBooks();
             }
         } catch (e) {
-            console.warn('加载书籍配置失败:', e);
+            console.error('加载书籍配置失败:', e);
             this.books = this.getDefaultBooks();
         }
         
@@ -481,7 +756,7 @@ class EpubReader {
             tocContent.innerHTML = '';
             this.renderTocItems(toc, tocContent, 1);
         } catch (e) {
-            console.warn('加载目录失败:', e);
+            console.error('加载目录失败:', e);
             tocContent.innerHTML = '<div class="toc-empty"><p>加载失败</p></div>';
         }
     }
@@ -542,7 +817,7 @@ class EpubReader {
                     progress = Math.round(percentage * 100);
                 }
             } catch (e) {
-                console.warn('计算进度失败:', e);
+                console.error('计算进度失败:', e);
             }
         }
         
@@ -604,7 +879,7 @@ class EpubReader {
                 try {
                     this.rendition.destroy();
                 } catch (e) {
-                    console.warn('销毁渲染实例失败:', e);
+                    console.error('销毁渲染实例失败:', e);
                 }
                 this.rendition = null;
             }
@@ -612,7 +887,7 @@ class EpubReader {
             try {
                 this.book.destroy();
             } catch (e) {
-                console.warn('销毁书籍实例失败:', e);
+                console.error('销毁书籍实例失败:', e);
             }
             this.book = null;
         }
@@ -775,9 +1050,8 @@ class EpubReader {
         try {
             // 使用较小的分段数以加快生成速度
             await this.book.locations.generate(2048);
-            console.log('位置信息生成完成');
         } catch (e) {
-            console.warn('生成位置信息失败:', e);
+            console.error('生成位置信息失败:', e);
         }
     }
 
