@@ -3634,6 +3634,19 @@
                             if (section) section.style.display = 'none';
                         });
 
+                        /**
+                         * 控制电子书入口显示/隐藏
+                         * 仅在首页显示电子书入口
+                         */
+                        const bookReaderEntry = document.querySelector('.book-reader-entry');
+                        if (bookReaderEntry) {
+                            if (item.id === 'homeLink') {
+                                bookReaderEntry.style.display = 'flex';
+                            } else {
+                                bookReaderEntry.style.display = 'none';
+                            }
+                        }
+
                         const sectionToShow = contentSections[item.id];
                         if (sectionToShow) {
                             sectionToShow.style.display = 'block';
@@ -4215,6 +4228,13 @@
                         document.getElementById('accountManagement').classList.add('active');
                         // 关闭下拉菜单
                         dropdownMenu.classList.remove('active');
+                        /**
+                         * 隐藏电子书入口（非首页）
+                         */
+                        const bookReaderEntry = document.querySelector('.book-reader-entry');
+                        if (bookReaderEntry) {
+                            bookReaderEntry.style.display = 'none';
+                        }
                         // 加载当前值班时间安排
                         if (window.currentUserRole === 'worker' || window.currentUserRole === 'admin') {
                             scheduleSettings.loadCurrentDutyTime();
@@ -5132,6 +5152,11 @@
                         if (data.message === 'Success') {
                             utils.ui.showMessage('订单已撤销');
                             updateCalendarEvent(reportId, '3');
+                            /**
+                             * 实时更新订单卡片状态
+                             * 直接更新DOM中的订单卡片，无需重新加载整个列表
+                             */
+                            orderManager.updateOrderCardStatus(reportId, '3');
                             fetchHistoryOrders();
                             const calendarEl = document.querySelector('#calendar');
                             if (calendarEl && calendarEl._fullCalendar) {
@@ -5144,6 +5169,38 @@
                     .fail(function(error) {
                         console.error('撤销订单失败:', error);
                         utils.ui.showMessage('撤销订单失败，请重试');
+                    });
+                },
+
+                /**
+                 * 更新订单卡片状态
+                 * @param {string} reportId - 订单ID
+                 * @param {string} newStatus - 新状态 ('0'=待分配, '1'=已分配, '2'=已完成, '3'=已撤单)
+                 */
+                updateOrderCardStatus: function(reportId, newStatus) {
+                    const orderCards = document.querySelectorAll('.order-card');
+                    orderCards.forEach(card => {
+                        const reportIdEl = card.querySelector('p strong');
+                        if (reportIdEl && reportIdEl.textContent.includes('订单编号')) {
+                            const reportIdText = reportIdEl.parentElement.textContent;
+                            /**
+                             * 使用正则表达式精确匹配订单ID
+                             * 避免子字符串匹配导致的误匹配问题
+                             */
+                            const orderIdMatch = reportIdText.match(/订单编号：\s*(\S+)/);
+                            if (orderIdMatch && orderIdMatch[1] === reportId) {
+                                const { text: statusText, class: statusClass } = this.getStatusInfo(newStatus);
+                                const statusBadge = card.querySelector('.status-badge');
+                                if (statusBadge) {
+                                    statusBadge.textContent = statusText;
+                                    statusBadge.className = 'status-badge ' + statusClass;
+                                }
+                                const buttonsContainer = card.querySelector('.order-buttons');
+                                if (buttonsContainer) {
+                                    buttonsContainer.remove();
+                                }
+                            }
+                        }
                     });
                 }
             };
