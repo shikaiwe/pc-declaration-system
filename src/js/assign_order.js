@@ -73,21 +73,50 @@ class AssignOrder {
                         <div class="pull-indicator"></div>
                         <div class="assign-order-modal-header">
                             <h3 class="assign-order-modal-title">选择维修人员</h3>
-                            <p class="assign-order-modal-subtitle">请为此订单选择维修人员（可多选）</p>
+                            <p class="assign-order-modal-subtitle">请为此订单选择维修人员（可多选，最多5人）</p>
                             <div class="selected-count" id="selectedCount">已选择: 0 人</div>
                         </div>
                         <div class="assign-order-modal-body">
+                            <div class="worker-search-container">
+                                <input type="text" class="worker-search-input" id="workerSearchInput" placeholder="搜索维修人员...">
+                                <span class="worker-search-icon">
+                                    <span class="iconify" data-icon="mdi:magnify"></span>
+                                </span>
+                            </div>
+                            <div class="worker-batch-actions">
+                                <button class="batch-action-btn" id="selectAllBtn">全选</button>
+                                <button class="batch-action-btn" id="deselectAllBtn">清空</button>
+                            </div>
+                            <div class="selected-workers-container" id="selectedWorkersContainer">
+                                <div class="selected-workers-label">已选人员：</div>
+                                <div class="selected-workers-tags" id="selectedWorkersTags"></div>
+                            </div>
                             <div class="assign-order-workers-list" id="workersList">
                                 <div class="loading-workers">加载中...</div>
                             </div>
                         </div>
                         <div class="assign-order-modal-footer">
                             <button class="assign-order-btn assign-order-btn-cancel">取消</button>
-                            <button class="assign-order-btn assign-order-btn-confirm" id="confirmAssignBtn">确认分配</button>
+                            <button class="assign-order-btn assign-order-btn-confirm" id="confirmAssignBtn" disabled>确认分配</button>
                         </div>
                     </div>
                 </div>
                 <div class="assign-order-message"></div>
+                <div class="confirm-dialog-overlay" id="confirmDialogOverlay">
+                    <div class="confirm-dialog">
+                        <div class="confirm-dialog-header">
+                            <h4 class="confirm-dialog-title">确认分配</h4>
+                        </div>
+                        <div class="confirm-dialog-body">
+                            <div class="confirm-dialog-order-info" id="confirmOrderInfo"></div>
+                            <div class="confirm-dialog-workers-info" id="confirmWorkersInfo"></div>
+                        </div>
+                        <div class="confirm-dialog-footer">
+                            <button class="confirm-dialog-btn cancel" id="confirmDialogCancel">取消</button>
+                            <button class="confirm-dialog-btn confirm" id="confirmDialogConfirm">确认分配</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -196,6 +225,236 @@ class AssignOrder {
                 font-size: 12px;
                 color: #999;
                 margin-left: 8px;
+            }
+
+            /* 搜索框样式 */
+            .worker-search-container {
+                position: relative;
+                margin-bottom: 12px;
+            }
+
+            .worker-search-input {
+                width: 100%;
+                padding: 10px 12px 10px 36px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 14px;
+                transition: all 0.2s ease;
+                box-sizing: border-box;
+            }
+
+            .worker-search-input:focus {
+                outline: none;
+                border-color: #2196F3;
+                box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+            }
+
+            .worker-search-icon {
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #999;
+                font-size: 18px;
+            }
+
+            /* 批量操作按钮 */
+            .worker-batch-actions {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+
+            .batch-action-btn {
+                flex: 1;
+                padding: 8px 12px;
+                border: 1px solid #e0e0e0;
+                border-radius: 6px;
+                background: #f5f5f5;
+                color: #666;
+                font-size: 13px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .batch-action-btn:hover {
+                background: #e0e0e0;
+                border-color: #ccc;
+            }
+
+            .batch-action-btn:active {
+                transform: scale(0.98);
+            }
+
+            /* 已选人员展示 */
+            .selected-workers-container {
+                display: none;
+                margin-bottom: 12px;
+                padding: 10px;
+                background: #f5f9ff;
+                border-radius: 8px;
+                border: 1px solid #bbdefb;
+            }
+
+            .selected-workers-container.has-selected {
+                display: block;
+            }
+
+            .selected-workers-label {
+                font-size: 12px;
+                color: #1976D2;
+                margin-bottom: 8px;
+                font-weight: 500;
+            }
+
+            .selected-workers-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .worker-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 4px 10px;
+                background: #2196F3;
+                color: white;
+                border-radius: 16px;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .worker-tag-remove {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 14px;
+                height: 14px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                cursor: pointer;
+                transition: background 0.2s ease;
+            }
+
+            .worker-tag-remove:hover {
+                background: rgba(255, 255, 255, 0.5);
+            }
+
+            /* 确认对话框 */
+            .confirm-dialog-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 1100;
+            }
+
+            .confirm-dialog-overlay.active {
+                display: flex;
+            }
+
+            .confirm-dialog {
+                background: white;
+                border-radius: 12px;
+                padding: 24px;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            }
+
+            .confirm-dialog-header {
+                margin-bottom: 16px;
+            }
+
+            .confirm-dialog-title {
+                font-size: 18px;
+                color: #333;
+                margin: 0;
+            }
+
+            .confirm-dialog-body {
+                margin-bottom: 20px;
+            }
+
+            .confirm-dialog-order-info {
+                background: #f5f5f5;
+                padding: 12px;
+                border-radius: 8px;
+                margin-bottom: 12px;
+                font-size: 13px;
+                color: #666;
+            }
+
+            .confirm-dialog-order-info p {
+                margin: 4px 0;
+            }
+
+            .confirm-dialog-workers-info {
+                padding: 12px;
+                background: #e3f2fd;
+                border-radius: 8px;
+                border: 1px solid #bbdefb;
+            }
+
+            .confirm-dialog-workers-title {
+                font-size: 13px;
+                color: #1976D2;
+                margin-bottom: 8px;
+                font-weight: 500;
+            }
+
+            .confirm-dialog-workers-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .confirm-dialog-worker-tag {
+                padding: 4px 12px;
+                background: #2196F3;
+                color: white;
+                border-radius: 16px;
+                font-size: 13px;
+            }
+
+            .confirm-dialog-footer {
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+            }
+
+            .confirm-dialog-btn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .confirm-dialog-btn.cancel {
+                background: #f5f5f5;
+                color: #666;
+            }
+
+            .confirm-dialog-btn.cancel:hover {
+                background: #e0e0e0;
+            }
+
+            .confirm-dialog-btn.confirm {
+                background: #2196F3;
+                color: white;
+            }
+
+            .confirm-dialog-btn.confirm:hover {
+                background: #1976D2;
             }
 
             .selected-count {
@@ -593,7 +852,7 @@ class AssignOrder {
         if (confirmBtn) {
             confirmBtn.addEventListener('click', async(e) => {
                 e.preventDefault();
-                await this._handleConfirmAssign();
+                this._showConfirmDialog();
             });
         }
 
@@ -607,6 +866,33 @@ class AssignOrder {
                 }
             });
         }
+
+        // 搜索功能
+        const searchInput = this.container.querySelector('#workerSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this._handleWorkerSearch(e.target.value);
+            });
+        }
+
+        // 全选按钮
+        const selectAllBtn = this.container.querySelector('#selectAllBtn');
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', () => {
+                this._handleSelectAll();
+            });
+        }
+
+        // 清空按钮
+        const deselectAllBtn = this.container.querySelector('#deselectAllBtn');
+        if (deselectAllBtn) {
+            deselectAllBtn.addEventListener('click', () => {
+                this._handleDeselectAll();
+            });
+        }
+
+        // 确认对话框事件
+        this._bindConfirmDialogEvents();
 
         // 添加触摸滑动关闭功能
         const selection = this.container.querySelector('.assign-order-worker-selection');
@@ -633,6 +919,37 @@ class AssignOrder {
                     this.closeWorkerSelection();
                 } else {
                     selection.style.transform = '';
+                }
+            });
+        }
+    }
+
+    /**
+     * 绑定确认对话框事件
+     * @private
+     */
+    _bindConfirmDialogEvents() {
+        const confirmDialogOverlay = this.container.querySelector('#confirmDialogOverlay');
+        const confirmDialogCancel = this.container.querySelector('#confirmDialogCancel');
+        const confirmDialogConfirm = this.container.querySelector('#confirmDialogConfirm');
+
+        if (confirmDialogCancel) {
+            confirmDialogCancel.addEventListener('click', () => {
+                this._hideConfirmDialog();
+            });
+        }
+
+        if (confirmDialogConfirm) {
+            confirmDialogConfirm.addEventListener('click', async() => {
+                this._hideConfirmDialog();
+                await this._handleConfirmAssign();
+            });
+        }
+
+        if (confirmDialogOverlay) {
+            confirmDialogOverlay.addEventListener('click', (e) => {
+                if (e.target === confirmDialogOverlay) {
+                    this._hideConfirmDialog();
                 }
             });
         }
@@ -714,6 +1031,199 @@ class AssignOrder {
         const confirmBtn = this.container.querySelector('.assign-order-btn-confirm');
         if (confirmBtn) {
             confirmBtn.disabled = this.selectedWorkers.size === 0;
+        }
+
+        // 更新已选人员展示
+        this._updateSelectedWorkersDisplay();
+    }
+
+    /**
+     * 更新已选人员展示
+     * @private
+     */
+    _updateSelectedWorkersDisplay() {
+        const container = this.container.querySelector('#selectedWorkersContainer');
+        const tagsContainer = this.container.querySelector('#selectedWorkersTags');
+        
+        if (!container || !tagsContainer) return;
+
+        if (this.selectedWorkers.size === 0) {
+            container.classList.remove('has-selected');
+            tagsContainer.innerHTML = '';
+            return;
+        }
+
+        container.classList.add('has-selected');
+        
+        const tagsHTML = Array.from(this.selectedWorkers).map(name => `
+            <div class="worker-tag" data-worker-name="${name}">
+                <span>${name}</span>
+                <div class="worker-tag-remove" data-worker-name="${name}">×</div>
+            </div>
+        `).join('');
+        
+        tagsContainer.innerHTML = tagsHTML;
+
+        // 绑定移除事件
+        tagsContainer.querySelectorAll('.worker-tag-remove').forEach(removeBtn => {
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const workerName = removeBtn.dataset.workerName;
+                this._removeSelectedWorker(workerName);
+            });
+        });
+    }
+
+    /**
+     * 移除已选人员
+     * @private
+     * @param {string} workerName - 人员名称
+     */
+    _removeSelectedWorker(workerName) {
+        this.selectedWorkers.delete(workerName);
+        
+        // 更新列表中的选中状态
+        const workerItem = this.container.querySelector(`.worker-item[data-worker-name="${workerName}"]`);
+        if (workerItem) {
+            workerItem.classList.remove('selected');
+        }
+        
+        this._updateSelectedCount();
+    }
+
+    /**
+     * 处理搜索过滤
+     * @private
+     * @param {string} keyword - 搜索关键词
+     */
+    _handleWorkerSearch(keyword) {
+        const workersList = this.container.querySelector('#workersList');
+        if (!workersList) return;
+
+        const workerItems = workersList.querySelectorAll('.worker-item');
+        const normalizedKeyword = keyword.toLowerCase().trim();
+
+        workerItems.forEach(item => {
+            const workerName = item.dataset.workerName?.toLowerCase() || '';
+            if (workerName.includes(normalizedKeyword)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    /**
+     * 处理全选
+     * @private
+     */
+    _handleSelectAll() {
+        const workersList = this.container.querySelector('#workersList');
+        if (!workersList) return;
+
+        const visibleItems = Array.from(workersList.querySelectorAll('.worker-item')).filter(
+            item => item.style.display !== 'none'
+        );
+
+        // 计算可选数量
+        const remainingSlots = BUSINESS_RULES.MAX_WORKERS_PER_ORDER - this.selectedWorkers.size;
+        
+        if (remainingSlots <= 0) {
+            this.showMessage(ERROR_MESSAGES.MAX_WORKERS_EXCEEDED, 'error');
+            return;
+        }
+
+        // 选择未选中的可见项，最多选择 remainingSlots 个
+        let selected = 0;
+        visibleItems.forEach(item => {
+            if (selected >= remainingSlots) return;
+            
+            const workerName = item.dataset.workerName;
+            if (workerName && !this.selectedWorkers.has(workerName)) {
+                this.selectedWorkers.add(workerName);
+                item.classList.add('selected');
+                selected++;
+            }
+        });
+
+        this._updateSelectedCount();
+        
+        if (selected > 0 && this.selectedWorkers.size === BUSINESS_RULES.MAX_WORKERS_PER_ORDER) {
+            this.showMessage(`已选择最大人数限制（${BUSINESS_RULES.MAX_WORKERS_PER_ORDER}人）`, 'info');
+        }
+    }
+
+    /**
+     * 处理清空选择
+     * @private
+     */
+    _handleDeselectAll() {
+        this.selectedWorkers.clear();
+        
+        // 清除所有选中状态
+        const workerItems = this.container.querySelectorAll('.worker-item.selected');
+        workerItems.forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        this._updateSelectedCount();
+    }
+
+    /**
+     * 显示确认对话框
+     * @private
+     */
+    _showConfirmDialog() {
+        if (this.selectedWorkers.size === 0) {
+            this.showMessage(ERROR_MESSAGES.NO_WORKER_SELECTED, 'error');
+            return;
+        }
+
+        const overlay = this.container.querySelector('#confirmDialogOverlay');
+        const orderInfoContainer = this.container.querySelector('#confirmOrderInfo');
+        const workersInfoContainer = this.container.querySelector('#confirmWorkersInfo');
+
+        if (!overlay || !orderInfoContainer || !workersInfoContainer) return;
+
+        // 获取当前订单信息
+        const orderCard = this.container.querySelector(`[data-report-id="${this.currentReportId}"]`)?.closest('.order-card');
+        
+        if (orderCard) {
+            const orderInfo = orderCard.querySelector('.order-info');
+            if (orderInfo) {
+                const address = orderInfo.querySelector('p:nth-child(5)')?.textContent || '';
+                const issue = orderInfo.querySelector('p:nth-child(6)')?.textContent || '';
+                
+                orderInfoContainer.innerHTML = `
+                    <p><strong>订单编号：</strong>${this.currentReportId}</p>
+                    <p>${address}</p>
+                    <p>${issue}</p>
+                `;
+            }
+        } else {
+            orderInfoContainer.innerHTML = `<p><strong>订单编号：</strong>${this.currentReportId}</p>`;
+        }
+
+        // 显示已选人员
+        const workersList = Array.from(this.selectedWorkers);
+        workersInfoContainer.innerHTML = `
+            <div class="confirm-dialog-workers-title">将分配给以下 ${workersList.length} 名维修人员：</div>
+            <div class="confirm-dialog-workers-list">
+                ${workersList.map(name => `<span class="confirm-dialog-worker-tag">${name}</span>`).join('')}
+            </div>
+        `;
+
+        overlay.classList.add('active');
+    }
+
+    /**
+     * 隐藏确认对话框
+     * @private
+     */
+    _hideConfirmDialog() {
+        const overlay = this.container.querySelector('#confirmDialogOverlay');
+        if (overlay) {
+            overlay.classList.remove('active');
         }
     }
 
