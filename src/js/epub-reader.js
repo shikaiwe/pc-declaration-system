@@ -20,6 +20,10 @@ class EpubReader {
         this.EPUB_DIR = '/book/';
         // 书籍配置文件URL
         this.BOOKS_CONFIG_URL = '/book/books.json';
+        // 日文竖排模式状态
+        this.isVerticalMode = false;
+        // 书籍元数据缓存
+        this.bookMetadata = null;
         
         this.init();
     }
@@ -239,6 +243,10 @@ class EpubReader {
             
             await this.book.ready;
             
+            // 检测书籍是否为日文竖排模式
+            this.isVerticalMode = this.detectVerticalMode(bookData);
+            this.bookMetadata = bookData;
+            
             document.getElementById('bookTitle').textContent = bookData.name;
             document.getElementById('bookshelf').style.display = 'none';
             document.getElementById('readerViewer').style.display = 'flex';
@@ -253,6 +261,11 @@ class EpubReader {
             // 先显示书籍内容，不阻塞阅读
             this.hideLoading();
             this.optimizeImages();
+            
+            // 应用日文竖排样式
+            if (this.isVerticalMode) {
+                this.applyVerticalTextStyles();
+            }
             
             const savedLocation = this.readingProgress[bookData.key + '_location'];
             await this.rendition.display(savedLocation || undefined);
@@ -367,22 +380,32 @@ class EpubReader {
         const viewer = document.getElementById('epubViewer');
         const viewerRect = viewer.getBoundingClientRect();
 
-        this.rendition = this.book.renderTo('epubViewer', {
+        // 根据是否为日文竖排模式配置不同的渲染参数
+        const renderOptions = {
             width: viewerRect.width,
             height: viewerRect.height,
             spread: 'none',
-            flow: 'scrolled',
-            manager: 'continuous',
-            infinite: true,
-            offset: 800,
-            snap: false,
-            defaultDirection: 'ltr',
+            flow: this.isVerticalMode ? 'paginated' : 'scrolled',
+            manager: this.isVerticalMode ? 'default' : 'continuous',
+            infinite: !this.isVerticalMode,
+            offset: this.isVerticalMode ? 0 : 800,
+            snap: this.isVerticalMode,
+            defaultDirection: this.isVerticalMode ? 'rtl' : 'ltr',
             allowScriptedContent: false,
             minSpreadWidth: 1200
-        });
+        };
+
+        this.rendition = this.book.renderTo('epubViewer', renderOptions);
 
         this.rendition.themes.fontSize(`${this.settings.fontSize}%`);
         this.applyRenditionTheme();
+
+        // 如果是日文竖排模式，设置书写模式
+        if (this.isVerticalMode) {
+            this.rendition.themes.override('writing-mode', 'vertical-rl');
+            this.rendition.themes.override('-webkit-writing-mode', 'vertical-rl');
+            this.rendition.themes.override('-epub-writing-mode', 'vertical-rl');
+        }
 
         this.rendition.on('relocated', (location) => this.onRelocated(location));
         this.rendition.on('rendered', () => this.onRendered());
@@ -396,24 +419,31 @@ class EpubReader {
     applyRenditionTheme() {
         if (!this.rendition) return;
 
+        // 日文竖排模式使用专用字体
+        const japaneseFontFamily = '"Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", "IPAexMincho", serif';
+        const defaultFontFamily = '"Noto Serif SC", "Songti SC", serif';
+
         const themes = {
             light: { 
                 background: '#FDFBF8', 
                 color: '#3D3632',
-                'line-height': '1.8',
-                'font-family': '"Noto Serif SC", "Songti SC", serif'
+                'line-height': this.isVerticalMode ? '1.7' : '1.8',
+                'font-family': this.isVerticalMode ? japaneseFontFamily : defaultFontFamily,
+                'letter-spacing': this.isVerticalMode ? '0.05em' : 'normal'
             },
             sepia: { 
                 background: '#F5EDE0', 
                 color: '#4A3F32',
-                'line-height': '1.8',
-                'font-family': '"Noto Serif SC", "Songti SC", serif'
+                'line-height': this.isVerticalMode ? '1.7' : '1.8',
+                'font-family': this.isVerticalMode ? japaneseFontFamily : defaultFontFamily,
+                'letter-spacing': this.isVerticalMode ? '0.05em' : 'normal'
             },
             dark: { 
                 background: '#1E1B17', 
                 color: '#D8D2CC',
-                'line-height': '1.8',
-                'font-family': '"Noto Serif SC", "Songti SC", serif'
+                'line-height': this.isVerticalMode ? '1.7' : '1.8',
+                'font-family': this.isVerticalMode ? japaneseFontFamily : defaultFontFamily,
+                'letter-spacing': this.isVerticalMode ? '0.05em' : 'normal'
             }
         };
 
@@ -421,6 +451,15 @@ class EpubReader {
         Object.entries(theme).forEach(([key, value]) => {
             this.rendition.themes.override(key, value);
         });
+
+        // 日文竖排模式额外样式
+        if (this.isVerticalMode) {
+            this.rendition.themes.override('writing-mode', 'vertical-rl');
+            this.rendition.themes.override('-webkit-writing-mode', 'vertical-rl');
+            this.rendition.themes.override('-epub-writing-mode', 'vertical-rl');
+            this.rendition.themes.override('text-orientation', 'mixed');
+            this.rendition.themes.override('-webkit-text-orientation', 'mixed');
+        }
     }
 
     /**
@@ -578,6 +617,10 @@ class EpubReader {
             this.book = null;
         }
 
+        // 重置日文竖排模式状态
+        this.isVerticalMode = false;
+        this.bookMetadata = null;
+
         document.getElementById('bookTitle').textContent = '书架';
         document.getElementById('bookshelf').style.display = 'block';
         document.getElementById('readerViewer').style.display = 'none';
@@ -595,7 +638,38 @@ class EpubReader {
      * @param {KeyboardEvent} e - 键盘事件
      */
     handleKeyup(e) {
-        // 滚动模式下不需要键盘翻页
+        // 日文竖排模式下支持键盘翻页
+        if (this.isVerticalMode && this.rendition) {
+            // 竖排模式下：左箭头下一页，右箭头上一页（从右向左阅读）
+            if (e.key === 'ArrowLeft' || e.keyCode === 37) {
+                this.rendition.next();
+            } else if (e.key === 'ArrowRight' || e.keyCode === 39) {
+                this.rendition.prev();
+            } else if (e.key === 'ArrowUp' || e.keyCode === 38) {
+                // 上箭头滚动
+                this.scrollVertical(-50);
+            } else if (e.key === 'ArrowDown' || e.keyCode === 40) {
+                // 下箭头滚动
+                this.scrollVertical(50);
+            }
+        }
+    }
+
+    /**
+     * 竖排模式下的垂直滚动
+     * @param {number} delta - 滚动距离
+     */
+    scrollVertical(delta) {
+        const viewer = document.getElementById('epubViewer');
+        if (viewer) {
+            const iframe = viewer.querySelector('iframe');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.scrollBy({
+                    top: delta,
+                    behavior: 'smooth'
+                });
+            }
+        }
     }
 
     /**
@@ -705,6 +779,248 @@ class EpubReader {
         } catch (e) {
             console.warn('生成位置信息失败:', e);
         }
+    }
+
+    /**
+     * 检测书籍是否需要日文竖排模式
+     * @param {Object} bookData - 书籍数据
+     * @returns {boolean} 是否为日文竖排模式
+     */
+    detectVerticalMode(bookData) {
+        // 1. 检查书籍配置中是否明确指定了竖排模式
+        if (bookData.verticalMode === true) {
+            return true;
+        }
+
+        // 2. 检查书籍元数据中的页面方向
+        if (this.book && this.book.package && this.book.package.metadata) {
+            const metadata = this.book.package.metadata;
+            
+            // 检查 page-progression-direction
+            if (metadata.direction === 'rtl' || metadata.pageProgressionDirection === 'rtl') {
+                // 进一步检查语言是否为日语
+                const language = metadata.language || '';
+                if (language.toLowerCase().startsWith('ja')) {
+                    return true;
+                }
+            }
+        }
+
+        // 3. 检查书籍配置中的语言设置
+        if (bookData.language) {
+            const lang = bookData.language.toLowerCase();
+            if (lang === 'ja' || lang === 'japanese' || lang.startsWith('ja-')) {
+                // 如果是日语书籍，检查是否指定了竖排
+                if (bookData.writingMode === 'vertical' || bookData.writingMode === 'vertical-rl') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 应用日文竖排文本样式
+     * 通过 hooks 注入 CSS 来实现日文排版规则
+     */
+    applyVerticalTextStyles() {
+        if (!this.rendition) return;
+
+        // 注册内容钩子，注入日文竖排样式
+        this.rendition.hooks.content.register((contents) => {
+            // 创建日文竖排专用样式
+            const verticalStyle = contents.document.createElement('style');
+            verticalStyle.id = 'japanese-vertical-style';
+            verticalStyle.textContent = `
+                /* 日文竖排核心样式 */
+                html {
+                    writing-mode: vertical-rl;
+                    -webkit-writing-mode: vertical-rl;
+                    -epub-writing-mode: vertical-rl;
+                    text-orientation: mixed;
+                    -webkit-text-orientation: mixed;
+                    -epub-text-orientation: mixed;
+                }
+                
+                body {
+                    writing-mode: vertical-rl;
+                    -webkit-writing-mode: vertical-rl;
+                    -epub-writing-mode: vertical-rl;
+                    text-orientation: mixed;
+                    -webkit-text-orientation: mixed;
+                    -epub-text-orientation: mixed;
+                    line-break: normal;
+                    -webkit-line-break: normal;
+                    -epub-line-break: normal;
+                    word-break: break-all;
+                    overflow-wrap: break-word;
+                }
+                
+                /* 字符方向处理 */
+                * {
+                    text-orientation: mixed;
+                    -webkit-text-orientation: mixed;
+                }
+                
+                /* 纵中横处理 - 数字和短英文横向显示 */
+                .tcy, 
+                .tate-chu-yoko,
+                span[style*="text-combine"] {
+                    text-combine-upright: all;
+                    -webkit-text-combine: horizontal;
+                }
+                
+                /* 数字处理 - 2位数字使用纵中横 */
+                .num {
+                    text-combine-upright: digits 2;
+                    -webkit-text-combine: horizontal;
+                }
+                
+                /* 行距优化 */
+                p, div, section, article {
+                    line-height: 1.7;
+                    letter-spacing: 0.05em;
+                }
+                
+                /* 标点符号处理 */
+                kbd, code, samp {
+                    text-orientation: sideways;
+                    -webkit-text-orientation: sideways;
+                }
+                
+                /* 图片处理 */
+                img {
+                    max-width: 100%;
+                    height: auto;
+                    max-height: 80vh;
+                }
+                
+                /* 表格处理 */
+                table {
+                    writing-mode: horizontal-tb;
+                    -webkit-writing-mode: horizontal-tb;
+                }
+                
+                /* 注音处理 */
+                ruby {
+                    ruby-align: center;
+                }
+                
+                /* 强调点处理 */
+                em {
+                    font-style: normal;
+                    text-emphasis: filled circle;
+                    -webkit-text-emphasis: filled circle;
+                    text-emphasis-position: over right;
+                    -webkit-text-emphasis-position: over right;
+                }
+                
+                /* 避免分页断行 */
+                p {
+                    break-inside: avoid;
+                    page-break-inside: avoid;
+                }
+            `;
+            
+            contents.document.head.appendChild(verticalStyle);
+
+            // 处理数字纵中横
+            this.processTateChuYoko(contents.document);
+
+            // 处理标点符号
+            this.processPunctuation(contents.document);
+        });
+    }
+
+    /**
+     * 处理纵中横（数字横向显示）
+     * @param {Document} doc - 内容文档
+     */
+    processTateChuYoko(doc) {
+        // 查找所有2位数字并应用纵中横
+        const walker = doc.createTreeWalker(
+            doc.body,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+
+        const textNodes = [];
+        while (walker.nextNode()) {
+            textNodes.push(walker.currentNode);
+        }
+
+        textNodes.forEach(node => {
+            const text = node.textContent;
+            // 匹配2位数字（适合纵中横）
+            const pattern = /(\d{2})/g;
+            
+            if (pattern.test(text)) {
+                const span = doc.createElement('span');
+                span.style.cssText = 'text-combine-upright: all; -webkit-text-combine: horizontal;';
+                span.textContent = RegExp.$1;
+                
+                const newText = text.replace(pattern, span.outerHTML);
+                const temp = doc.createElement('div');
+                temp.innerHTML = newText;
+                node.parentNode.replaceChild(temp.firstChild, node);
+            }
+        });
+    }
+
+    /**
+     * 处理日文标点符号
+     * @param {Document} doc - 内容文档
+     */
+    processPunctuation(doc) {
+        // 添加标点符号处理样式
+        const punctStyle = doc.createElement('style');
+        punctStyle.textContent = `
+            /* 标点符号避头尾处理 */
+            body {
+                hanging-punctuation: allow-end;
+                -webkit-hanging-punctuation: allow-end;
+            }
+            
+            /* 禁则处理 */
+            p {
+                line-break: strict;
+                -webkit-line-break: strict;
+                word-break: keep-all;
+            }
+        `;
+        doc.head.appendChild(punctStyle);
+    }
+
+    /**
+     * 获取当前书籍的书写模式
+     * @returns {string} 书写模式
+     */
+    getWritingMode() {
+        return this.isVerticalMode ? 'vertical-rl' : 'horizontal-tb';
+    }
+
+    /**
+     * 手动切换竖排/横排模式
+     */
+    toggleWritingMode() {
+        if (!this.book) return;
+
+        this.isVerticalMode = !this.isVerticalMode;
+        
+        // 重新初始化渲染器
+        if (this.rendition) {
+            this.rendition.destroy();
+        }
+        
+        this.initRendition();
+        
+        if (this.isVerticalMode) {
+            this.applyVerticalTextStyles();
+        }
+        
+        this.rendition.display();
     }
 }
 
