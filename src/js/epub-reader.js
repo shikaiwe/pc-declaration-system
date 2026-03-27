@@ -1298,8 +1298,13 @@ class EpubReader {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     window.epubReader = new EpubReader();
+    try {
+        await window.epubReader.init();
+    } catch (e) {
+        console.error('阅读器初始化失败:', e);
+    }
 });
 
 export default EpubReader;
