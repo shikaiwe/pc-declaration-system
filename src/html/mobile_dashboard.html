@@ -5006,6 +5006,16 @@
     const dateTimePicker = {
         activeInstance: null,
         
+        /**
+         * 检查日期是否为工作日（周一至周五）
+         * @param {Date|string|number} date - 日期对象、时间戳或 getDay() 返回值
+         * @returns {boolean} - 是否为工作日
+         */
+        isWorkday(date) {
+            const dayOfWeek = typeof date === 'number' ? date : new Date(date).getDay();
+            return dayOfWeek >= 1 && dayOfWeek <= 5;
+        },
+        
         init() {
             const preferredTimeInput = document.getElementById('preferredTime');
             if (!preferredTimeInput) return;
@@ -5074,19 +5084,54 @@
             
             // 如果当前时间晚于21:00，从第二天开始
             const startDay = hours >= 21 ? 1 : 0;
-            const daysToShow = 14; // 显示14天的选项
             
-            for (let i = startDay; i < startDay + daysToShow; i++) {
-                const date = new Date(now);
-                date.setDate(now.getDate() + i);
-                dates.push(`
-                    <div class="swiper-slide">
-                        <div class="date-item" data-year="${date.getFullYear()}" data-month="${date.getMonth() + 1}" data-day="${date.getDate()}">
-                            ${date.getMonth() + 1}月${date.getDate()}日
-                        </div>
-                    </div>
-                `);
+            // 计算日期范围：今天到下周五
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0);
+            
+            const dayOfWeek = today.getDay(); // 0=周日, 1=周一, ..., 6=周六
+            
+            // 计算到下一个周五的天数
+            let daysToNextFriday;
+            if (dayOfWeek === 6) { // 今天是周六
+                daysToNextFriday = 6; // 到下周五的天数
+            } else if (dayOfWeek === 0) { // 今天是周日
+                daysToNextFriday = 5; // 到本周五的天数
+            } else if (dayOfWeek === 5) { // 今天是周五
+                daysToNextFriday = 7; // 到下周五的天数（确保总是选择未来的周五）
+            } else { // 今天是周一到周四
+                daysToNextFriday = 5 - dayOfWeek; // 到本周五的天数
             }
+            
+            const nextFriday = new Date(today);
+            nextFriday.setDate(today.getDate() + daysToNextFriday);
+            nextFriday.setHours(23, 59, 59, 999);
+            
+            // 从起始日期开始遍历到下周五
+            let currentDate = new Date(today);
+            if (startDay > 0) {
+                currentDate.setDate(currentDate.getDate() + startDay);
+            }
+            
+            while (currentDate <= nextFriday) {
+                const dayOfWeekCurrent = currentDate.getDay();
+                
+                // 只添加工作日（周一至周五）
+                if (this.isWorkday(dayOfWeekCurrent)) {
+                    const weekdayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                    dates.push(`
+                        <div class="swiper-slide">
+                            <div class="date-item" data-year="${currentDate.getFullYear()}" data-month="${currentDate.getMonth() + 1}" data-day="${currentDate.getDate()}" data-weekday="${dayOfWeekCurrent}">
+                                ${currentDate.getMonth() + 1}月${currentDate.getDate()}日 (${weekdayNames[dayOfWeekCurrent]})
+                            </div>
+                        </div>
+                    `);
+                }
+                
+                // 移动到下一天
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
             return dates.join('');
         },
         
@@ -5240,6 +5285,24 @@
                 return false;
             }
             
+            // 获取当前选择的日期
+            const dateSlide = this.activeInstance.dateSwiper.slides[this.activeInstance.dateSwiper.activeIndex];
+            if (!dateSlide) return false;
+            
+            const dateItem = dateSlide.querySelector('.date-item');
+            if (!dateItem) return false;
+            
+            const year = parseInt(dateItem.getAttribute('data-year'));
+            const month = parseInt(dateItem.getAttribute('data-month')) - 1;
+            const day = parseInt(dateItem.getAttribute('data-day'));
+            
+            // 验证是否为工作日（周一至周五）
+            const selectedDate = new Date(year, month, day);
+            if (!this.isWorkday(selectedDate)) {
+                utils.ui.showMessage('请选择周一至周五的工作日');
+                return false;
+            }
+            
             // 获取当前选择的时间
             const timeSlide = this.activeInstance.timeSwiper.slides[this.activeInstance.timeSwiper.activeIndex];
             if (!timeSlide) return false;
@@ -5253,6 +5316,14 @@
             // 验证时间范围 (18:00-21:00)
             if (hours < 18 || (hours === 21 && minutes > 0) || hours > 21) {
                 utils.ui.showMessage('请选择18:00-21:00之间的时间');
+                return false;
+            }
+            
+            // 验证是否为过去的日期时间
+            const now = new Date();
+            const selectedDateTime = new Date(year, month, day, hours, minutes);
+            if (selectedDateTime < now) {
+                utils.ui.showMessage('请选择未来的时间');
                 return false;
             }
             

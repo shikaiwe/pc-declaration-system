@@ -3,6 +3,16 @@
  * @class TimePicker
  */
 class TimePicker {
+    /**
+     * 检查日期是否为工作日（周一至周五）
+     * @param {Date|string|number} date - 日期对象、时间戳或 getDay() 返回值
+     * @returns {boolean} - 是否为工作日
+     */
+    static isWorkday(date) {
+        const dayOfWeek = typeof date === 'number' ? date : new Date(date).getDay();
+        return dayOfWeek >= 1 && dayOfWeek <= 5;
+    }
+
     constructor(options = {}) {
         // 默认配置
         this.config = {
@@ -153,16 +163,20 @@ class TimePicker {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // 计算下周五的日期
+        // 计算下一个周五的日期
         const nextFriday = new Date(today);
         const dayOfWeek = today.getDay(); // 0=周日, 1=周一, ..., 6=周六
 
-        // 计算到下周五的天数
+        // 计算到下一个周五的天数
         let daysToNextFriday;
-        if (dayOfWeek <= 5) { // 今天是周日到周五
-            daysToNextFriday = 5 - dayOfWeek + 7; // 到下周五的天数
-        } else { // 今天是周六
+        if (dayOfWeek === 6) { // 今天是周六
             daysToNextFriday = 6; // 到下周五的天数
+        } else if (dayOfWeek === 0) { // 今天是周日
+            daysToNextFriday = 5; // 到本周五的天数
+        } else if (dayOfWeek === 5) { // 今天是周五
+            daysToNextFriday = 7; // 到下周五的天数（确保总是选择未来的周五）
+        } else { // 今天是周一到周四
+            daysToNextFriday = 5 - dayOfWeek; // 到本周五的天数
         }
 
         nextFriday.setDate(today.getDate() + daysToNextFriday);
@@ -187,7 +201,7 @@ class TimePicker {
         // 循环当前月份的每一天
         while (tempDate.getMonth() === currentMonthNum) {
             // 如果是工作日且在可选范围内
-            if (tempDate.getDay() !== 0 && tempDate.getDay() !== 6 && // 不是周末
+            if (TimePicker.isWorkday(tempDate) && // 是工作日
                 tempDate >= minDate && tempDate <= maxDate) { // 在日期范围内
                 availableDates.push(new Date(tempDate));
             }
@@ -620,11 +634,9 @@ class TimePicker {
         const nextDay = new Date(date);
         nextDay.setDate(nextDay.getDate() + 1);
 
-        // 如果是周末（0=周日，6=周六），继续寻找下一个工作日
-        if (nextDay.getDay() === 0) { // 如果是周日
-            nextDay.setDate(nextDay.getDate() + 1); // 跳到周一
-        } else if (nextDay.getDay() === 6) { // 如果是周六
-            nextDay.setDate(nextDay.getDate() + 2); // 跳到下周一
+        // 如果是周末，继续寻找下一个工作日
+        while (!TimePicker.isWorkday(nextDay)) {
+            nextDay.setDate(nextDay.getDate() + 1);
         }
 
         return nextDay;

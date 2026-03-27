@@ -19,7 +19,15 @@ const ERROR_MESSAGES = {
     WORKER_UNAVAILABLE: '该维修人员不可用',
     REPORT_ASSIGNED: '该订单已被分配',
     LOAD_FAILED: '加载失败，请重试',
-    ASSIGN_FAILED: '分配失败，请重试'
+    ASSIGN_FAILED: '分配失败，请重试',
+    NO_WORKER_SELECTED: '请至少选择一名维修人员',
+    MAX_WORKERS_EXCEEDED: '单个订单最多分配5名维修人员',
+    DUPLICATE_ASSIGNMENT: '存在重复分配的维修人员'
+};
+
+// 业务规则配置
+const BUSINESS_RULES = {
+    MAX_WORKERS_PER_ORDER: 5
 };
 
 /**
@@ -31,6 +39,8 @@ class AssignOrder {
         this.workersLoaded = false;
         this.ordersLoaded = false;
         this.currentReportId = null;
+        this.selectedWorkers = new Set();
+        this.workersData = [];
         this.init();
     }
 
@@ -63,20 +73,17 @@ class AssignOrder {
                         <div class="pull-indicator"></div>
                         <div class="assign-order-modal-header">
                             <h3 class="assign-order-modal-title">选择维修人员</h3>
-                            <p class="assign-order-modal-subtitle">请为此订单选择一位维修人员</p>
+                            <p class="assign-order-modal-subtitle">请为此订单选择维修人员（可多选）</p>
+                            <div class="selected-count" id="selectedCount">已选择: 0 人</div>
                         </div>
                         <div class="assign-order-modal-body">
-                            <div class="assign-order-select-wrapper">
-                                <label class="assign-order-select-label">维修人员</label>
-                                <select id="workerSelect" class="assign-order-select">
-                                    <option value="">请选择维修人员</option>
-                                </select>
-                                <span class="assign-order-select-icon">▼</span>
+                            <div class="assign-order-workers-list" id="workersList">
+                                <div class="loading-workers">加载中...</div>
                             </div>
                         </div>
                         <div class="assign-order-modal-footer">
                             <button class="assign-order-btn assign-order-btn-cancel">取消</button>
-                            <button class="assign-order-btn assign-order-btn-confirm">确认分配</button>
+                            <button class="assign-order-btn assign-order-btn-confirm" id="confirmAssignBtn">确认分配</button>
                         </div>
                     </div>
                 </div>
@@ -112,6 +119,102 @@ class AssignOrder {
                 background: #555;
             }
 
+            /* 多选维修人员列表样式 */
+            .assign-order-workers-list {
+                max-height: 400px;
+                overflow-y: auto;
+                padding: 10px;
+            }
+
+            .assign-order-workers-list::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .assign-order-workers-list::-webkit-scrollbar-thumb {
+                background: #ccc;
+                border-radius: 3px;
+            }
+
+            .worker-item {
+                display: flex;
+                align-items: center;
+                padding: 12px 15px;
+                margin-bottom: 8px;
+                background: white;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .worker-item:hover {
+                border-color: #2196F3;
+                background: #f5f9ff;
+            }
+
+            .worker-item.selected {
+                border-color: #2196F3;
+                background: #e3f2fd;
+            }
+
+            .worker-checkbox {
+                width: 20px;
+                height: 20px;
+                border: 2px solid #999;
+                border-radius: 4px;
+                margin-right: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+
+            .worker-item.selected .worker-checkbox {
+                background: #2196F3;
+                border-color: #2196F3;
+            }
+
+            .worker-checkbox::after {
+                content: '✓';
+                color: white;
+                font-size: 14px;
+                opacity: 0;
+            }
+
+            .worker-item.selected .worker-checkbox::after {
+                opacity: 1;
+            }
+
+            .worker-name {
+                flex: 1;
+                font-size: 15px;
+                color: #333;
+                font-weight: 500;
+            }
+
+            .worker-assignments {
+                font-size: 12px;
+                color: #999;
+                margin-left: 8px;
+            }
+
+            .selected-count {
+                text-align: center;
+                margin-top: 10px;
+                padding: 8px;
+                background: #f0f0f0;
+                border-radius: 6px;
+                font-size: 14px;
+                color: #666;
+                font-weight: 500;
+            }
+
+            .loading-workers {
+                text-align: center;
+                padding: 40px;
+                color: #999;
+            }
+
             /* 桌面端样式 */
             @media (min-width: 769px) {
                 .assign-order-modal-overlay {
@@ -137,7 +240,7 @@ class AssignOrder {
                     border-radius: 12px;
                     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
                     width: 100%;
-                    max-width: 420px;
+                    max-width: 480px;
                     margin: 20px;
                 }
 
@@ -154,13 +257,6 @@ class AssignOrder {
                     font-size: 18px;
                     margin: 0 0 8px 0;
                     color: #333;
-                }
-
-                .assign-order-select {
-                    padding: 8px 12px;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    font-size: 14px;
                 }
 
                 .assign-order-btn {
@@ -227,17 +323,18 @@ class AssignOrder {
                     font-weight: 600;
                 }
 
-                .assign-order-select {
-                    padding: 14px 16px;
-                    border: 2px solid #e0e0e0;
-                    border-radius: 12px;
-                    font-size: 16px;
-                }
-
                 .assign-order-btn {
                     padding: 12px 24px;
                     border-radius: 12px;
                     font-size: 15px;
+                }
+
+                .worker-item {
+                    padding: 14px 16px;
+                }
+
+                .worker-name {
+                    font-size: 16px;
                 }
             }
 
@@ -245,60 +342,6 @@ class AssignOrder {
             .assign-order-modal-subtitle {
                 color: #666;
                 font-size: 14px;
-            }
-
-            .assign-order-select-wrapper {
-                position: relative;
-            }
-
-            .assign-order-select-label {
-                display: block;
-                margin-bottom: 8px;
-                color: #555;
-                font-weight: 500;
-            }
-
-            .assign-order-select {
-                width: 100%;
-                color: #333;
-                background-color: white;
-                transition: all 0.3s ease;
-                cursor: pointer;
-                appearance: none;
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                padding-right: 40px;
-            }
-
-            .assign-order-select:hover {
-                border-color: #2196F3;
-            }
-
-            .assign-order-select:focus {
-                outline: none;
-                border-color: #2196F3;
-                box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
-            }
-
-            .assign-order-select:disabled {
-                background-color: #f5f5f5;
-                cursor: not-allowed;
-                opacity: 0.7;
-            }
-
-            .assign-order-select-icon {
-                position: absolute;
-                right: 14px;
-                top: calc(50% + 12px);
-                transform: translateY(-50%);
-                color: #666;
-                pointer-events: none;
-                transition: transform 0.3s ease;
-            }
-
-            .assign-order-select:focus + .assign-order-select-icon {
-                color: #2196F3;
-                transform: translateY(-50%) rotate(180deg);
             }
 
             .assign-order-modal-footer {
@@ -323,6 +366,14 @@ class AssignOrder {
             .assign-order-btn-confirm {
                 background-color: #2196F3;
                 color: white;
+            }
+
+            .assign-order-btn-confirm:disabled {
+                background-color: #bdbdbd;
+                color: #9e9e9e;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
             }
 
             .assign-order-btn-cancel:hover {
@@ -372,16 +423,27 @@ class AssignOrder {
                 .assign-order-modal-subtitle {
                     color: #aaa;
                 }
-                .assign-order-select-label {
-                    color: #ccc;
-                }
-                .assign-order-select {
-                    background-color: #444;
+                .worker-item {
+                    background: #444;
                     border-color: #555;
+                }
+                .worker-item:hover {
+                    background: #3a3a3a;
+                    border-color: #2196F3;
+                }
+                .worker-item.selected {
+                    background: #1a3a5f;
+                    border-color: #2196F3;
+                }
+                .worker-name {
                     color: #fff;
                 }
-                .assign-order-select:hover {
-                    border-color: #2196F3;
+                .worker-checkbox {
+                    border-color: #777;
+                }
+                .selected-count {
+                    background: #444;
+                    color: #ccc;
                 }
                 .assign-order-btn-cancel {
                     background-color: #444;
@@ -389,9 +451,6 @@ class AssignOrder {
                 }
                 .assign-order-btn-cancel:hover {
                     background-color: #555;
-                }
-                .assign-order-select.loading {
-                    background-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" fill="none" stroke="%23fff" stroke-width="8" r="40" stroke-dasharray="180 100"/></svg>');
                 }
             }
 
@@ -511,6 +570,15 @@ class AssignOrder {
             }
         });
 
+        // 维修人员列表点击事件（多选）
+        this.container.addEventListener('click', (e) => {
+            const workerItem = e.target.closest('.worker-item');
+            if (workerItem) {
+                e.preventDefault();
+                this._handleWorkerItemClick(workerItem);
+            }
+        });
+
         // 取消按钮点击事件
         const cancelBtn = this.container.querySelector('.assign-order-btn-cancel');
         if (cancelBtn) {
@@ -584,23 +652,68 @@ class AssignOrder {
 
             const overlay = this.container.querySelector('#assignOrderModalOverlay');
             const selection = this.container.querySelector('.assign-order-worker-selection');
-            const select = this.container.querySelector('#workerSelect');
+            const workersList = this.container.querySelector('#workersList');
 
-            if (!overlay || !selection || !select) {
+            if (!overlay || !selection || !workersList) {
                 this.handleError(new Error('DOM元素缺失'), '页面初始化失败');
                 return;
             }
 
             this.currentReportId = reportId;
+            this.selectedWorkers.clear();
+            this._updateSelectedCount();
+            
             overlay.style.display = 'flex';
             overlay.classList.add('active');
             selection.style.display = 'block';
 
-            if (!this.workersLoaded || !select.options.length || (select.options.length === 1 && select.options[0].value === '')) {
+            if (!this.workersLoaded || this.workersData.length === 0) {
                 await this.loadWorkers();
+            } else {
+                this._renderWorkersList();
             }
         } catch (error) {
             this.handleError(error, '处理分配按钮点击失败');
+        }
+    }
+
+    /**
+     * 处理维修人员项点击（多选）
+     * @private
+     */
+    _handleWorkerItemClick(workerItem) {
+        const workerName = workerItem.dataset.workerName;
+        if (!workerName) return;
+
+        if (this.selectedWorkers.has(workerName)) {
+            this.selectedWorkers.delete(workerName);
+            workerItem.classList.remove('selected');
+        } else {
+            if (this.selectedWorkers.size >= BUSINESS_RULES.MAX_WORKERS_PER_ORDER) {
+                this.showMessage(ERROR_MESSAGES.MAX_WORKERS_EXCEEDED, 'error');
+                return;
+            }
+            this.selectedWorkers.add(workerName);
+            workerItem.classList.add('selected');
+        }
+
+        this._updateSelectedCount();
+    }
+
+    /**
+     * 更新已选择数量显示
+     * @private
+     */
+    _updateSelectedCount() {
+        const countElement = this.container.querySelector('#selectedCount');
+        if (countElement) {
+            countElement.textContent = `已选择: ${this.selectedWorkers.size} 人`;
+        }
+
+        // 更新确认按钮的禁用状态
+        const confirmBtn = this.container.querySelector('.assign-order-btn-confirm');
+        if (confirmBtn) {
+            confirmBtn.disabled = this.selectedWorkers.size === 0;
         }
     }
 
@@ -609,15 +722,19 @@ class AssignOrder {
      * @private
      */
     async _handleConfirmAssign() {
-        const select = this.container.querySelector('#workerSelect');
-        const selectedWorker = select.value;
-
-        if (!selectedWorker) {
-            this.showMessage('请选择维修人员', 'error');
+        if (this.selectedWorkers.size === 0) {
+            this.showMessage(ERROR_MESSAGES.NO_WORKER_SELECTED, 'error');
             return;
         }
 
-        await this.assignOrder(this.currentReportId, selectedWorker);
+        // 防御性验证：确保不超过最大人数限制
+        if (this.selectedWorkers.size > BUSINESS_RULES.MAX_WORKERS_PER_ORDER) {
+            this.showMessage(ERROR_MESSAGES.MAX_WORKERS_EXCEEDED, 'error');
+            return;
+        }
+
+        const workerNames = Array.from(this.selectedWorkers);
+        await this.assignOrder(this.currentReportId, workerNames);
     }
 
     /**
@@ -748,9 +865,14 @@ class AssignOrder {
      */
     _createOrderActionHTML(order, isAssigned) {
         if (isAssigned) {
+            const workerNames = this._parseWorkerNames(order);
+            const displayText = workerNames.length > 0 
+                ? `已分配给: ${workerNames.join(', ')}` 
+                : '无分配人员';
+            
             return `
                 <div class="assigned-info">
-                    <span class="assigned-text">${(order.workerName && order.workerName !== 'None') ? `已分配给: ${order.workerName}` : '无分配人员'}</span>
+                    <span class="assigned-text">${displayText}</span>
                 </div>
             `;
         }
@@ -761,6 +883,22 @@ class AssignOrder {
                 </button>
             </div>
         `;
+    }
+
+    /**
+     * 解析维修人员姓名（支持数组和字符串）
+     * @private
+     */
+    _parseWorkerNames(order) {
+        if (order.workerNames && Array.isArray(order.workerNames)) {
+            return order.workerNames.filter(name => name && name !== 'None');
+        }
+        
+        if (order.workerName && order.workerName !== 'None') {
+            return order.workerName.split(',').map(name => name.trim()).filter(name => name);
+        }
+        
+        return [];
     }
 
     /**
@@ -805,34 +943,19 @@ class AssignOrder {
     async loadWorkers() {
         if (this.workersLoaded) return;
 
-        const select = this.container.querySelector('#workerSelect');
-        if (!select) {
-            this.handleError(new Error('维修人员选择框未找到'), '页面初始化失败');
+        const workersList = this.container.querySelector('#workersList');
+        if (!workersList) {
+            this.handleError(new Error('维修人员列表容器未找到'), '页面初始化失败');
             return;
         }
 
         try {
-            await this._setWorkerSelectLoading(select, true);
+            workersList.innerHTML = '<div class="loading-workers">加载中...</div>';
             const response = await this._fetchWorkers();
-            await this._handleWorkersResponse(response, select);
+            await this._handleWorkersResponse(response, workersList);
         } catch (error) {
             this.handleError(error, '加载维修人员列表失败');
-            this._handleWorkerLoadError(select);
-        }
-    }
-
-    /**
-     * 设置维修人员选择框加载状态
-     * @private
-     */
-    _setWorkerSelectLoading(select, isLoading) {
-        if (isLoading) {
-            select.classList.add('loading');
-            select.innerHTML = '<option value="">加载中...</option>';
-            select.disabled = true;
-        } else {
-            select.classList.remove('loading');
-            select.disabled = false;
+            this._handleWorkerLoadError(workersList);
         }
     }
 
@@ -852,87 +975,103 @@ class AssignOrder {
      * 处理维修人员响应数据
      * @private
      */
-    async _handleWorkersResponse(response, select) {
-        this._setWorkerSelectLoading(select, false);
-
+    async _handleWorkersResponse(response, workersList) {
         if (response.message === 'Success' && Array.isArray(response.workers) && response.workers.length > 0) {
-            this._populateWorkerSelect(select, response.workers);
+            this.workersData = response.workers;
+            this._renderWorkersList();
             this.workersLoaded = true;
         } else if (response.message === 'Success') {
-            select.innerHTML = '<option value="">暂无可用维修人员</option>';
+            workersList.innerHTML = '<div class="loading-workers">暂无可用维修人员</div>';
         } else {
             this.handleSessionError(response.message);
         }
     }
 
     /**
-     * 填充维修人员选择框
+     * 渲染维修人员列表（多选）
      * @private
      */
-    _populateWorkerSelect(select, workers) {
-        select.innerHTML = '<option value="">请选择维修人员</option>';
-        workers.forEach(worker => {
-            const option = document.createElement('option');
-            option.value = worker.username;
-            option.textContent = worker.username;
-            select.appendChild(option);
-        });
+    _renderWorkersList() {
+        const workersList = this.container.querySelector('#workersList');
+        if (!workersList || this.workersData.length === 0) return;
+
+        const workersHTML = this.workersData.map(worker => {
+            const assignments = worker.currentAssignments || 0;
+            const assignmentText = assignments > 0 ? `(${assignments}个订单)` : '';
+            
+            return `
+                <div class="worker-item" data-worker-name="${worker.username}">
+                    <div class="worker-checkbox"></div>
+                    <span class="worker-name">${worker.username}</span>
+                    <span class="worker-assignments">${assignmentText}</span>
+                </div>
+            `;
+        }).join('');
+
+        workersList.innerHTML = workersHTML;
     }
 
     /**
      * 处理维修人员加载错误
      * @private
      */
-    _handleWorkerLoadError(select) {
-        this._setWorkerSelectLoading(select, false);
-        select.innerHTML = '<option value="">加载失败，请重试</option>';
+    _handleWorkerLoadError(workersList) {
+        workersList.innerHTML = '<div class="loading-workers">加载失败，请重试</div>';
     }
 
     /**
-     * 分配订单
+     * 分配订单（支持多人员）
+     * @param {string} reportId 订单ID
+     * @param {Array|string} workerNames 维修人员姓名数组或单个姓名
      */
-    async assignOrder(reportId, workerName) {
+    async assignOrder(reportId, workerNames) {
         try {
             this.showMessage('正在分配...', 'info');
             
-            const response = await this._assignOrderRequest(reportId, workerName);
-            await this._handleAssignResponse(response, reportId, workerName);
+            const response = await this._assignOrderRequest(reportId, workerNames);
+            await this._handleAssignResponse(response, reportId, workerNames);
         } catch (error) {
             this.handleError(error, ERROR_MESSAGES.ASSIGN_FAILED);
         }
     }
 
     /**
- * 发送分配订单请求
- * @private
- */
-async _assignOrderRequest(reportId, workerName) {
-    const csrfToken = CSRF.getToken();
-    return await $.ajax({
-        url: API_URLS.ASSIGN_ORDER,
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': csrfToken
-        },
-        data: JSON.stringify({
-            reportId: reportId,
-            workerName: workerName
-        }),
-        contentType: 'application/json',
-        xhrFields: {
-            withCredentials: true
-        }
-    });
-}
+     * 发送分配订单请求（支持多人员）
+     * @private
+     */
+    async _assignOrderRequest(reportId, workerNames) {
+        const csrfToken = CSRF.getToken();
+        
+        const requestData = {
+            reportId: reportId
+        };
+        
+        // 统一使用 workerNames 字段，单个人员也使用数组格式
+        requestData.workerNames = Array.isArray(workerNames) ? workerNames : [workerNames];
+        
+        return await $.ajax({
+            url: API_URLS.ASSIGN_ORDER,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            data: JSON.stringify(requestData),
+            contentType: 'application/json',
+            xhrFields: {
+                withCredentials: true
+            }
+        });
+    }
 
     /**
      * 处理分配订单响应
      * @private
      */
-    async _handleAssignResponse(response, reportId, workerName) {
+    async _handleAssignResponse(response, reportId, workerNames) {
         if (response.message === 'Success') {
-            await this._updateOrderStatus(reportId, workerName);
-            this.showMessage('订单分配成功', 'success');
+            const displayNames = Array.isArray(workerNames) ? workerNames : [workerNames];
+            await this._updateOrderStatus(reportId, displayNames);
+            this.showMessage(`订单已成功分配给 ${displayNames.length} 名维修人员`, 'success');
             this.closeWorkerSelection();
             await this.refreshOrders();
         } else {
@@ -944,10 +1083,10 @@ async _assignOrderRequest(reportId, workerName) {
      * 更新订单状态
      * @private
      */
-    async _updateOrderStatus(reportId, workerName) {
+    async _updateOrderStatus(reportId, workerNames) {
         const orderCard = this.container.querySelector(`[data-report-id="${reportId}"]`)?.closest('.order-card');
         if (orderCard) {
-            this._updateOrderCardStatus(orderCard, workerName);
+            this._updateOrderCardStatus(orderCard, workerNames);
         } else {
             await this.loadOrders();
         }
@@ -957,7 +1096,7 @@ async _assignOrderRequest(reportId, workerName) {
      * 更新订单卡片状态
      * @private
      */
-    _updateOrderCardStatus(orderCard, workerName) {
+    _updateOrderCardStatus(orderCard, workerNames) {
         const orderInfo = orderCard.querySelector('.order-info');
         if (!orderInfo) return;
 
@@ -969,9 +1108,13 @@ async _assignOrderRequest(reportId, workerName) {
 
         const buttonContainer = orderInfo.querySelector('.order-buttons');
         if (buttonContainer) {
+            const displayText = workerNames.length > 0 
+                ? `已分配给: ${workerNames.join(', ')}` 
+                : '无分配人员';
+                
             buttonContainer.outerHTML = `
                 <div class="assigned-info">
-                    <span class="assigned-text">${(workerName && workerName !== 'None') ? `已分配给: ${workerName}` : '无分配人员'}</span>
+                    <span class="assigned-text">${displayText}</span>
                 </div>
             `;
         }
@@ -984,11 +1127,18 @@ async _assignOrderRequest(reportId, workerName) {
     _handleAssignError(message) {
         switch (message) {
             case 'Worker is not available':
+            case 'Invalid worker':
                 this.showMessage(ERROR_MESSAGES.WORKER_UNAVAILABLE, 'error');
                 break;
             case 'Report is already assigned':
                 this.showMessage(ERROR_MESSAGES.REPORT_ASSIGNED, 'error');
                 this.loadOrders();
+                break;
+            case 'Duplicate assignment':
+                this.showMessage(ERROR_MESSAGES.DUPLICATE_ASSIGNMENT, 'error');
+                break;
+            case 'Max workers exceeded':
+                this.showMessage(ERROR_MESSAGES.MAX_WORKERS_EXCEEDED, 'error');
                 break;
             default:
                 this.handleSessionError(message);
@@ -1088,6 +1238,8 @@ async _assignOrderRequest(reportId, workerName) {
         this.workersLoaded = false;
         this.ordersLoaded = false;
         this.currentReportId = null;
+        this.selectedWorkers.clear();
+        this.workersData = [];
     }
 
     /**
