@@ -708,55 +708,9 @@ class EpubReader {
                 html, body {
                     overflow-anchor: none !important;
                 }
-                
-                /* 中文字体优化 */
-                @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
-                @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
             `;
             contents.document.head.appendChild(style);
-            
-            // 注入中文字体样式（非竖排模式）
-            if (!this.isVerticalMode) {
-                this.injectChineseFontStyles(contents.document);
-            }
         });
-    }
-
-    /**
-     * 注入中文字体样式
-     * @param {Document} doc - 内容文档
-     */
-    injectChineseFontStyles(doc) {
-        const fontStyle = doc.createElement('style');
-        fontStyle.id = 'chinese-font-style';
-        fontStyle.textContent = `
-            /* 中文明朝体/宋体 */
-            body {
-                font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', 'Songti SC', 'STSong', 'SimSun', serif;
-                text-rendering: optimizeLegibility;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-            }
-            
-            /* 标题使用黑体 */
-            h1, h2, h3, h4, h5, h6 {
-                font-family: 'Noto Sans SC', 'Source Han Sans SC', 'Source Han Sans CN', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            }
-            
-            /* 引用使用楷体 */
-            blockquote, q {
-                font-family: 'KaiTi', 'STKaiti', '楷体', serif;
-            }
-            
-            /* 代码使用等宽字体 */
-            code, pre, kbd, samp {
-                font-family: 'Source Code Pro', 'Consolas', 'Monaco', 'Courier New', monospace;
-            }
-        `;
-        
-        if (!doc.getElementById('chinese-font-style')) {
-            doc.head.appendChild(fontStyle);
-        }
     }
 
     /**
@@ -805,31 +759,30 @@ class EpubReader {
     applyRenditionTheme() {
         if (!this.rendition) return;
 
-        const japaneseFontFamily = "'Zen Old Mincho', 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho', serif";
-        const chineseSerifFamily = "'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', 'Songti SC', 'STSong', 'SimSun', serif";
-        const chineseSansFamily = "'Noto Sans SC', 'Source Han Sans SC', 'Source Han Sans CN', 'PingFang SC', 'Microsoft YaHei', sans-serif";
+        const japaneseFontFamily = '"Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", "IPAexMincho", serif';
+        const defaultFontFamily = '"Noto Serif SC", "Songti SC", serif';
 
         const themes = {
             light: { 
                 background: '#FDFBF8', 
                 color: '#3D3632',
                 'line-height': this.isVerticalMode ? '1.7' : '1.8',
-                'font-family': this.isVerticalMode ? japaneseFontFamily : chineseSerifFamily,
-                'letter-spacing': this.isVerticalMode ? '0.05em' : '0.02em'
+                'font-family': this.isVerticalMode ? japaneseFontFamily : defaultFontFamily,
+                'letter-spacing': this.isVerticalMode ? '0.05em' : 'normal'
             },
             sepia: { 
                 background: '#F5EDE0', 
                 color: '#4A3F32',
                 'line-height': this.isVerticalMode ? '1.7' : '1.8',
-                'font-family': this.isVerticalMode ? japaneseFontFamily : chineseSerifFamily,
-                'letter-spacing': this.isVerticalMode ? '0.05em' : '0.02em'
+                'font-family': this.isVerticalMode ? japaneseFontFamily : defaultFontFamily,
+                'letter-spacing': this.isVerticalMode ? '0.05em' : 'normal'
             },
             dark: { 
                 background: '#1E1B17', 
                 color: '#D8D2CC',
                 'line-height': this.isVerticalMode ? '1.7' : '1.8',
-                'font-family': this.isVerticalMode ? japaneseFontFamily : chineseSerifFamily,
-                'letter-spacing': this.isVerticalMode ? '0.05em' : '0.02em'
+                'font-family': this.isVerticalMode ? japaneseFontFamily : defaultFontFamily,
+                'letter-spacing': this.isVerticalMode ? '0.05em' : 'normal'
             }
         };
 
@@ -1281,10 +1234,6 @@ class EpubReader {
             const verticalStyle = contents.document.createElement('style');
             verticalStyle.id = 'japanese-vertical-style';
             verticalStyle.textContent = `
-                /* 日文字体配置 */
-                @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&display=swap');
-                @import url('https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;600;700&display=swap');
-                
                 /* 日文竖排核心样式 */
                 html {
                     writing-mode: vertical-rl;
@@ -1307,7 +1256,6 @@ class EpubReader {
                     -epub-line-break: normal;
                     word-break: break-all;
                     overflow-wrap: break-word;
-                    font-family: 'Zen Old Mincho', 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho', serif;
                 }
                 
                 /* 字符方向处理 */

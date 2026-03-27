@@ -1,7 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
 
 :root {
     --accent: #C4956A;
@@ -22,9 +19,6 @@
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
     --reader-bg: #FDFBF8;
     --reader-text: #3D3632;
-    --font-zh-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', 'Songti SC', 'SimSun', serif;
-    --font-zh-sans: 'Noto Sans SC', 'Source Han Sans SC', 'Source Han Sans CN', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    --font-ja: 'Zen Old Mincho', 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho', serif;
 }
 
 [data-theme="sepia"] {
@@ -60,12 +54,10 @@ html, body {
 }
 
 body {
-    font-family: var(--font-zh-serif);
+    font-family: 'Noto Serif SC', 'Songti SC', 'Segoe UI', 'Microsoft YaHei', serif;
     background: var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
 }
 
 .reader-container {
