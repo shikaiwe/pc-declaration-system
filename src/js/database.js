@@ -11,7 +11,7 @@
  */
 const DB_CONFIG = {
     name: 'EpubReaderDB',
-    version: 1,
+    version: 2,
     stores: {
         books: {
             keyPath: 'key',
@@ -42,6 +42,7 @@ const DB_CONFIG = {
             keyPath: 'id',
             autoIncrement: false,
             indexes: [
+                { name: 'bookKey', keyPath: 'bookKey', options: { unique: false } },
                 { name: 'timestamp', keyPath: 'timestamp', options: { unique: false } },
                 { name: 'type', keyPath: 'type', options: { unique: false } },
                 { name: 'syncStatus', keyPath: 'syncStatus', options: { unique: false } },
@@ -483,7 +484,7 @@ class DatabaseManager {
             
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
-                this.createObjectStores(db);
+                this.createObjectStores(db, event);
             };
             
             request.onblocked = () => {
@@ -495,8 +496,11 @@ class DatabaseManager {
     /**
      * 创建对象存储
      * @param {IDBDatabase} db - 数据库实例
+     * @param {IDBVersionChangeEvent} event - 版本变更事件
      */
-    createObjectStores(db) {
+    createObjectStores(db, event) {
+        const oldVersion = event?.oldVersion || 0;
+        
         for (const [storeName, config] of Object.entries(DB_CONFIG.stores)) {
             if (!db.objectStoreNames.contains(storeName)) {
                 const store = db.createObjectStore(storeName, {
@@ -506,6 +510,16 @@ class DatabaseManager {
                 
                 for (const index of config.indexes) {
                     store.createIndex(index.name, index.keyPath, index.options);
+                }
+            } else if (event?.target?.transaction) {
+                // 版本升级时，检查并添加缺失的索引
+                const tx = event.target.transaction;
+                const store = tx.objectStore(storeName);
+                
+                for (const index of config.indexes) {
+                    if (!store.indexNames.contains(index.name)) {
+                        store.createIndex(index.name, index.keyPath, index.options);
+                    }
                 }
             }
         }

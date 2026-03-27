@@ -21,7 +21,7 @@ class EpubReader {
         this.books = [];
         this.settings = {
             fontSize: 150,
-            theme: 'light'
+            theme: 'sepia'
         };
         this.readingProgress = {};
         this.saveProgressTimeout = null;
@@ -210,11 +210,8 @@ class EpubReader {
         for (const [bookKey, percentage] of Object.entries(localProgress)) {
             const existing = await dbManager.get('progress', bookKey);
             
-            // 确保 percentage 是 0-100 格式
-            let normalizedPercentage = percentage;
-            if (typeof percentage === 'number' && percentage >= 0 && percentage <= 1) {
-                normalizedPercentage = Math.round(percentage * 100);
-            }
+            // 确保 percentage 是有效的 0-100 数字
+            let normalizedPercentage = this.normalizePercentage(percentage);
             
             if (!existing) {
                 await dbManager.put('progress', {
@@ -239,6 +236,39 @@ class EpubReader {
             }
         }
         
+    }
+
+    /**
+     * 标准化百分比值为 0-100 范围
+     * @param {*} value - 原始值
+     * @returns {number} 0-100 范围的数字
+     */
+    normalizePercentage(value) {
+        // 转换为数字
+        let num = parseFloat(value);
+        
+        // 无效值返回 0
+        if (isNaN(num) || !isFinite(num)) {
+            return 0;
+        }
+        
+        // 负数返回 0
+        if (num < 0) {
+            return 0;
+        }
+        
+        // 0-1 范围，转换为 0-100
+        if (num >= 0 && num <= 1) {
+            return Math.round(num * 100);
+        }
+        
+        // 大于 100，限制为 100
+        if (num > 100) {
+            return 100;
+        }
+        
+        // 已经是 0-100 范围
+        return Math.round(num);
     }
 
     /**
@@ -678,9 +708,55 @@ class EpubReader {
                 html, body {
                     overflow-anchor: none !important;
                 }
+                
+                /* 中文字体优化 */
+                @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
             `;
             contents.document.head.appendChild(style);
+            
+            // 注入中文字体样式（非竖排模式）
+            if (!this.isVerticalMode) {
+                this.injectChineseFontStyles(contents.document);
+            }
         });
+    }
+
+    /**
+     * 注入中文字体样式
+     * @param {Document} doc - 内容文档
+     */
+    injectChineseFontStyles(doc) {
+        const fontStyle = doc.createElement('style');
+        fontStyle.id = 'chinese-font-style';
+        fontStyle.textContent = `
+            /* 中文明朝体/宋体 */
+            body {
+                font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', 'Songti SC', 'STSong', 'SimSun', serif;
+                text-rendering: optimizeLegibility;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+            
+            /* 标题使用黑体 */
+            h1, h2, h3, h4, h5, h6 {
+                font-family: 'Noto Sans SC', 'Source Han Sans SC', 'Source Han Sans CN', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            }
+            
+            /* 引用使用楷体 */
+            blockquote, q {
+                font-family: 'KaiTi', 'STKaiti', '楷体', serif;
+            }
+            
+            /* 代码使用等宽字体 */
+            code, pre, kbd, samp {
+                font-family: 'Source Code Pro', 'Consolas', 'Monaco', 'Courier New', monospace;
+            }
+        `;
+        
+        if (!doc.getElementById('chinese-font-style')) {
+            doc.head.appendChild(fontStyle);
+        }
     }
 
     /**
@@ -729,31 +805,31 @@ class EpubReader {
     applyRenditionTheme() {
         if (!this.rendition) return;
 
-        // 日文竖排模式使用专用字体
-        const japaneseFontFamily = '"Hiragino Mincho ProN", "YuMincho", "Noto Serif JP", "IPAexMincho", serif';
-        const defaultFontFamily = '"Noto Serif SC", "Songti SC", serif';
+        const japaneseFontFamily = "'Zen Old Mincho', 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho', serif";
+        const chineseSerifFamily = "'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', 'Songti SC', 'STSong', 'SimSun', serif";
+        const chineseSansFamily = "'Noto Sans SC', 'Source Han Sans SC', 'Source Han Sans CN', 'PingFang SC', 'Microsoft YaHei', sans-serif";
 
         const themes = {
             light: { 
                 background: '#FDFBF8', 
                 color: '#3D3632',
                 'line-height': this.isVerticalMode ? '1.7' : '1.8',
-                'font-family': this.isVerticalMode ? japaneseFontFamily : defaultFontFamily,
-                'letter-spacing': this.isVerticalMode ? '0.05em' : 'normal'
+                'font-family': this.isVerticalMode ? japaneseFontFamily : chineseSerifFamily,
+                'letter-spacing': this.isVerticalMode ? '0.05em' : '0.02em'
             },
             sepia: { 
                 background: '#F5EDE0', 
                 color: '#4A3F32',
                 'line-height': this.isVerticalMode ? '1.7' : '1.8',
-                'font-family': this.isVerticalMode ? japaneseFontFamily : defaultFontFamily,
-                'letter-spacing': this.isVerticalMode ? '0.05em' : 'normal'
+                'font-family': this.isVerticalMode ? japaneseFontFamily : chineseSerifFamily,
+                'letter-spacing': this.isVerticalMode ? '0.05em' : '0.02em'
             },
             dark: { 
                 background: '#1E1B17', 
                 color: '#D8D2CC',
                 'line-height': this.isVerticalMode ? '1.7' : '1.8',
-                'font-family': this.isVerticalMode ? japaneseFontFamily : defaultFontFamily,
-                'letter-spacing': this.isVerticalMode ? '0.05em' : 'normal'
+                'font-family': this.isVerticalMode ? japaneseFontFamily : chineseSerifFamily,
+                'letter-spacing': this.isVerticalMode ? '0.05em' : '0.02em'
             }
         };
 
@@ -1123,6 +1199,11 @@ class EpubReader {
         document.body.dataset.theme = theme;
         this.saveSettings();
         this.applyRenditionTheme();
+        
+        // 更新主题按钮选中状态
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.theme === theme);
+        });
     }
 
     /**
@@ -1196,12 +1277,14 @@ class EpubReader {
     applyVerticalTextStyles() {
         if (!this.rendition) return;
 
-        // 注册内容钩子，注入日文竖排样式
         this.rendition.hooks.content.register((contents) => {
-            // 创建日文竖排专用样式
             const verticalStyle = contents.document.createElement('style');
             verticalStyle.id = 'japanese-vertical-style';
             verticalStyle.textContent = `
+                /* 日文字体配置 */
+                @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;600;700&display=swap');
+                
                 /* 日文竖排核心样式 */
                 html {
                     writing-mode: vertical-rl;
@@ -1224,6 +1307,7 @@ class EpubReader {
                     -epub-line-break: normal;
                     word-break: break-all;
                     overflow-wrap: break-word;
+                    font-family: 'Zen Old Mincho', 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho', serif;
                 }
                 
                 /* 字符方向处理 */
@@ -1290,14 +1374,25 @@ class EpubReader {
                     break-inside: avoid;
                     page-break-inside: avoid;
                 }
+                
+                /* 悬挂标点 */
+                body {
+                    hanging-punctuation: allow-end;
+                    -webkit-hanging-punctuation: allow-end;
+                }
+                
+                /* 禁则处理 */
+                p {
+                    line-break: strict;
+                    -webkit-line-break: strict;
+                    word-break: keep-all;
+                }
             `;
             
             contents.document.head.appendChild(verticalStyle);
 
-            // 处理数字纵中横
             this.processTateChuYoko(contents.document);
 
-            // 处理标点符号
             this.processPunctuation(contents.document);
         });
     }

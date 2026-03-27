@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>阅读空间 - PC志愿者服务队</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&display=swap" crossorigin>
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://unpkg.com/epubjs@0.3.93/dist/epub.min.js"></script>
@@ -13,7 +18,7 @@
     <link rel="stylesheet" href="../css/epub-reader.css">
 </head>
 
-<body>
+<body data-theme="sepia">
     <div class="reader-container">
         <header class="reader-header">
             <div class="header-left">
@@ -106,11 +111,11 @@
                 <div class="setting-group">
                     <p class="setting-label">主题</p>
                     <div class="theme-grid">
-                        <button class="theme-btn active" data-theme="light">
+                        <button class="theme-btn" data-theme="light">
                             <div class="theme-preview"></div>
                             <span>日间</span>
                         </button>
-                        <button class="theme-btn" data-theme="sepia">
+                        <button class="theme-btn active" data-theme="sepia">
                             <div class="theme-preview"></div>
                             <span>护眼</span>
                         </button>

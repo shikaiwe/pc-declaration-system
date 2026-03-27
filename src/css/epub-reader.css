@@ -1,4 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;500;600;700&display=swap');
 
 :root {
     --accent: #C4956A;
@@ -19,6 +22,9 @@
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
     --reader-bg: #FDFBF8;
     --reader-text: #3D3632;
+    --font-zh-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', 'Songti SC', 'SimSun', serif;
+    --font-zh-sans: 'Noto Sans SC', 'Source Han Sans SC', 'Source Han Sans CN', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-ja: 'Zen Old Mincho', 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', 'MS Mincho', serif;
 }
 
 [data-theme="sepia"] {
@@ -54,10 +60,12 @@ html, body {
 }
 
 body {
-    font-family: 'Noto Serif SC', 'Songti SC', 'Segoe UI', 'Microsoft YaHei', serif;
+    font-family: var(--font-zh-serif);
     background: var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 .reader-container {
@@ -839,7 +847,7 @@ body {
     height: 100vh;
     background: var(--surface);
     border-left: 1px solid var(--border);
-    z-index: 100;
+    z-index: 200;
     transition: right 0.35s var(--ease);
     display: flex;
     flex-direction: column;
@@ -976,7 +984,7 @@ body {
     height: 100vh;
     background: var(--surface);
     border-left: 1px solid var(--border);
-    z-index: 100;
+    z-index: 200;
     transition: right 0.35s var(--ease);
     display: flex;
     flex-direction: column;
@@ -1270,4 +1278,243 @@ body {
         width: 100%;
         right: -100%;
     }
+}
+
+/* 注解工具栏 */
+.annotation-toolbar {
+    position: fixed;
+    z-index: 1000;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 8px;
+    display: none;
+}
+
+.annotation-toolbar .toolbar-content {
+    display: flex;
+    gap: 4px;
+}
+
+.toolbar-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+    background: var(--accent-soft);
+    transform: scale(1.05);
+}
+
+.toolbar-btn .color-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.toolbar-btn .underline-icon {
+    font-weight: bold;
+    color: var(--text);
+    text-decoration: underline;
+}
+
+.toolbar-btn .note-icon,
+.toolbar-btn .copy-icon {
+    font-size: 16px;
+}
+
+/* 笔记对话框增强 */
+.note-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.note-dialog-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.note-dialog-content {
+    position: relative;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    width: 340px;
+    max-width: 90vw;
+    box-shadow: var(--shadow-lg);
+}
+
+.note-dialog-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.selected-text-preview {
+    background: var(--bg-alt);
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    max-height: 80px;
+    overflow-y: auto;
+    line-height: 1.5;
+}
+
+.note-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.9rem;
+    resize: vertical;
+    margin-bottom: 12px;
+}
+
+.note-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.color-options {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.color-option {
+    width: 28px;
+    height: 28px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.color-option:hover {
+    transform: scale(1.15);
+}
+
+.color-option.active {
+    border-color: var(--text);
+}
+
+.note-dialog-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.note-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.note-dialog-close {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.note-dialog-close:hover {
+    background: var(--bg-alt);
+}
+
+.note-dialog-body {
+    margin-bottom: 16px;
+}
+
+.note-color-picker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.note-color-picker span {
+    font-size: 0.85rem;
+    color: var(--text-soft);
+}
+
+.note-dialog-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.btn-cancel,
+.btn-save {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-cancel {
+    background: var(--bg-alt);
+    color: var(--text-soft);
+}
+
+.btn-cancel:hover {
+    background: var(--border);
+}
+
+.btn-save {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-save:hover {
+    background: var(--accent-hover);
+}
+
+/* 侧边栏标题统一样式 */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.sidebar-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
 }
