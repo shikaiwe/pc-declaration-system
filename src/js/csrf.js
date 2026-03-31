@@ -70,10 +70,14 @@
                     return true;
                 }
             }
-            console.warn('CSRF Token 获取失败');
+            if (typeof Logger !== 'undefined') {
+                Logger.warn('CSRF Token 获取失败');
+            }
             return false;
         } catch (error) {
-            console.error('获取 CSRF Token 失败:', error);
+            if (typeof Logger !== 'undefined') {
+                Logger.error('获取 CSRF Token 失败:', error);
+            }
             return false;
         }
     }
@@ -100,12 +104,16 @@
                     if (token) {
                         resolve(true);
                     } else {
-                        console.warn('CSRF Token Cookie 未设置');
+                        if (typeof Logger !== 'undefined') {
+                            Logger.warn('CSRF Token Cookie 未设置');
+                        }
                         resolve(false);
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('获取 CSRF Token 失败:', error);
+                    if (typeof Logger !== 'undefined') {
+                        Logger.error('获取 CSRF Token 失败:', error);
+                    }
                     resolve(false);
                 }
             });

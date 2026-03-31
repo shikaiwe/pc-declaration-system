@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录页面</title>
-    <script src="../js/crypto-js.min.js"></script>
     <script src="../js/jquery.js"></script>
+    <script src="../js/logger.js"></script>
+    <script src="../js/html-sanitizer.js"></script>
     <script src="../js/csrf.js"></script>
     <link rel="stylesheet" href="../css/login.css">
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
@@ -51,8 +52,9 @@
         const validateSessionUrl = `${baseUrl}/api/users/validate-session/`;
 
         // 安全配置
+        // 注意：密码安全由HTTPS传输保护，前端加密无实际安全意义
+        // 密码哈希处理应由后端负责
         const CONFIG = {
-            SECRET_KEY: 'your-secret-key-2024', // 加密密钥
             TOKEN_EXPIRY_DAYS: 7, // Token有效期
             MAX_LOGIN_ATTEMPTS: 5, // 最大登录尝试次数
             LOCKOUT_TIME: 15 * 60 * 1000, // 锁定时间（毫秒）
@@ -60,19 +62,6 @@
 
         // 工具函数
         const utils = {
-            // 加密文本
-            encrypt: (text) => {
-                return CryptoJS.AES.encrypt(text, CONFIG.SECRET_KEY).toString();
-            },
-            // 解密文本
-            decrypt: (ciphertext) => {
-                const bytes = CryptoJS.AES.decrypt(ciphertext, CONFIG.SECRET_KEY);
-                return bytes.toString(CryptoJS.enc.Utf8);
-            },
-            // 生成随机Token
-            generateToken: () => {
-                return CryptoJS.lib.WordArray.random(32).toString();
-            },
             // 显示错误信息
             showError: (message) => {
                 const errorElement = document.getElementById('errorMessage');
@@ -188,36 +177,30 @@
                 }
                 return false;
             },
-            // 保存登录数据
-            saveLoginData(username, password, token, refreshToken) {
-                const tokenExpiry = new Date();
-                tokenExpiry.setDate(tokenExpiry.getDate() + CONFIG.TOKEN_EXPIRY_DAYS);
-                const loginData = {
-                    username,
-                    password,
-                    token,
-                    refreshToken,
-                    tokenExpiry: tokenExpiry.toISOString()
-                };
-                const encryptedData = utils.encrypt(JSON.stringify(loginData));
-                localStorage.setItem('loginData', encryptedData);
+            /**
+             * 保存登录偏好设置
+             * 安全说明：不再存储敏感信息到localStorage
+             * 会话管理完全由服务端HttpOnly Cookie负责
+             * @param {boolean} rememberMe - 是否记住登录
+             */
+            saveLoginPreference(rememberMe) {
+                if (rememberMe) {
+                    localStorage.setItem('rememberMe', 'true');
+                }
             },
-            // 清除登录数据
-            clearLoginData() {
-                localStorage.removeItem('loginData');
+            /**
+             * 清除登录偏好设置
+             * 仅清除本地偏好设置，会话由服务端管理
+             */
+            clearLoginPreference() {
                 localStorage.removeItem('rememberMe');
             }
         };
 
         // 处理登录成功
         function handleLoginSuccess(response) {
-            // 保存用户名
-            localStorage.setItem('username', response.username);
-
-            // 保存登录状态
-            if (document.getElementById('rememberMe').checked) {
-                localStorage.setItem('rememberMe', 'true');
-            }
+            // 用户信息通过API获取，不再存储到localStorage
+            // 会话由服务端HttpOnly Cookie管理
 
             // 根据设备类型跳转
             if (/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -254,8 +237,8 @@
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    // 清除本地存储的登录数据
-                    auth.clearLoginData();
+                    // 清除本地存储的登录偏好
+                    auth.clearLoginPreference();
 
                     // 获取是否有自动登录标记
                     const hasRememberMe = localStorage.getItem('rememberMe') === 'true';
@@ -271,8 +254,10 @@
                         // 完全忽略400错误，不在控制台显示错误信息
                         // 可能是首次登录或没有会话ID
                     } else {
-                        // 对于其他错误类型，仍然在控制台记录
-                        console.error('验证session失败:', textStatus);
+                        // 对于其他错误类型，使用安全日志记录
+                        if (typeof Logger !== 'undefined') {
+                            Logger.error('验证session失败:', textStatus);
+                        }
                     }
                 }
             });
@@ -291,12 +276,11 @@
                 const response = await auth.loginAPI(username, password);
                 utils.setLoading(false);
 
-                if (response.success || response.message === 'Success') { // 添加双重检查
+                if (response.success || response.message === 'Success') {
                     if (rememberMe) {
-                        auth.saveLoginData(username, password, response.token, response.refreshToken);
-                        localStorage.setItem('rememberMe', 'true');
+                        auth.saveLoginPreference(rememberMe);
                     } else {
-                        auth.clearLoginData();
+                        auth.clearLoginPreference();
                     }
                     handleLoginSuccess(response);
                 } else {
@@ -308,22 +292,13 @@
             }
         });
 
-        // 检查登录状态
+        /**
+         * 检查登录状态
+         * 安全说明：会话有效性由服务端验证，本地不再存储敏感信息
+         */
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
-                const encryptedData = localStorage.getItem('loginData');
-                if (encryptedData) {
-                    try {
-                        const decryptedData = JSON.parse(utils.decrypt(encryptedData));
-                        if (new Date(decryptedData.tokenExpiry) <= new Date()) {
-                            auth.clearLoginData();
-                            utils.showError('登录已过期，请重新登录');
-                            window.location.reload();
-                        }
-                    } catch (error) {
-                        console.error('检查登录状态失败:', error);
-                    }
-                }
+                // 会话有效性由服务端验证，本地不再检查
             }
         });
 

@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Iconify 图标库 -->
-    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <script src="../vendor/iconify/iconify.min.js"></script>
     <script src="../js/jquery.js" defer></script>
     <!-- CSRF 防护模块 -->
     <script src="../js/csrf.js" defer></script>
@@ -3589,8 +3589,7 @@
                     },
                     success: function(data) {
                         if (data.message === 'Success') {
-                            utils.storage.remove('username');
-                            utils.storage.remove('loginData');
+                            // 只清除登录偏好，会话由服务端管理
                             utils.storage.remove('rememberMe');
                             window.location.href = 'login.html';
                         } else {
@@ -3625,8 +3624,7 @@
                 }
                 utils.ui.showMessage(errorMessage);
                 setTimeout(() => {
-                    utils.storage.remove('username');
-                    utils.storage.remove('loginData');
+                    // 只清除登录偏好，会话由服务端管理
                     utils.storage.remove('rememberMe');
                     window.location.href = 'login.html';
                 }, 2000);
@@ -4721,7 +4719,7 @@
                 success: function(data) {
                     if (data.message === 'Success') {
                         const { username, label } = data;
-                        utils.storage.save('username', username);
+                        // 不再存储到localStorage，直接显示
                         displayUsername(username);
                         handleUserRole(label);
                         resolve(data);
@@ -4732,8 +4730,7 @@
                 },
                 error: function(xhr, status, error) {
                     console.error('获取用户信息失败:', error);
-                    const username = utils.storage.get('username');
-                    displayUsername(username);
+                    displayUsername(null);
                     reject(error);
                 }
             });
@@ -5688,7 +5685,7 @@
                     utils.ui.showMessage(`${successMessage.join('和')}修改成功`, 'success');
                     
                     if (requestData.newName) {
-                        utils.storage.save('username', requestData.newName);
+                        // 不再存储到localStorage，直接更新显示
                         document.getElementById('username-display').textContent = requestData.newName;
                     }
                     const fillPhoneNumberButton = document.getElementById('fillPhoneNumberButton');
