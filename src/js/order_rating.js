@@ -252,10 +252,15 @@ class OrderRating {
     /**
      * 提交评价
      */
-    submitRating() {
+    async submitRating() {
         if (!this.reportId || !this.rating) {
             this.showMessage('请选择评分');
             return;
+        }
+
+        // 确保 CSRF Token 已加载
+        if (typeof CSRF !== 'undefined') {
+            await CSRF.ensureToken();
         }
 
         const submitButton = document.getElementById('ratingSubmit');

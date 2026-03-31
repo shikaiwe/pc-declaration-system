@@ -1056,6 +1056,11 @@ async function initMessageBoard() {
         return;
     }
 
+    // 确保 CSRF Token 已加载
+    if (typeof CSRF !== 'undefined') {
+        await CSRF.ensureToken();
+    }
+
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendMessage');
 

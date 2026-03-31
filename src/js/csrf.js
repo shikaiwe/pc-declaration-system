@@ -1,9 +1,9 @@
 /**
  * CSRF Token 保护模块
  * 用于防止跨站请求伪造攻击
- * 适配后端 Django CSRF 机制
+ * 通过 /csrf 端点获取 Token，从响应体中读取
  * @module csrf
- * @version 2.0.0
+ * @version 3.0.0
  */
 
 (function(global) {
@@ -15,8 +15,15 @@
     const CSRF_CONFIG = {
         CSRF_COOKIE_NAME: 'csrftoken',
         CSRF_HEADER_NAME: 'X-CSRFToken',
-        CSRF_API_URL: '/api/unit/csrf/'
+        CSRF_API_URL: '/csrf'
     };
+
+    /**
+     * 内存中存储的 CSRF Token
+     * 优先从响应体获取并存储在此变量中
+     * @type {string|null}
+     */
+    let cachedToken = null;
 
     /**
      * 从 Cookie 中获取指定名称的值
@@ -40,16 +47,19 @@
 
     /**
      * 获取 CSRF Token
-     * 从 Cookie 中读取 csrftoken
+     * 优先返回内存中缓存的 Token，其次从 Cookie 读取
      * @returns {string|null} CSRF Token 或 null
      */
     function getToken() {
+        if (cachedToken) {
+            return cachedToken;
+        }
         return getCookie(CSRF_CONFIG.CSRF_COOKIE_NAME);
     }
 
     /**
      * 从后端获取 CSRF Token
-     * 调用 /api/unit/csrf/ 接口设置 Cookie
+     * 调用 /csrf 接口，从响应体中解析 Token
      * @param {string} baseUrl - API 基础地址
      * @returns {Promise<boolean>} 是否成功获取
      */
@@ -65,11 +75,25 @@
             });
 
             if (response.ok) {
-                const token = getToken();
-                if (token) {
+                const data = await response.json();
+                
+                if (data && (data.csrfToken || data.csrf_token || data.token)) {
+                    cachedToken = data.csrfToken || data.csrf_token || data.token;
+                    return true;
+                }
+                
+                if (data && data.csrftoken) {
+                    cachedToken = data.csrftoken;
+                    return true;
+                }
+                
+                const cookieToken = getCookie(CSRF_CONFIG.CSRF_COOKIE_NAME);
+                if (cookieToken) {
+                    cachedToken = cookieToken;
                     return true;
                 }
             }
+            
             if (typeof Logger !== 'undefined') {
                 Logger.warn('CSRF Token 获取失败');
             }
@@ -84,6 +108,7 @@
 
     /**
      * 使用 jQuery 从后端获取 CSRF Token
+     * 从响应体中解析 Token
      * @param {string} baseUrl - API 基础地址
      * @returns {Promise<boolean>} 是否成功获取
      */
@@ -100,12 +125,25 @@
                     withCredentials: true
                 },
                 success: function(data) {
-                    const token = getToken();
-                    if (token) {
+                    if (data && (data.csrfToken || data.csrf_token || data.token)) {
+                        cachedToken = data.csrfToken || data.csrf_token || data.token;
+                        resolve(true);
+                        return;
+                    }
+                    
+                    if (data && data.csrftoken) {
+                        cachedToken = data.csrftoken;
+                        resolve(true);
+                        return;
+                    }
+                    
+                    const cookieToken = getCookie(CSRF_CONFIG.CSRF_COOKIE_NAME);
+                    if (cookieToken) {
+                        cachedToken = cookieToken;
                         resolve(true);
                     } else {
                         if (typeof Logger !== 'undefined') {
-                            Logger.warn('CSRF Token Cookie 未设置');
+                            Logger.warn('CSRF Token 未在响应中找到');
                         }
                         resolve(false);
                     }
@@ -218,6 +256,22 @@
     }
 
     /**
+     * 清除缓存的 CSRF Token
+     * 用于登出或 Token 失效时调用
+     */
+    function clearToken() {
+        cachedToken = null;
+    }
+
+    /**
+     * 手动设置 CSRF Token
+     * @param {string} token - CSRF Token 值
+     */
+    function setToken(token) {
+        cachedToken = token;
+    }
+
+    /**
      * CSRF 模块公共 API
      */
     const CSRF = {
@@ -231,6 +285,8 @@
         getHeaders: getHeaders,
         wrapJQueryAjax: wrapJQueryAjax,
         fetchWithCSRF: fetchWithCSRF,
+        clearToken: clearToken,
+        setToken: setToken,
         HEADER_NAME: CSRF_CONFIG.CSRF_HEADER_NAME,
         COOKIE_NAME: CSRF_CONFIG.CSRF_COOKIE_NAME,
         API_URL: CSRF_CONFIG.CSRF_API_URL

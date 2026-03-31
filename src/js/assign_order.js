@@ -47,7 +47,12 @@ class AssignOrder {
     /**
      * 初始化方法
      */
-    init() {
+    async init() {
+        // 确保 CSRF Token 已加载
+        if (typeof CSRF !== 'undefined') {
+            await CSRF.ensureToken();
+        }
+
         this._createDOMStructure();
         this._bindEvents();
 

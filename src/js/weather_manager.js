@@ -64,10 +64,10 @@ class WeatherManager {
 
     // 获取天气信息
     async fetchWeatherAndLocation(containerId = null) {
-        // 自动检测容器ID
+        // 自动检测容器 ID
         let weatherContainerId = containerId;
         if (!weatherContainerId) {
-            // 尝试查找常见的天气容器ID
+            // 尝试查找常见的天气容器 ID
             weatherContainerId = document.getElementById('weatherInfo') ? 'weatherInfo' : 
                                document.getElementById('weather-info') ? 'weather-info' : null;
         }
@@ -79,6 +79,11 @@ class WeatherManager {
         }
 
         try {
+            // 确保 CSRF Token 已加载
+            if (typeof CSRF !== 'undefined') {
+                await CSRF.ensureToken();
+            }
+
             // 获取天气信息
             const csrfToken = CSRF.getToken();
             const response = await $.ajax({
