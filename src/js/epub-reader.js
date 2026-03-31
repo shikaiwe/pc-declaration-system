@@ -9,9 +9,8 @@ let dbManager = null;
 let DatabaseError = null;
 let DBErrorType = null;
 
-// 搜索和笔记模块引用（延迟加载）
+// 搜索模块引用（延迟加载）
 let SearchManager = null;
-let AnnotationManager = null;
 let ShortcutManager = null;
 
 class EpubReader {
@@ -41,8 +40,6 @@ class EpubReader {
         this._dbAvailable = false;
         // 搜索管理器
         this.searchManager = null;
-        // 注解管理器
-        this.annotationManager = null;
         // 快捷键管理器
         this.shortcutManager = null;
         // 当前筛选的分类
@@ -416,17 +413,13 @@ class EpubReader {
         const tocBtn = document.getElementById('tocBtn');
         const settingsBtn = document.getElementById('settingsBtn');
         const searchBtn = document.getElementById('searchBtn');
-        const annotationBtn = document.getElementById('annotationBtn');
         const closeTocBtn = document.getElementById('closeTocBtn');
         const closeSettingsBtn = document.getElementById('closeSettingsBtn');
         const closeSearchBtn = document.getElementById('closeSearchBtn');
-        const closeAnnotationBtn = document.getElementById('closeAnnotationBtn');
         const overlay = document.getElementById('overlay');
         const decreaseFont = document.getElementById('decreaseFont');
         const increaseFont = document.getElementById('increaseFont');
         const themeBtns = document.querySelectorAll('.theme-btn');
-        const annotationTabs = document.querySelectorAll('.annotation-tab');
-        const addBookmarkBtn = document.getElementById('addBookmarkBtn');
         const searchInput = document.getElementById('searchInput');
         const searchSubmitBtn = document.getElementById('searchSubmitBtn');
 
@@ -434,11 +427,9 @@ class EpubReader {
         tocBtn.addEventListener('click', () => this.toggleToc());
         settingsBtn.addEventListener('click', () => this.toggleSettings());
         searchBtn.addEventListener('click', () => this.toggleSearch());
-        annotationBtn.addEventListener('click', () => this.toggleAnnotations());
         closeTocBtn.addEventListener('click', () => this.closeToc());
         closeSettingsBtn.addEventListener('click', () => this.closeSettings());
         closeSearchBtn.addEventListener('click', () => this.closeSearch());
-        closeAnnotationBtn.addEventListener('click', () => this.closeAnnotations());
         overlay.addEventListener('click', () => this.closeSidebars());
         decreaseFont.addEventListener('click', () => this.changeFontSize(-10));
         increaseFont.addEventListener('click', () => this.changeFontSize(10));
@@ -451,28 +442,6 @@ class EpubReader {
                 btn.classList.add('active');
             });
         });
-
-        annotationTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
-                this.switchAnnotationTab(tabName);
-                annotationTabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-            });
-        });
-
-        addBookmarkBtn.addEventListener('click', () => this.addBookmark());
-        
-        const exportMarkdownBtn = document.getElementById('exportMarkdownBtn');
-        const exportTextBtn = document.getElementById('exportTextBtn');
-        
-        if (exportMarkdownBtn) {
-            exportMarkdownBtn.addEventListener('click', () => this.exportAnnotations('markdown'));
-        }
-        
-        if (exportTextBtn) {
-            exportTextBtn.addEventListener('click', () => this.exportAnnotations('text'));
-        }
         
         searchSubmitBtn.addEventListener('click', () => this.performSearch());
         searchInput.addEventListener('keypress', (e) => {
@@ -614,12 +583,10 @@ class EpubReader {
             document.getElementById('tocBtn').style.display = 'flex';
             document.getElementById('settingsBtn').style.display = 'flex';
             document.getElementById('searchBtn').style.display = 'flex';
-            document.getElementById('annotationBtn').style.display = 'flex';
 
             this.initRendition();
             this.loadToc();
             this.initSearchManager();
-            this.initAnnotationManager();
             
             // 先显示书籍内容，不阻塞阅读
             this.hideLoading();
@@ -1014,11 +981,6 @@ class EpubReader {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
             if (e.key === 'Escape') {
                 this.closeSidebars();
-                if (this.annotationManager) {
-                    this.annotationManager.hideToolbar();
-                    this.annotationManager.hideNoteDialog();
-                    this.annotationManager.hideEditDialog();
-                }
             }
             return;
         }
@@ -1026,14 +988,6 @@ class EpubReader {
         // Ctrl/Cmd 组合快捷键 - 阻止浏览器默认行为
         if (e.ctrlKey || e.metaKey) {
             switch (e.key.toLowerCase()) {
-                case 'b':
-                    e.preventDefault();
-                    this.addBookmark();
-                    break;
-                case 'e':
-                    e.preventDefault();
-                    this.toggleAnnotations();
-                    break;
                 case 's':
                     e.preventDefault();
                     this.toggleSearch();
@@ -1049,11 +1003,6 @@ class EpubReader {
         if (e.key === 'Escape') {
             e.preventDefault();
             this.closeSidebars();
-            if (this.annotationManager) {
-                this.annotationManager.hideToolbar();
-                this.annotationManager.hideNoteDialog();
-                this.annotationManager.hideEditDialog();
-            }
         }
     }
 
@@ -1171,23 +1120,11 @@ class EpubReader {
     }
 
     /**
-     * 切换笔记侧边栏
-     */
-    toggleAnnotations() {
-        const sidebar = document.getElementById('annotationSidebar');
-        const overlay = document.getElementById('overlay');
-        
-        this.closeOtherSidebars('annotationSidebar');
-        sidebar.classList.toggle('open');
-        overlay.classList.toggle('active', sidebar.classList.contains('open'));
-    }
-
-    /**
      * 关闭其他侧边栏
-     * @param {string} except - 排除的侧边栏ID
+     * @param {string} except - 排除的侧边栏 ID
      */
     closeOtherSidebars(except) {
-        const sidebars = ['tocSidebar', 'settingsSidebar', 'searchSidebar', 'annotationSidebar'];
+        const sidebars = ['tocSidebar', 'settingsSidebar', 'searchSidebar'];
         sidebars.forEach(id => {
             if (id !== except) {
                 const el = document.getElementById(id);
@@ -1223,21 +1160,12 @@ class EpubReader {
     }
 
     /**
-     * 关闭笔记侧边栏
-     */
-    closeAnnotations() {
-        document.getElementById('annotationSidebar').classList.remove('open');
-        document.getElementById('overlay').classList.remove('active');
-    }
-
-    /**
      * 关闭所有侧边栏
      */
     closeSidebars() {
         document.getElementById('tocSidebar').classList.remove('active');
         document.getElementById('settingsSidebar').classList.remove('active');
         document.getElementById('searchSidebar').classList.remove('open');
-        document.getElementById('annotationSidebar').classList.remove('open');
         document.getElementById('overlay').classList.remove('active');
     }
 
@@ -1558,39 +1486,7 @@ class EpubReader {
         }
     }
 
-    /**
-     * 初始化注解管理器
-     */
-    async initAnnotationManager() {
-        if (!this.rendition || !this.currentBookKey) return;
-        
-        try {
-            if (!AnnotationManager) {
-                const module = await import('./annotation-manager.js');
-                AnnotationManager = module.default;
-            }
-            
-            this.annotationManager = new AnnotationManager(this.rendition);
-            await this.annotationManager.init(this.currentBookKey);
-            
-            this.annotationManager.onAnnotationAdded = (annotation) => {
-                this.refreshAnnotationList();
-            };
-            
-            this.annotationManager.onAnnotationRemoved = (annotation) => {
-                this.refreshAnnotationList();
-            };
-            
-            this.annotationManager.onAnnotationClicked = (annotation) => {
-                this.showAnnotationEditDialog(annotation);
-            };
-            
-            this.refreshAnnotationList();
-            
-        } catch (e) {
-            console.error('初始化注解管理器失败:', e);
-        }
-    }
+
 
     /**
      * 初始化快捷键管理器
@@ -1742,16 +1638,6 @@ class EpubReader {
     }
 
     /**
-     * 显示注解编辑对话框
-     * @param {Object} annotation - 注解对象
-     */
-    showAnnotationEditDialog(annotation) {
-        if (!this.annotationManager) return;
-        
-        this.annotationManager.showEditDialog(annotation);
-    }
-
-    /**
      * 执行搜索
      */
     async performSearch() {
@@ -1838,188 +1724,6 @@ class EpubReader {
         return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    /**
-     * 切换笔记标签页
-     * @param {string} tabName - 标签名称
-     */
-    switchAnnotationTab(tabName) {
-        const panels = {
-            highlights: 'highlightsPanel',
-            notes: 'notesPanel',
-            bookmarks: 'bookmarksPanel'
-        };
-        
-        Object.values(panels).forEach(panelId => {
-            document.getElementById(panelId).style.display = 'none';
-        });
-        
-        if (panels[tabName]) {
-            document.getElementById(panels[tabName]).style.display = 'block';
-        }
-        
-        this.refreshAnnotationList();
-    }
-
-    /**
-     * 刷新注解列表
-     */
-    async refreshAnnotationList() {
-        if (!this.annotationManager) return;
-        
-        const annotations = await this.annotationManager.getAnnotations();
-        
-        const highlights = annotations.filter(a => a.type === 'highlight');
-        const notes = annotations.filter(a => a.type === 'note');
-        const bookmarks = annotations.filter(a => a.type === 'bookmark');
-        
-        this.renderAnnotationItems('highlightsList', highlights, 'highlight');
-        this.renderAnnotationItems('notesList', notes, 'note');
-        this.renderAnnotationItems('bookmarksList', bookmarks, 'bookmark');
-    }
-
-    /**
-     * 渲染注解项
-     * @param {string} listId - 列表元素ID
-     * @param {Array} items - 注解项数组
-     * @param {string} type - 注解类型
-     */
-    renderAnnotationItems(listId, items, type) {
-        const list = document.getElementById(listId);
-        
-        if (items.length === 0) {
-            const emptyText = {
-                highlight: '暂无高亮',
-                note: '暂无笔记',
-                bookmark: '暂无书签'
-            };
-            list.innerHTML = `<div class="annotation-empty">${emptyText[type]}</div>`;
-            return;
-        }
-        
-        list.innerHTML = items.map(item => `
-            <div class="annotation-item" data-id="${item.id}" data-cfi="${item.cfiRange}">
-                <div class="annotation-item-header">
-                    <span class="annotation-item-chapter">${item.chapter || '当前位置'}</span>
-                    <span class="annotation-item-date">${this.formatDate(item.timestamp)}</span>
-                </div>
-                <div class="annotation-item-text" style="${item.style?.color ? `border-left-color: ${item.style.color}` : ''}">${item.text || '点击跳转'}</div>
-                ${item.note ? `<div class="annotation-item-note">${item.note}</div>` : ''}
-                <div class="annotation-item-actions">
-                    <button class="annotation-item-btn goto" title="跳转到此位置">
-                        <span class="iconify" data-icon="mdi:arrow-right-circle"></span>
-                    </button>
-                    <button class="annotation-item-btn edit" title="编辑">
-                        <span class="iconify" data-icon="mdi:pencil"></span>
-                    </button>
-                    <button class="annotation-item-btn delete" title="删除">
-                        <span class="iconify" data-icon="mdi:delete"></span>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-        
-        list.querySelectorAll('.annotation-item').forEach(el => {
-            const id = el.dataset.id;
-            const cfi = el.dataset.cfi;
-            const item = items.find(i => i.id === id);
-            
-            el.querySelector('.goto').addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.rendition.display(cfi);
-                this.closeAnnotations();
-            });
-            
-            el.querySelector('.edit').addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (item && this.annotationManager) {
-                    this.annotationManager.showEditDialog(item);
-                }
-            });
-            
-            el.querySelector('.delete').addEventListener('click', async (e) => {
-                e.stopPropagation();
-                await this.annotationManager.removeAnnotation(id);
-                this.refreshAnnotationList();
-            });
-            
-            el.addEventListener('click', () => {
-                this.rendition.display(cfi);
-            });
-        });
-    }
-
-    /**
-     * 添加书签
-     */
-    async addBookmark() {
-        if (!this.annotationManager || !this.rendition) return;
-        
-        const location = this.rendition.currentLocation();
-        if (!location || !location.start) return;
-        
-        const cfiRange = location.start.cfi;
-        const chapter = this.getCurrentChapterName();
-        
-        await this.annotationManager.addBookmark(cfiRange, chapter);
-        this.refreshAnnotationList();
-    }
-
-    /**
-     * 导出注解
-     * @param {string} format - 格式 ('markdown' 或 'text')
-     */
-    exportAnnotations(format) {
-        if (!this.annotationManager) {
-            this.showError('请先打开一本书');
-            return;
-        }
-        
-        const annotations = this.annotationManager.getAllAnnotations();
-        if (!annotations || annotations.length === 0) {
-            this.showError('暂无注解可导出，请先添加高亮或笔记');
-            return;
-        }
-        
-        this.annotationManager.onError = (message) => {
-            this.showError(message);
-        };
-        
-        const bookName = this.bookMetadata?.name || '未知书籍';
-        
-        try {
-            this.annotationManager.downloadExport(format, bookName);
-        } catch (error) {
-            this.showError('导出失败: ' + error.message);
-        }
-    }
-
-    /**
-     * 获取当前章节名称
-     * @returns {string}
-     */
-    getCurrentChapterName() {
-        if (!this.rendition) return '';
-        const location = this.rendition.currentLocation();
-        if (location && location.start && location.start.href) {
-            const tocItem = this.tocData?.find(item => item.href === location.start.href);
-            return tocItem?.label || location.start.href;
-        }
-        return '当前位置';
-    }
-
-    /**
-     * 格式化日期
-     * @param {number} timestamp - 时间戳
-     * @returns {string}
-     */
-    formatDate(timestamp) {
-        const date = new Date(timestamp);
-        return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-    }
-
-    /**
-     * 手动切换竖排/横排模式
-     */
     toggleWritingMode() {
         if (!this.book) return;
 
