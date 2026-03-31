@@ -741,7 +741,7 @@ class EpubReader {
         }
 
         this.rendition.on('relocated', (location) => this.onRelocated(location));
-        this.rendition.on('rendered', () => this.onRendered());
+        this.rendition.on('rendered', (section) => this.onRendered(section));
 
         this.rendition.display();
     }
@@ -905,9 +905,21 @@ class EpubReader {
 
     /**
      * 渲染完成回调
+     * @param {Object} section - 章节对象
      */
-    onRendered() {
+    onRendered(section) {
         this.applyRenditionTheme();
+        
+        // 在 iframe 内添加点击事件处理，确保点击后焦点回到主内容
+        if (this.rendition && section) {
+            const contents = section.document || section.contents;
+            if (contents) {
+                // 为 iframe 内的文档添加点击事件
+                contents.addEventListener('click', () => {
+                    this.focusMainContent();
+                });
+            }
+        }
     }
 
     /**

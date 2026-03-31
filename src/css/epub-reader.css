@@ -74,7 +74,6 @@ body {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    border-bottom: 1px solid var(--border);
     background: var(--surface);
     flex-shrink: 0;
 }
