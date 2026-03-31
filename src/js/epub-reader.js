@@ -9,9 +9,6 @@ let dbManager = null;
 let DatabaseError = null;
 let DBErrorType = null;
 
-// 快捷键管理器(延迟加载)
-let ShortcutManager = null;
-
 class EpubReader {
     constructor() {
         this.book = null;
@@ -37,12 +34,6 @@ class EpubReader {
         this._initPromise = null;
         // 数据库可用状态
         this._dbAvailable = false;
-        // 快捷键管理器
-        this.shortcutManager = null;
-        // 当前筛选的分类
-        this.currentShortcutCategory = 'all';
-        // 当前搜索关键词
-        this.currentShortcutSearch = '';
     }
 
     /**
@@ -118,9 +109,6 @@ class EpubReader {
         this.bindEvents();
         await this.loadBooks();
         this.applyTheme(this.settings.theme);
-        
-        // 初始化快捷键管理器
-        await this.initShortcutManager();
     }
 
     /**
@@ -1568,164 +1556,6 @@ class EpubReader {
      */
     getWritingMode() {
         return this.isVerticalMode ? 'vertical-rl' : 'horizontal-tb';
-    }
-
-    /**
-     * 初始化快捷键管理器
-     */
-    async initShortcutManager() {
-        try {
-            if (!ShortcutManager) {
-                const module = await import('./shortcut-manager.js');
-                ShortcutManager = module.default;
-            }
-            
-            this.shortcutManager = new ShortcutManager();
-            
-            this.shortcutManager.addListener(() => {
-                this.refreshShortcutsList();
-            });
-            
-            this.bindShortcutEvents();
-            this.refreshShortcutsList();
-            
-        } catch (e) {
-            console.error('初始化快捷键管理器失败:', e);
-        }
-    }
-
-    /**
-     * 绑定快捷键面板事件
-     */
-    bindShortcutEvents() {
-        const searchInput = document.getElementById('shortcutsSearch');
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.currentShortcutSearch = e.target.value.trim();
-                this.refreshShortcutsList();
-            });
-        }
-        
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.currentShortcutCategory = btn.dataset.category;
-                this.refreshShortcutsList();
-            });
-        });
-    }
-
-    /**
-     * 刷新快捷键列表显示
-     */
-    refreshShortcutsList() {
-        if (!this.shortcutManager) return;
-        
-        const listContainer = document.getElementById('shortcutsList');
-        if (!listContainer) return;
-        
-        const context = { verticalMode: this.isVerticalMode };
-        
-        let shortcuts = this.shortcutManager.searchShortcuts(
-            this.currentShortcutSearch,
-            context
-        );
-        
-        if (this.currentShortcutCategory !== 'all') {
-            shortcuts = shortcuts.filter(s => s.category === this.currentShortcutCategory);
-        }
-        
-        if (shortcuts.length === 0) {
-            listContainer.innerHTML = '<div class="shortcuts-empty">未找到匹配的快捷键</div>';
-            return;
-        }
-        
-        listContainer.innerHTML = shortcuts.map(shortcut => {
-            // 判断是否为翻页快捷键(多个按键表示"或"的关系)
-            const isNavigationKeys = shortcut.keys.length > 1 && !shortcut.keys.includes('Ctrl') && !shortcut.keys.includes('Shift') && !shortcut.keys.includes('Alt');
-            
-            let keysHTML;
-            if (isNavigationKeys) {
-                // 翻页快捷键: 用 + 连接表示"或"
-                keysHTML = shortcut.keys.map(key => `<kbd>${this.escapeHtml(key)}</kbd>`).join('<span class="key-separator"> + </span>');
-            } else {
-                // 组合快捷键: 用 + 连接表示组合
-                keysHTML = shortcut.keys.map((key, index) => {
-                    const separator = index < shortcut.keys.length - 1 
-                        ? '<span class="key-separator">+</span>' 
-                        : '';
-                    return `<kbd>${this.escapeHtml(key)}</kbd>${separator}`;
-                }).join('');
-            }
-            
-            const conditionText = shortcut.condition ? '(竖排模式)' : '';
-            
-            return `
-                <div class="shortcut-item" data-id="${shortcut.id}">
-                    <div class="shortcut-info">
-                        <div class="shortcut-desc">${this.escapeHtml(shortcut.description)}${conditionText}</div>
-                        <div class="shortcut-category">${this.getCategoryDisplayName(shortcut.category)}</div>
-                    </div>
-                    <div class="shortcut-keys">${keysHTML}</div>
-                </div>
-            `;
-        }).join('');
-        
-        this.updateShortcutFilters();
-    }
-
-    /**
-     * 获取分类显示名称
-     * @param {string} category - 分类ID
-     * @returns {string} 显示名称
-     */
-    getCategoryDisplayName(category) {
-        const names = {
-            'navigation': '导航操作',
-            'reading': '阅读控制',
-            'annotation': '笔记标注',
-            'system': '系统操作'
-        };
-        return names[category] || category;
-    }
-
-    /**
-     * 更新快捷键筛选按钮
-     */
-    updateShortcutFilters() {
-        if (!this.shortcutManager) return;
-        
-        const filterContainer = document.getElementById('shortcutsFilter');
-        if (!filterContainer) return;
-        
-        const context = { verticalMode: this.isVerticalMode };
-        const categories = this.shortcutManager.getCategories(context);
-        
-        const existingBtns = filterContainer.querySelectorAll('.filter-btn');
-        existingBtns.forEach(btn => {
-            if (btn.dataset.category !== 'all') {
-                btn.remove();
-            }
-        });
-        
-        categories.forEach(cat => {
-            if (!filterContainer.querySelector(`[data-category="${cat.id}"]`)) {
-                const btn = document.createElement('button');
-                btn.className = 'filter-btn';
-                btn.dataset.category = cat.id;
-                btn.textContent = `${cat.name} (${cat.count})`;
-                btn.addEventListener('click', () => {
-                    filterContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    this.currentShortcutCategory = cat.id;
-                    this.refreshShortcutsList();
-                });
-                filterContainer.appendChild(btn);
-            }
-        });
     }
 
     /**
