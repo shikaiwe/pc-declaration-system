@@ -1639,7 +1639,7 @@ class EpubReader {
      * 初始化搜索管理器
      */
     async initSearchManager() {
-        if (!this.book) return;
+        if (!this.book || !this.currentBookKey) return;
         
         try {
             if (!SearchManager) {
@@ -1647,8 +1647,9 @@ class EpubReader {
                 SearchManager = module.default;
             }
             
-            this.searchManager = new SearchManager(this.book);
+            this.searchManager = new SearchManager(this.book, this.currentBookKey);
             
+            // 设置进度回调
             this.searchManager.onProgress = (progress) => {
                 const statusText = document.getElementById('searchStatusText');
                 if (statusText) {
@@ -1656,8 +1657,21 @@ class EpubReader {
                 }
             };
             
+            // 设置错误回调
+            this.searchManager.onError = (error) => {
+                console.error('搜索管理器错误:', error);
+                this.showError(`搜索初始化失败: ${error}`);
+            };
+            
+            // 尝试从缓存加载索引
+            const loaded = await this.searchManager.loadIndexFromCache();
+            if (loaded) {
+                console.info('成功从缓存加载搜索索引');
+            }
+            
         } catch (e) {
             console.error('初始化搜索管理器失败:', e);
+            this.showError('搜索功能初始化失败');
         }
     }
 
@@ -1830,6 +1844,11 @@ class EpubReader {
             await this.initSearchManager();
         }
         
+        if (!this.searchManager) {
+            this.showError('搜索功能未初始化,请刷新页面重试');
+            return;
+        }
+        
         const input = document.getElementById('searchInput');
         const query = input.value.trim();
         
@@ -1840,6 +1859,11 @@ class EpubReader {
         
         if (query.length < 2) {
             this.showError('搜索关键词至少需要 2 个字符');
+            return;
+        }
+        
+        if (query.length > 100) {
+            this.showError('搜索关键词过长,请缩短搜索词');
             return;
         }
         
@@ -1854,22 +1878,50 @@ class EpubReader {
             // 检查是否需要构建索引
             if (!this.searchManager.index || this.searchManager.index.sections.length === 0) {
                 document.getElementById('searchStatusText').textContent = '正在建立索引...';
+                
                 const indexResult = await this.searchManager.buildIndex();
                 
                 // 检查索引构建结果
-                if (!indexResult || indexResult.indexedSections === 0) {
+                if (!indexResult || !indexResult.success) {
                     statusEl.style.display = 'none';
-                    resultsContainer.innerHTML = '<div class="search-empty">无法建立搜索索引，本书可能存在格式问题</div>';
+                    
+                    let errorMessage = '无法建立搜索索引';
+                    if (indexResult && indexResult.error) {
+                        errorMessage = indexResult.error;
+                    }
+                    
+                    resultsContainer.innerHTML = `
+                        <div class="search-empty">
+                            <p>${errorMessage}</p>
+                            ${indexResult && indexResult.warnings ? 
+                                `<p class="search-hint">${indexResult.warnings.join(', ')}</p>` : 
+                                '<p class="search-hint">本书可能存在格式问题或内容为空</p>'
+                            }
+                        </div>
+                    `;
                     return;
+                }
+                
+                // 显示索引构建统计
+                if (indexResult.warnings && indexResult.warnings.length > 0) {
+                    console.warn('索引构建警告:', indexResult.warnings);
                 }
             }
             
+            // 执行搜索
+            const startTime = performance.now();
             const results = await this.searchManager.search(query, { caseSensitive });
+            const searchTime = ((performance.now() - startTime) / 1000).toFixed(2);
             
             statusEl.style.display = 'none';
             
             if (results.length === 0) {
-                resultsContainer.innerHTML = '<div class="search-empty">未找到匹配结果</div>';
+                resultsContainer.innerHTML = `
+                    <div class="search-empty">
+                        <p>未找到匹配结果</p>
+                        <p class="search-hint">尝试使用不同的关键词或取消区分大小写</p>
+                    </div>
+                `;
                 return;
             }
             
@@ -1887,7 +1939,13 @@ class EpubReader {
             });
             
             // 生成分组显示的HTML
-            let html = '';
+            let html = `
+                <div class="search-summary">
+                    找到 <strong>${results.length}</strong> 个结果
+                    (耗时 ${searchTime}秒)
+                </div>
+            `;
+            
             Object.keys(groupedResults).forEach(chapterTitle => {
                 const group = groupedResults[chapterTitle];
                 html += `
@@ -1923,16 +1981,16 @@ class EpubReader {
             // 高亮当前章节中的所有匹配项
             await this.highlightAllMatchesInCurrentChapter(query);
             
+            // 绑定点击事件
             resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
                 item.addEventListener('click', async () => {
                     const href = item.dataset.href;
                     if (href) {
                         try {
-                            // 跳转到搜索结果位置（保持搜索侧边栏打开，方便用户查看其他结果）
                             await this.rendition.display(href);
                         } catch (e) {
                             console.warn('跳转到搜索结果失败:', e);
-                            this.showError('跳转失败，该位置可能不存在');
+                            this.showError('跳转失败,该位置可能不存在');
                         }
                     }
                 });
@@ -1941,8 +1999,13 @@ class EpubReader {
         } catch (e) {
             console.error('搜索失败:', e);
             statusEl.style.display = 'none';
-            resultsContainer.innerHTML = '<div class="search-empty">搜索出错，请重试</div>';
-            this.showError('搜索失败: ' + e.message);
+            resultsContainer.innerHTML = `
+                <div class="search-empty">
+                    <p>搜索出错</p>
+                    <p class="search-hint">${e.message || '请重试或刷新页面'}</p>
+                </div>
+            `;
+            this.showError('搜索失败: ' + (e.message || '未知错误'));
         }
     }
 
@@ -2028,72 +2091,168 @@ class EpubReader {
     highlightTextInDocument(doc, query) {
         if (!doc || !query) return;
         
-        const walker = doc.createTreeWalker(
-            doc.body,
-            NodeFilter.SHOW_TEXT,
-            null,
-            false
-        );
-        
-        const textNodes = [];
-        let node;
-        
-        // 收集所有文本节点
-        while (node = walker.nextNode()) {
-            if (node.textContent.toLowerCase().includes(query.toLowerCase())) {
-                textNodes.push(node);
+        try {
+            // 添加高亮样式
+            const styleId = 'search-highlight-styles';
+            if (!doc.getElementById(styleId)) {
+                const style = doc.createElement('style');
+                style.id = styleId;
+                style.textContent = `
+                    .search-highlight {
+                        background-color: rgba(196, 149, 106, 0.3) !important;
+                        border-bottom: 2px solid #C4956A !important;
+                        cursor: pointer;
+                        padding: 0 2px;
+                        border-radius: 2px;
+                    }
+                    .search-highlight:hover {
+                        background-color: rgba(196, 149, 106, 0.5) !important;
+                    }
+                `;
+                doc.head.appendChild(style);
             }
+            
+            // 使用 TreeWalker 查找所有文本节点
+            const walker = doc.createTreeWalker(
+                doc.body,
+                NodeFilter.SHOW_TEXT,
+                {
+                    acceptNode: (node) => {
+                        // 过滤掉脚本、样式等
+                        const parent = node.parentElement;
+                        if (!parent) return NodeFilter.FILTER_REJECT;
+                        
+                        const tagName = parent.tagName.toLowerCase();
+                        if (['script', 'style', 'noscript', 'iframe', 'svg'].includes(tagName)) {
+                            return NodeFilter.FILTER_REJECT;
+                        }
+                        
+                        return NodeFilter.FILTER_ACCEPT;
+                    }
+                },
+                false
+            );
+            
+            const textNodes = [];
+            let node;
+            
+            // 收集所有包含搜索词的文本节点
+            while (node = walker.nextNode()) {
+                if (node.textContent.toLowerCase().includes(query.toLowerCase())) {
+                    textNodes.push(node);
+                }
+            }
+            
+            // 处理每个文本节点
+            textNodes.forEach(textNode => {
+                try {
+                    this.highlightMatchesInNode(doc, textNode, query);
+                } catch (e) {
+                    // 忽略单个节点的错误,继续处理其他节点
+                }
+            });
+            
+        } catch (e) {
+            console.warn('高亮文本失败:', e);
+        }
+    }
+    
+    /**
+     * 在单个文本节点中高亮匹配项
+     * @param {Document} doc - 文档对象
+     * @param {Text} textNode - 文本节点
+     * @param {string} query - 搜索关键词
+     * @private
+     */
+    highlightMatchesInNode(doc, textNode, query) {
+        const text = textNode.textContent;
+        const lowerText = text.toLowerCase();
+        const lowerQuery = query.toLowerCase();
+        
+        // 收集所有匹配位置
+        const matches = [];
+        let position = 0;
+        let index = lowerText.indexOf(lowerQuery, position);
+        
+        while (index !== -1) {
+            matches.push({
+                start: index,
+                end: index + query.length
+            });
+            position = index + query.length;
+            index = lowerText.indexOf(lowerQuery, position);
         }
         
-        // 在每个文本节点中查找并高亮
-        textNodes.forEach(textNode => {
-            // 收集该节点中所有匹配的位置（从后往前处理，避免索引变化）
-            const matches = [];
-            const text = textNode.textContent;
-            const lowerText = text.toLowerCase();
-            const lowerQuery = query.toLowerCase();
-            
-            let position = 0;
-            let index = lowerText.indexOf(lowerQuery, position);
-            
-            while (index !== -1) {
-                matches.push({ start: index, end: index + query.length });
-                position = index + query.length;
-                index = lowerText.indexOf(lowerQuery, position);
-            }
-            
-            // 从后往前处理，避免索引变化
-            matches.reverse().forEach(match => {
+        if (matches.length === 0) return;
+        
+        // 从后往前处理,避免索引变化
+        matches.reverse();
+        
+        // 检查文本节点是否可以被安全分割
+        const parent = textNode.parentNode;
+        if (!parent) return;
+        
+        matches.forEach(match => {
+            try {
+                // 创建 Range
                 const range = doc.createRange();
                 range.setStart(textNode, match.start);
                 range.setEnd(textNode, match.end);
                 
+                // 创建高亮 span
                 const span = doc.createElement('span');
                 span.className = 'search-highlight';
-                span.style.backgroundColor = 'rgba(196, 149, 106, 0.3)';
-                span.style.borderBottom = '2px solid #C4956A';
-                span.style.cursor = 'pointer';
                 
+                // 尝试包裹内容
                 try {
                     range.surroundContents(span);
+                    
+                    // 记录高亮以便后续清除
                     this.searchHighlights.push({
                         element: span,
                         remove: () => {
                             try {
                                 const parent = span.parentNode;
-                                while (span.firstChild) {
-                                    parent.insertBefore(span.firstChild, span);
+                                if (parent) {
+                                    while (span.firstChild) {
+                                        parent.insertBefore(span.firstChild, span);
+                                    }
+                                    parent.removeChild(span);
+                                    // 合并相邻的文本节点
+                                    parent.normalize();
                                 }
-                                parent.removeChild(span);
                             } catch (e) {
                                 // 忽略错误
                             }
                         }
                     });
                 } catch (e) {
-                    // 如果 range 跨越多个节点，忽略错误
+                    // 如果 range 跨越多个节点,使用替代方法
+                    const selectedText = range.extractContents();
+                    span.appendChild(selectedText);
+                    range.insertNode(span);
+                    
+                    this.searchHighlights.push({
+                        element: span,
+                        remove: () => {
+                            try {
+                                const parent = span.parentNode;
+                                if (parent) {
+                                    while (span.firstChild) {
+                                        parent.insertBefore(span.firstChild, span);
+                                    }
+                                    parent.removeChild(span);
+                                    parent.normalize();
+                                }
+                            } catch (e) {
+                                // 忽略错误
+                            }
+                        }
+                    });
                 }
-            });
+            } catch (e) {
+                // 忽略单个匹配的错误
+            }
         });
     }
 
