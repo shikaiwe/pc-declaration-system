@@ -46,6 +46,9 @@ class EpubReader {
         this.currentShortcutCategory = 'all';
         // 当前搜索关键词
         this.currentShortcutSearch = '';
+        // 搜索高亮相关
+        this.searchHighlights = []; // 存储所有高亮标记
+        this.currentSearchQuery = ''; // 当前搜索关键词
     }
 
     /**
@@ -955,6 +958,11 @@ class EpubReader {
                         doc.addEventListener('click', () => {
                             this.focusMainContent();
                         });
+                        
+                        // 如果有当前搜索关键词，重新高亮新章节
+                        if (this.currentSearchQuery) {
+                            this.highlightTextInDocument(doc, this.currentSearchQuery);
+                        }
                     }
                 }
             } catch (e) {
@@ -1269,6 +1277,9 @@ class EpubReader {
     closeSearch() {
         document.getElementById('searchSidebar').classList.remove('open');
         document.getElementById('overlay').classList.remove('active');
+        // 清除搜索高亮
+        this.clearSearchHighlights();
+        this.currentSearchQuery = '';
         this.focusMainContent();
     }
 
@@ -1280,6 +1291,9 @@ class EpubReader {
         document.getElementById('settingsSidebar').classList.remove('active');
         document.getElementById('searchSidebar').classList.remove('open');
         document.getElementById('overlay').classList.remove('active');
+        // 清除搜索高亮
+        this.clearSearchHighlights();
+        this.currentSearchQuery = '';
         this.focusMainContent();
     }
 
@@ -1812,32 +1826,68 @@ class EpubReader {
                 return;
             }
             
-            resultsContainer.innerHTML = results.map((result) => {
-                const chapter = result.section?.title || '未知章节';
-                const href = result.section?.href || '';
-                const context = result.match?.context || {};
-                const highlightedText = this.highlightSearchTerm(context.text || '', query);
+            // 按章节分组
+            const groupedResults = {};
+            results.forEach(result => {
+                const chapterTitle = result.section?.title || '未知章节';
+                if (!groupedResults[chapterTitle]) {
+                    groupedResults[chapterTitle] = {
+                        href: result.section?.href || '',
+                        items: []
+                    };
+                }
+                groupedResults[chapterTitle].items.push(result);
+            });
+            
+            // 生成分组显示的HTML
+            let html = '';
+            Object.keys(groupedResults).forEach(chapterTitle => {
+                const group = groupedResults[chapterTitle];
+                html += `
+                    <div class="search-result-group">
+                        <div class="search-result-group-header">
+                            <span class="search-result-chapter-name">${chapterTitle}</span>
+                            <span class="search-result-count">${group.items.length} 个匹配</span>
+                        </div>
+                        <div class="search-result-group-items">
+                `;
                 
-                return `
-                    <div class="search-result-item" data-href="${href}">
-                        <div class="search-result-chapter">${chapter}</div>
-                        <div class="search-result-text">${highlightedText}</div>
+                group.items.forEach((result, index) => {
+                    const href = result.section?.href || '';
+                    const context = result.match?.context || {};
+                    const highlightedText = this.highlightSearchTerm(context.text || '', query);
+                    
+                    html += `
+                        <div class="search-result-item" data-href="${href}" data-position="${result.match.position}">
+                            <div class="search-result-index">#${index + 1}</div>
+                            <div class="search-result-text">${highlightedText}</div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
                     </div>
                 `;
-            }).join('');
+            });
+            
+            resultsContainer.innerHTML = html;
+            
+            // 高亮当前章节中的所有匹配项
+            await this.highlightAllMatchesInCurrentChapter(query);
             
             resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
                 item.addEventListener('click', async () => {
                     const href = item.dataset.href;
                     if (href) {
                         try {
+                            // 跳转到搜索结果位置（保持搜索侧边栏打开，方便用户查看其他结果）
                             await this.rendition.display(href);
                         } catch (e) {
                             console.warn('跳转到搜索结果失败:', e);
                             this.showError('跳转失败，该位置可能不存在');
                         }
                     }
-                    this.closeSearch();
                 });
             });
             
@@ -1859,6 +1909,135 @@ class EpubReader {
         if (!text || !query) return text;
         const regex = new RegExp(`(${this.escapeRegex(query)})`, 'gi');
         return text.replace(regex, '<mark>$1</mark>');
+    }
+
+    /**
+     * 清除所有搜索高亮
+     */
+    clearSearchHighlights() {
+        if (this.searchHighlights && this.searchHighlights.length > 0) {
+            this.searchHighlights.forEach(highlight => {
+                try {
+                    if (this.rendition && highlight.remove) {
+                        highlight.remove();
+                    }
+                } catch (e) {
+                    // 忽略删除错误
+                }
+            });
+            this.searchHighlights = [];
+        }
+    }
+
+    /**
+     * 在当前章节高亮所有匹配的关键词
+     * @param {string} query - 搜索关键词
+     */
+    async highlightAllMatchesInCurrentChapter(query) {
+        if (!this.rendition || !query) return;
+        
+        // 清除之前的高亮
+        this.clearSearchHighlights();
+        this.currentSearchQuery = query;
+        
+        try {
+            // 获取当前章节的内容
+            const location = this.rendition.currentLocation();
+            if (!location || !location.start) return;
+            
+            const section = this.book.section(location.start.href);
+            if (!section) return;
+            
+            // 添加高亮样式
+            this.rendition.themes.default({
+                '::selection': {
+                    'background': 'rgba(196, 149, 106, 0.4)'
+                }
+            });
+            
+            // 在 iframe 中查找并高亮所有匹配
+            const contents = this.rendition.getContents();
+            if (contents && contents.length > 0) {
+                const doc = contents[0].document || contents[0].contentDocument;
+                if (doc && doc.body) {
+                    this.highlightTextInDocument(doc, query);
+                }
+            }
+        } catch (e) {
+            console.warn('高亮关键词失败:', e);
+        }
+    }
+
+    /**
+     * 在文档中高亮所有匹配的文本
+     * @param {Document} doc - 文档对象
+     * @param {string} query - 搜索关键词
+     */
+    highlightTextInDocument(doc, query) {
+        if (!doc || !query) return;
+        
+        const walker = doc.createTreeWalker(
+            doc.body,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        const textNodes = [];
+        let node;
+        
+        // 收集所有文本节点
+        while (node = walker.nextNode()) {
+            if (node.textContent.toLowerCase().includes(query.toLowerCase())) {
+                textNodes.push(node);
+            }
+        }
+        
+        // 在每个文本节点中查找并高亮
+        textNodes.forEach(textNode => {
+            const text = textNode.textContent;
+            const lowerText = text.toLowerCase();
+            const lowerQuery = query.toLowerCase();
+            
+            let position = 0;
+            let index = lowerText.indexOf(lowerQuery, position);
+            
+            while (index !== -1) {
+                // 创建高亮 span
+                const range = doc.createRange();
+                range.setStart(textNode, index);
+                range.setEnd(textNode, index + query.length);
+                
+                const span = doc.createElement('span');
+                span.className = 'search-highlight';
+                span.style.backgroundColor = 'rgba(196, 149, 106, 0.3)';
+                span.style.borderBottom = '2px solid #C4956A';
+                span.style.cursor = 'pointer';
+                
+                try {
+                    range.surroundContents(span);
+                    this.searchHighlights.push({
+                        element: span,
+                        remove: () => {
+                            try {
+                                const parent = span.parentNode;
+                                while (span.firstChild) {
+                                    parent.insertBefore(span.firstChild, span);
+                                }
+                                parent.removeChild(span);
+                            } catch (e) {
+                                // 忽略错误
+                            }
+                        }
+                    });
+                } catch (e) {
+                    // 如果 range 跨越多个节点，忽略错误
+                }
+                
+                position = index + query.length;
+                index = lowerText.indexOf(lowerQuery, position);
+            }
+        });
     }
 
     /**

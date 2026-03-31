@@ -31,6 +31,7 @@ class SearchManager {
         this.sectionTexts = new Map();
         this.isIndexing = false;
         this.indexProgress = 0;
+        this.tocMap = new Map(); // href -> title 映射
         
         this.onProgress = null;
         this.onComplete = null;
@@ -52,6 +53,9 @@ class SearchManager {
         let failCount = 0;
         
         try {
+            // 构建 TOC 映射
+            await this.buildTocMap();
+            
             const spine = await this.book.loaded.spine;
             const total = spine.items.length;
             const batchSize = options.batchSize || 5; // 每批处理的章节数
@@ -109,6 +113,45 @@ class SearchManager {
             throw e;
         }
     }
+    
+    /**
+     * 构建 TOC 映射
+     * @private
+     */
+    async buildTocMap() {
+        try {
+            const toc = await this.book.loaded.navigation;
+            if (toc && toc.toc) {
+                this.buildTocMapRecursive(toc.toc);
+            }
+        } catch (e) {
+            console.warn('构建 TOC 映射失败:', e);
+        }
+    }
+    
+    /**
+     * 递归构建 TOC 映射
+     * @param {Array} items - TOC 项数组
+     * @private
+     */
+    buildTocMapRecursive(items) {
+        if (!items || !Array.isArray(items)) return;
+        
+        items.forEach(item => {
+            if (item.href) {
+                // 提取 href（去掉 # 后面的锚点）
+                const href = item.href.split('#')[0];
+                if (!this.tocMap.has(href)) {
+                    this.tocMap.set(href, item.label);
+                }
+            }
+            
+            // 递归处理子项
+            if (item.subitems && item.subitems.length > 0) {
+                this.buildTocMapRecursive(item.subitems);
+            }
+        });
+    }
 
     /**
      * 让出主线程，避免阻塞渲染
@@ -154,10 +197,14 @@ class SearchManager {
             
             this.sectionTexts.set(section.href, text);
             
+            // 从 TOC 映射中获取章节标题
+            const href = section.href.split('#')[0];
+            const title = this.tocMap.get(href) || section.label || `章节 ${index + 1}`;
+            
             this.index.sections.push({
                 href: section.href,
                 index: index,
-                title: section.label || `章节 ${index + 1}`,
+                title: title,
                 text: text,
                 wordCount: text.length
             });
@@ -240,19 +287,16 @@ class SearchManager {
         const results = [];
         const caseSensitive = options.caseSensitive || false;
         const searchTerm = caseSensitive ? query.trim() : query.toLowerCase().trim();
-        const maxResults = options.maxResults || 100;
-        const contextLength = options.contextLength || 50;
+        const maxResults = options.maxResults || 200; // 增加最大结果数到200
+        const contextLength = options.contextLength || 100; // 增加上下文长度到100
         
         // 搜索每个章节
         for (const section of this.index.sections) {
             const text = caseSensitive ? section.text : section.text.toLowerCase();
             let position = 0;
-            let foundCount = 0;
             
-            // 查找所有匹配
+            // 查找该章节中的所有匹配
             while ((position = text.indexOf(searchTerm, position)) !== -1) {
-                if (foundCount >= maxResults) break;
-                
                 const context = this.getContext(section.text, position, searchTerm.length, contextLength);
                 
                 results.push({
@@ -267,16 +311,28 @@ class SearchManager {
                         position: position,
                         context: context
                     },
-                    score: this.calculateScore(position, section.text.length)
+                    score: this.calculateScore(position, section.text.length, section.index)
                 });
                 
                 position += searchTerm.length;
-                foundCount++;
+                
+                // 达到最大结果数，停止搜索
+                if (results.length >= maxResults) break;
             }
+            
+            // 达到最大结果数，停止搜索
+            if (results.length >= maxResults) break;
         }
         
-        // 按分数排序
-        results.sort((a, b) => b.score - a.score);
+        // 按章节顺序排序，同一章节内按位置排序
+        results.sort((a, b) => {
+            // 先按章节索引排序
+            if (a.section.index !== b.section.index) {
+                return a.section.index - b.section.index;
+            }
+            // 同一章节内按位置排序
+            return a.match.position - b.match.position;
+        });
         
         return results.slice(0, maxResults);
     }
@@ -311,13 +367,16 @@ class SearchManager {
      * 计算搜索分数
      * @param {number} position - 匹配位置
      * @param {number} textLength - 文本长度
+     * @param {number} sectionIndex - 章节索引
      * @returns {number}
      * @private
      */
-    calculateScore(position, textLength) {
+    calculateScore(position, textLength, sectionIndex) {
         // 位置越靠前分数越高
         const positionScore = 1 - (position / textLength);
-        return Math.round(positionScore * 100);
+        // 章节越靠前分数越高
+        const sectionScore = 1 - (sectionIndex / 100);
+        return Math.round((positionScore * 0.7 + sectionScore * 0.3) * 100);
     }
 
     /**
