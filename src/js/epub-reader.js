@@ -948,12 +948,6 @@ class EpubReader {
                 if (contents && contents.length > 0) {
                     const doc = contents[0].document || contents[0].contentDocument;
                     if (doc) {
-                        // 检查是否有错误页面
-                        const errorText = doc.body?.textContent || '';
-                        if (errorText.includes('This page contains the following errors')) {
-                            console.warn(`章节 ${section.href} 渲染失败，XHTML 存在语法错误`);
-                        }
-                        
                         // 为 iframe 内的文档添加点击事件
                         doc.addEventListener('click', () => {
                             this.focusMainContent();
@@ -966,7 +960,7 @@ class EpubReader {
                     }
                 }
             } catch (e) {
-                console.warn('添加 iframe 点击事件失败:', e);
+                // 静默处理错误
             }
         }
     }
@@ -1995,6 +1989,8 @@ class EpubReader {
         
         // 在每个文本节点中查找并高亮
         textNodes.forEach(textNode => {
+            // 收集该节点中所有匹配的位置（从后往前处理，避免索引变化）
+            const matches = [];
             const text = textNode.textContent;
             const lowerText = text.toLowerCase();
             const lowerQuery = query.toLowerCase();
@@ -2003,10 +1999,16 @@ class EpubReader {
             let index = lowerText.indexOf(lowerQuery, position);
             
             while (index !== -1) {
-                // 创建高亮 span
+                matches.push({ start: index, end: index + query.length });
+                position = index + query.length;
+                index = lowerText.indexOf(lowerQuery, position);
+            }
+            
+            // 从后往前处理，避免索引变化
+            matches.reverse().forEach(match => {
                 const range = doc.createRange();
-                range.setStart(textNode, index);
-                range.setEnd(textNode, index + query.length);
+                range.setStart(textNode, match.start);
+                range.setEnd(textNode, match.end);
                 
                 const span = doc.createElement('span');
                 span.className = 'search-highlight';
@@ -2033,10 +2035,7 @@ class EpubReader {
                 } catch (e) {
                     // 如果 range 跨越多个节点，忽略错误
                 }
-                
-                position = index + query.length;
-                index = lowerText.indexOf(lowerQuery, position);
-            }
+            });
         });
     }
 
