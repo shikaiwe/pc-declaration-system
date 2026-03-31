@@ -761,12 +761,24 @@ class EpubReader {
 
         // 监听渲染错误
         this.rendition.on('error', (e) => {
-            console.warn('渲染错误:', e);
             // 静默处理渲染错误，不影响其他章节
+            // EPUB.js 在遇到 malformed XHTML 时会抛出错误，这是正常现象
+            console.debug('渲染错误 (已自动处理):', e.message);
         });
 
         this.rendition.on('relocated', (location) => this.onRelocated(location));
         this.rendition.on('rendered', (section) => this.onRendered(section));
+        
+        // 监听章节加载失败，自动跳过无效章节
+        this.rendition.on('displayError', (error) => {
+            console.debug('章节加载失败，自动跳过:', error?.message || '未知错误');
+            // 尝试显示下一章节
+            try {
+                this.rendition.next();
+            } catch (e) {
+                // 如果无法跳转，静默处理
+            }
+        });
 
         this.rendition.display();
     }
@@ -948,6 +960,18 @@ class EpubReader {
                 if (contents && contents.length > 0) {
                     const doc = contents[0].document || contents[0].contentDocument;
                     if (doc) {
+                        // 检查章节内容是否有效
+                        if (!this.isValidChapter(doc)) {
+                            console.debug(`章节 ${section.href} 内容无效，自动跳过`);
+                            // 尝试跳转到下一章节
+                            try {
+                                this.rendition.next();
+                                return;
+                            } catch (e) {
+                                // 如果无法跳转，继续显示当前章节
+                            }
+                        }
+                        
                         // 为 iframe 内的文档添加点击事件
                         doc.addEventListener('click', () => {
                             this.focusMainContent();
@@ -963,6 +987,35 @@ class EpubReader {
                 // 静默处理错误
             }
         }
+    }
+    
+    /**
+     * 检查章节内容是否有效
+     * @param {Document} doc - 文档对象
+     * @returns {boolean} - 是否有效
+     */
+    isValidChapter(doc) {
+        if (!doc || !doc.body) return false;
+        
+        // 检查是否包含错误信息
+        const bodyText = doc.body.textContent || '';
+        if (bodyText.includes('This page contains the following errors')) {
+            return false;
+        }
+        
+        // 检查是否为空页面
+        const bodyHtml = doc.body.innerHTML || '';
+        if (!bodyHtml.trim() || bodyHtml === '<br>') {
+            return false;
+        }
+        
+        // 检查是否只包含少量文本（可能是错误页面）
+        const textLength = bodyText.trim().length;
+        if (textLength < 10) {
+            return false;
+        }
+        
+        return true;
     }
 
     /**
@@ -1954,11 +2007,16 @@ class EpubReader {
             if (contents && contents.length > 0) {
                 const doc = contents[0].document || contents[0].contentDocument;
                 if (doc && doc.body) {
-                    this.highlightTextInDocument(doc, query);
+                    // 检查章节是否有效
+                    if (this.isValidChapter(doc)) {
+                        this.highlightTextInDocument(doc, query);
+                    } else {
+                        console.debug(`当前章节 ${location.start.href} 无效，跳过`);
+                    }
                 }
             }
         } catch (e) {
-            console.warn('高亮关键词失败:', e);
+            console.debug('高亮关键词失败:', e.message);
         }
     }
 

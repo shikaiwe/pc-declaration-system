@@ -73,10 +73,15 @@ class SearchManager {
                 // 处理当前批次
                 for (let j = 0; j < batch.length; j++) {
                     const section = batch[j];
-                    const result = await this.indexSection(section, i + j);
-                    if (result) {
-                        successCount++;
-                    } else {
+                    try {
+                        const result = await this.indexSection(section, i + j);
+                        if (result) {
+                            successCount++;
+                        } else {
+                            failCount++;
+                        }
+                    } catch (e) {
+                        // 单个章节索引失败，不影响其他章节
                         failCount++;
                     }
                 }
@@ -178,20 +183,22 @@ class SearchManager {
         try {
             const sectionObj = this.book.section(section.href);
             if (!sectionObj) {
-                console.warn(`章节 ${section.href} 不存在`);
                 return false;
             }
             
             const contents = await sectionObj.load();
             if (!contents) {
-                console.warn(`章节 ${section.href} 内容为空`);
                 return false;
             }
             
             const text = this.extractText(contents);
             
             if (!text || text.trim().length === 0) {
-                console.warn(`章节 ${section.href} 提取文本为空`);
+                return false;
+            }
+            
+            // 检查是否包含错误信息
+            if (text.includes('This page contains the following errors')) {
                 return false;
             }
             
@@ -212,7 +219,7 @@ class SearchManager {
             return true;
             
         } catch (e) {
-            console.warn(`索引章节 ${section.href} 失败:`, e.message || e);
+            // 静默处理索引错误，不影响其他章节
             return false;
         }
     }
