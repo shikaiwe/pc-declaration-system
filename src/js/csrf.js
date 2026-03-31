@@ -10,12 +10,12 @@
     'use strict';
 
     /**
-     * CSRF配置常量
+     * CSRF 配置常量
      */
     const CSRF_CONFIG = {
         CSRF_COOKIE_NAME: 'csrftoken',
         CSRF_HEADER_NAME: 'X-CSRFToken',
-        CSRF_API_URL: '/csrf'
+        CSRF_API_URL: 'csrf/'
     };
 
     /**

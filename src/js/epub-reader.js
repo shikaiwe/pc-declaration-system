@@ -1790,9 +1790,17 @@ class EpubReader {
         resultsContainer.innerHTML = '<div class="search-empty">搜索中...</div>';
         
         try {
-            if (!this.searchManager.index) {
+            // 检查是否需要构建索引
+            if (!this.searchManager.index || this.searchManager.index.sections.length === 0) {
                 document.getElementById('searchStatusText').textContent = '正在建立索引...';
-                await this.searchManager.buildIndex();
+                const indexResult = await this.searchManager.buildIndex();
+                
+                // 检查索引构建结果
+                if (!indexResult || indexResult.indexedSections === 0) {
+                    statusEl.style.display = 'none';
+                    resultsContainer.innerHTML = '<div class="search-empty">无法建立搜索索引，本书可能存在格式问题</div>';
+                    return;
+                }
             }
             
             const results = await this.searchManager.search(query, { caseSensitive });

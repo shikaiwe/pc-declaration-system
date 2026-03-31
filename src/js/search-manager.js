@@ -48,6 +48,8 @@ class SearchManager {
         
         this.isIndexing = true;
         this.indexProgress = 0;
+        let successCount = 0;
+        let failCount = 0;
         
         try {
             const spine = await this.book.loaded.spine;
@@ -67,7 +69,12 @@ class SearchManager {
                 // 处理当前批次
                 for (let j = 0; j < batch.length; j++) {
                     const section = batch[j];
-                    await this.indexSection(section, i + j);
+                    const result = await this.indexSection(section, i + j);
+                    if (result) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
                 }
                 
                 // 更新进度
@@ -87,6 +94,14 @@ class SearchManager {
             
             this.isIndexing = false;
             this.onComplete?.();
+            
+            // 返回索引构建结果
+            return {
+                success: true,
+                totalSections: total,
+                indexedSections: successCount,
+                failedSections: failCount
+            };
             
         } catch (e) {
             console.error('构建搜索索引失败:', e);
@@ -113,24 +128,25 @@ class SearchManager {
      * 索引单个章节
      * @param {Object} section - 章节对象
      * @param {number} index - 章节索引
+     * @returns {Promise<boolean>} - 是否成功索引
      * @private
      */
     async indexSection(section, index) {
         try {
             const sectionObj = this.book.section(section.href);
             if (!sectionObj) {
-                return;
+                return false;
             }
             
             const contents = await sectionObj.load();
             if (!contents) {
-                return;
+                return false;
             }
             
             const text = this.extractText(contents);
             
             if (!text || text.trim().length === 0) {
-                return;
+                return false;
             }
             
             this.sectionTexts.set(section.href, text);
@@ -143,8 +159,11 @@ class SearchManager {
                 wordCount: text.length
             });
             
+            return true;
+            
         } catch (e) {
-            // 静默跳过加载失败的章节（如 404 错误）
+            // 静默跳过加载失败的章节（如 404 错误或 XHTML 语法错误）
+            return false;
         }
     }
 
