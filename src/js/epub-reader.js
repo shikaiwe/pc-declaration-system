@@ -488,6 +488,8 @@ class EpubReader {
         });
 
         window.addEventListener('resize', () => this.onResized());
+        
+        this.bindMainContentClick();
     }
 
     /**
@@ -630,6 +632,9 @@ class EpubReader {
             
             const savedLocation = this.readingProgress[bookData.key + '_location'];
             await this.rendition.display(savedLocation || undefined);
+            
+            // 将焦点设置到主内容区域，确保键盘事件正常工作
+            this.focusMainContent();
             
             // 后台静默生成位置信息，不显示加载提示
             this.generateLocationsInBackground();
@@ -1084,6 +1089,28 @@ class EpubReader {
                     behavior: 'smooth'
                 });
             }
+        }
+    }
+
+    /**
+     * 将焦点设置到主内容区域
+     */
+    focusMainContent() {
+        const mainContent = document.getElementById('mainContent');
+        if (mainContent) {
+            mainContent.focus();
+        }
+    }
+
+    /**
+     * 绑定主内容区域的点击事件，确保点击后焦点回到主内容
+     */
+    bindMainContentClick() {
+        const mainContent = document.getElementById('mainContent');
+        if (mainContent) {
+            mainContent.addEventListener('click', () => {
+                this.focusMainContent();
+            });
         }
     }
 
