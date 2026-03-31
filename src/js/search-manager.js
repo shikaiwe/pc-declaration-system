@@ -135,17 +135,20 @@ class SearchManager {
         try {
             const sectionObj = this.book.section(section.href);
             if (!sectionObj) {
+                console.warn(`章节 ${section.href} 不存在`);
                 return false;
             }
             
             const contents = await sectionObj.load();
             if (!contents) {
+                console.warn(`章节 ${section.href} 内容为空`);
                 return false;
             }
             
             const text = this.extractText(contents);
             
             if (!text || text.trim().length === 0) {
+                console.warn(`章节 ${section.href} 提取文本为空`);
                 return false;
             }
             
@@ -162,7 +165,7 @@ class SearchManager {
             return true;
             
         } catch (e) {
-            // 静默跳过加载失败的章节（如 404 错误或 XHTML 语法错误）
+            console.warn(`索引章节 ${section.href} 失败:`, e.message || e);
             return false;
         }
     }
@@ -174,14 +177,48 @@ class SearchManager {
      * @private
      */
     extractText(contents) {
-        const doc = contents.ownerDocument || contents;
-        const body = doc.body || doc;
-        
-        // 移除脚本和样式
-        const scripts = body.querySelectorAll('script, style');
-        scripts.forEach(s => s.remove());
-        
-        return body.textContent || '';
+        try {
+            // 处理不同类型的内容对象
+            let doc = contents;
+            
+            // 如果是 Document 对象
+            if (contents instanceof Document) {
+                doc = contents;
+            }
+            // 如果有 ownerDocument 属性（DOM 元素）
+            else if (contents && contents.ownerDocument) {
+                doc = contents.ownerDocument;
+            }
+            // 如果有 documentElement 属性
+            else if (contents && contents.documentElement) {
+                doc = contents;
+            }
+            
+            // 获取 body 元素
+            const body = doc.body || doc.documentElement || doc;
+            
+            if (!body) {
+                return '';
+            }
+            
+            // 移除脚本和样式
+            try {
+                const scripts = body.querySelectorAll('script, style, nav');
+                scripts.forEach(s => s.remove());
+            } catch (e) {
+                // querySelectorAll 可能失败，忽略错误
+            }
+            
+            // 提取文本内容
+            const text = body.textContent || body.innerText || '';
+            
+            // 清理文本：移除多余的空白字符
+            return text.replace(/\s+/g, ' ').trim();
+            
+        } catch (e) {
+            console.warn('提取文本失败:', e);
+            return '';
+        }
     }
 
     /**
