@@ -12,6 +12,7 @@ let DBErrorType = null;
 // 搜索和笔记模块引用（延迟加载）
 let SearchManager = null;
 let AnnotationManager = null;
+let ShortcutManager = null;
 
 class EpubReader {
     constructor() {
@@ -42,6 +43,12 @@ class EpubReader {
         this.searchManager = null;
         // 注解管理器
         this.annotationManager = null;
+        // 快捷键管理器
+        this.shortcutManager = null;
+        // 当前筛选的分类
+        this.currentShortcutCategory = 'all';
+        // 当前搜索关键词
+        this.currentShortcutSearch = '';
     }
 
     /**
@@ -117,6 +124,9 @@ class EpubReader {
         this.bindEvents();
         await this.loadBooks();
         this.applyTheme(this.settings.theme);
+        
+        // 初始化快捷键管理器
+        await this.initShortcutManager();
     }
 
     /**
@@ -452,6 +462,17 @@ class EpubReader {
         });
 
         addBookmarkBtn.addEventListener('click', () => this.addBookmark());
+        
+        const exportMarkdownBtn = document.getElementById('exportMarkdownBtn');
+        const exportTextBtn = document.getElementById('exportTextBtn');
+        
+        if (exportMarkdownBtn) {
+            exportMarkdownBtn.addEventListener('click', () => this.exportAnnotations('markdown'));
+        }
+        
+        if (exportTextBtn) {
+            exportTextBtn.addEventListener('click', () => this.exportAnnotations('text'));
+        }
         
         searchSubmitBtn.addEventListener('click', () => this.performSearch());
         searchInput.addEventListener('keypress', (e) => {
@@ -977,21 +998,76 @@ class EpubReader {
      * @param {KeyboardEvent} e - 键盘事件
      */
     handleKeyup(e) {
-        // 日文竖排模式下支持键盘翻页
         if (this.isVerticalMode && this.rendition) {
-            // 竖排模式下：左箭头下一页，右箭头上一页（从右向左阅读）
-            if (e.key === 'ArrowLeft' || e.keyCode === 37) {
-                this.rendition.next();
-            } else if (e.key === 'ArrowRight' || e.keyCode === 39) {
-                this.rendition.prev();
-            } else if (e.key === 'ArrowUp' || e.keyCode === 38) {
-                // 上箭头滚动
-                this.scrollVertical(-50);
-            } else if (e.key === 'ArrowDown' || e.keyCode === 40) {
-                // 下箭头滚动
-                this.scrollVertical(50);
+            if (this.handleVerticalModeKeyup(e)) {
+                return;
             }
         }
+        
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            return;
+        }
+        
+        if (e.ctrlKey || e.metaKey) {
+            switch (e.key.toLowerCase()) {
+                case 'b':
+                    e.preventDefault();
+                    this.addBookmark();
+                    break;
+                case 'e':
+                    e.preventDefault();
+                    this.toggleAnnotations();
+                    break;
+                case 's':
+                    e.preventDefault();
+                    this.toggleSearch();
+                    break;
+                case 't':
+                    e.preventDefault();
+                    this.toggleToc();
+                    break;
+            }
+        }
+        
+        if (e.key === 'Escape') {
+            this.closeSidebars();
+            if (this.annotationManager) {
+                this.annotationManager.hideToolbar();
+                this.annotationManager.hideNoteDialog();
+                this.annotationManager.hideEditDialog();
+            }
+        }
+    }
+
+    /**
+     * 处理竖排模式下的键盘事件
+     * @param {KeyboardEvent} e - 键盘事件
+     * @returns {boolean} 是否处理了事件
+     */
+    handleVerticalModeKeyup(e) {
+        const isArrowKey = e.key === 'ArrowLeft' || e.keyCode === 37 ||
+                           e.key === 'ArrowRight' || e.keyCode === 39 ||
+                           e.key === 'ArrowUp' || e.keyCode === 38 ||
+                           e.key === 'ArrowDown' || e.keyCode === 40;
+        
+        if (!isArrowKey) {
+            return false;
+        }
+        
+        if (e.key === 'ArrowLeft' || e.keyCode === 37) {
+            this.rendition.next();
+            return true;
+        } else if (e.key === 'ArrowRight' || e.keyCode === 39) {
+            this.rendition.prev();
+            return true;
+        } else if (e.key === 'ArrowUp' || e.keyCode === 38) {
+            this.scrollVertical(-50);
+            return true;
+        } else if (e.key === 'ArrowDown' || e.keyCode === 40) {
+            this.scrollVertical(50);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -1463,7 +1539,7 @@ class EpubReader {
             };
             
             this.annotationManager.onAnnotationClicked = (annotation) => {
-                this.rendition.display(annotation.cfiRange);
+                this.showAnnotationEditDialog(annotation);
             };
             
             this.refreshAnnotationList();
@@ -1471,6 +1547,165 @@ class EpubReader {
         } catch (e) {
             console.error('初始化注解管理器失败:', e);
         }
+    }
+
+    /**
+     * 初始化快捷键管理器
+     */
+    async initShortcutManager() {
+        try {
+            if (!ShortcutManager) {
+                const module = await import('./shortcut-manager.js');
+                ShortcutManager = module.default;
+            }
+            
+            this.shortcutManager = new ShortcutManager();
+            
+            this.shortcutManager.addListener(() => {
+                this.refreshShortcutsList();
+            });
+            
+            this.bindShortcutEvents();
+            this.refreshShortcutsList();
+            
+        } catch (e) {
+            console.error('初始化快捷键管理器失败:', e);
+        }
+    }
+
+    /**
+     * 绑定快捷键面板事件
+     */
+    bindShortcutEvents() {
+        const searchInput = document.getElementById('shortcutsSearch');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.currentShortcutSearch = e.target.value.trim();
+                this.refreshShortcutsList();
+            });
+        }
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.currentShortcutCategory = btn.dataset.category;
+                this.refreshShortcutsList();
+            });
+        });
+    }
+
+    /**
+     * 刷新快捷键列表显示
+     */
+    refreshShortcutsList() {
+        if (!this.shortcutManager) return;
+        
+        const listContainer = document.getElementById('shortcutsList');
+        if (!listContainer) return;
+        
+        const context = { verticalMode: this.isVerticalMode };
+        
+        let shortcuts = this.shortcutManager.searchShortcuts(
+            this.currentShortcutSearch,
+            context
+        );
+        
+        if (this.currentShortcutCategory !== 'all') {
+            shortcuts = shortcuts.filter(s => s.category === this.currentShortcutCategory);
+        }
+        
+        if (shortcuts.length === 0) {
+            listContainer.innerHTML = '<div class="shortcuts-empty">未找到匹配的快捷键</div>';
+            return;
+        }
+        
+        listContainer.innerHTML = shortcuts.map(shortcut => {
+            const keysHTML = shortcut.keys.map((key, index) => {
+                const separator = index < shortcut.keys.length - 1 
+                    ? '<span class="key-separator">+</span>' 
+                    : '';
+                return `<kbd>${this.escapeHtml(key)}</kbd>${separator}`;
+            }).join('');
+            
+            const conditionText = shortcut.condition ? '（竖排模式）' : '';
+            
+            return `
+                <div class="shortcut-item" data-id="${shortcut.id}">
+                    <div class="shortcut-info">
+                        <div class="shortcut-desc">${this.escapeHtml(shortcut.description)}${conditionText}</div>
+                        <div class="shortcut-category">${this.getCategoryDisplayName(shortcut.category)}</div>
+                    </div>
+                    <div class="shortcut-keys">${keysHTML}</div>
+                </div>
+            `;
+        }).join('');
+        
+        this.updateShortcutFilters();
+    }
+
+    /**
+     * 获取分类显示名称
+     * @param {string} category - 分类ID
+     * @returns {string} 显示名称
+     */
+    getCategoryDisplayName(category) {
+        const names = {
+            'navigation': '导航操作',
+            'reading': '阅读控制',
+            'annotation': '笔记标注',
+            'search': '搜索功能',
+            'system': '系统操作'
+        };
+        return names[category] || category;
+    }
+
+    /**
+     * 更新快捷键筛选按钮
+     */
+    updateShortcutFilters() {
+        if (!this.shortcutManager) return;
+        
+        const filterContainer = document.getElementById('shortcutsFilter');
+        if (!filterContainer) return;
+        
+        const context = { verticalMode: this.isVerticalMode };
+        const categories = this.shortcutManager.getCategories(context);
+        
+        const existingBtns = filterContainer.querySelectorAll('.filter-btn');
+        existingBtns.forEach(btn => {
+            if (btn.dataset.category !== 'all') {
+                btn.remove();
+            }
+        });
+        
+        categories.forEach(cat => {
+            if (!filterContainer.querySelector(`[data-category="${cat.id}"]`)) {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.dataset.category = cat.id;
+                btn.textContent = `${cat.name} (${cat.count})`;
+                btn.addEventListener('click', () => {
+                    filterContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.currentShortcutCategory = cat.id;
+                    this.refreshShortcutsList();
+                });
+                filterContainer.appendChild(btn);
+            }
+        });
+    }
+
+    /**
+     * 显示注解编辑对话框
+     * @param {Object} annotation - 注解对象
+     */
+    showAnnotationEditDialog(annotation) {
+        if (!this.annotationManager) return;
+        
+        this.annotationManager.showEditDialog(annotation);
     }
 
     /**
@@ -1624,11 +1859,18 @@ class EpubReader {
                     <span class="annotation-item-chapter">${item.chapter || '当前位置'}</span>
                     <span class="annotation-item-date">${this.formatDate(item.timestamp)}</span>
                 </div>
-                <div class="annotation-item-text">${item.text || '点击跳转'}</div>
+                <div class="annotation-item-text" style="${item.style?.color ? `border-left-color: ${item.style.color}` : ''}">${item.text || '点击跳转'}</div>
                 ${item.note ? `<div class="annotation-item-note">${item.note}</div>` : ''}
                 <div class="annotation-item-actions">
-                    <button class="annotation-item-btn goto">跳转</button>
-                    <button class="annotation-item-btn delete">删除</button>
+                    <button class="annotation-item-btn goto" title="跳转到此位置">
+                        <span class="iconify" data-icon="mdi:arrow-right-circle"></span>
+                    </button>
+                    <button class="annotation-item-btn edit" title="编辑">
+                        <span class="iconify" data-icon="mdi:pencil"></span>
+                    </button>
+                    <button class="annotation-item-btn delete" title="删除">
+                        <span class="iconify" data-icon="mdi:delete"></span>
+                    </button>
                 </div>
             </div>
         `).join('');
@@ -1636,11 +1878,19 @@ class EpubReader {
         list.querySelectorAll('.annotation-item').forEach(el => {
             const id = el.dataset.id;
             const cfi = el.dataset.cfi;
+            const item = items.find(i => i.id === id);
             
             el.querySelector('.goto').addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.rendition.display(cfi);
                 this.closeAnnotations();
+            });
+            
+            el.querySelector('.edit').addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (item && this.annotationManager) {
+                    this.annotationManager.showEditDialog(item);
+                }
             });
             
             el.querySelector('.delete').addEventListener('click', async (e) => {
@@ -1669,6 +1919,35 @@ class EpubReader {
         
         await this.annotationManager.addBookmark(cfiRange, chapter);
         this.refreshAnnotationList();
+    }
+
+    /**
+     * 导出注解
+     * @param {string} format - 格式 ('markdown' 或 'text')
+     */
+    exportAnnotations(format) {
+        if (!this.annotationManager) {
+            this.showError('请先打开一本书');
+            return;
+        }
+        
+        const annotations = this.annotationManager.getAllAnnotations();
+        if (!annotations || annotations.length === 0) {
+            this.showError('暂无注解可导出，请先添加高亮或笔记');
+            return;
+        }
+        
+        this.annotationManager.onError = (message) => {
+            this.showError(message);
+        };
+        
+        const bookName = this.bookMetadata?.name || '未知书籍';
+        
+        try {
+            this.annotationManager.downloadExport(format, bookName);
+        } catch (error) {
+            this.showError('导出失败: ' + error.message);
+        }
     }
 
     /**

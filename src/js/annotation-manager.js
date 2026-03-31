@@ -19,14 +19,31 @@ const AnnotationType = {
 };
 
 /**
- * 默认高亮颜色
+ * 默认高亮颜色（参考行业最佳实践：Kindle、微信读书、Apple Books）
  */
 const DEFAULT_COLORS = {
-    yellow: '#ffff00',
-    green: '#00ff00',
-    blue: '#00bfff',
-    pink: '#ff69b4',
-    orange: '#ffa500'
+    yellow: '#FFEB3B',
+    green: '#81C784',
+    blue: '#64B5F6',
+    pink: '#F48FB1',
+    orange: '#FFB74D',
+    purple: '#BA68C8',
+    red: '#E57373',
+    cyan: '#4DD0E1'
+};
+
+/**
+ * 高亮颜色显示名称
+ */
+const COLOR_NAMES = {
+    yellow: '黄色',
+    green: '绿色',
+    blue: '蓝色',
+    pink: '粉色',
+    orange: '橙色',
+    purple: '紫色',
+    red: '红色',
+    cyan: '青色'
 };
 
 /**
@@ -48,6 +65,7 @@ class AnnotationManager {
         this.onAnnotationAdded = null;
         this.onAnnotationRemoved = null;
         this.onAnnotationClicked = null;
+        this.onError = null;
     }
 
     /**
@@ -57,16 +75,14 @@ class AnnotationManager {
     async init(bookKey) {
         this.bookKey = bookKey;
         
-        // 绑定选择事件
         this.bindSelectionEvents();
         
-        // 创建工具栏
         this.createToolbar();
         
-        // 创建笔记对话框
         this.createNoteDialog();
         
-        // 加载已保存的注解
+        this.createEditDialog();
+        
         await this.loadAnnotations();
     }
 
@@ -111,34 +127,50 @@ class AnnotationManager {
         this.toolbar.className = 'annotation-toolbar';
         this.toolbar.innerHTML = `
             <div class="toolbar-content">
-                <button class="toolbar-btn btn-highlight" data-color="yellow" title="高亮">
-                    <span class="color-dot" style="background: #ffff00"></span>
-                </button>
-                <button class="toolbar-btn btn-highlight" data-color="green" title="绿色高亮">
-                    <span class="color-dot" style="background: #00ff00"></span>
-                </button>
-                <button class="toolbar-btn btn-highlight" data-color="blue" title="蓝色高亮">
-                    <span class="color-dot" style="background: #00bfff"></span>
-                </button>
-                <button class="toolbar-btn btn-highlight" data-color="pink" title="粉色高亮">
-                    <span class="color-dot" style="background: #ff69b4"></span>
-                </button>
-                <button class="toolbar-btn btn-underline" title="下划线">
-                    <span class="underline-icon">U</span>
-                </button>
-                <button class="toolbar-btn btn-note" title="添加笔记">
-                    <span class="note-icon">📝</span>
-                </button>
-                <button class="toolbar-btn btn-copy" title="复制">
-                    <span class="copy-icon">📋</span>
-                </button>
+                <div class="toolbar-colors">
+                    <button class="toolbar-btn btn-highlight" data-color="yellow" title="黄色高亮">
+                        <span class="color-dot" style="background: ${DEFAULT_COLORS.yellow}"></span>
+                    </button>
+                    <button class="toolbar-btn btn-highlight" data-color="green" title="绿色高亮">
+                        <span class="color-dot" style="background: ${DEFAULT_COLORS.green}"></span>
+                    </button>
+                    <button class="toolbar-btn btn-highlight" data-color="blue" title="蓝色高亮">
+                        <span class="color-dot" style="background: ${DEFAULT_COLORS.blue}"></span>
+                    </button>
+                    <button class="toolbar-btn btn-highlight" data-color="pink" title="粉色高亮">
+                        <span class="color-dot" style="background: ${DEFAULT_COLORS.pink}"></span>
+                    </button>
+                    <button class="toolbar-btn btn-highlight" data-color="orange" title="橙色高亮">
+                        <span class="color-dot" style="background: ${DEFAULT_COLORS.orange}"></span>
+                    </button>
+                    <button class="toolbar-btn btn-highlight" data-color="purple" title="紫色高亮">
+                        <span class="color-dot" style="background: ${DEFAULT_COLORS.purple}"></span>
+                    </button>
+                    <button class="toolbar-btn btn-highlight" data-color="red" title="红色高亮">
+                        <span class="color-dot" style="background: ${DEFAULT_COLORS.red}"></span>
+                    </button>
+                    <button class="toolbar-btn btn-highlight" data-color="cyan" title="青色高亮">
+                        <span class="color-dot" style="background: ${DEFAULT_COLORS.cyan}"></span>
+                    </button>
+                </div>
+                <div class="toolbar-divider"></div>
+                <div class="toolbar-actions">
+                    <button class="toolbar-btn btn-underline" title="下划线">
+                        <span class="iconify" data-icon="mdi:format-underline"></span>
+                    </button>
+                    <button class="toolbar-btn btn-note" title="添加笔记">
+                        <span class="iconify" data-icon="mdi:note-plus"></span>
+                    </button>
+                    <button class="toolbar-btn btn-copy" title="复制">
+                        <span class="iconify" data-icon="mdi:content-copy"></span>
+                    </button>
+                </div>
             </div>
         `;
         
         this.toolbar.style.display = 'none';
         document.body.appendChild(this.toolbar);
         
-        // 绑定按钮事件
         this.bindToolbarEvents();
     }
 
@@ -207,17 +239,24 @@ class AnnotationManager {
     }
 
     /**
-     * 创建笔记对话框
+     * 创建对话框基础 HTML
+     * @param {Object} options - 配置选项
+     * @param {string} options.title - 对话框标题
+     * @param {string} options.className - 额外的 CSS 类名
+     * @param {boolean} options.showDeleteBtn - 是否显示删除按钮
+     * @returns {string} HTML 字符串
      * @private
      */
-    createNoteDialog() {
-        this.noteDialog = document.createElement('div');
-        this.noteDialog.className = 'note-dialog';
-        this.noteDialog.innerHTML = `
+    createDialogHTML(options) {
+        const { title, className = '', showDeleteBtn = false } = options;
+        
+        const deleteBtn = showDeleteBtn ? '<button class="btn-delete">删除</button>' : '';
+        
+        return `
             <div class="note-dialog-overlay"></div>
             <div class="note-dialog-content">
                 <div class="note-dialog-header">
-                    <span class="note-dialog-title">添加笔记</span>
+                    <span class="note-dialog-title">${title}</span>
                     <button class="note-dialog-close">&times;</button>
                 </div>
                 <div class="note-dialog-body">
@@ -225,24 +264,60 @@ class AnnotationManager {
                     <textarea class="note-textarea" placeholder="输入笔记内容..."></textarea>
                     <div class="note-color-picker">
                         <span>颜色:</span>
-                        <button class="color-option" data-color="yellow" style="background: #ffff00"></button>
-                        <button class="color-option" data-color="green" style="background: #00ff00"></button>
-                        <button class="color-option" data-color="blue" style="background: #00bfff"></button>
-                        <button class="color-option" data-color="pink" style="background: #ff69b4"></button>
+                        <button class="color-option" data-color="yellow" style="background: ${DEFAULT_COLORS.yellow}" title="黄色"></button>
+                        <button class="color-option" data-color="green" style="background: ${DEFAULT_COLORS.green}" title="绿色"></button>
+                        <button class="color-option" data-color="blue" style="background: ${DEFAULT_COLORS.blue}" title="蓝色"></button>
+                        <button class="color-option" data-color="pink" style="background: ${DEFAULT_COLORS.pink}" title="粉色"></button>
+                        <button class="color-option" data-color="orange" style="background: ${DEFAULT_COLORS.orange}" title="橙色"></button>
+                        <button class="color-option" data-color="purple" style="background: ${DEFAULT_COLORS.purple}" title="紫色"></button>
+                        <button class="color-option" data-color="red" style="background: ${DEFAULT_COLORS.red}" title="红色"></button>
+                        <button class="color-option" data-color="cyan" style="background: ${DEFAULT_COLORS.cyan}" title="青色"></button>
                     </div>
                 </div>
                 <div class="note-dialog-footer">
+                    ${deleteBtn}
                     <button class="btn-cancel">取消</button>
                     <button class="btn-save">保存</button>
                 </div>
             </div>
         `;
+    }
+
+    /**
+     * 创建笔记对话框
+     * @private
+     */
+    createNoteDialog() {
+        this.noteDialog = document.createElement('div');
+        this.noteDialog.className = 'note-dialog';
+        this.noteDialog.innerHTML = this.createDialogHTML({
+            title: '添加笔记',
+            showDeleteBtn: false
+        });
         
         this.noteDialog.style.display = 'none';
         document.body.appendChild(this.noteDialog);
         
-        // 绑定事件
         this.bindNoteDialogEvents();
+    }
+
+    /**
+     * 创建编辑对话框
+     * @private
+     */
+    createEditDialog() {
+        this.editDialog = document.createElement('div');
+        this.editDialog.className = 'note-dialog edit-dialog';
+        this.editDialog.innerHTML = this.createDialogHTML({
+            title: '编辑注解',
+            className: 'edit-dialog',
+            showDeleteBtn: true
+        });
+        
+        this.editDialog.style.display = 'none';
+        document.body.appendChild(this.editDialog);
+        
+        this.bindEditDialogEvents();
     }
 
     /**
@@ -250,22 +325,18 @@ class AnnotationManager {
      * @private
      */
     bindNoteDialogEvents() {
-        // 关闭按钮
         this.noteDialog.querySelector('.note-dialog-close').addEventListener('click', () => {
             this.hideNoteDialog();
         });
         
-        // 取消按钮
         this.noteDialog.querySelector('.btn-cancel').addEventListener('click', () => {
             this.hideNoteDialog();
         });
         
-        // 保存按钮
         this.noteDialog.querySelector('.btn-save').addEventListener('click', () => {
             this.saveNote();
         });
         
-        // 颜色选择
         this.noteDialog.querySelectorAll('.color-option').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.noteDialog.querySelectorAll('.color-option').forEach(b => b.classList.remove('active'));
@@ -273,9 +344,41 @@ class AnnotationManager {
             });
         });
         
-        // 点击遮罩关闭
         this.noteDialog.querySelector('.note-dialog-overlay').addEventListener('click', () => {
             this.hideNoteDialog();
+        });
+    }
+
+    /**
+     * 绑定编辑对话框事件
+     * @private
+     */
+    bindEditDialogEvents() {
+        this.editDialog.querySelector('.note-dialog-close').addEventListener('click', () => {
+            this.hideEditDialog();
+        });
+        
+        this.editDialog.querySelector('.btn-cancel').addEventListener('click', () => {
+            this.hideEditDialog();
+        });
+        
+        this.editDialog.querySelector('.btn-save').addEventListener('click', () => {
+            this.saveEditAnnotation();
+        });
+        
+        this.editDialog.querySelector('.btn-delete').addEventListener('click', () => {
+            this.deleteEditAnnotation();
+        });
+        
+        this.editDialog.querySelectorAll('.color-option').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.editDialog.querySelectorAll('.color-option').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+        
+        this.editDialog.querySelector('.note-dialog-overlay').addEventListener('click', () => {
+            this.hideEditDialog();
         });
     }
 
@@ -285,11 +388,9 @@ class AnnotationManager {
     showNoteDialog() {
         if (!this.currentSelection) return;
         
-        // 显示选中文本预览
         const preview = this.noteDialog.querySelector('.selected-text-preview');
         preview.textContent = this.currentSelection.text;
         
-        // 重置表单
         this.noteDialog.querySelector('.note-textarea').value = '';
         this.noteDialog.querySelectorAll('.color-option').forEach(b => b.classList.remove('active'));
         this.noteDialog.querySelector('.color-option[data-color="yellow"]').classList.add('active');
@@ -303,6 +404,85 @@ class AnnotationManager {
      */
     hideNoteDialog() {
         this.noteDialog.style.display = 'none';
+    }
+
+    /**
+     * 显示编辑对话框
+     * @param {Object} annotation - 注解对象
+     */
+    showEditDialog(annotation) {
+        if (!annotation) return;
+        
+        this.currentEditAnnotation = annotation;
+        
+        const preview = this.editDialog.querySelector('.selected-text-preview');
+        preview.textContent = annotation.text || '无文本';
+        
+        this.editDialog.querySelector('.note-textarea').value = annotation.note || '';
+        
+        this.editDialog.querySelectorAll('.color-option').forEach(btn => {
+            btn.classList.remove('active');
+            const colorName = this.getColorNameByValue(annotation.style?.color);
+            if (btn.dataset.color === colorName) {
+                btn.classList.add('active');
+            }
+        });
+        
+        this.editDialog.style.display = 'flex';
+    }
+
+    /**
+     * 隐藏编辑对话框
+     */
+    hideEditDialog() {
+        this.editDialog.style.display = 'none';
+        this.currentEditAnnotation = null;
+    }
+
+    /**
+     * 保存编辑的注解
+     */
+    async saveEditAnnotation() {
+        if (!this.currentEditAnnotation) return;
+        
+        const noteText = this.editDialog.querySelector('.note-textarea').value.trim();
+        const activeColor = this.editDialog.querySelector('.color-option.active');
+        const colorName = activeColor ? activeColor.dataset.color : 'yellow';
+        
+        const updates = {
+            note: noteText,
+            style: {
+                ...this.currentEditAnnotation.style,
+                color: DEFAULT_COLORS[colorName] || DEFAULT_COLORS.yellow
+            }
+        };
+        
+        await this.updateAnnotation(this.currentEditAnnotation.id, updates);
+        this.hideEditDialog();
+    }
+
+    /**
+     * 删除编辑中的注解
+     */
+    async deleteEditAnnotation() {
+        if (!this.currentEditAnnotation) return;
+        
+        await this.removeAnnotation(this.currentEditAnnotation.id);
+        this.hideEditDialog();
+    }
+
+    /**
+     * 根据颜色值获取颜色名称
+     * @param {string} colorValue - 颜色值
+     * @returns {string}
+     */
+    getColorNameByValue(colorValue) {
+        for (const [name, value] of Object.entries(DEFAULT_COLORS)) {
+            if (value.toUpperCase() === colorValue?.toUpperCase()) {
+                return name;
+            }
+        }
+        return 'yellow';
     }
 
     /**
@@ -591,11 +771,159 @@ class AnnotationManager {
     }
 
     /**
+     * 导出注解为 Markdown 格式
+     * @param {string} bookName - 书籍名称
+     * @returns {string}
+     */
+    exportToMarkdown(bookName = '未知书籍') {
+        const annotations = this.getAllAnnotations();
+        if (annotations.length === 0) {
+            return '';
+        }
+        
+        let markdown = `# ${bookName} - 读书笔记\n\n`;
+        markdown += `> 导出时间: ${new Date().toLocaleString('zh-CN')}\n\n`;
+        
+        const highlights = annotations.filter(a => a.type === AnnotationType.HIGHLIGHT);
+        const notes = annotations.filter(a => a.type === AnnotationType.NOTE);
+        const bookmarks = annotations.filter(a => a.type === AnnotationType.BOOKMARK);
+        
+        if (highlights.length > 0) {
+            markdown += `## 高亮 (${highlights.length})\n\n`;
+            highlights.forEach((h, index) => {
+                const colorName = this.getColorNameByValue(h.style?.color);
+                markdown += `### ${index + 1}. ${COLOR_NAMES[colorName] || '默认'}高亮\n`;
+                markdown += `> ${h.text || '无文本'}\n`;
+                if (h.chapter) {
+                    markdown += `>\n> *位置: ${h.chapter}*\n`;
+                }
+                markdown += `\n`;
+            });
+        }
+        
+        if (notes.length > 0) {
+            markdown += `## 笔记 (${notes.length})\n\n`;
+            notes.forEach((n, index) => {
+                markdown += `### ${index + 1}. 笔记\n`;
+                markdown += `> ${n.text || '无文本'}\n`;
+                if (n.note) {
+                    markdown += `\n**我的笔记:**\n${n.note}\n`;
+                }
+                if (n.chapter) {
+                    markdown += `\n*位置: ${n.chapter}*\n`;
+                }
+                markdown += `\n---\n\n`;
+            });
+        }
+        
+        if (bookmarks.length > 0) {
+            markdown += `## 书签 (${bookmarks.length})\n\n`;
+            bookmarks.forEach((b, index) => {
+                markdown += `${index + 1}. ${b.chapter || '未知位置'} - ${new Date(b.timestamp).toLocaleString('zh-CN')}\n`;
+            });
+        }
+        
+        return markdown;
+    }
+
+    /**
+     * 导出注解为纯文本格式
+     * @param {string} bookName - 书籍名称
+     * @returns {string}
+     */
+    exportToText(bookName = '未知书籍') {
+        const annotations = this.getAllAnnotations();
+        if (annotations.length === 0) {
+            return '';
+        }
+        
+        let text = `${bookName} - 读书笔记\n`;
+        text += `${'='.repeat(40)}\n`;
+        text += `导出时间: ${new Date().toLocaleString('zh-CN')}\n\n`;
+        
+        const highlights = annotations.filter(a => a.type === AnnotationType.HIGHLIGHT);
+        const notes = annotations.filter(a => a.type === AnnotationType.NOTE);
+        const bookmarks = annotations.filter(a => a.type === AnnotationType.BOOKMARK);
+        
+        if (highlights.length > 0) {
+            text += `【高亮】共 ${highlights.length} 条\n`;
+            text += `${'-'.repeat(40)}\n`;
+            highlights.forEach((h, index) => {
+                text += `${index + 1}. ${h.text || '无文本'}\n`;
+                if (h.chapter) {
+                    text += `   位置: ${h.chapter}\n`;
+                }
+                text += `\n`;
+            });
+        }
+        
+        if (notes.length > 0) {
+            text += `【笔记】共 ${notes.length} 条\n`;
+            text += `${'-'.repeat(40)}\n`;
+            notes.forEach((n, index) => {
+                text += `${index + 1}. ${n.text || '无文本'}\n`;
+                if (n.note) {
+                    text += `   笔记: ${n.note}\n`;
+                }
+                if (n.chapter) {
+                    text += `   位置: ${n.chapter}\n`;
+                }
+                text += `\n`;
+            });
+        }
+        
+        if (bookmarks.length > 0) {
+            text += `【书签】共 ${bookmarks.length} 个\n`;
+            text += `${'-'.repeat(40)}\n`;
+            bookmarks.forEach((b, index) => {
+                text += `${index + 1}. ${b.chapter || '未知位置'} - ${new Date(b.timestamp).toLocaleString('zh-CN')}\n`;
+            });
+        }
+        
+        return text;
+    }
+
+    /**
+     * 下载导出文件
+     * @param {string} format - 格式 ('markdown' 或 'text')
+     * @param {string} bookName - 书籍名称
+     */
+    downloadExport(format = 'markdown', bookName = '未知书籍') {
+        let content, filename, mimeType;
+        
+        if (format === 'markdown') {
+            content = this.exportToMarkdown(bookName);
+            filename = `${bookName}_读书笔记.md`;
+            mimeType = 'text/markdown;charset=utf-8';
+        } else {
+            content = this.exportToText(bookName);
+            filename = `${bookName}_读书笔记.txt`;
+            mimeType = 'text/plain;charset=utf-8';
+        }
+        
+        if (!content) {
+            this.onError?.('暂无可导出的注解内容');
+            return;
+        }
+        
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    /**
      * 销毁
      */
     destroy() {
         this.hideToolbar();
         this.hideNoteDialog();
+        this.hideEditDialog();
         
         if (this.toolbar && this.toolbar.parentNode) {
             this.toolbar.parentNode.removeChild(this.toolbar);
@@ -605,6 +933,10 @@ class AnnotationManager {
             this.noteDialog.parentNode.removeChild(this.noteDialog);
         }
         
+        if (this.editDialog && this.editDialog.parentNode) {
+            this.editDialog.parentNode.removeChild(this.editDialog);
+        }
+        
         this.annotations.clear();
     }
 }
@@ -612,7 +944,8 @@ class AnnotationManager {
 export {
     AnnotationManager,
     AnnotationType,
-    DEFAULT_COLORS
+    DEFAULT_COLORS,
+    COLOR_NAMES
 };
 
 export default AnnotationManager;
