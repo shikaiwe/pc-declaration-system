@@ -120,7 +120,8 @@ body {
 }
 
 .header-btn,
-.back-btn {
+.back-btn,
+.home-btn {
     background: var(--bg-alt);
     border: none;
     color: var(--text-soft);
@@ -135,13 +136,15 @@ body {
 }
 
 .header-btn:hover,
-.back-btn:hover {
+.back-btn:hover,
+.home-btn:hover {
     background: var(--accent-soft);
     color: var(--accent);
 }
 
 .header-btn .iconify,
-.back-btn .iconify {
+.back-btn .iconify,
+.home-btn .iconify {
     font-size: 20px;
 }
 
