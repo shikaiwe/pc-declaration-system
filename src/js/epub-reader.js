@@ -479,7 +479,7 @@ class EpubReader {
             if (e.key === 'Enter') this.performSearch();
         });
 
-        document.addEventListener('keyup', (e) => this.handleKeyup(e));
+        document.addEventListener('keydown', (e) => this.handleKeydown(e));
         
         window.addEventListener('beforeunload', () => {
             if (this.book) {
@@ -999,20 +999,31 @@ class EpubReader {
     }
 
     /**
-     * 键盘事件处理
+     * 键盘事件处理（keydown）
      * @param {KeyboardEvent} e - 键盘事件
      */
-    handleKeyup(e) {
+    handleKeydown(e) {
+        // 竖排模式下的方向键翻页优先处理
         if (this.isVerticalMode && this.rendition) {
-            if (this.handleVerticalModeKeyup(e)) {
+            if (this.handleVerticalModeKeydown(e)) {
                 return;
             }
         }
         
+        // 输入框和文本框中不处理快捷键（除了 Escape）
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            if (e.key === 'Escape') {
+                this.closeSidebars();
+                if (this.annotationManager) {
+                    this.annotationManager.hideToolbar();
+                    this.annotationManager.hideNoteDialog();
+                    this.annotationManager.hideEditDialog();
+                }
+            }
             return;
         }
         
+        // Ctrl/Cmd 组合快捷键 - 阻止浏览器默认行为
         if (e.ctrlKey || e.metaKey) {
             switch (e.key.toLowerCase()) {
                 case 'b':
@@ -1034,7 +1045,9 @@ class EpubReader {
             }
         }
         
+        // Escape 键关闭面板
         if (e.key === 'Escape') {
+            e.preventDefault();
             this.closeSidebars();
             if (this.annotationManager) {
                 this.annotationManager.hideToolbar();
@@ -1049,7 +1062,7 @@ class EpubReader {
      * @param {KeyboardEvent} e - 键盘事件
      * @returns {boolean} 是否处理了事件
      */
-    handleVerticalModeKeyup(e) {
+    handleVerticalModeKeydown(e) {
         const isArrowKey = e.key === 'ArrowLeft' || e.keyCode === 37 ||
                            e.key === 'ArrowRight' || e.keyCode === 39 ||
                            e.key === 'ArrowUp' || e.keyCode === 38 ||
@@ -1058,6 +1071,9 @@ class EpubReader {
         if (!isArrowKey) {
             return false;
         }
+        
+        // 阻止方向键的默认行为
+        e.preventDefault();
         
         if (e.key === 'ArrowLeft' || e.keyCode === 37) {
             this.rendition.next();
