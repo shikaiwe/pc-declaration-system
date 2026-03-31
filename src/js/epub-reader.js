@@ -4,13 +4,12 @@
  * 直接从服务器静态目录读取EPUB文件
  */
 
-// 数据库模块引用（延迟加载）
+// 数据库模块引用(延迟加载)
 let dbManager = null;
 let DatabaseError = null;
 let DBErrorType = null;
 
-// 搜索模块引用（延迟加载）
-let SearchManager = null;
+// 快捷键管理器(延迟加载)
 let ShortcutManager = null;
 
 class EpubReader {
@@ -38,17 +37,12 @@ class EpubReader {
         this._initPromise = null;
         // 数据库可用状态
         this._dbAvailable = false;
-        // 搜索管理器
-        this.searchManager = null;
         // 快捷键管理器
         this.shortcutManager = null;
         // 当前筛选的分类
         this.currentShortcutCategory = 'all';
         // 当前搜索关键词
         this.currentShortcutSearch = '';
-        // 搜索高亮相关
-        this.searchHighlights = []; // 存储所有高亮标记
-        this.currentSearchQuery = ''; // 当前搜索关键词
     }
 
     /**
@@ -415,24 +409,18 @@ class EpubReader {
         const backBtn = document.getElementById('backBtn');
         const tocBtn = document.getElementById('tocBtn');
         const settingsBtn = document.getElementById('settingsBtn');
-        const searchBtn = document.getElementById('searchBtn');
         const closeTocBtn = document.getElementById('closeTocBtn');
         const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-        const closeSearchBtn = document.getElementById('closeSearchBtn');
         const overlay = document.getElementById('overlay');
         const decreaseFont = document.getElementById('decreaseFont');
         const increaseFont = document.getElementById('increaseFont');
         const themeBtns = document.querySelectorAll('.theme-btn');
-        const searchInput = document.getElementById('searchInput');
-        const searchSubmitBtn = document.getElementById('searchSubmitBtn');
 
         backBtn.addEventListener('click', () => this.showBookshelf());
         tocBtn.addEventListener('click', () => this.toggleToc());
         settingsBtn.addEventListener('click', () => this.toggleSettings());
-        searchBtn.addEventListener('click', () => this.toggleSearch());
         closeTocBtn.addEventListener('click', () => this.closeToc());
         closeSettingsBtn.addEventListener('click', () => this.closeSettings());
-        closeSearchBtn.addEventListener('click', () => this.closeSearch());
         overlay.addEventListener('click', () => this.closeSidebars());
         decreaseFont.addEventListener('click', () => {
             this.changeFontSize(-10);
@@ -451,14 +439,6 @@ class EpubReader {
                 btn.classList.add('active');
                 this.focusMainContent();
             });
-        });
-        
-        searchSubmitBtn.addEventListener('click', () => {
-            this.performSearch();
-            this.focusMainContent();
-        });
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.performSearch();
         });
 
         document.addEventListener('keydown', (e) => this.handleKeydown(e));
@@ -595,11 +575,9 @@ class EpubReader {
             document.getElementById('backBtn').style.display = 'flex';
             document.getElementById('tocBtn').style.display = 'flex';
             document.getElementById('settingsBtn').style.display = 'flex';
-            document.getElementById('searchBtn').style.display = 'flex';
 
             this.initRendition();
             this.loadToc();
-            this.initSearchManager();
             
             // 先显示书籍内容，不阻塞阅读
             this.hideLoading();
@@ -952,7 +930,7 @@ class EpubReader {
     onRendered(section) {
         this.applyRenditionTheme();
         
-        // 在 iframe 内添加点击事件处理，确保点击后焦点回到主内容
+        // 在 iframe 内添加点击事件处理,确保点击后焦点回到主内容
         if (this.rendition) {
             try {
                 // 获取当前章节的内容文档
@@ -962,13 +940,13 @@ class EpubReader {
                     if (doc) {
                         // 检查章节内容是否有效
                         if (!this.isValidChapter(doc)) {
-                            console.debug(`章节 ${section.href} 内容无效，自动跳过`);
+                            console.debug(`章节 ${section.href} 内容无效,自动跳过`);
                             // 尝试跳转到下一章节
                             try {
                                 this.rendition.next();
                                 return;
                             } catch (e) {
-                                // 如果无法跳转，继续显示当前章节
+                                // 如果无法跳转,继续显示当前章节
                             }
                         }
                         
@@ -976,11 +954,6 @@ class EpubReader {
                         doc.addEventListener('click', () => {
                             this.focusMainContent();
                         });
-                        
-                        // 如果有当前搜索关键词，重新高亮新章节
-                        if (this.currentSearchQuery) {
-                            this.highlightTextInDocument(doc, this.currentSearchQuery);
-                        }
                     }
                 }
             } catch (e) {
@@ -1149,10 +1122,6 @@ class EpubReader {
         // Ctrl/Cmd 组合快捷键 - 阻止浏览器默认行为
         if (e.ctrlKey || e.metaKey) {
             switch (e.key.toLowerCase()) {
-                case 's':
-                    e.preventDefault();
-                    this.toggleSearch();
-                    break;
                 case 't':
                     e.preventDefault();
                     this.toggleToc();
@@ -1267,29 +1236,11 @@ class EpubReader {
     }
 
     /**
-     * 切换搜索侧边栏
-     */
-    toggleSearch() {
-        const sidebar = document.getElementById('searchSidebar');
-        const overlay = document.getElementById('overlay');
-        
-        this.closeOtherSidebars('searchSidebar');
-        sidebar.classList.toggle('open');
-        overlay.classList.toggle('active', sidebar.classList.contains('open'));
-        
-        if (sidebar.classList.contains('open')) {
-            document.getElementById('searchInput').focus();
-        } else {
-            this.focusMainContent();
-        }
-    }
-
-    /**
      * 关闭其他侧边栏
      * @param {string} except - 排除的侧边栏 ID
      */
     closeOtherSidebars(except) {
-        const sidebars = ['tocSidebar', 'settingsSidebar', 'searchSidebar'];
+        const sidebars = ['tocSidebar', 'settingsSidebar'];
         sidebars.forEach(id => {
             if (id !== except) {
                 const el = document.getElementById(id);
@@ -1319,28 +1270,12 @@ class EpubReader {
     }
 
     /**
-     * 关闭搜索侧边栏
-     */
-    closeSearch() {
-        document.getElementById('searchSidebar').classList.remove('open');
-        document.getElementById('overlay').classList.remove('active');
-        // 清除搜索高亮
-        this.clearSearchHighlights();
-        this.currentSearchQuery = '';
-        this.focusMainContent();
-    }
-
-    /**
      * 关闭所有侧边栏
      */
     closeSidebars() {
         document.getElementById('tocSidebar').classList.remove('active');
         document.getElementById('settingsSidebar').classList.remove('active');
-        document.getElementById('searchSidebar').classList.remove('open');
         document.getElementById('overlay').classList.remove('active');
-        // 清除搜索高亮
-        this.clearSearchHighlights();
-        this.currentSearchQuery = '';
         this.focusMainContent();
     }
 
@@ -1636,48 +1571,6 @@ class EpubReader {
     }
 
     /**
-     * 初始化搜索管理器
-     */
-    async initSearchManager() {
-        if (!this.book || !this.currentBookKey) return;
-        
-        try {
-            if (!SearchManager) {
-                const module = await import('./search-manager.js');
-                SearchManager = module.default;
-            }
-            
-            this.searchManager = new SearchManager(this.book, this.currentBookKey);
-            
-            // 设置进度回调
-            this.searchManager.onProgress = (progress) => {
-                const statusText = document.getElementById('searchStatusText');
-                if (statusText) {
-                    statusText.textContent = `正在建立索引... ${progress.percentage.toFixed(0)}%`;
-                }
-            };
-            
-            // 设置错误回调
-            this.searchManager.onError = (error) => {
-                console.error('搜索管理器错误:', error);
-                this.showError(`搜索初始化失败: ${error}`);
-            };
-            
-            // 尝试从缓存加载索引
-            const loaded = await this.searchManager.loadIndexFromCache();
-            if (loaded) {
-                console.info('成功从缓存加载搜索索引');
-            }
-            
-        } catch (e) {
-            console.error('初始化搜索管理器失败:', e);
-            this.showError('搜索功能初始化失败');
-        }
-    }
-
-
-
-    /**
      * 初始化快捷键管理器
      */
     async initShortcutManager() {
@@ -1751,15 +1644,15 @@ class EpubReader {
         }
         
         listContainer.innerHTML = shortcuts.map(shortcut => {
-            // 判断是否为翻页快捷键（多个按键表示"或"的关系）
+            // 判断是否为翻页快捷键(多个按键表示"或"的关系)
             const isNavigationKeys = shortcut.keys.length > 1 && !shortcut.keys.includes('Ctrl') && !shortcut.keys.includes('Shift') && !shortcut.keys.includes('Alt');
             
             let keysHTML;
             if (isNavigationKeys) {
-                // 翻页快捷键：用 + 连接表示"或"
+                // 翻页快捷键: 用 + 连接表示"或"
                 keysHTML = shortcut.keys.map(key => `<kbd>${this.escapeHtml(key)}</kbd>`).join('<span class="key-separator"> + </span>');
             } else {
-                // 组合快捷键：用 + 连接表示组合
+                // 组合快捷键: 用 + 连接表示组合
                 keysHTML = shortcut.keys.map((key, index) => {
                     const separator = index < shortcut.keys.length - 1 
                         ? '<span class="key-separator">+</span>' 
@@ -1768,7 +1661,7 @@ class EpubReader {
                 }).join('');
             }
             
-            const conditionText = shortcut.condition ? '（竖排模式）' : '';
+            const conditionText = shortcut.condition ? '(竖排模式)' : '';
             
             return `
                 <div class="shortcut-item" data-id="${shortcut.id}">
@@ -1794,7 +1687,6 @@ class EpubReader {
             'navigation': '导航操作',
             'reading': '阅读控制',
             'annotation': '笔记标注',
-            'search': '搜索功能',
             'system': '系统操作'
         };
         return names[category] || category;
@@ -1832,426 +1724,6 @@ class EpubReader {
                     this.refreshShortcutsList();
                 });
                 filterContainer.appendChild(btn);
-            }
-        });
-    }
-
-    /**
-     * 执行搜索
-     */
-    async performSearch() {
-        if (!this.searchManager) {
-            await this.initSearchManager();
-        }
-        
-        if (!this.searchManager) {
-            this.showError('搜索功能未初始化,请刷新页面重试');
-            return;
-        }
-        
-        const input = document.getElementById('searchInput');
-        const query = input.value.trim();
-        
-        if (!query) {
-            this.showError('请输入搜索关键词');
-            return;
-        }
-        
-        if (query.length < 2) {
-            this.showError('搜索关键词至少需要 2 个字符');
-            return;
-        }
-        
-        if (query.length > 100) {
-            this.showError('搜索关键词过长,请缩短搜索词');
-            return;
-        }
-        
-        const caseSensitive = document.getElementById('searchCaseSensitive').checked;
-        const resultsContainer = document.getElementById('searchResults');
-        const statusEl = document.getElementById('searchStatus');
-        
-        statusEl.style.display = 'flex';
-        resultsContainer.innerHTML = '<div class="search-empty">搜索中...</div>';
-        
-        try {
-            // 检查是否需要构建索引
-            if (!this.searchManager.index || this.searchManager.index.sections.length === 0) {
-                document.getElementById('searchStatusText').textContent = '正在建立索引...';
-                
-                const indexResult = await this.searchManager.buildIndex();
-                
-                // 检查索引构建结果
-                if (!indexResult || !indexResult.success) {
-                    statusEl.style.display = 'none';
-                    
-                    let errorMessage = '无法建立搜索索引';
-                    if (indexResult && indexResult.error) {
-                        errorMessage = indexResult.error;
-                    }
-                    
-                    resultsContainer.innerHTML = `
-                        <div class="search-empty">
-                            <p>${errorMessage}</p>
-                            ${indexResult && indexResult.warnings ? 
-                                `<p class="search-hint">${indexResult.warnings.join(', ')}</p>` : 
-                                '<p class="search-hint">本书可能存在格式问题或内容为空</p>'
-                            }
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // 显示索引构建统计
-                if (indexResult.warnings && indexResult.warnings.length > 0) {
-                    console.warn('索引构建警告:', indexResult.warnings);
-                }
-            }
-            
-            // 执行搜索
-            const startTime = performance.now();
-            const results = await this.searchManager.search(query, { caseSensitive });
-            const searchTime = ((performance.now() - startTime) / 1000).toFixed(2);
-            
-            statusEl.style.display = 'none';
-            
-            if (results.length === 0) {
-                resultsContainer.innerHTML = `
-                    <div class="search-empty">
-                        <p>未找到匹配结果</p>
-                        <p class="search-hint">尝试使用不同的关键词或取消区分大小写</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            // 按章节分组
-            const groupedResults = {};
-            results.forEach(result => {
-                const chapterTitle = result.section?.title || '未知章节';
-                if (!groupedResults[chapterTitle]) {
-                    groupedResults[chapterTitle] = {
-                        href: result.section?.href || '',
-                        items: []
-                    };
-                }
-                groupedResults[chapterTitle].items.push(result);
-            });
-            
-            // 生成分组显示的HTML
-            let html = `
-                <div class="search-summary">
-                    找到 <strong>${results.length}</strong> 个结果
-                    (耗时 ${searchTime}秒)
-                </div>
-            `;
-            
-            Object.keys(groupedResults).forEach(chapterTitle => {
-                const group = groupedResults[chapterTitle];
-                html += `
-                    <div class="search-result-group">
-                        <div class="search-result-group-header">
-                            <span class="search-result-chapter-name">${chapterTitle}</span>
-                            <span class="search-result-count">${group.items.length} 个匹配</span>
-                        </div>
-                        <div class="search-result-group-items">
-                `;
-                
-                group.items.forEach((result, index) => {
-                    const href = result.section?.href || '';
-                    const context = result.match?.context || {};
-                    const highlightedText = this.highlightSearchTerm(context.text || '', query);
-                    
-                    html += `
-                        <div class="search-result-item" data-href="${href}" data-position="${result.match.position}">
-                            <div class="search-result-index">#${index + 1}</div>
-                            <div class="search-result-text">${highlightedText}</div>
-                        </div>
-                    `;
-                });
-                
-                html += `
-                        </div>
-                    </div>
-                `;
-            });
-            
-            resultsContainer.innerHTML = html;
-            
-            // 高亮当前章节中的所有匹配项
-            await this.highlightAllMatchesInCurrentChapter(query);
-            
-            // 绑定点击事件
-            resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
-                item.addEventListener('click', async () => {
-                    const href = item.dataset.href;
-                    if (href) {
-                        try {
-                            await this.rendition.display(href);
-                        } catch (e) {
-                            console.warn('跳转到搜索结果失败:', e);
-                            this.showError('跳转失败,该位置可能不存在');
-                        }
-                    }
-                });
-            });
-            
-        } catch (e) {
-            console.error('搜索失败:', e);
-            statusEl.style.display = 'none';
-            resultsContainer.innerHTML = `
-                <div class="search-empty">
-                    <p>搜索出错</p>
-                    <p class="search-hint">${e.message || '请重试或刷新页面'}</p>
-                </div>
-            `;
-            this.showError('搜索失败: ' + (e.message || '未知错误'));
-        }
-    }
-
-    /**
-     * 高亮搜索关键词
-     * @param {string} text - 原始文本
-     * @param {string} query - 搜索关键词
-     * @returns {string}
-     */
-    highlightSearchTerm(text, query) {
-        if (!text || !query) return text;
-        const regex = new RegExp(`(${this.escapeRegex(query)})`, 'gi');
-        return text.replace(regex, '<mark>$1</mark>');
-    }
-
-    /**
-     * 清除所有搜索高亮
-     */
-    clearSearchHighlights() {
-        if (this.searchHighlights && this.searchHighlights.length > 0) {
-            this.searchHighlights.forEach(highlight => {
-                try {
-                    if (this.rendition && highlight.remove) {
-                        highlight.remove();
-                    }
-                } catch (e) {
-                    // 忽略删除错误
-                }
-            });
-            this.searchHighlights = [];
-        }
-    }
-
-    /**
-     * 在当前章节高亮所有匹配的关键词
-     * @param {string} query - 搜索关键词
-     */
-    async highlightAllMatchesInCurrentChapter(query) {
-        if (!this.rendition || !query) return;
-        
-        // 清除之前的高亮
-        this.clearSearchHighlights();
-        this.currentSearchQuery = query;
-        
-        try {
-            // 获取当前章节的内容
-            const location = this.rendition.currentLocation();
-            if (!location || !location.start) return;
-            
-            const section = this.book.section(location.start.href);
-            if (!section) return;
-            
-            // 添加高亮样式
-            this.rendition.themes.default({
-                '::selection': {
-                    'background': 'rgba(196, 149, 106, 0.4)'
-                }
-            });
-            
-            // 在 iframe 中查找并高亮所有匹配
-            const contents = this.rendition.getContents();
-            if (contents && contents.length > 0) {
-                const doc = contents[0].document || contents[0].contentDocument;
-                if (doc && doc.body) {
-                    // 检查章节是否有效
-                    if (this.isValidChapter(doc)) {
-                        this.highlightTextInDocument(doc, query);
-                    } else {
-                        console.debug(`当前章节 ${location.start.href} 无效，跳过`);
-                    }
-                }
-            }
-        } catch (e) {
-            console.debug('高亮关键词失败:', e.message);
-        }
-    }
-
-    /**
-     * 在文档中高亮所有匹配的文本
-     * @param {Document} doc - 文档对象
-     * @param {string} query - 搜索关键词
-     */
-    highlightTextInDocument(doc, query) {
-        if (!doc || !query) return;
-        
-        try {
-            // 添加高亮样式
-            const styleId = 'search-highlight-styles';
-            if (!doc.getElementById(styleId)) {
-                const style = doc.createElement('style');
-                style.id = styleId;
-                style.textContent = `
-                    .search-highlight {
-                        background-color: rgba(196, 149, 106, 0.3) !important;
-                        border-bottom: 2px solid #C4956A !important;
-                        cursor: pointer;
-                        padding: 0 2px;
-                        border-radius: 2px;
-                    }
-                    .search-highlight:hover {
-                        background-color: rgba(196, 149, 106, 0.5) !important;
-                    }
-                `;
-                doc.head.appendChild(style);
-            }
-            
-            // 使用 TreeWalker 查找所有文本节点
-            const walker = doc.createTreeWalker(
-                doc.body,
-                NodeFilter.SHOW_TEXT,
-                {
-                    acceptNode: (node) => {
-                        // 过滤掉脚本、样式等
-                        const parent = node.parentElement;
-                        if (!parent) return NodeFilter.FILTER_REJECT;
-                        
-                        const tagName = parent.tagName.toLowerCase();
-                        if (['script', 'style', 'noscript', 'iframe', 'svg'].includes(tagName)) {
-                            return NodeFilter.FILTER_REJECT;
-                        }
-                        
-                        return NodeFilter.FILTER_ACCEPT;
-                    }
-                },
-                false
-            );
-            
-            const textNodes = [];
-            let node;
-            
-            // 收集所有包含搜索词的文本节点
-            while (node = walker.nextNode()) {
-                if (node.textContent.toLowerCase().includes(query.toLowerCase())) {
-                    textNodes.push(node);
-                }
-            }
-            
-            // 处理每个文本节点
-            textNodes.forEach(textNode => {
-                try {
-                    this.highlightMatchesInNode(doc, textNode, query);
-                } catch (e) {
-                    // 忽略单个节点的错误,继续处理其他节点
-                }
-            });
-            
-        } catch (e) {
-            console.warn('高亮文本失败:', e);
-        }
-    }
-    
-    /**
-     * 在单个文本节点中高亮匹配项
-     * @param {Document} doc - 文档对象
-     * @param {Text} textNode - 文本节点
-     * @param {string} query - 搜索关键词
-     * @private
-     */
-    highlightMatchesInNode(doc, textNode, query) {
-        const text = textNode.textContent;
-        const lowerText = text.toLowerCase();
-        const lowerQuery = query.toLowerCase();
-        
-        // 收集所有匹配位置
-        const matches = [];
-        let position = 0;
-        let index = lowerText.indexOf(lowerQuery, position);
-        
-        while (index !== -1) {
-            matches.push({
-                start: index,
-                end: index + query.length
-            });
-            position = index + query.length;
-            index = lowerText.indexOf(lowerQuery, position);
-        }
-        
-        if (matches.length === 0) return;
-        
-        // 从后往前处理,避免索引变化
-        matches.reverse();
-        
-        // 检查文本节点是否可以被安全分割
-        const parent = textNode.parentNode;
-        if (!parent) return;
-        
-        matches.forEach(match => {
-            try {
-                // 创建 Range
-                const range = doc.createRange();
-                range.setStart(textNode, match.start);
-                range.setEnd(textNode, match.end);
-                
-                // 创建高亮 span
-                const span = doc.createElement('span');
-                span.className = 'search-highlight';
-                
-                // 尝试包裹内容
-                try {
-                    range.surroundContents(span);
-                    
-                    // 记录高亮以便后续清除
-                    this.searchHighlights.push({
-                        element: span,
-                        remove: () => {
-                            try {
-                                const parent = span.parentNode;
-                                if (parent) {
-                                    while (span.firstChild) {
-                                        parent.insertBefore(span.firstChild, span);
-                                    }
-                                    parent.removeChild(span);
-                                    // 合并相邻的文本节点
-                                    parent.normalize();
-                                }
-                            } catch (e) {
-                                // 忽略错误
-                            }
-                        }
-                    });
-                } catch (e) {
-                    // 如果 range 跨越多个节点,使用替代方法
-                    const selectedText = range.extractContents();
-                    span.appendChild(selectedText);
-                    range.insertNode(span);
-                    
-                    this.searchHighlights.push({
-                        element: span,
-                        remove: () => {
-                            try {
-                                const parent = span.parentNode;
-                                if (parent) {
-                                    while (span.firstChild) {
-                                        parent.insertBefore(span.firstChild, span);
-                                    }
-                                    parent.removeChild(span);
-                                    parent.normalize();
-                                }
-                            } catch (e) {
-                                // 忽略错误
-                            }
-                        }
-                    });
-                }
-            } catch (e) {
-                // 忽略单个匹配的错误
             }
         });
     }
