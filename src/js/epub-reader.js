@@ -985,6 +985,58 @@ class EpubReader {
             return;
         }
         
+        // 翻页按键处理（非竖排模式）
+        if (!this.isVerticalMode && this.rendition) {
+            // PageDown / Space - 下一页
+            if (e.key === 'PageDown' || e.keyCode === 34 || 
+                (e.key === ' ' && !e.shiftKey)) {
+                e.preventDefault();
+                this.rendition.next();
+                return;
+            }
+            
+            // PageUp / Shift+Space - 上一页
+            if (e.key === 'PageUp' || e.keyCode === 33 || 
+                (e.key === ' ' && e.shiftKey)) {
+                e.preventDefault();
+                this.rendition.prev();
+                return;
+            }
+            
+            // ArrowRight / ArrowDown - 下一页（横排模式）
+            if (e.key === 'ArrowRight' || e.keyCode === 39 ||
+                e.key === 'ArrowDown' || e.keyCode === 40) {
+                e.preventDefault();
+                this.rendition.next();
+                return;
+            }
+            
+            // ArrowLeft / ArrowUp - 上一页（横排模式）
+            if (e.key === 'ArrowLeft' || e.keyCode === 37 ||
+                e.key === 'ArrowUp' || e.keyCode === 38) {
+                e.preventDefault();
+                this.rendition.prev();
+                return;
+            }
+            
+            // Home - 跳到开头
+            if (e.key === 'Home' || e.keyCode === 36) {
+                e.preventDefault();
+                this.rendition.display(0);
+                return;
+            }
+            
+            // End - 跳到结尾
+            if (e.key === 'End' || e.keyCode === 35) {
+                e.preventDefault();
+                if (this.book.locations) {
+                    const total = this.book.locations.length();
+                    this.rendition.display(total - 1);
+                }
+                return;
+            }
+        }
+        
         // Ctrl/Cmd 组合快捷键 - 阻止浏览器默认行为
         if (e.ctrlKey || e.metaKey) {
             switch (e.key.toLowerCase()) {

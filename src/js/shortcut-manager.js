@@ -47,44 +47,64 @@ export const DEFAULT_SHORTCUTS = [
         customizable: false
     },
     {
-        id: 'toggle-annotations',
-        keys: ['Ctrl', 'E'],
-        description: '打开/关闭笔记面板',
-        category: ShortcutCategory.ANNOTATION,
-        customizable: false
-    },
-    {
-        id: 'add-bookmark',
-        keys: ['Ctrl', 'B'],
-        description: '添加书签',
-        category: ShortcutCategory.ANNOTATION,
-        customizable: false
-    },
-    {
         id: 'escape',
         keys: ['Esc'],
         description: '关闭所有面板/取消操作',
         category: ShortcutCategory.SYSTEM,
         customizable: false
     },
+    // 横排模式翻页快捷键
     {
-        id: 'page-next',
-        keys: ['→'],
+        id: 'page-next-horizontal',
+        keys: ['→', '↓', 'PageDown', 'Space'],
+        description: '下一页（横排模式）',
+        category: ShortcutCategory.READING,
+        customizable: false,
+        condition: '!verticalMode'
+    },
+    {
+        id: 'page-prev-horizontal',
+        keys: ['←', '↑', 'PageUp', 'Shift+Space'],
+        description: '上一页（横排模式）',
+        category: ShortcutCategory.READING,
+        customizable: false,
+        condition: '!verticalMode'
+    },
+    {
+        id: 'go-start',
+        keys: ['Home'],
+        description: '跳到开头',
+        category: ShortcutCategory.READING,
+        customizable: false,
+        condition: '!verticalMode'
+    },
+    {
+        id: 'go-end',
+        keys: ['End'],
+        description: '跳到结尾',
+        category: ShortcutCategory.READING,
+        customizable: false,
+        condition: '!verticalMode'
+    },
+    // 竖排模式翻页快捷键
+    {
+        id: 'page-next-vertical',
+        keys: ['←'],
         description: '下一页（竖排模式）',
         category: ShortcutCategory.READING,
         customizable: false,
         condition: 'verticalMode'
     },
     {
-        id: 'page-prev',
-        keys: ['←'],
+        id: 'page-prev-vertical',
+        keys: ['→'],
         description: '上一页（竖排模式）',
         category: ShortcutCategory.READING,
         customizable: false,
         condition: 'verticalMode'
     },
     {
-        id: 'scroll-up',
+        id: 'scroll-up-vertical',
         keys: ['↑'],
         description: '向上滚动（竖排模式）',
         category: ShortcutCategory.READING,
@@ -92,7 +112,7 @@ export const DEFAULT_SHORTCUTS = [
         condition: 'verticalMode'
     },
     {
-        id: 'scroll-down',
+        id: 'scroll-down-vertical',
         keys: ['↓'],
         description: '向下滚动（竖排模式）',
         category: ShortcutCategory.READING,
