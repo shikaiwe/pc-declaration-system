@@ -52,6 +52,7 @@ class SearchManager {
         try {
             const spine = await this.book.loaded.spine;
             const total = spine.items.length;
+            const batchSize = options.batchSize || 5; // 每批处理的章节数
             
             // 初始化索引结构
             this.index = {
@@ -59,21 +60,28 @@ class SearchManager {
                 words: new Map()
             };
             
-            // 遍历所有章节
-            for (let i = 0; i < total; i++) {
-                const section = spine.items[i];
-                await this.indexSection(section, i);
+            // 分批遍历所有章节，避免阻塞渲染
+            for (let i = 0; i < total; i += batchSize) {
+                const batch = spine.items.slice(i, Math.min(i + batchSize, total));
                 
-                this.indexProgress = ((i + 1) / total) * 100;
+                // 处理当前批次
+                for (let j = 0; j < batch.length; j++) {
+                    const section = batch[j];
+                    await this.indexSection(section, i + j);
+                }
+                
+                // 更新进度
+                const completed = Math.min(i + batchSize, total);
+                this.indexProgress = (completed / total) * 100;
                 this.onProgress?.({
-                    current: i + 1,
+                    current: completed,
                     total,
                     percentage: this.indexProgress
                 });
                 
-                // 让出主线程
-                if (i % 5 === 0) {
-                    await new Promise(resolve => setTimeout(resolve, 0));
+                // 使用 requestIdleCallback 让出主线程，避免阻塞渲染
+                if (i + batchSize < total) {
+                    await this.yieldToMainThread();
                 }
             }
             
@@ -81,9 +89,24 @@ class SearchManager {
             this.onComplete?.();
             
         } catch (e) {
+            console.error('构建搜索索引失败:', e);
             this.isIndexing = false;
             throw e;
         }
+    }
+
+    /**
+     * 让出主线程，避免阻塞渲染
+     * @private
+     */
+    async yieldToMainThread() {
+        return new Promise(resolve => {
+            if (typeof requestIdleCallback !== 'undefined') {
+                requestIdleCallback(() => resolve(), { timeout: 100 });
+            } else {
+                setTimeout(resolve, 0);
+            }
+        });
     }
 
     /**
@@ -94,13 +117,24 @@ class SearchManager {
      */
     async indexSection(section, index) {
         try {
-            const contents = await this.book.section(section.href).load();
+            const sectionObj = this.book.section(section.href);
+            if (!sectionObj) {
+                return;
+            }
+            
+            const contents = await sectionObj.load();
+            if (!contents) {
+                return;
+            }
+            
             const text = this.extractText(contents);
             
-            // 存储章节文本
+            if (!text || text.trim().length === 0) {
+                return;
+            }
+            
             this.sectionTexts.set(section.href, text);
             
-            // 添加到索引
             this.index.sections.push({
                 href: section.href,
                 index: index,
@@ -110,7 +144,7 @@ class SearchManager {
             });
             
         } catch (e) {
-            console.error(`索引章节 ${section.href} 失败:`, e);
+            // 静默跳过加载失败的章节（如 404 错误）
         }
     }
 

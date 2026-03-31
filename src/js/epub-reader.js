@@ -607,8 +607,14 @@ class EpubReader {
                 this.applyVerticalTextStyles();
             }
             
+            // 尝试恢复阅读进度，如果失败则从开头开始
             const savedLocation = this.readingProgress[bookData.key + '_location'];
-            await this.rendition.display(savedLocation || undefined);
+            try {
+                await this.rendition.display(savedLocation || undefined);
+            } catch (e) {
+                console.warn('恢复阅读进度失败，从开头开始:', e);
+                await this.rendition.display();
+            }
             
             // 将焦点设置到主内容区域，确保键盘事件正常工作
             this.focusMainContent();
@@ -750,6 +756,12 @@ class EpubReader {
             this.rendition.themes.override('-epub-writing-mode', 'vertical-rl');
         }
 
+        // 监听渲染错误
+        this.rendition.on('error', (e) => {
+            console.warn('渲染错误:', e);
+            // 静默处理渲染错误，不影响其他章节
+        });
+
         this.rendition.on('relocated', (location) => this.onRelocated(location));
         this.rendition.on('rendered', (section) => this.onRendered(section));
 
@@ -859,9 +871,14 @@ class EpubReader {
      * 跳转到指定章节
      * @param {string} href - 章节链接
      */
-    goToChapter(href) {
+    async goToChapter(href) {
         if (this.rendition) {
-            this.rendition.display(href);
+            try {
+                await this.rendition.display(href);
+            } catch (e) {
+                console.warn('跳转到章节失败:', e);
+                this.showError('跳转失败，该章节可能不存在');
+            }
             this.closeSidebars();
         }
     }
@@ -928,6 +945,12 @@ class EpubReader {
                 if (contents && contents.length > 0) {
                     const doc = contents[0].document || contents[0].contentDocument;
                     if (doc) {
+                        // 检查是否有错误页面
+                        const errorText = doc.body?.textContent || '';
+                        if (errorText.includes('This page contains the following errors')) {
+                            console.warn(`章节 ${section.href} 渲染失败，XHTML 存在语法错误`);
+                        }
+                        
                         // 为 iframe 内的文档添加点击事件
                         doc.addEventListener('click', () => {
                             this.focusMainContent();
@@ -1796,10 +1819,15 @@ class EpubReader {
             }).join('');
             
             resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
-                item.addEventListener('click', () => {
+                item.addEventListener('click', async () => {
                     const href = item.dataset.href;
                     if (href) {
-                        this.rendition.display(href);
+                        try {
+                            await this.rendition.display(href);
+                        } catch (e) {
+                            console.warn('跳转到搜索结果失败:', e);
+                            this.showError('跳转失败，该位置可能不存在');
+                        }
                     }
                     this.closeSearch();
                 });
