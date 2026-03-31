@@ -148,13 +148,14 @@ class SearchManager {
         }
         
         const results = [];
-        const searchTerm = query.toLowerCase().trim();
+        const caseSensitive = options.caseSensitive || false;
+        const searchTerm = caseSensitive ? query.trim() : query.toLowerCase().trim();
         const maxResults = options.maxResults || 100;
         const contextLength = options.contextLength || 50;
         
         // 搜索每个章节
         for (const section of this.index.sections) {
-            const text = section.text.toLowerCase();
+            const text = caseSensitive ? section.text : section.text.toLowerCase();
             let position = 0;
             let foundCount = 0;
             

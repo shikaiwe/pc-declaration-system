@@ -431,8 +431,14 @@ class EpubReader {
         closeSettingsBtn.addEventListener('click', () => this.closeSettings());
         closeSearchBtn.addEventListener('click', () => this.closeSearch());
         overlay.addEventListener('click', () => this.closeSidebars());
-        decreaseFont.addEventListener('click', () => this.changeFontSize(-10));
-        increaseFont.addEventListener('click', () => this.changeFontSize(10));
+        decreaseFont.addEventListener('click', () => {
+            this.changeFontSize(-10);
+            this.focusMainContent();
+        });
+        increaseFont.addEventListener('click', () => {
+            this.changeFontSize(10);
+            this.focusMainContent();
+        });
 
         themeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -440,10 +446,14 @@ class EpubReader {
                 this.applyTheme(theme);
                 themeBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                this.focusMainContent();
             });
         });
         
-        searchSubmitBtn.addEventListener('click', () => this.performSearch());
+        searchSubmitBtn.addEventListener('click', () => {
+            this.performSearch();
+            this.focusMainContent();
+        });
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.performSearch();
         });
@@ -911,13 +921,21 @@ class EpubReader {
         this.applyRenditionTheme();
         
         // 在 iframe 内添加点击事件处理，确保点击后焦点回到主内容
-        if (this.rendition && section) {
-            const contents = section.document || section.contents;
-            if (contents) {
-                // 为 iframe 内的文档添加点击事件
-                contents.addEventListener('click', () => {
-                    this.focusMainContent();
-                });
+        if (this.rendition) {
+            try {
+                // 获取当前章节的内容文档
+                const contents = this.rendition.getContents();
+                if (contents && contents.length > 0) {
+                    const doc = contents[0].document || contents[0].contentDocument;
+                    if (doc) {
+                        // 为 iframe 内的文档添加点击事件
+                        doc.addEventListener('click', () => {
+                            this.focusMainContent();
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn('添加 iframe 点击事件失败:', e);
             }
         }
     }
@@ -975,6 +993,7 @@ class EpubReader {
         
         this.closeSidebars();
         this.loadBooks();
+        this.focusMainContent();
     }
 
     /**
@@ -1153,6 +1172,7 @@ class EpubReader {
         this.closeOtherSidebars('tocSidebar');
         sidebar.classList.toggle('active');
         overlay.classList.toggle('active', sidebar.classList.contains('active'));
+        this.focusMainContent();
     }
 
     /**
@@ -1165,6 +1185,7 @@ class EpubReader {
         this.closeOtherSidebars('settingsSidebar');
         sidebar.classList.toggle('active');
         overlay.classList.toggle('active', sidebar.classList.contains('active'));
+        this.focusMainContent();
     }
 
     /**
@@ -1180,6 +1201,8 @@ class EpubReader {
         
         if (sidebar.classList.contains('open')) {
             document.getElementById('searchInput').focus();
+        } else {
+            this.focusMainContent();
         }
     }
 
@@ -1205,6 +1228,7 @@ class EpubReader {
     closeToc() {
         document.getElementById('tocSidebar').classList.remove('active');
         document.getElementById('overlay').classList.remove('active');
+        this.focusMainContent();
     }
 
     /**
@@ -1213,6 +1237,7 @@ class EpubReader {
     closeSettings() {
         document.getElementById('settingsSidebar').classList.remove('active');
         document.getElementById('overlay').classList.remove('active');
+        this.focusMainContent();
     }
 
     /**
@@ -1221,6 +1246,7 @@ class EpubReader {
     closeSearch() {
         document.getElementById('searchSidebar').classList.remove('open');
         document.getElementById('overlay').classList.remove('active');
+        this.focusMainContent();
     }
 
     /**
@@ -1231,6 +1257,7 @@ class EpubReader {
         document.getElementById('settingsSidebar').classList.remove('active');
         document.getElementById('searchSidebar').classList.remove('open');
         document.getElementById('overlay').classList.remove('active');
+        this.focusMainContent();
     }
 
     /**
@@ -1626,12 +1653,22 @@ class EpubReader {
         }
         
         listContainer.innerHTML = shortcuts.map(shortcut => {
-            const keysHTML = shortcut.keys.map((key, index) => {
-                const separator = index < shortcut.keys.length - 1 
-                    ? '<span class="key-separator">+</span>' 
-                    : '';
-                return `<kbd>${this.escapeHtml(key)}</kbd>${separator}`;
-            }).join('');
+            // 判断是否为翻页快捷键（多个按键表示"或"的关系）
+            const isNavigationKeys = shortcut.keys.length > 1 && !shortcut.keys.includes('Ctrl') && !shortcut.keys.includes('Shift') && !shortcut.keys.includes('Alt');
+            
+            let keysHTML;
+            if (isNavigationKeys) {
+                // 翻页快捷键：用 + 连接表示"或"
+                keysHTML = shortcut.keys.map(key => `<kbd>${this.escapeHtml(key)}</kbd>`).join('<span class="key-separator"> + </span>');
+            } else {
+                // 组合快捷键：用 + 连接表示组合
+                keysHTML = shortcut.keys.map((key, index) => {
+                    const separator = index < shortcut.keys.length - 1 
+                        ? '<span class="key-separator">+</span>' 
+                        : '';
+                    return `<kbd>${this.escapeHtml(key)}</kbd>${separator}`;
+                }).join('');
+            }
             
             const conditionText = shortcut.condition ? '（竖排模式）' : '';
             
@@ -1712,7 +1749,15 @@ class EpubReader {
         const input = document.getElementById('searchInput');
         const query = input.value.trim();
         
-        if (!query) return;
+        if (!query) {
+            this.showError('请输入搜索关键词');
+            return;
+        }
+        
+        if (query.length < 2) {
+            this.showError('搜索关键词至少需要 2 个字符');
+            return;
+        }
         
         const caseSensitive = document.getElementById('searchCaseSensitive').checked;
         const resultsContainer = document.getElementById('searchResults');
@@ -1763,7 +1808,8 @@ class EpubReader {
         } catch (e) {
             console.error('搜索失败:', e);
             statusEl.style.display = 'none';
-            resultsContainer.innerHTML = '<div class="search-empty">搜索出错</div>';
+            resultsContainer.innerHTML = '<div class="search-empty">搜索出错，请重试</div>';
+            this.showError('搜索失败: ' + e.message);
         }
     }
 
