@@ -15,7 +15,7 @@
     const CSRF_CONFIG = {
         CSRF_COOKIE_NAME: 'csrftoken',
         CSRF_HEADER_NAME: 'X-CSRFToken',
-        CSRF_API_URL: '/csrf/'
+        CSRF_API_URL: 'api/unit/csrf'
     };
 
     /**
