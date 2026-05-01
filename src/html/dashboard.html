@@ -3782,7 +3782,8 @@
                     const address = document.getElementById('address').value;
                     const issue = document.getElementById('issue').value;
                     const preferredTime = document.getElementById('preferredTime').dataset.submitValue || document.getElementById('preferredTime').value;
-                    const call_date = new Date().toISOString();
+                    const now = new Date();
+                    const call_date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                     // 备注功能已移除
 
                     const csrfToken = CSRF.getToken();
